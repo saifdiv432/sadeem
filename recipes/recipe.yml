@@ -90,6 +90,7 @@ modules:
       - ghostscript
       - poppler-utils
       - python3-cairo
+      - python3-pillow
 
   # System-wide Flatpaks configuration (disables Fedora remote and enables Flathub)
   - type: default-flatpaks
@@ -125,8 +126,22 @@ modules:
         # GDM Lockscreen & login screen logo
         rm -f /usr/share/pixmaps/fedora-gdm-logo.png /usr/share/pixmaps/fedora-logo-small.png /usr/share/pixmaps/saifdora-gdm-logo.png
         if command -v rsvg-convert >/dev/null 2>&1; then
-          rsvg-convert -w 240 -h 68 /usr/share/pixmaps/fedora-logo-sprite.svg -o /usr/share/pixmaps/saifdora-gdm-logo.png || true
+          rsvg-convert -w 240 -h 68 /usr/share/saifdora/wordmark-dark.svg -o /usr/share/pixmaps/saifdora-gdm-logo.png || true
         fi
+        python3 -c '
+          from PIL import Image
+          p = "/usr/share/pixmaps/saifdora-gdm-logo.png"
+          try:
+              im = Image.open(p)
+              bbox = im.getbbox()
+              if bbox:
+                  c = im.crop((bbox[0], 0, bbox[2], im.height))
+                  res = Image.new("RGBA", (c.width + 32, im.height), (0, 0, 0, 0))
+                  res.paste(c, (16, 0))
+                  res.save(p)
+          except Exception as e:
+              print("GDM centering error:", e)
+        ' || true
         cp -f --remove-destination /usr/share/pixmaps/saifdora-gdm-logo.png /usr/share/pixmaps/fedora-gdm-logo.png || true
         cp -f --remove-destination /usr/share/pixmaps/saifdora-gdm-logo.png /usr/share/pixmaps/fedora-logo-small.png || true
 
