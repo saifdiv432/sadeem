@@ -1,0 +1,446 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+ألوان سيفدورا (Saifdora Colors)
+تطبيق أصيل بهوية جنوم (GTK4 / Libadwaita) لتخصيص اللون الأساسي للواجهة والتطبيقات وقائمة جنوم
+"""
+
+import sys
+import os
+import colorsys
+import subprocess
+import time
+import gi
+
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
+from gi.repository import Gtk, Adw, Gdk, Gio, GLib
+
+PRESET_COLORS = [
+    ("الخمري الافتراضي", "#7a1c33"),
+    ("التركوازي الداكن", "#135d66"),
+    ("الأزرق الملكي", "#1c71d8"),
+    ("الزمردي", "#2ec27e"),
+    ("البنفسجي", "#813d9c"),
+    ("العنّابي الداكن", "#5c1527"),
+    ("البرتقالي الدافئ", "#e66100"),
+    ("الرمادي الفولاذي", "#5e5c64"),
+]
+
+def hex_to_rgb(hex_str):
+    hex_str = hex_str.lstrip("#")
+    if len(hex_str) == 3:
+        hex_str = "".join(c * 2 for c in hex_str)
+    r = int(hex_str[0:2], 16) / 255.0
+    g = int(hex_str[2:4], 16) / 255.0
+    b = int(hex_str[4:6], 16) / 255.0
+    return r, g, b
+
+def rgb_to_hex(r, g, b):
+    r_int = max(0, min(255, round(r * 255)))
+    g_int = max(0, min(255, round(g * 255)))
+    b_int = max(0, min(255, round(b * 255)))
+    return f"#{r_int:02x}{g_int:02x}{b_int:02x}"
+
+def compute_color_palette(hex_str):
+    r, g, b = hex_to_rgb(hex_str)
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+
+    # 1. تباين لون النص: أبيض للداكن ورمادي داكن للفاتح
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    accent_fg = "#ffffff" if luminance < 0.55 else "#1e1e1e"
+
+    # 2. درجة التمييز المقروءة في الوضع الداكن (--accent-color بإضاءة لا تقل عن 0.65)
+    accent_l = max(l, 0.65)
+    r_acc, g_acc, b_acc = colorsys.hls_to_rgb(h, accent_l, s)
+    accent_color = rgb_to_hex(r_acc, g_acc, b_acc)
+
+    # 3. درجتا التمرير (+0.06) وزر السهم (-0.06) لـ GNOME Shell
+    hov_l = min(1.0, max(0.0, l + 0.06))
+    r_hov, g_hov, b_hov = colorsys.hls_to_rgb(h, hov_l, s)
+    hover_color = rgb_to_hex(r_hov, g_hov, b_hov)
+
+    arr_l = min(1.0, max(0.0, l - 0.06))
+    r_arr, g_arr, b_arr = colorsys.hls_to_rgb(h, arr_l, s)
+    arrow_color = rgb_to_hex(r_arr, g_arr, b_arr)
+
+    return {
+        "hex": hex_str.lower(),
+        "accent_fg": accent_fg,
+        "accent_color": accent_color,
+        "hover": hover_color,
+        "arrow": arrow_color,
+    }
+
+class SaifdoraColorsWindow(Adw.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(application=app)
+        self.set_title("ألوان سيفدورا")
+        self.set_default_size(460, 620)
+        self._updating = False
+
+        self.toast_overlay = Adw.ToastOverlay()
+        self.toolbar_view = Adw.ToolbarView()
+        self.toast_overlay.set_child(self.toolbar_view)
+        self.set_content(self.toast_overlay)
+
+        # شريط العنوان العلوي
+        header_bar = Adw.HeaderBar()
+        header_bar.set_title_widget(Adw.WindowTitle(title="ألوان سيفدورا"))
+        self.toolbar_view.add_top_bar(header_bar)
+
+        # زر استعادة الخمري
+        restore_btn = Gtk.Button(icon_name="edit-undo-symbolic")
+        restore_btn.set_tooltip_text("استعادة الخمري الافتراضي (#7a1c33)")
+        restore_btn.add_css_class("flat")
+        restore_btn.connect("clicked", lambda b: self.set_color("#7a1c33"))
+        header_bar.pack_start(restore_btn)
+
+        # محتوى التفضيلات
+        page = Adw.PreferencesPage()
+        self.toolbar_view.set_content(page)
+
+        # 1. بطاقة المعاينة الفورية
+        preview_group = Adw.PreferencesGroup(
+            title="معاينة فورية",
+            description="عناصر واجهة تعكس اللون المختار مباشرة داخل النافذة"
+        )
+        page.add(preview_group)
+
+        preview_row = Adw.ActionRow(title="مظهر عناصر النظام")
+        preview_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14)
+        preview_box.set_valign(Gtk.Align.CENTER)
+
+        self.sample_btn = Gtk.Button(label="زر تجريبي")
+        self.sample_btn.add_css_class("suggested-action")
+
+        self.sample_switch = Gtk.Switch(active=True)
+        self.sample_switch.set_valign(Gtk.Align.CENTER)
+
+        self.sample_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
+        self.sample_scale.set_value(65)
+        self.sample_scale.set_size_request(110, -1)
+        self.sample_scale.set_valign(Gtk.Align.CENTER)
+
+        preview_box.append(self.sample_btn)
+        preview_box.append(self.sample_switch)
+        preview_box.append(self.sample_scale)
+        preview_row.add_suffix(preview_box)
+        preview_group.add(preview_row)
+
+        # 2. لوحة الألوان الجاهزة
+        preset_group = Adw.PreferencesGroup(
+            title="الألوان الجاهزة",
+            description="لوحة ألوان متناسقة مع واجهة جنوم وسيفدورا"
+        )
+        page.add(preset_group)
+
+        preset_row = Adw.ActionRow()
+        palette_box = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=10,
+            halign=Gtk.Align.CENTER,
+            margin_top=8,
+            margin_bottom=8
+        )
+        self.preset_buttons = []
+        for i, (name, hex_code) in enumerate(PRESET_COLORS):
+            btn = Gtk.Button()
+            btn.set_tooltip_text(f"{name} ({hex_code})")
+            btn.add_css_class("color-circle")
+            btn.add_css_class(f"preset-color-{i}")
+
+            icon = Gtk.Image.new_from_icon_name("object-select-symbolic")
+            icon.set_visible(False)
+            btn.set_child(icon)
+
+            btn.connect("clicked", lambda b, h=hex_code: self.set_color(h))
+            palette_box.append(btn)
+            self.preset_buttons.append((btn, hex_code, icon))
+
+        preset_row.set_child(palette_box)
+        preset_group.add(preset_row)
+
+        # 3. صف اختيار لون مخصص
+        custom_group = Adw.PreferencesGroup(title="لون مخصص")
+        page.add(custom_group)
+
+        custom_row = Adw.ActionRow(
+            title="اختيار لون مخصص من دائرة الألوان",
+            subtitle="اختر أي درجة لونية من دائرة الألوان الكاملة"
+        )
+        self.color_dialog = Gtk.ColorDialog(with_alpha=False)
+        self.color_dialog_btn = Gtk.ColorDialogButton(dialog=self.color_dialog)
+        self.color_dialog_btn.set_valign(Gtk.Align.CENTER)
+        self.color_dialog_btn.connect("notify::rgba", self.on_color_dialog_rgba_changed)
+        custom_row.add_suffix(self.color_dialog_btn)
+        custom_group.add(custom_row)
+
+        # 4. خيار دمج الإعدادات والمراقبة
+        intercept_group = Adw.PreferencesGroup(title="خيارات الدمج مع النظام")
+        page.add(intercept_group)
+
+        self.intercept_row = Adw.SwitchRow(
+            title="فتح التطبيق تلقائياً عند تغيير اللون من الإعدادات",
+            subtitle="إظهار ألوان سيفدورا عند النقر على أي لون في إعدادات النظام"
+        )
+        self.flag_file = os.path.expanduser("~/.config/saifdora-colors/no-intercept")
+        self.intercept_row.set_active(not os.path.exists(self.flag_file))
+        self.intercept_row.connect("notify::active", self.on_intercept_toggled)
+        intercept_group.add(self.intercept_row)
+
+        # تهيئة مزودي التنسيق CSS
+        self.setup_css_styling()
+
+        # قراءة اللون الحالي وتطبيقه
+        initial_color = self.detect_current_color()
+        self.set_color(initial_color, is_init=True)
+
+    def setup_css_styling(self):
+        palette_css = """
+        .color-circle {
+            min-width: 36px;
+            min-height: 36px;
+            border-radius: 9999px;
+            padding: 0;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: transform 120ms ease;
+        }
+        .color-circle:hover {
+            transform: scale(1.1);
+        }
+        .color-circle.selected {
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        """
+        for i, (_, hex_code) in enumerate(PRESET_COLORS):
+            palette_css += f"""
+            .preset-color-{i} {{
+                background-color: {hex_code};
+                background-image: none;
+            }}
+            .preset-color-{i}:hover {{
+                background-color: {hex_code};
+            }}
+            """
+        prov = Gtk.CssProvider()
+        prov.load_from_string(palette_css)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            prov,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+        self.live_css_provider = Gtk.CssProvider()
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            self.live_css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 200
+        )
+
+    def detect_current_color(self):
+        gtk4_file = os.path.expanduser("~/.config/gtk-4.0/gtk.css")
+        if os.path.exists(gtk4_file):
+            try:
+                with open(gtk4_file, "r") as f:
+                    for line in f:
+                        if "--accent-bg-color:" in line:
+                            val = line.split("--accent-bg-color:")[1].split("!")[0].strip().rstrip(";")
+                            if val.startswith("#") and len(val) in (4, 7):
+                                return val
+                        elif "accent_bg_color" in line:
+                            val = line.split("accent_bg_color")[1].strip().rstrip(";").strip()
+                            if val.startswith("#") and len(val) in (4, 7):
+                                return val
+            except Exception:
+                pass
+        return "#7a1c33"
+
+    def on_color_dialog_rgba_changed(self, btn, pspec):
+        if self._updating:
+            return
+        rgba = btn.get_rgba()
+        hex_code = rgb_to_hex(rgba.red, rgba.green, rgba.blue)
+        self.set_color(hex_code)
+
+    def on_intercept_toggled(self, row, pspec):
+        active = row.get_active()
+        try:
+            if active:
+                if os.path.exists(self.flag_file):
+                    os.remove(self.flag_file)
+            else:
+                os.makedirs(os.path.dirname(self.flag_file), exist_ok=True)
+                with open(self.flag_file, "w") as f:
+                    f.write("")
+        except Exception as e:
+            print(f"Error toggling intercept flag: {e}", file=sys.stderr)
+
+    def set_color(self, hex_code, is_init=False):
+        pal = compute_color_palette(hex_code)
+        hex_norm = pal["hex"]
+
+        self._updating = True
+        rgba = Gdk.RGBA()
+        rgba.parse(hex_norm)
+        self.color_dialog_btn.set_rgba(rgba)
+        self._updating = False
+
+        # تحديث دوائر الألوان ومؤشر الاختيار
+        for btn, h, icon in self.preset_buttons:
+            if h.lower() == hex_norm.lower():
+                btn.add_css_class("selected")
+                icon.set_visible(True)
+                # مطابقة لون أيقونة الصح مع النص المتباين
+                icon_css = f".preset-selected-icon {{ color: {pal['accent_fg']}; }}"
+                p = Gtk.CssProvider()
+                p.load_from_string(icon_css)
+                icon.add_css_class("preset-selected-icon")
+            else:
+                btn.remove_css_class("selected")
+                icon.set_visible(False)
+
+        # تحديث مظهر النافذة الحية وعناصر المعاينة
+        live_css = f"""
+        :root:root {{
+          --accent-bg-color: {hex_norm} !important;
+          --accent-fg-color: {pal['accent_fg']} !important;
+          --accent-color: {pal['accent_color']} !important;
+        }}
+        switch:checked,
+        checkbutton:checked check,
+        radiobutton:checked radio,
+        scale highlight,
+        progressbar progress,
+        button.suggested-action {{
+          background-color: {hex_norm} !important;
+          color: {pal['accent_fg']} !important;
+        }}
+        """
+        self.live_css_provider.load_from_string(live_css)
+
+        if not is_init:
+            self.write_theme_files(pal)
+            self.toast_overlay.add_toast(Adw.Toast.new("تم تطبيق اللون على الواجهة والتطبيقات"))
+
+    def write_theme_files(self, pal):
+        hex_val = pal["hex"]
+        fg_val = pal["accent_fg"]
+        acc_val = pal["accent_color"]
+        hov_val = pal["hover"]
+        arr_val = pal["arrow"]
+
+        # 1. ~/.config/gtk-4.0/gtk.css
+        gtk4_dir = os.path.expanduser("~/.config/gtk-4.0")
+        os.makedirs(gtk4_dir, exist_ok=True)
+        gtk4_content = f"""@define-color accent_bg_color {hex_val};
+@define-color accent_fg_color {fg_val};
+@define-color accent_color {acc_val};
+
+:root:root {{
+  --accent-bg-color: {hex_val} !important;
+  --accent-fg-color: {fg_val} !important;
+  --accent-color: {acc_val} !important;
+}}
+
+switch:checked,
+checkbutton:checked check,
+radiobutton:checked radio,
+scale highlight,
+progressbar progress,
+button.suggested-action {{
+  background-color: {hex_val} !important;
+  color: {fg_val} !important;
+}}
+"""
+        with open(os.path.join(gtk4_dir, "gtk.css"), "w") as f:
+            f.write(gtk4_content)
+
+        # 2. ~/.config/gtk-3.0/gtk.css
+        gtk3_dir = os.path.expanduser("~/.config/gtk-3.0")
+        os.makedirs(gtk3_dir, exist_ok=True)
+        gtk3_content = f"""@define-color accent_bg_color {hex_val};
+@define-color accent_fg_color {fg_val};
+@define-color accent_color {acc_val};
+"""
+        with open(os.path.join(gtk3_dir, "gtk.css"), "w") as f:
+            f.write(gtk3_content)
+
+        # 3. ~/.local/share/themes/Saifdora-Custom/gnome-shell/gnome-shell.css
+        shell_theme_dir = os.path.expanduser("~/.local/share/themes/Saifdora-Custom/gnome-shell")
+        os.makedirs(shell_theme_dir, exist_ok=True)
+        shell_css = f"""@import url("resource:///org/gnome/shell/theme/gnome-shell.css");
+
+stage {{
+  -st-accent-color: {hex_val};
+  -st-accent-fg-color: {fg_val};
+}}
+
+.quick-toggle:checked,
+.quick-toggle-menu-button:checked {{
+  background-color: {hex_val} !important;
+  color: {fg_val} !important;
+}}
+
+.quick-toggle:checked:hover,
+.quick-toggle-menu-button:checked:hover {{
+  background-color: {hov_val} !important;
+}}
+
+.quick-toggle-menu-button:checked {{
+  background-color: {arr_val} !important;
+  border-left-color: rgba(255, 255, 255, 0.18) !important;
+}}
+
+.quick-toggle-menu-button:checked:hover {{
+  background-color: {hov_val} !important;
+}}
+
+.slider {{
+  -barlevel-active-background-color: {hex_val} !important;
+}}
+
+.toggle-switch:checked {{
+  background-color: {hex_val} !important;
+  color: {fg_val} !important;
+}}
+
+.check-box:checked StBin {{
+  background-color: {hex_val} !important;
+  color: {fg_val} !important;
+}}
+
+.calendar-today {{
+  background-color: {hex_val} !important;
+  color: {fg_val} !important;
+}}
+"""
+        with open(os.path.join(shell_theme_dir, "gnome-shell.css"), "w") as f:
+            f.write(shell_css)
+
+        # 4. تفعيل السمة فورياً في GNOME Shell
+        if hex_val.lower() == "#7a1c33":
+            subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Saifdora-Burgundy"], check=False)
+        else:
+            subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Default"], check=False)
+            time.sleep(0.05)
+            subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Saifdora-Custom"], check=False)
+
+class SaifdoraColorsApp(Adw.Application):
+    def __init__(self):
+        super().__init__(
+            application_id="org.saifdora.Colors",
+            flags=Gio.ApplicationFlags.DEFAULT_FLAGS
+        )
+        self.window = None
+
+    def do_activate(self):
+        if not self.window:
+            self.window = SaifdoraColorsWindow(self)
+        self.window.present()
+
+if __name__ == "__main__":
+    app = SaifdoraColorsApp()
+    sys.exit(app.run(sys.argv))

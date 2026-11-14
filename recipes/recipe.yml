@@ -202,6 +202,7 @@ modules:
         fi
         ln -sf ../usr/lib/os-release /etc/os-release
         grep -q "SAIFDORA_FASTFETCH" /etc/bashrc || printf '\nif [ -x /usr/bin/fastfetch ] && [[ $- == *i* ]] && [ -z "$SAIFDORA_FASTFETCH" ]; then export SAIFDORA_FASTFETCH=1; fastfetch; fi\n' >> /etc/bashrc
+        chmod +x /usr/bin/saifdora-colors /usr/bin/saifdora-accent-watcher || true
 
   # Enable flatpak system services and user systemd units
   - type: systemd
@@ -213,6 +214,7 @@ modules:
       enabled:
         - saifdora-flatpak-dbus-reload.path
         - saifdora-apply-theme.service
+        - saifdora-accent-watcher.service
 
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs
