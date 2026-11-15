@@ -23,6 +23,7 @@ from gi.repository import Gtk, Adw, GLib, Gio, Gdk, Pango, GObject
 
 TRANSLATIONS = {
     "en": {
+        "install_and_restart": "Install & Restart",
         "colors_banner_title": "Appearance & Accent Colors",
         "colors_banner_desc": "Personalize desktop accents, visual highlights, and system appearance.",
         "colors_preview_title": "Live Accent Preview",
@@ -52,8 +53,8 @@ TRANSLATIONS = {
         "status_sys": "Updating core system (rpm-ostree)...",
         "status_flatpak": "Updating Store applications (Flatpak)...",
         "status_box": "Updating Sadeem Box container...",
-        "status_done": "All updates completed successfully!",
-        "status_reboot": "System update is ready. Please restart to apply changes.",
+        "status_done": "System and all applications are up to date.",
+        "status_reboot": "Update ready to apply. Restart your device to complete installation.",
         "status_error": "Update process encountered warnings or errors.",
         "colors_presets_title": "Preset Colors",
         "colors_presets_desc": "Choose a color to apply immediately to the desktop and apps",
@@ -113,6 +114,7 @@ TRANSLATIONS = {
         "box_filter_all": "All Files (*)"
     },
     "ar": {
+        "install_and_restart": "تثبيت وإعادة التشغيل",
         "colors_banner_title": "المظهر والألوان",
         "colors_banner_desc": "خصص لون تمييز سطح المكتب ومظهر النظام وعناصر الواجهة التفاعلية.",
         "colors_preview_title": "معاينة فورية للون التمييز",
@@ -142,8 +144,8 @@ TRANSLATIONS = {
         "status_sys": "جاري فحص وتحديث النظام الأساسي...",
         "status_flatpak": "جاري تحديث تطبيقات المتجر (Flatpak)...",
         "status_box": "جاري تحديث حاوية سديم (Sadeem Box)...",
-        "status_done": "اكتملت جميع التحديثات بنجاح!",
-        "status_reboot": "تم تجهيز تحديث النظام الأساسي. يرجى إعادة التشغيل لتطبيقه.",
+        "status_done": "النظام وجميع التطبيقات محدّثة بالكامل.",
+        "status_reboot": "التحديث جاهز للتطبيق. أعد تشغيل الجهاز لإكمال التثبيت.",
         "status_error": "انتهت العملية مع بعض التنبيهات أو الأخطاء.",
         "colors_presets_title": "الألوان الجاهزة",
         "colors_presets_desc": "اختر لوناً لتطبيقه فوراً على الواجهة والتطبيقات",
@@ -203,6 +205,7 @@ TRANSLATIONS = {
         "box_filter_all": "كافة الملفات (*)"
     },
     "fr": {
+        "install_and_restart": "Installer et redémarrer",
         "colors_banner_title": "Apparence et couleurs d'accentuation",
         "colors_banner_desc": "Personnalisez les accents du bureau et l'apparence du système.",
         "colors_preview_title": "Aperçu de la couleur d'accentuation",
@@ -232,8 +235,8 @@ TRANSLATIONS = {
         "status_sys": "Mise à jour du système de base (rpm-ostree)...",
         "status_flatpak": "Mise à jour des applications Flatpak...",
         "status_box": "Mise à jour du conteneur Sadeem Box...",
-        "status_done": "Toutes les mises à jour sont terminées avec succès !",
-        "status_reboot": "Mise à jour prête. Veuillez redémarrer pour appliquer les changements.",
+        "status_done": "Le système et toutes les applications sont entièrement à jour.",
+        "status_reboot": "Mise à jour prête à être appliquée. Redémarrez votre appareil pour terminer l'installation.",
         "status_error": "Le processus s'est terminé avec des erreurs.",
         "colors_presets_title": "Couleurs prédéfinies",
         "colors_presets_desc": "Choisissez une couleur à appliquer immédiatement",
@@ -293,6 +296,7 @@ TRANSLATIONS = {
         "box_filter_all": "Tous les fichiers (*)"
     },
     "es": {
+        "install_and_restart": "Instalar y reiniciar",
         "colors_banner_title": "Apariencia y colores de énfasis",
         "colors_banner_desc": "Personalice los colores de énfasis del escritorio y la apariencia del sistema.",
         "colors_preview_title": "Vista previa del color de énfasis",
@@ -322,8 +326,8 @@ TRANSLATIONS = {
         "status_sys": "Actualizando sistema base (rpm-ostree)...",
         "status_flatpak": "Actualizando aplicaciones Flatpak...",
         "status_box": "Actualizando contenedor Sadeem Box...",
-        "status_done": "¡Todas las actualizaciones se completaron con éxito!",
-        "status_reboot": "Actualización lista. Reinicie para aplicar los cambios.",
+        "status_done": "El sistema y todas las aplicaciones están completamente actualizados.",
+        "status_reboot": "Actualización lista para aplicar. Reinicie su dispositivo para completar la instalación.",
         "status_error": "El proceso finalizó con advertencias o errores.",
         "colors_presets_title": "Colores predefinidos",
         "colors_presets_desc": "Elige un color para aplicarlo de inmediato",
@@ -383,6 +387,7 @@ TRANSLATIONS = {
         "box_filter_all": "Todos los archivos (*)"
     },
     "de": {
+        "install_and_restart": "Installieren und neu starten",
         "colors_banner_title": "Erscheinungsbild & Akzentfarben",
         "colors_banner_desc": "Passen Sie Desktop-Akzente und das Systemerscheinungsbild an.",
         "colors_preview_title": "Live-Vorschau der Akzentfarbe",
@@ -412,8 +417,8 @@ TRANSLATIONS = {
         "status_sys": "Basissystem wird aktualisiert (rpm-ostree)...",
         "status_flatpak": "Flatpak-Anwendungen werden aktualisiert...",
         "status_box": "Sadeem Box Container wird aktualisiert...",
-        "status_done": "Alle Aktualisierungen erfolgreich abgeschlossen!",
-        "status_reboot": "Aktualisierung bereit. Bitte neu starten, um Änderungen anzuwenden.",
+        "status_done": "Das System und alle Anwendungen sind auf dem neuesten Stand.",
+        "status_reboot": "Aktualisierung bereit. Starten Sie Ihr Gerät neu, um die Installation abzuschließen.",
         "status_error": "Der Vorgang endete mit Warnungen oder Fehlern.",
         "colors_presets_title": "Voreingestellte Farben",
         "colors_presets_desc": "Wählen Sie eine Farbe, um sie sofort anzuwenden",
@@ -473,6 +478,7 @@ TRANSLATIONS = {
         "box_filter_all": "Alle Dateien (*)"
     },
     "tr": {
+        "install_and_restart": "Yükle ve Yeniden Başlat",
         "colors_banner_title": "Görünüm ve Vurgu Renkleri",
         "colors_banner_desc": "Masaüstü vurgu renklerini ve sistem görünümünü kişiselleştirin.",
         "colors_preview_title": "Canlı Vurgu Rengi Önizlemesi",
@@ -502,8 +508,8 @@ TRANSLATIONS = {
         "status_sys": "Çekirdek sistem güncelleniyor (rpm-ostree)...",
         "status_flatpak": "Flatpak uygulamaları güncelleniyor...",
         "status_box": "Sadeem Box kapsayıcısı güncelleniyor...",
-        "status_done": "Tüm güncellemeler başarıyla tamamlandı!",
-        "status_reboot": "Güncelleme hazır. Değişiklikleri uygulamak için yeniden başlatın.",
+        "status_done": "Sistem ve tüm uygulamalar tamamen güncel.",
+        "status_reboot": "Güncelleme uygulanmaya hazır. Yüklemeyi tamamlamak için cihazınızı yeniden başlatın.",
         "status_error": "İşlem bazı hatalarla tamamlandı.",
         "colors_presets_title": "Hazır Renkler",
         "colors_presets_desc": "Masaüstüne ve uygulamalara hemen uygulamak için bir renk seçin",
@@ -563,6 +569,7 @@ TRANSLATIONS = {
         "box_filter_all": "Tüm Dosyalar (*)"
     },
     "ru": {
+        "install_and_restart": "Установить и перезагрузить",
         "colors_banner_title": "Внешний вид и акцентные цвета",
         "colors_banner_desc": "Настройте акцентные цвета рабочего стола и оформление системы.",
         "colors_preview_title": "Живой просмотр акцентного цвета",
@@ -592,8 +599,8 @@ TRANSLATIONS = {
         "status_sys": "Обновление базовой системы (rpm-ostree)...",
         "status_flatpak": "Обновление приложений Flatpak...",
         "status_box": "Обновление контейнера Sadeem Box...",
-        "status_done": "Все обновления успешно завершены!",
-        "status_reboot": "Обновление готово. Перезагрузите компьютер.",
+        "status_done": "Система и все приложения полностью обновлены.",
+        "status_reboot": "Обновление готово к применению. Перезагрузите устройство для завершения установки.",
         "status_error": "Процесс завершился с предупреждениями или ошибками.",
         "colors_presets_title": "Готовые цвета",
         "colors_presets_desc": "Выберите цвет для немедленного применения",
@@ -653,6 +660,7 @@ TRANSLATIONS = {
         "box_filter_all": "Все файлы (*)"
     },
     "pt": {
+        "install_and_restart": "Instalar e reiniciar",
         "colors_banner_title": "Aparência e Cores de Destaque",
         "colors_banner_desc": "Personalize as cores de destaque e a aparência geral do sistema.",
         "colors_preview_title": "Pré-visualização da Cor de Destaque",
@@ -682,8 +690,8 @@ TRANSLATIONS = {
         "status_sys": "Atualizando sistema básico (rpm-ostree)...",
         "status_flatpak": "Atualizando aplicativos Flatpak...",
         "status_box": "Atualizando contêiner Sadeem Box...",
-        "status_done": "Todas as atualizações foram concluídas com sucesso!",
-        "status_reboot": "Atualização pronta. Reinicie para aplicar as alterações.",
+        "status_done": "O sistema e todas as aplicações estão totalmente atualizados.",
+        "status_reboot": "Atualização pronta para aplicar. Reinicie o seu dispositivo para concluir a instalação.",
         "status_error": "O processo foi concluído com avisos ou erros.",
         "colors_presets_title": "Cores predefinidas",
         "colors_presets_desc": "Escolha uma cor para aplicar imediatamente",
@@ -743,6 +751,7 @@ TRANSLATIONS = {
         "box_filter_all": "Todos os Ficheiros (*)"
     },
     "it": {
+        "install_and_restart": "Installa e riavvia",
         "colors_banner_title": "Aspetto e colori di risalto",
         "colors_banner_desc": "Personalizza i colori di risalto del desktop e l'aspetto del sistema.",
         "colors_preview_title": "Anteprima colore di risalto",
@@ -772,8 +781,8 @@ TRANSLATIONS = {
         "status_sys": "Aggiornamento del sistema di base (rpm-ostree)...",
         "status_flatpak": "Aggiornamento delle applicazioni Flatpak...",
         "status_box": "Aggiornamento del container Sadeem Box...",
-        "status_done": "Tutti gli aggiornamenti completati con successo!",
-        "status_reboot": "Aggiornamento pronto. Riavvia per applicare le modifiche.",
+        "status_done": "Il sistema e tutte le applicazioni sono completamente aggiornati.",
+        "status_reboot": "Aggiornamento pronto per essere applicato. Riavvia il dispositivo per completare l'installazione.",
         "status_error": "Il processo si è concluso con avvisi o errori.",
         "colors_presets_title": "Colori predefiniti",
         "colors_presets_desc": "Scegli un colore da applicare subito",
@@ -833,6 +842,7 @@ TRANSLATIONS = {
         "box_filter_all": "Tutti i file (*)"
     },
     "zh": {
+        "install_and_restart": "安装并重启",
         "colors_banner_title": "外观与强调色",
         "colors_banner_desc": "个性化桌面强调色与系统视觉外观。",
         "colors_preview_title": "强调色实时预览",
@@ -862,8 +872,8 @@ TRANSLATIONS = {
         "status_sys": "正在更新核心系统 (rpm-ostree)...",
         "status_flatpak": "正在更新应用商店软件 (Flatpak)...",
         "status_box": "正在更新 Sadeem Box 容器...",
-        "status_done": "所有更新已成功完成！",
-        "status_reboot": "系统更新已准备就绪。请重启以应用更改。",
+        "status_done": "系统和所有应用程序已全部是最新版本。",
+        "status_reboot": "更新已准备好应用。请重启设备以完成安装。",
         "status_error": "更新过程中遇到警告或错误。",
         "colors_presets_title": "预设颜色",
         "colors_presets_desc": "选择一种颜色并立即应用到桌面和应用程序",
@@ -1067,6 +1077,42 @@ def build_page_header(icon_names, title, subtitle):
 
     return box
 
+
+
+def has_pending_reboot():
+    """Check rpm-ostree status --json for staged deployments awaiting reboot."""
+    try:
+        res = subprocess.run(["rpm-ostree", "status", "--json"], capture_output=True, text=True, check=False)
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            deployments = data.get("deployments", [])
+            if deployments and deployments[0].get("booted") is False:
+                return True
+    except Exception:
+        pass
+    return False
+
+
+def trigger_system_reboot():
+    """Trigger a safe, graceful GNOME session reboot with systemctl fallback."""
+    try:
+        res = subprocess.run([
+            "gdbus", "call", "--session",
+            "--dest", "org.gnome.SessionManager",
+            "--object-path", "/org/gnome/SessionManager",
+            "--method", "org.gnome.SessionManager.Reboot"
+        ], capture_output=True, text=True, check=False)
+        if res.returncode == 0:
+            return True
+    except Exception:
+        pass
+
+    try:
+        subprocess.Popen(["systemctl", "reboot"])
+        return True
+    except Exception as e:
+        print(f"Error triggering system reboot: {e}", file=sys.stderr)
+        return False
 
 def launch_boxbuddy():
     for cmd in [
@@ -1307,23 +1353,44 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
     def check_initial_reboot_status(self):
         def _check():
-            reboot_needed = False
-            try:
-                res = subprocess.run(["rpm-ostree", "status"], capture_output=True, text=True, check=False)
-                if res.returncode == 0:
-                    out = res.stdout.lower()
-                    if "staged" in out or "changes queued" in out:
-                        reboot_needed = True
-            except Exception:
-                pass
-            if reboot_needed:
-                def _show():
-                    self.reboot_required = True
-                    self.btn_reboot_update.set_visible(True)
-                    self.upd_status_label.set_text(t("status_reboot"))
-                    return False
-                GLib.idle_add(_show)
+            pending = has_pending_reboot()
+            self.update_action_button_state(pending)
         threading.Thread(target=_check, daemon=True).start()
+
+    def update_action_button_state(self, pending=None):
+        if pending is None:
+            pending = has_pending_reboot()
+
+        def _apply():
+            self.reboot_ready = pending
+            if pending:
+                self.btn_start_update.set_label(t("install_and_restart"))
+                self.btn_start_update.set_sensitive(True)
+                if not self.btn_start_update.has_css_class("suggested-action"):
+                    self.btn_start_update.add_css_class("suggested-action")
+                if not self.btn_start_update.has_css_class("pill"):
+                    self.btn_start_update.add_css_class("pill")
+                self.upd_status_label.set_text(t("status_reboot"))
+                if hasattr(self, "btn_reboot_update"):
+                    self.btn_reboot_update.set_visible(False)
+            else:
+                self.btn_start_update.set_label(t("btn_start_update"))
+                self.btn_start_update.set_sensitive(True)
+                if not self.btn_start_update.has_css_class("suggested-action"):
+                    self.btn_start_update.add_css_class("suggested-action")
+                if not self.btn_start_update.has_css_class("pill"):
+                    self.btn_start_update.add_css_class("pill")
+                if hasattr(self, "btn_reboot_update"):
+                    self.btn_reboot_update.set_visible(False)
+            return False
+
+        GLib.idle_add(_apply)
+
+    def on_action_button_clicked(self, btn):
+        if getattr(self, "reboot_ready", False):
+            trigger_system_reboot()
+        else:
+            self.on_start_updates_clicked(btn)
 
     def build_page_header(self, icon_names, title, subtitle):
         return build_page_header(icon_names, title, subtitle)
@@ -1392,6 +1459,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
     def set_active_tab(self, tab_name):
         if tab_name in ("updates", "colors", "drivers", "containers"):
             self.view_stack.set_visible_child_name(tab_name)
+            if tab_name == "updates":
+                self.check_initial_reboot_status()
 
     # =========================================================================
     # TAB 1: UPDATES
@@ -1461,26 +1530,25 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.upd_progress_box.append(self.upd_progress_bar)
         content.append(self.upd_progress_box)
 
-        # Action Buttons (side by side with suggested-action pill styling)
+        # Action Buttons (Primary button transforms directly into Install & Restart when needed)
         actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         actions_box.set_halign(Gtk.Align.FILL)
-        actions_box.set_homogeneous(True)
 
         self.btn_start_update = Gtk.Button(label=t("btn_start_update"))
         self.btn_start_update.add_css_class("suggested-action")
         self.btn_start_update.add_css_class("pill")
         self.btn_start_update.set_size_request(-1, 46)
         self.btn_start_update.set_hexpand(True)
-        self.btn_start_update.connect("clicked", self.on_start_updates_clicked)
+        self.btn_start_update.connect("clicked", self.on_action_button_clicked)
         actions_box.append(self.btn_start_update)
 
-        self.btn_reboot_update = Gtk.Button(label=t("btn_reboot_now"))
+        self.btn_reboot_update = Gtk.Button(label=t("install_and_restart"))
         self.btn_reboot_update.add_css_class("suggested-action")
         self.btn_reboot_update.add_css_class("pill")
         self.btn_reboot_update.set_size_request(-1, 46)
         self.btn_reboot_update.set_hexpand(True)
         self.btn_reboot_update.set_visible(False)
-        self.btn_reboot_update.connect("clicked", lambda b: subprocess.run(["systemctl", "reboot"]))
+        self.btn_reboot_update.connect("clicked", lambda b: trigger_system_reboot())
         actions_box.append(self.btn_reboot_update)
         content.append(actions_box)
 
@@ -1733,20 +1801,26 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.is_updating = False
         self.stop_upd_pulse()
         self.update_upd_progress(1.0)
-        self.btn_start_update.set_sensitive(True)
-        self.btn_start_update.set_label(t("btn_start_update"))
         self.sys_row.set_sensitive(True)
         self.flatpak_row.set_sensitive(True)
         self.box_row.set_sensitive(True)
         self.check_box_availability()
 
-        if self.reboot_required:
-            self.upd_status_label.set_text(t("status_reboot"))
-            self.btn_reboot_update.set_visible(True)
-        elif success:
-            self.upd_status_label.set_text(t("status_done"))
-        else:
-            self.upd_status_label.set_text(t("status_error"))
+        def _check_finished():
+            pending = has_pending_reboot()
+            def _ui():
+                if pending:
+                    self.update_action_button_state(True)
+                elif success:
+                    self.update_action_button_state(False)
+                    self.upd_status_label.set_text(t("status_done"))
+                else:
+                    self.update_action_button_state(False)
+                    self.upd_status_label.set_text(t("status_error"))
+                return False
+            GLib.idle_add(_ui)
+
+        threading.Thread(target=_check_finished, daemon=True).start()
         return False
     # =========================================================================
     # TAB 2: COLORS & THEME
