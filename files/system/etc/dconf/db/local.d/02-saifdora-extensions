@@ -1,0 +1,16 @@
+[org/gnome/shell/extensions/arcmenu]
+menu-height=700
+menu-layout='elementary'
+menu-position-alignment=58
+menu-width-adjustment=150
+position-in-panel='Center'
+search-entry-border-radius=(true, 25)
+
+[org/gnome/shell/extensions/dash-to-dock]
+background-opacity=0.8
+dash-max-icon-size=48
+dock-position='BOTTOM'
+height-fraction=0.9
+intellihide=false
+intellihide-mode='FOCUS_APPLICATION_WINDOWS'
+show-mounts=false
