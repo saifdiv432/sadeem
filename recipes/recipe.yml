@@ -162,10 +162,14 @@ modules:
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/pixmaps/fedora-logo-sprite.svg || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo.png || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo-small.png || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 280 -h 83 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora_logo_med.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 280 -h 83 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora_whitelogo_med.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/pixmaps/fedora_whitelogo.svg || true
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
 
         # Generate Sadeem sound theme files if needed
