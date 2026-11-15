@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Sadeem 45</name>
+    <name xml:lang="ar">خلفية سديم 45</name>
+    <filename>/usr/share/backgrounds/sadeem/sadeem-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/sadeem/sadeem-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#1a0b12</pcolor>
+    <scolor>#e8ecee</scolor>
+  </wallpaper>
+</wallpapers>

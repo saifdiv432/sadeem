@@ -1,11 +1,25 @@
 #!/bin/bash
 set -e
+DESKTOP_FILE="$HOME/.local/share/applications/sadeem-box.desktop"
+
+patch_desktop() {
+    if [ -f "$DESKTOP_FILE" ]; then
+        sed -i 's|^Icon=.*|Icon=sadeem-logo|' "$DESKTOP_FILE"
+        sed -i 's|^Name=.*|Name=Sadeem Box|' "$DESKTOP_FILE"
+        grep -q '^Name\[ar\]=' "$DESKTOP_FILE" || sed -i '/^Name=/a Name[ar]=حاوية سديم' "$DESKTOP_FILE"
+        update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1 || true
+    fi
+}
+
 if distrobox list 2>/dev/null | grep -q "sadeem-box"; then
+    patch_desktop
     exit 0
 fi
+
 for i in $(seq 1 30); do
     if curl -fsI --max-time 5 https://registry.fedoraproject.org >/dev/null 2>&1; then
         distrobox create --name sadeem-box --image registry.fedoraproject.org/fedora-toolbox:latest --yes >/dev/null 2>&1 || true
+        patch_desktop
         exit 0
     fi
     sleep 10

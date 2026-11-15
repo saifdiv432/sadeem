@@ -78,6 +78,7 @@ modules:
       - gnome-menus
       - adw-gtk3-theme
       - gnome-shell-extension-user-theme
+      - gnome-shell-extension-light-style
       - fastfetch
       - librsvg2-tools
 
@@ -205,7 +206,8 @@ modules:
         # Safely remove gnome-tweaks if present in base image
         rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
 
-        gtk-update-icon-cache -f /usr/share/icons/hicolor || true
+        gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+        dconf update || true
         sed -i 's/^NAME=.*/NAME="Sadeem"/' /usr/lib/os-release
         sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="Sadeem 45"/' /usr/lib/os-release
         sed -i 's/^DEFAULT_HOSTNAME=.*/DEFAULT_HOSTNAME="sadeem"/' /usr/lib/os-release
