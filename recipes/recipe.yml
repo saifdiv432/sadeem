@@ -134,7 +134,6 @@ modules:
       - "dconf update"
       - "update-desktop-database /usr/share/applications || true"
       - |
-        # تحديث هوية النظام ليشير LOGO إلى sadeem-logo مباشرة
         for OS_REL in /usr/lib/os-release /etc/os-release; do
           if [ -f "$OS_REL" ] && [ ! -L "$OS_REL" ]; then
             sed -i 's|^NAME=.*|NAME="Sadeem"|' "$OS_REL"
@@ -146,7 +145,7 @@ modules:
               echo 'LOGO=sadeem-logo' >> "$OS_REL"
             fi
             if grep -q '^ANSI_COLOR=' "$OS_REL"; then
-              sed -i 's|^ANSI_COLOR=.*/ANSI_COLOR="0;38;2;122;28;51"|' "$OS_REL"
+              sed -i 's|^ANSI_COLOR=.*|ANSI_COLOR="0;38;2;122;28;51"|' "$OS_REL"
             else
               echo 'ANSI_COLOR="0;38;2;122;28;51"' >> "$OS_REL"
             fi
@@ -154,7 +153,6 @@ modules:
         done
         ln -sf ../usr/lib/os-release /etc/os-release
 
-        # نسخ وتوليد جميع ملفات الشعارات الاحتياطية وتحديث الكاش
         mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
         cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg
         cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg
