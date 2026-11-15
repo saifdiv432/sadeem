@@ -1204,9 +1204,31 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.is_updating = False
         self.reboot_required = False
         self._color_updating = False
+        self._upd_pulse_timer = None
 
         self.setup_ui(initial_tab)
         self.check_box_availability()
+        self.check_initial_reboot_status()
+
+    def check_initial_reboot_status(self):
+        def _check():
+            reboot_needed = False
+            try:
+                res = subprocess.run(["rpm-ostree", "status"], capture_output=True, text=True, check=False)
+                if res.returncode == 0:
+                    out = res.stdout.lower()
+                    if "staged" in out or "changes queued" in out:
+                        reboot_needed = True
+            except Exception:
+                pass
+            if reboot_needed:
+                def _show():
+                    self.reboot_required = True
+                    self.btn_reboot_update.set_visible(True)
+                    self.upd_status_label.set_text(t("status_reboot"))
+                    return False
+                GLib.idle_add(_show)
+        threading.Thread(target=_check, daemon=True).start()
 
     def setup_ui(self, initial_tab):
         self.toast_overlay = Adw.ToastOverlay()
@@ -1278,13 +1300,14 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
     def build_updates_page(self):
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
+        scrolled.set_propagate_natural_height(False)
 
         clamp = Adw.Clamp()
         clamp.set_maximum_size(640)
         clamp.set_tightening_threshold(480)
         scrolled.set_child(clamp)
 
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         content.set_margin_top(20)
         content.set_margin_bottom(24)
         content.set_margin_start(20)
@@ -1317,18 +1340,21 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         content.append(pref_group)
 
         self.sys_row = Adw.SwitchRow()
+        self.sys_row.set_use_markup(False)
         self.sys_row.set_title(t("upd_sys_title"))
         self.sys_row.set_subtitle(t("upd_sys_desc"))
         self.sys_row.set_active(True)
         pref_group.add(self.sys_row)
 
         self.flatpak_row = Adw.SwitchRow()
+        self.flatpak_row.set_use_markup(False)
         self.flatpak_row.set_title(t("upd_flatpak_title"))
         self.flatpak_row.set_subtitle(t("upd_flatpak_desc"))
         self.flatpak_row.set_active(True)
         pref_group.add(self.flatpak_row)
 
         self.box_row = Adw.SwitchRow()
+        self.box_row.set_use_markup(False)
         self.box_row.set_title(t("upd_box_title"))
         self.box_row.set_subtitle(t("upd_box_desc"))
         self.box_row.set_active(True)
@@ -1342,24 +1368,30 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.upd_progress_box.append(self.upd_status_label)
 
         self.upd_progress_bar = Gtk.ProgressBar()
+        self.upd_progress_bar.set_show_text(True)
         self.upd_progress_bar.set_fraction(0.0)
+        self.upd_progress_bar.set_text("0%")
         self.upd_progress_box.append(self.upd_progress_bar)
         content.append(self.upd_progress_box)
 
-        # Action Buttons
-        actions_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        # Action Buttons (side by side with suggested-action pill styling)
+        actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        actions_box.set_halign(Gtk.Align.FILL)
+        actions_box.set_homogeneous(True)
 
         self.btn_start_update = Gtk.Button(label=t("btn_start_update"))
         self.btn_start_update.add_css_class("suggested-action")
         self.btn_start_update.add_css_class("pill")
-        self.btn_start_update.set_size_request(-1, 48)
+        self.btn_start_update.set_size_request(-1, 46)
+        self.btn_start_update.set_hexpand(True)
         self.btn_start_update.connect("clicked", self.on_start_updates_clicked)
         actions_box.append(self.btn_start_update)
 
         self.btn_reboot_update = Gtk.Button(label=t("btn_reboot_now"))
-        self.btn_reboot_update.add_css_class("destructive-action")
+        self.btn_reboot_update.add_css_class("suggested-action")
         self.btn_reboot_update.add_css_class("pill")
-        self.btn_reboot_update.set_size_request(-1, 48)
+        self.btn_reboot_update.set_size_request(-1, 46)
+        self.btn_reboot_update.set_hexpand(True)
         self.btn_reboot_update.set_visible(False)
         self.btn_reboot_update.connect("clicked", lambda b: subprocess.run(["systemctl", "reboot"]))
         actions_box.append(self.btn_reboot_update)
@@ -1370,8 +1402,10 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.upd_expander.set_expanded(False)
 
         scrolled_text = Gtk.ScrolledWindow()
-        scrolled_text.set_min_content_height(160)
-        scrolled_text.set_max_content_height(300)
+        scrolled_text.set_min_content_height(140)
+        scrolled_text.set_max_content_height(260)
+        scrolled_text.set_propagate_natural_height(False)
+        scrolled_text.set_vexpand(False)
         scrolled_text.add_css_class("card")
 
         self.upd_text_view = Gtk.TextView()
@@ -1390,11 +1424,42 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         return scrolled
 
+    def start_upd_pulse(self):
+        def _ui_start():
+            if self._upd_pulse_timer is None:
+                def _pulse():
+                    self.upd_progress_bar.pulse()
+                    return True
+                self._upd_pulse_timer = GLib.timeout_add(120, _pulse)
+            return False
+        GLib.idle_add(_ui_start)
+
+    def stop_upd_pulse(self):
+        def _ui_stop():
+            if self._upd_pulse_timer is not None:
+                GLib.source_remove(self._upd_pulse_timer)
+                self._upd_pulse_timer = None
+            return False
+        GLib.idle_add(_ui_stop)
+
+    def update_upd_progress(self, fraction):
+        self.stop_upd_pulse()
+        def _ui_update():
+            frac = min(1.0, max(0.0, fraction))
+            self.upd_progress_bar.set_fraction(frac)
+            pct_text = f"{int(round(frac * 100))}%"
+            self.upd_progress_bar.set_text(pct_text)
+            return False
+        GLib.idle_add(_ui_update)
+
     def append_upd_log(self, text):
+        clean = re.sub(r'\x1b\[[0-9;?]*[a-zA-Z]', '', text).replace('\r', '').strip()
+        if not clean:
+            return
         def _append():
             buf = self.upd_text_view.get_buffer()
             end_iter = buf.get_end_iter()
-            buf.insert(end_iter, text + chr(10))
+            buf.insert(end_iter, clean + "\n")
             mark = buf.create_mark(None, buf.get_end_iter(), False)
             self.upd_text_view.scroll_to_mark(mark, 0.05, False, 0.0, 1.0)
             return False
@@ -1417,7 +1482,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.sys_row.set_sensitive(False)
         self.flatpak_row.set_sensitive(False)
         self.box_row.set_sensitive(False)
-        self.upd_progress_bar.set_fraction(0.0)
+        self.update_upd_progress(0.0)
 
         buf = self.upd_text_view.get_buffer()
         buf.set_text("")
@@ -1425,20 +1490,85 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         threading.Thread(target=self.run_updates_thread, args=(run_sys, run_flatpak, run_box), daemon=True).start()
 
-    def run_upd_command(self, cmd, desc):
+    def run_upd_command(self, cmd, desc, task_idx, total_tasks):
+        full_cmd = ["stdbuf", "-oL", "-eL"] + cmd if os.path.exists("/usr/bin/stdbuf") else cmd
         self.append_upd_log(f"=== {desc} ===")
         self.append_upd_log(f"$ {' '.join(cmd)}")
+
+        base_start = task_idx / total_tasks
+        task_range = 1.0 / total_tasks
+
+        # Non-numeric initial phase -> pulse animation
+        self.start_upd_pulse()
+
         try:
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            proc = subprocess.Popen(
+                full_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                bufsize=0
+            )
+            buf = bytearray()
             output_lines = []
-            for line in proc.stdout:
-                line_str = line.rstrip()
-                self.append_upd_log(line_str)
-                output_lines.append(line_str)
+
+            def _process_line(raw_line):
+                clean = re.sub(r'\x1b\[[0-9;?]*[a-zA-Z]', '', raw_line).replace('\r', '').strip()
+                if not clean:
+                    return
+                output_lines.append(clean)
+                self.append_upd_log(clean)
+
+                # Intra-task progress extraction
+                sub_pct = None
+                m_layer = re.search(r'\[\s*(\d+)\s*/\s*(\d+)\s*\]', clean)
+                m_pct = re.search(r'(\d{1,3})%', clean)
+                if m_layer:
+                    cur, tot = int(m_layer.group(1)), int(m_layer.group(2))
+                    if tot > 0:
+                        sub_pct = min(1.0, max(0.0, cur / tot))
+                elif m_pct:
+                    val = int(m_pct.group(1))
+                    if 0 <= val <= 100:
+                        sub_pct = val / 100.0
+
+                if sub_pct is not None:
+                    overall = base_start + (sub_pct * task_range)
+                    self.update_upd_progress(overall)
+                else:
+                    clean_lower = clean.lower()
+                    if any(w in clean_lower for w in ["deploying", "staging", "writing", "checking", "resolving", "preparing"]):
+                        self.start_upd_pulse()
+
+            while True:
+                b = proc.stdout.read(1)
+                if not b:
+                    break
+                if b in (b'\n', b'\r'):
+                    if buf:
+                        try:
+                            raw_str = buf.decode('utf-8', errors='replace')
+                        except Exception:
+                            raw_str = ""
+                        buf.clear()
+                        _process_line(raw_str)
+                else:
+                    buf.extend(b)
+
+            if buf:
+                try:
+                    raw_str = buf.decode('utf-8', errors='replace')
+                    _process_line(raw_str)
+                except Exception:
+                    pass
+
             proc.wait()
+            self.stop_upd_pulse()
+            self.update_upd_progress((task_idx + 1) / total_tasks)
             self.append_upd_log("")
-            return proc.returncode, chr(10).join(output_lines)
+            return proc.returncode, "\n".join(output_lines)
+
         except Exception as e:
+            self.stop_upd_pulse()
             err_msg = f"Error executing {cmd[0]}: {str(e)}"
             self.append_upd_log(err_msg)
             return 1, err_msg
@@ -1453,47 +1583,74 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             tasks.append("box")
 
         total = len(tasks)
-        step = 0
         overall_success = True
 
-        for task in tasks:
+        for idx, task in enumerate(tasks):
             if task == "sys":
                 GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_sys")))
-                GLib.idle_add(lambda s=step, tot=total: self.upd_progress_bar.set_fraction(s / tot))
-                code, out = self.run_upd_command(["pkexec", "rpm-ostree", "upgrade"], "rpm-ostree upgrade")
+                code, out = self.run_upd_command(
+                    ["pkexec", "rpm-ostree", "upgrade"],
+                    "rpm-ostree upgrade",
+                    idx,
+                    total
+                )
                 if code == 0:
                     out_lower = out.lower()
-                    if "upgraded:" in out_lower or "changes:" in out_lower or "staged" in out_lower or "freed" in out_lower or "pinned" in out_lower or "installed" in out_lower:
+                    if any(phrase in out_lower for phrase in [
+                        "changes queued for next boot",
+                        "staging deployment",
+                        "upgraded:",
+                        "downgraded:",
+                        "added:",
+                        "removed:",
+                        "pinned:",
+                        "freed:",
+                        "staged"
+                    ]):
                         self.reboot_required = True
+                    try:
+                        st = subprocess.run(["rpm-ostree", "status"], capture_output=True, text=True, check=False)
+                        st_lower = st.stdout.lower()
+                        if "changes queued" in st_lower or "staged" in st_lower:
+                            self.reboot_required = True
+                    except Exception:
+                        pass
                 else:
                     overall_success = False
 
             elif task == "flatpak":
                 GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_flatpak")))
-                GLib.idle_add(lambda s=step, tot=total: self.upd_progress_bar.set_fraction(s / tot))
-                code, out = self.run_upd_command(["flatpak", "update", "-y", "--noninteractive"], "flatpak update")
+                code, out = self.run_upd_command(
+                    ["flatpak", "update", "-y", "--noninteractive"],
+                    "flatpak update",
+                    idx,
+                    total
+                )
                 if code != 0:
                     overall_success = False
 
             elif task == "box":
                 GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_box")))
-                GLib.idle_add(lambda s=step, tot=total: self.upd_progress_bar.set_fraction(s / tot))
-                code, out = self.run_upd_command(["distrobox", "upgrade", "sadeem-box"], "distrobox upgrade sadeem-box")
+                code, out = self.run_upd_command(
+                    ["distrobox", "upgrade", "sadeem-box"],
+                    "distrobox upgrade sadeem-box",
+                    idx,
+                    total
+                )
                 if code != 0:
                     overall_success = False
-
-            step += 1
-            GLib.idle_add(lambda s=step, tot=total: self.upd_progress_bar.set_fraction(s / tot))
 
         GLib.idle_add(self.on_updates_finished, overall_success)
 
     def on_updates_finished(self, success):
         self.is_updating = False
-        self.upd_progress_bar.set_fraction(1.0)
+        self.stop_upd_pulse()
+        self.update_upd_progress(1.0)
         self.btn_start_update.set_sensitive(True)
         self.btn_start_update.set_label(t("btn_start_update"))
         self.sys_row.set_sensitive(True)
         self.flatpak_row.set_sensitive(True)
+        self.box_row.set_sensitive(True)
         self.check_box_availability()
 
         if self.reboot_required:
@@ -1504,7 +1661,6 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         else:
             self.upd_status_label.set_text(t("status_error"))
         return False
-
     # =========================================================================
     # TAB 2: COLORS & THEME
     # =========================================================================
@@ -2230,9 +2386,6 @@ stage {{
                 has_box = False
 
             def _update():
-                if hasattr(self, "box_row") and self.box_row:
-                    self.box_row.set_sensitive(True)
-                    self.box_row.set_active(has_box)
                 if hasattr(self, "box_status_row") and self.box_status_row:
                     if has_box:
                         self.box_status_row.set_subtitle(t("box_status_active"))
