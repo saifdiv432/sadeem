@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 128" width="430" height="128">
+  <path d="M 64 10 C 93.8 10 118 34.2 118 64 C 118 93.8 93.8 118 64 118 L 28 118 C 18 118 10 110 10 100 L 10 64 C 10 34.2 34.2 10 64 10 Z" fill="#7a1c33" stroke="#9e2a47" stroke-width="3"/>
+  <path d="M 82 40 C 75 29 56 28 48 39 C 40 50 53 58 64 64 C 75 70 88 78 80 89 C 72 100 52 99 45 88" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round"/>
+  <text x="144" y="83" font-family="Cantarell, Adwaita Sans, Inter, sans-serif" font-size="60" font-weight="700" letter-spacing="-0.5" fill="#ffffff">Sadeem</text>
+</svg>

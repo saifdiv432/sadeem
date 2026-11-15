@@ -114,45 +114,6 @@ modules:
           - net.davidotek.pupgui2
           - io.github.dvlv.boxbuddyrs
 
-  # Compile dconf defaults, glib schemas, update MIME database, update logos and icon cache, fastfetch hook, and customize os-release
-  - type: script
-    snippets:
-      - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
-      - "dconf update"
-      - "update-desktop-database /usr/share/applications || true"
-      - |
-        mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-dark.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text-dark.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-light.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg
-        rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png
-        rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-light.svg -o /usr/share/pixmaps/fedora-logo.png
-        rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-light.svg -o /usr/share/pixmaps/fedora-logo-small.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-dark.svg -o /usr/share/pixmaps/system-logo-white.png
-        gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
-        # Safely remove gnome-tweaks if present in base image
-        rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
-        dconf update || true
-        sed -i 's/^NAME=.*/NAME="Sadeem"/' /usr/lib/os-release
-        sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="Sadeem 45"/' /usr/lib/os-release
-        sed -i 's/^DEFAULT_HOSTNAME=.*/DEFAULT_HOSTNAME="sadeem"/' /usr/lib/os-release
-        if grep -q '^ANSI_COLOR=' /usr/lib/os-release; then
-          sed -i 's/^ANSI_COLOR=.*/ANSI_COLOR="0;38;2;122;28;51"/' /usr/lib/os-release
-        else
-          echo 'ANSI_COLOR="0;38;2;122;28;51"' >> /usr/lib/os-release
-        fi
-        if grep -q '^LOGO=' /usr/lib/os-release; then
-          sed -i 's/^LOGO=.*/LOGO="sadeem-logo"/' /usr/lib/os-release
-        else
-          echo 'LOGO="sadeem-logo"' >> /usr/lib/os-release
-        fi
-        ln -sf ../usr/lib/os-release /etc/os-release
-        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer || true
-
   # Enable flatpak system services and user systemd units
   - type: systemd
     system:
@@ -165,6 +126,53 @@ modules:
         - saifdora-apply-theme.service
         - saifdora-accent-watcher.service
         - sadeem-init-sandbox.service
+
+  # Compile dconf defaults, glib schemas, update MIME database, update logos and icon cache, fastfetch hook, and customize os-release
+  - type: script
+    snippets:
+      - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
+      - "dconf update"
+      - "update-desktop-database /usr/share/applications || true"
+      - |
+        # تحديث هوية النظام ليشير LOGO إلى sadeem-logo مباشرة
+        for OS_REL in /usr/lib/os-release /etc/os-release; do
+          if [ -f "$OS_REL" ] && [ ! -L "$OS_REL" ]; then
+            sed -i 's|^NAME=.*|NAME="Sadeem"|' "$OS_REL"
+            sed -i 's|^PRETTY_NAME=.*|PRETTY_NAME="Sadeem 45"|' "$OS_REL"
+            sed -i 's|^DEFAULT_HOSTNAME=.*|DEFAULT_HOSTNAME="sadeem"|' "$OS_REL"
+            if grep -q '^LOGO=' "$OS_REL"; then
+              sed -i 's|^LOGO=.*|LOGO=sadeem-logo|' "$OS_REL"
+            else
+              echo 'LOGO=sadeem-logo' >> "$OS_REL"
+            fi
+            if grep -q '^ANSI_COLOR=' "$OS_REL"; then
+              sed -i 's|^ANSI_COLOR=.*/ANSI_COLOR="0;38;2;122;28;51"|' "$OS_REL"
+            else
+              echo 'ANSI_COLOR="0;38;2;122;28;51"' >> "$OS_REL"
+            fi
+          fi
+        done
+        ln -sf ../usr/lib/os-release /etc/os-release
+
+        # نسخ وتوليد جميع ملفات الشعارات الاحتياطية وتحديث الكاش
+        mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
+        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg
+        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg
+        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg
+        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text-dark.svg
+        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg
+        rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png
+        rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png
+        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png
+        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo.png
+        rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo-small.png
+        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png
+        gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+
+        # Safely remove gnome-tweaks if present in base image
+        rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
+        dconf update || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer || true
 
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs
