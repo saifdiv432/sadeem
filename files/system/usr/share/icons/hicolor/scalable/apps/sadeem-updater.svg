@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="updBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a1c33"/>
+      <stop offset="100%" stop-color="#115e59"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#updBg)" stroke="#cbd5e1" stroke-width="2.5"/>
+  <path d="M 64 30 A 34 34 0 1 1 33 78" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+  <polygon points="64,18 82,32 64,46" fill="#ffffff"/>
+</svg>

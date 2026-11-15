@@ -1,0 +1,19 @@
+[Desktop Entry]
+Name=Sadeem Updater
+Name[ar]=تحديثات سديم
+Name[fr]=Mise à jour Sadeem
+Name[es]=Actualizador de Sadeem
+Name[de]=Sadeem-Aktualisierung
+Name[tr]=Sadeem Güncelleyici
+Name[ru]=Обновление Sadeem
+Name[pt]=Atualizador Sadeem
+Name[it]=Aggiornamento Sadeem
+Name[zh]=Sadeem 更新器
+Comment=Update system, Flatpak apps, and Sadeem Box in one click
+Comment[ar]=حدّث النظام وتطبيقات المتجر وحاوية سديم بضغطة واحدة
+Exec=/usr/bin/sadeem-updater
+Icon=sadeem-updater
+Terminal=false
+Type=Application
+Categories=System;Settings;GTK;
+Keywords=update;upgrade;system;flatpak;sadeem;تحديث;ترقية;سديم;

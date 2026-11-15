@@ -1,0 +1,8 @@
+[Sound Theme]
+Name=Sadeem
+Name[ar]=سديم
+Comment=Calm and refined acoustic sound theme for Sadeem 45
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

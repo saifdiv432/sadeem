@@ -113,6 +113,7 @@ modules:
           - com.usebottles.bottles
           - net.davidotek.pupgui2
           - io.github.dvlv.boxbuddyrs
+          - it.mijorus.gearlever
 
   # Enable flatpak system services and user systemd units
   - type: systemd
@@ -167,10 +168,66 @@ modules:
         rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
 
+        # Generate Sadeem sound theme files if needed
+        mkdir -p /usr/share/sounds/sadeem/stereo
+        python3 -c '
+        import math, struct, wave, subprocess, tempfile, os
+        dest = "/usr/share/sounds/sadeem/stereo"
+        def save_snd(name, samples, rate=44100):
+            target = os.path.join(dest, name)
+            if os.path.isfile(target): return
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
+                wpath = tf.name
+            with wave.open(wpath, "wb") as wf:
+                wf.setnchannels(2)
+                wf.setsampwidth(2)
+                wf.setframerate(rate)
+                raw = bytearray()
+                for s in samples:
+                    val = int(max(-1.0, min(1.0, s)) * 32767)
+                    raw.extend(struct.pack("<hh", val, val))
+                wf.writeframes(raw)
+            subprocess.run(["ffmpeg", "-y", "-i", wpath, "-c:a", "libvorbis", "-q:a", "4", target], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try: os.remove(wpath)
+            except: pass
+
+        rate = 44100
+        samples = [0.0] * int(rate * 1.6)
+        for freq, st, dur, amp, dec in [(392.00, 0.0, 1.2, 0.18, 3.0), (523.25, 0.25, 1.1, 0.20, 2.8), (659.25, 0.50, 1.1, 0.22, 2.5)]:
+            for i in range(int(rate * dur)):
+                t = i / rate
+                v = amp * (math.sin(2 * math.pi * freq * t) + 0.15 * math.sin(4 * math.pi * freq * t)) * math.exp(-dec * t)
+                if int(rate * st) + i < len(samples): samples[int(rate * st) + i] += v
+        save_snd("desktop-login.oga", samples)
+
+        save_snd("audio-volume-change.oga", [0.15 * math.sin(2 * math.pi * 950 * (i/rate)) * math.exp(-120 * (i/rate)) for i in range(int(rate * 0.04))])
+
+        samples = [0.0] * int(rate * 0.65)
+        for freq, st, dur, amp, dec in [(783.99, 0.0, 0.5, 0.18, 5.0), (1046.50, 0.08, 0.55, 0.20, 4.5)]:
+            for i in range(int(rate * dur)):
+                if int(rate * st) + i < len(samples): samples[int(rate * st) + i] += amp * math.sin(2 * math.pi * freq * (i/rate)) * math.exp(-dec * (i/rate))
+        save_snd("message-new-instant.oga", samples)
+        save_snd("bell.oga", samples)
+
+        samples = [0.0] * int(rate * 1.2)
+        for freq, st, dur, amp, dec in [(523.25, 0.0, 0.9, 0.16, 3.5), (659.25, 0.0, 0.9, 0.15, 3.5), (783.99, 0.12, 1.0, 0.20, 3.0)]:
+            for i in range(int(rate * dur)):
+                if int(rate * st) + i < len(samples): samples[int(rate * st) + i] += amp * math.sin(2 * math.pi * freq * (i/rate)) * math.exp(-dec * (i/rate))
+        save_snd("complete.oga", samples)
+
+        samples = [0.0] * int(rate * 0.8)
+        for freq, st, dur, amp, dec in [(349.23, 0.0, 0.6, 0.20, 4.0), (329.63, 0.15, 0.65, 0.22, 3.8)]:
+            for i in range(int(rate * dur)):
+                if int(rate * st) + i < len(samples): samples[int(rate * st) + i] += amp * math.sin(2 * math.pi * freq * (i/rate)) * math.exp(-dec * (i/rate))
+        save_snd("dialog-warning.oga", samples)
+        save_snd("dialog-error.oga", samples)
+        ' || true
+
         # Safely remove gnome-tweaks if present in base image
         rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
+        gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
         dconf update || true
-        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer || true
 
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs
