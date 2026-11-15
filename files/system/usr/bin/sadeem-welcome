@@ -29,11 +29,11 @@ WELCOME_TRANSLATIONS = {
         "s1_title": "Ready Out of the Box",
         "s1_sub": "Sadeem 45 includes comprehensive codecs, hardware acceleration, and essential utilities pre-configured.",
         "s1_r1_t": "Multimedia & Hardware Acceleration",
-        "s1_r1_d": "Full codec support (HEVC, AV1, HEIC) and hardware video decoding for Intel and AMD.",
+        "s1_r1_d": "Full video codec support (HEVC, AV1, H264) and hardware acceleration for Intel and AMD.",
         "s1_r2_t": "Universal App Ecosystem",
-        "s1_r2_d": "Full support for Flathub, double-click .rpm & .deb packages via Sadeem Box, and .AppImage via Gear Lever.",
+        "s1_r2_d": "Install Flatpak apps from Software, double-click .rpm and .deb packages, or run .AppImage via Gear Lever.",
         "s1_r3_t": "Sadeem System Control Center",
-        "s1_r3_d": "Unified hub for updates, theme colors, GPU drivers, and containers.",
+        "s1_r3_d": "Unified hub for on-demand updates, desktop accent colors, GPU drivers, and containers.",
         "s1_r3_b": "Open System",
         # Slide 2
         "s2_title": "Integrated Productivity Apps",
@@ -87,18 +87,18 @@ WELCOME_TRANSLATIONS = {
         "banner_btn": "تثبيت تعريف NVIDIA و CUDA",
         "btn_prev": "السابق",
         "btn_next": "التالي",
-        "btn_start": "ابدأ الآن",
+        "btn_start": "ابدأ الاستخدام",
         "check_startup": "العرض عند بدء التشغيل",
         "toast_installing": "يتم استكمال تثبيت التطبيق في الخلفية، وسيظهر في القائمة خلال دقائق",
         # Slide 1
         "s1_title": "جاهز للاستخدام الفوري",
         "s1_sub": "يتضمن سديم 45 دعماً شاملاً لجميع برامج الترميز، وتسريع العتاد، والأدوات الأساسية مهيأة مسبقاً.",
-        "s1_r1_t": "الوسائط المتعددة وتسريع العتاد",
-        "s1_r1_d": "دعم كامل للترميزات (HEVC, AV1, HEIC) وفك تشفير الفيديو عبر العتاد لمعالجات Intel و AMD.",
-        "s1_r2_t": "منظومة التطبيقات الشاملة",
-        "s1_r2_d": "دعم متجر Flathub، حزم .rpm و .deb بالنقر المزدوج عبر Sadeem Box، وحزم .AppImage عبر Gear Lever.",
-        "s1_r3_t": "مركز التحكم 'نظام سديم'",
-        "s1_r3_d": "لوحة تحكم شاملة للتحديثات، تخصيص الألوان، تعريفات الرسوميات، وإدارة الحاويات.",
+        "s1_r1_t": "دعم الوسائط وتسريع العتاد",
+        "s1_r1_d": "دعم كامل لترميزات الفيديو (HEVC, AV1, H264) وتسريع العتاد لمعالجات Intel و AMD.",
+        "s1_r2_t": "منظومة شاملة لتشغيل البرامج",
+        "s1_r2_d": "ثبّت تطبيقات Flatpak من المتجر، أو حزم .rpm و .deb بالنقر المزدوج، أو ملفات .AppImage عبر Gear Lever.",
+        "s1_r3_t": "مركز تحكم نظام سديم",
+        "s1_r3_d": "لوحة موحدة للتحديثات اليدوية، وألوان الواجهة، وتعريفات العتاد، والحاويات.",
         "s1_r3_b": "فتح نظام سديم",
         # Slide 2
         "s2_title": "تطبيقات إنتاجية مدمجة",
@@ -158,12 +158,12 @@ WELCOME_TRANSLATIONS = {
         # Slide 1
         "s1_title": "Prêt à l'emploi",
         "s1_sub": "Sadeem 45 inclut des codecs complets, l'accélération matérielle et des utilitaires essentiels préconfigurés.",
-        "s1_r1_t": "Multimédia et accélération matérielle",
-        "s1_r1_d": "Prise en charge complète des codecs (HEVC, AV1, HEIC) et décodage vidéo matériel pour Intel et AMD.",
-        "s1_r2_t": "Écosystème d'applications universel",
-        "s1_r2_d": "Prise en charge de Flathub, double-clic sur .rpm et .deb via Sadeem Box, et .AppImage via Gear Lever.",
+        "s1_r1_t": "Support multimédia et accélération matérielle",
+        "s1_r1_d": "Prise en charge complète des codecs vidéo (HEVC, AV1, H264) et accélération matérielle pour Intel et AMD.",
+        "s1_r2_t": "Écosystème logiciel universel",
+        "s1_r2_d": "Installez des applications Flatpak depuis le magasin, des paquets .rpm et .deb par double-clic, ou des .AppImage via Gear Lever.",
         "s1_r3_t": "Centre de contrôle Système Sadeem",
-        "s1_r3_d": "Centre unifié pour les mises à jour, couleurs, pilotes GPU et conteneurs.",
+        "s1_r3_d": "Panneau unifié pour les mises à jour manuelles, les couleurs du thème, les pilotes et les conteneurs.",
         "s1_r3_b": "Ouvrir Système",
         # Slide 2
         "s2_title": "Applications de productivité intégrées",
@@ -223,12 +223,12 @@ WELCOME_TRANSLATIONS = {
         # Slide 1
         "s1_title": "Listo para usar",
         "s1_sub": "Sadeem 45 incluye códecs integrales, aceleración por hardware y utilidades esenciales preconfiguradas.",
-        "s1_r1_t": "Multimedia y aceleración por hardware",
-        "s1_r1_d": "Soporte completo de códecs (HEVC, AV1, HEIC) y decodificación de vídeo por hardware para Intel y AMD.",
-        "s1_r2_t": "Ecosistema universal de aplicaciones",
-        "s1_r2_d": "Soporte para Flathub, doble clic en .rpm y .deb con Sadeem Box, y .AppImage con Gear Lever.",
+        "s1_r1_t": "Soporte multimedia y aceleración por hardware",
+        "s1_r1_d": "Soporte completo de códecs de vídeo (HEVC, AV1, H264) y aceleración por hardware para Intel y AMD.",
+        "s1_r2_t": "Ecosistema universal de software",
+        "s1_r2_d": "Instale aplicaciones Flatpak desde la tienda, paquetes .rpm y .deb con doble clic, o archivos .AppImage con Gear Lever.",
         "s1_r3_t": "Centro de control Sistema Sadeem",
-        "s1_r3_d": "Centro unificado para actualizaciones, colores, controladores y contenedores.",
+        "s1_r3_d": "Panel unificado para actualizaciones bajo demanda, colores del tema, controladores y contenedores.",
         "s1_r3_b": "Abrir Sistema",
         # Slide 2
         "s2_title": "Aplicaciones de productividad integradas",
@@ -289,11 +289,11 @@ WELCOME_TRANSLATIONS = {
         "s1_title": "Sofort einsatzbereit",
         "s1_sub": "Sadeem 45 enthält umfassende Codecs, Hardwarebeschleunigung und vorkonfigurierte Dienstprogramme.",
         "s1_r1_t": "Multimedia & Hardwarebeschleunigung",
-        "s1_r1_d": "Vollständige Codec-Unterstützung (HEVC, AV1, HEIC) und Hardware-Videodekodierung für Intel und AMD.",
-        "s1_r2_t": "Universelles App-Ökosystem",
-        "s1_r2_d": "Unterstützung für Flathub, Doppelklick auf .rpm & .deb via Sadeem Box und .AppImage via Gear Lever.",
+        "s1_r1_d": "Vollständige Videocodec-Unterstützung (HEVC, AV1, H264) und Hardwarebeschleunigung für Intel und AMD.",
+        "s1_r2_t": "Universelles Software-Ökosystem",
+        "s1_r2_d": "Installieren Sie Flatpak-Apps aus Software, .rpm- und .deb-Pakete per Doppelklick oder .AppImage über Gear Lever.",
         "s1_r3_t": "Sadeem-System Kontrollzentrum",
-        "s1_r3_d": "Zentrale Oberfläche für Aktualisierungen, Farben, GPU-Treiber und Container.",
+        "s1_r3_d": "Zentrale Leiste für manuelle Aktualisierungen, Farbthemen, Grafiktreiber und Container.",
         "s1_r3_b": "System öffnen",
         # Slide 2
         "s2_title": "Integrierte Produktivitäts-Apps",
@@ -353,12 +353,12 @@ WELCOME_TRANSLATIONS = {
         # Slide 1
         "s1_title": "Kullanıma Hazır",
         "s1_sub": "Sadeem 45 kapsamlı kodekler, donanım hızlandırma ve önceden yapılandırılmış temel yardımcı araçlar içerir.",
-        "s1_r1_t": "Multimedya ve Donanım Hızlandırma",
-        "s1_r1_d": "Intel ve AMD için tam kodek desteği (HEVC, AV1, HEIC) ve donanım video kod çözme.",
-        "s1_r2_t": "Evrensel Uygulama Ekosistemi",
-        "s1_r2_d": "Flathub, Sadeem Box ile çift tıklamayla .rpm ve .deb, Gear Lever ile .AppImage desteği.",
+        "s1_r1_t": "Multimedya Desteği ve Donanım Hızlandırma",
+        "s1_r1_d": "Intel ve AMD için tam video kodek desteği (HEVC, AV1, H264) ve donanım hızlandırması.",
+        "s1_r2_t": "Evrensel Yazılım Ekosistemi",
+        "s1_r2_d": "Yazılımlar'dan Flatpak uygulamaları, çift tıklamayla .rpm ve .deb paketleri veya Gear Lever ile .AppImage yükleyin.",
         "s1_r3_t": "Sadeem Sistemi Kontrol Merkezi",
-        "s1_r3_d": "Güncellemeler, renkler, grafik sürücüleri ve kapsayıcılar için birleşik merkez.",
+        "s1_r3_d": "İsteğe bağlı güncellemeler, arayüz renkleri, grafik sürücüleri ve kapsayıcılar için birleşik panel.",
         "s1_r3_b": "Sistemi Aç",
         # Slide 2
         "s2_title": "Entegre Verimlilik Uygulamaları",
@@ -419,11 +419,11 @@ WELCOME_TRANSLATIONS = {
         "s1_title": "Готов к работе",
         "s1_sub": "Sadeem 45 включает полный набор кодеков, аппаратное ускорение и предварительно настроенные утилиты.",
         "s1_r1_t": "Мультимедиа и аппаратное ускорение",
-        "s1_r1_d": "Полная поддержка кодеков (HEVC, AV1, HEIC) и аппаратного декодирования видео для Intel и AMD.",
-        "s1_r2_t": "Универсальная экосистема приложений",
-        "s1_r2_d": "Поддержка Flathub, запуск .rpm и .deb в Sadeem Box и .AppImage через Gear Lever.",
+        "s1_r1_d": "Полная поддержка видеокодеков (HEVC, AV1, H264) и аппаратное ускорение для Intel и AMD.",
+        "s1_r2_t": "Универсальная экосистема программ",
+        "s1_r2_d": "Устанавливайте Flatpak из Центра приложений, пакеты .rpm и .deb двойным щелчком или .AppImage через Gear Lever.",
         "s1_r3_t": "Центр управления системой Sadeem",
-        "s1_r3_d": "Единый центр для обновлений, темы, драйверов GPU и контейнеров.",
+        "s1_r3_d": "Единая панель для обновлений по запросу, акцентных цветов, драйверов и контейнеров.",
         "s1_r3_b": "Открыть систему",
         # Slide 2
         "s2_title": "Встроенные приложения для работы",
@@ -483,12 +483,12 @@ WELCOME_TRANSLATIONS = {
         # Slide 1
         "s1_title": "Pronto a utilizar",
         "s1_sub": "O Sadeem 45 inclui codecs abrangentes, aceleração de hardware e utilitários essenciais pré-configurados.",
-        "s1_r1_t": "Multimédia e Aceleração de Hardware",
-        "s1_r1_d": "Suporte completo a codecs (HEVC, AV1, HEIC) e descodificação de vídeo por hardware para Intel e AMD.",
-        "s1_r2_t": "Ecossistema Universal de Aplicações",
-        "s1_r2_d": "Suporte a Flathub, clique duplo em .rpm e .deb com Sadeem Box e .AppImage via Gear Lever.",
+        "s1_r1_t": "Suporte Multimédia e Aceleração de Hardware",
+        "s1_r1_d": "Suporte completo a codecs de vídeo (HEVC, AV1, H264) e aceleração de hardware para Intel e AMD.",
+        "s1_r2_t": "Ecossistema Universal de Software",
+        "s1_r2_d": "Instale aplicações Flatpak da loja, pacotes .rpm e .deb com duplo clique ou ficheiros .AppImage via Gear Lever.",
         "s1_r3_t": "Centro de Controlo Sistema Sadeem",
-        "s1_r3_d": "Centro unificado para atualizações, cores, controladores de GPU e contentores.",
+        "s1_r3_d": "Painel unificado para atualizações manuais, cores da interface, controladores e contentores.",
         "s1_r3_b": "Abrir Sistema",
         # Slide 2
         "s2_title": "Aplicações de Produtividade Integradas",
@@ -548,12 +548,12 @@ WELCOME_TRANSLATIONS = {
         # Slide 1
         "s1_title": "Pronto all'uso",
         "s1_sub": "Sadeem 45 include codec completi, accelerazione hardware e utilità essenziali preconfigurate.",
-        "s1_r1_t": "Multimedia e accelerazione hardware",
-        "s1_r1_d": "Supporto completo ai codec (HEVC, AV1, HEIC) e decodifica video hardware per Intel e AMD.",
-        "s1_r2_t": "Ecosistema universale di applicazioni",
-        "s1_r2_d": "Supporto completo a Flathub, doppio clic su .rpm e .deb con Sadeem Box e .AppImage con Gear Lever.",
+        "s1_r1_t": "Supporto multimediale e accelerazione hardware",
+        "s1_r1_d": "Supporto completo per codec video (HEVC, AV1, H264) e accelerazione hardware per Intel e AMD.",
+        "s1_r2_t": "Ecosistema software universale",
+        "s1_r2_d": "Installa app Flatpak da Software, pacchetti .rpm e .deb con doppio clic o file .AppImage tramite Gear Lever.",
         "s1_r3_t": "Centro di controllo Sistema Sadeem",
-        "s1_r3_d": "Hub unificato per aggiornamenti, colori, driver GPU e container.",
+        "s1_r3_d": "Pannello unificato per aggiornamenti manuali, colori del tema, driver e container.",
         "s1_r3_b": "Apri Sistema",
         # Slide 2
         "s2_title": "Applicazioni di produttività integrate",
@@ -613,12 +613,12 @@ WELCOME_TRANSLATIONS = {
         # Slide 1
         "s1_title": "开箱即用",
         "s1_sub": "Sadeem 45 预先配置了全面的编解码器、硬件加速和必备实用工具。",
-        "s1_r1_t": "多媒体与硬件加速",
-        "s1_r1_d": "全面的编解码器支持 (HEVC、AV1、HEIC) 以及 Intel 和 AMD 的硬件视频解码。",
-        "s1_r2_t": "全能应用生态系统",
-        "s1_r2_d": "全面支持 Flathub，通过 Sadeem Box 双击安装 .rpm 与 .deb，通过 Gear Lever 管理 .AppImage。",
+        "s1_r1_t": "多媒体支持与硬件加速",
+        "s1_r1_d": "全面支持视频编解码器 (HEVC、AV1、H264) 以及 Intel 和 AMD 的硬件视频加速。",
+        "s1_r2_t": "全能软件生态系统",
+        "s1_r2_d": "从软件中心安装 Flatpak 应用，双击运行 .rpm 与 .deb 软件包，或通过 Gear Lever 运行 .AppImage。",
         "s1_r3_t": "Sadeem 系统控制中心",
-        "s1_r3_d": "用于更新、外观配色、显卡驱动和容器管理的统一控制中心。",
+        "s1_r3_d": "用于手动按需更新、桌面强调色、显卡驱动和容器管理的统一面板。",
         "s1_r3_b": "打开系统中心",
         # Slide 2
         "s2_title": "集成生产力应用",
@@ -708,6 +708,8 @@ def setup_icon_theme():
             "/usr/share/icons/hicolor/64x64/apps",
             "/usr/share/icons/hicolor/48x48/apps",
             "/usr/share/pixmaps",
+            "/var/lib/flatpak/exports/share/icons",
+            os.path.expanduser("~/.local/share/flatpak/exports/share/icons"),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "scalable", "apps")),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "256x256", "apps")),
         ]
@@ -746,7 +748,7 @@ def safe_icon(icon_names, fallback="application-x-executable-symbolic"):
     return fallback
 
 
-def create_badge(icon_names, size=64, icon_size=32, fallback="application-x-executable-symbolic"):
+def create_badge(icon_names, size=64, icon_size=28, fallback="application-x-executable-symbolic"):
     badge = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
     badge.set_halign(Gtk.Align.CENTER)
     badge.set_valign(Gtk.Align.CENTER)
@@ -764,11 +766,122 @@ def create_badge(icon_names, size=64, icon_size=32, fallback="application-x-exec
     return badge
 
 
-def create_app_icon(icon_names, size=40, fallback="application-x-executable-symbolic"):
-    icon_name = safe_icon(icon_names, fallback=fallback)
-    img = Gtk.Image.new_from_icon_name(icon_name)
+def build_page_header(icon_names, title, subtitle):
+    box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+    box.set_halign(Gtk.Align.CENTER)
+    box.set_margin_bottom(6)
+
+    badge = create_badge(icon_names, size=64, icon_size=28)
+    badge.set_halign(Gtk.Align.CENTER)
+    box.append(badge)
+
+    title_lbl = Gtk.Label(label=title)
+    title_lbl.add_css_class("sadeem-header-title")
+    title_lbl.set_wrap(True)
+    title_lbl.set_justify(Gtk.Justification.CENTER)
+    box.append(title_lbl)
+
+    sub_lbl = Gtk.Label(label=subtitle)
+    sub_lbl.add_css_class("sadeem-header-subtitle")
+    sub_lbl.set_wrap(True)
+    sub_lbl.set_justify(Gtk.Justification.CENTER)
+    sub_lbl.set_max_width_chars(54)
+    box.append(sub_lbl)
+
+    return box
+
+
+def find_desktop_file_and_icon(app_id_candidates):
+    search_dirs = [
+        "/usr/share/applications",
+        "/var/lib/flatpak/exports/share/applications",
+        os.path.expanduser("~/.local/share/applications"),
+        os.path.expanduser("~/.local/share/flatpak/exports/share/applications")
+    ]
+    for app_id in app_id_candidates:
+        filenames = [app_id if app_id.endswith(".desktop") else f"{app_id}.desktop"]
+        for d in search_dirs:
+            for fname in filenames:
+                full_path = os.path.join(d, fname)
+                if os.path.isfile(full_path):
+                    icon_val = None
+                    exec_val = None
+                    try:
+                        with open(full_path, "r", encoding="utf-8", errors="replace") as f:
+                            for line in f:
+                                line = line.strip()
+                                if line.startswith("Icon="):
+                                    icon_val = line.split("Icon=", 1)[1].strip()
+                                elif line.startswith("Exec="):
+                                    exec_val = line.split("Exec=", 1)[1].strip()
+                    except Exception:
+                        pass
+                    desktop_id = fname[:-8] if fname.endswith(".desktop") else fname
+                    return desktop_id, icon_val, exec_val
+    return None, None, None
+
+
+def create_colorful_app_icon(app_id_candidates, fallback_icon_names, fallback_symbolic="application-x-executable-symbolic", size=40):
+    _, desktop_icon, _ = find_desktop_file_and_icon(app_id_candidates)
+    
+    candidates = []
+    if desktop_icon:
+        candidates.append(desktop_icon)
+    if isinstance(fallback_icon_names, (list, tuple)):
+        candidates.extend(fallback_icon_names)
+    elif fallback_icon_names:
+        candidates.append(fallback_icon_names)
+
+    # 1. Check direct file or standard icon directories
+    for name in candidates:
+        if os.path.isabs(name) and os.path.isfile(name):
+            try:
+                img = Gtk.Image.new_from_file(name)
+                img.set_pixel_size(size)
+                return img
+            except Exception:
+                pass
+        for base_dir in [
+            "/usr/share/icons/hicolor/scalable/apps",
+            "/usr/share/icons/hicolor/256x256/apps",
+            "/usr/share/icons/hicolor/128x128/apps",
+            "/usr/share/icons/hicolor/64x64/apps",
+            "/usr/share/icons/hicolor/48x48/apps",
+            "/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps",
+            "/var/lib/flatpak/exports/share/icons/hicolor/256x256/apps",
+            "/usr/share/pixmaps",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "scalable", "apps")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "256x256", "apps")),
+        ]:
+            for ext in (".svg", ".png"):
+                p = os.path.join(base_dir, f"{name}{ext}")
+                if os.path.isfile(p):
+                    try:
+                        img = Gtk.Image.new_from_file(p)
+                        img.set_pixel_size(size)
+                        return img
+                    except Exception:
+                        pass
+
+    # 2. Check icon theme
+    display = Gdk.Display.get_default()
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        for name in candidates:
+            if theme.has_icon(name):
+                img = Gtk.Image.new_from_icon_name(name)
+                img.set_pixel_size(size)
+                return img
+
+    # 3. Fallback symbolic icon
+    fb_icon = safe_icon([fallback_symbolic, "application-x-executable-symbolic"])
+    img = Gtk.Image.new_from_icon_name(fb_icon)
     img.set_pixel_size(size)
     return img
+
+
+def create_app_icon(icon_names, size=40, fallback="application-x-executable-symbolic"):
+    return create_colorful_app_icon(icon_names, icon_names, fallback_symbolic=fallback, size=size)
 
 
 # --- Configuration & Paths ---
@@ -833,17 +946,12 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.toolbar_view = Adw.ToolbarView()
         self.toast_overlay.set_child(self.toolbar_view)
 
-        # HeaderBar with clear title and centered indicator dots
+        # HeaderBar with Adw.WindowTitle
         self.header_bar = Adw.HeaderBar()
         self.header_bar.add_css_class("flat")
+        self.window_title_widget = Adw.WindowTitle(title=t("window_title"))
+        self.header_bar.set_title_widget(self.window_title_widget)
         self.toolbar_view.add_top_bar(self.header_bar)
-
-        # Title widget containing app title and indicator dots
-        title_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        title_box.set_valign(Gtk.Align.CENTER)
-
-        title_lbl = Gtk.Label(label=t("window_title"))
-        title_lbl.add_css_class("heading")
 
         self.carousel = Adw.Carousel()
         self.carousel.set_allow_scroll_wheel(False)
@@ -852,12 +960,15 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.carousel.connect("page-changed", self.on_page_changed)
         self.toolbar_view.set_content(self.carousel)
 
+        # Carousel indicator dots placed directly below HeaderBar with balanced spacing
+        dots_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        dots_box.set_halign(Gtk.Align.CENTER)
+        dots_box.set_margin_top(6)
+        dots_box.set_margin_bottom(6)
         self.dots = Adw.CarouselIndicatorDots()
         self.dots.set_carousel(self.carousel)
-
-        title_box.append(title_lbl)
-        title_box.append(self.dots)
-        self.header_bar.set_title_widget(title_box)
+        dots_box.append(self.dots)
+        self.toolbar_view.add_top_bar(dots_box)
 
         # NVIDIA Notification Banner
         self.banner = Adw.Banner()
@@ -871,32 +982,37 @@ class WelcomeWindow(Adw.ApplicationWindow):
         if has_nvidia and not driver_installed:
             self.banner.set_revealed(True)
 
-        # Bottom Action Bar with transparent seamless background
-        self.action_bar = Gtk.ActionBar()
+        # Bottom Navigation Bar using Gtk.CenterBox for stable balanced alignment
+        self.bottom_bar = Gtk.CenterBox()
+        self.bottom_bar.set_margin_start(20)
+        self.bottom_bar.set_margin_end(20)
+        self.bottom_bar.set_margin_top(12)
+        self.bottom_bar.set_margin_bottom(16)
 
-        # Start: Previous button
+        # Start: Previous button (fixed width=120, transparent & disabled on slide 0)
         self.prev_btn = Gtk.Button(label=t("btn_prev"))
-        self.prev_btn.set_size_request(115, 36)
+        self.prev_btn.set_size_request(120, 36)
         self.prev_btn.add_css_class("pill")
-        self.prev_btn.set_visible(False)
+        self.prev_btn.set_opacity(0.0)
+        self.prev_btn.set_sensitive(False)
         self.prev_btn.connect("clicked", self.on_prev_clicked)
-        self.action_bar.pack_start(self.prev_btn)
+        self.bottom_bar.set_start_widget(self.prev_btn)
 
-        # Center: Show on startup checkbox
+        # Center: Show on startup checkbox (always perfectly centered)
         self.startup_check = Gtk.CheckButton(label=t("check_startup"))
         self.startup_check.set_active(not is_seen())
         self.startup_check.connect("toggled", self.on_startup_toggled)
-        self.action_bar.set_center_widget(self.startup_check)
+        self.bottom_bar.set_center_widget(self.startup_check)
 
-        # End: Next / Get Started button
+        # End: Next / Get Started button (fixed width=120, suggested-action pill)
         self.next_btn = Gtk.Button(label=t("btn_next"))
         self.next_btn.add_css_class("suggested-action")
         self.next_btn.add_css_class("pill")
-        self.next_btn.set_size_request(130, 36)
+        self.next_btn.set_size_request(120, 36)
         self.next_btn.connect("clicked", self.on_next_clicked)
-        self.action_bar.pack_end(self.next_btn)
+        self.bottom_bar.set_end_widget(self.next_btn)
 
-        self.toolbar_view.add_bottom_bar(self.action_bar)
+        self.toolbar_view.add_bottom_bar(self.bottom_bar)
 
         # Build 5 Carousel Slides (3 rows each)
         self.build_slide_ready()
@@ -923,15 +1039,37 @@ class WelcomeWindow(Adw.ApplicationWindow):
             border-radius: 12px;
         }
 
+        .boxed-list row .title,
+        row.activatable .title,
+        row .title {
+            font-weight: bold;
+        }
+
+        .boxed-list row .subtitle,
+        row.activatable .subtitle,
+        row .subtitle {
+            opacity: 0.85;
+        }
+
         .sadeem-gradient-badge {
             background: linear-gradient(135deg, #7a1c33 0%, #115e59 100%);
-            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(203, 213, 225, 0.45);
             border-radius: 9999px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .sadeem-gradient-badge image {
             color: #ffffff;
+        }
+
+        .sadeem-header-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .sadeem-header-subtitle {
+            font-size: 14px;
+            opacity: 0.85;
         }
         """
         provider = Gtk.CssProvider()
@@ -945,7 +1083,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
             )
 
     def create_slide_container(self, icon_names, title, subtitle):
-        """Helper to create standard clamped slide layout with gradient badge."""
+        """Helper to create standard clamped slide layout with unified gradient badge and header."""
         clamp = Adw.Clamp()
         clamp.set_maximum_size(580)
         clamp.set_margin_start(24)
@@ -955,23 +1093,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         clamp.set_child(box)
 
-        # Header Gradient Badge
-        if icon_names:
-            badge = create_badge(icon_names, size=64, icon_size=32)
-            box.append(badge)
-
-        title_lbl = Gtk.Label(label=title)
-        title_lbl.add_css_class("title-1")
-        title_lbl.set_wrap(True)
-        title_lbl.set_justify(Gtk.Justification.CENTER)
-        box.append(title_lbl)
-
-        sub_lbl = Gtk.Label(label=subtitle)
-        sub_lbl.add_css_class("body")
-        sub_lbl.add_css_class("dim-label")
-        sub_lbl.set_wrap(True)
-        sub_lbl.set_justify(Gtk.Justification.CENTER)
-        box.append(sub_lbl)
+        header = build_page_header(icon_names, title, subtitle)
+        box.append(header)
 
         return clamp, box
 
@@ -1049,8 +1172,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
         # Rumman - Real colorful 40x40 icon
-        icon_rumman = create_app_icon(["io.github.Rumman", "rumman"], size=40, fallback="system-run-symbolic")
-        btn1 = self.create_row_button(t("s2_r1_b"), lambda *a: self.launch_app(["/usr/bin/rumman"], "io.github.Rumman"))
+        icon_rumman = create_colorful_app_icon(["io.github.Rumman", "rumman"], ["rumman", "io.github.Rumman"], size=40)
+        btn1 = self.create_row_button(t("s2_r1_b"), lambda *a: self.launch_app_smart(["io.github.Rumman", "rumman"], flatpak_id="io.github.Rumman", direct_cmd=["/usr/bin/rumman"]))
         r1 = self.create_action_row(
             t("s2_r1_t"),
             t("s2_r1_d"),
@@ -1060,8 +1183,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
         listbox.append(r1)
 
         # Mister Download Manager - Real colorful 40x40 icon
-        icon_mdm = create_app_icon(["misterdownloadmanager"], size=40, fallback="folder-download-symbolic")
-        btn2 = self.create_row_button(t("s2_r2_b"), lambda *a: self.launch_app(["/usr/bin/misterdownloadmanager"], "misterdownloadmanager"))
+        icon_mdm = create_colorful_app_icon(["misterdownloadmanager", "com.misterdownloadmanager"], ["misterdownloadmanager"], size=40)
+        btn2 = self.create_row_button(t("s2_r2_b"), lambda *a: self.launch_app_smart(["misterdownloadmanager", "com.misterdownloadmanager"], flatpak_id="com.misterdownloadmanager", direct_cmd=["/usr/bin/misterdownloadmanager"]))
         r2 = self.create_action_row(
             t("s2_r2_t"),
             t("s2_r2_d"),
@@ -1071,8 +1194,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
         listbox.append(r2)
 
         # ZapFast - Real colorful 40x40 icon
-        icon_zapfast = create_app_icon(["zapfast"], size=40, fallback="chat-message-new-symbolic")
-        btn3 = self.create_row_button(t("s2_r3_b"), lambda *a: self.launch_app(["/usr/bin/zapfast"], "zapfast"))
+        icon_zapfast = create_colorful_app_icon(["zapfast", "rocks.zapfast.ZapFast"], ["zapfast"], size=40)
+        btn3 = self.create_row_button(t("s2_r3_b"), lambda *a: self.launch_app_smart(["zapfast", "rocks.zapfast.ZapFast"], flatpak_id="rocks.zapfast.ZapFast", direct_cmd=["/usr/bin/zapfast"]))
         r3 = self.create_action_row(
             t("s2_r3_t"),
             t("s2_r3_d"),
@@ -1175,7 +1298,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
     def build_slide_navigation(self):
         """Slide 5: GNOME navigation basics (3 rows)."""
         slide, box = self.create_slide_container(
-            ["preferences-desktop-keyboard-shortcuts-symbolic", "input-keyboard-symbolic"],
+            ["input-touchpad-symbolic", "preferences-desktop-keyboard-shortcuts-symbolic", "input-keyboard-symbolic"],
             t("s5_title"),
             t("s5_sub")
         )
@@ -1206,6 +1329,42 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
         box.append(listbox)
         self.carousel.append(slide)
+
+    def launch_app_smart(self, desktop_candidates, flatpak_id=None, direct_cmd=None):
+        """Safely launch applications natively via discovered desktop file, flatpak, or direct executable."""
+        desktop_id, _, _ = find_desktop_file_and_icon(desktop_candidates)
+        if desktop_id:
+            try:
+                res = subprocess.run(["gtk-launch", desktop_id], capture_output=True, check=False)
+                if res.returncode == 0:
+                    return
+            except Exception:
+                pass
+
+        for dt in desktop_candidates:
+            clean_name = dt[:-8] if dt.endswith(".desktop") else dt
+            try:
+                res = subprocess.run(["gtk-launch", clean_name], capture_output=True, check=False)
+                if res.returncode == 0:
+                    return
+            except Exception:
+                pass
+
+        if flatpak_id:
+            try:
+                res = subprocess.run(["flatpak", "info", flatpak_id], capture_output=True, text=True, check=False)
+                if res.returncode == 0:
+                    subprocess.Popen(["flatpak", "run", flatpak_id])
+                    return
+            except Exception:
+                pass
+
+        if direct_cmd:
+            try:
+                subprocess.Popen(direct_cmd)
+                return
+            except Exception as e:
+                print(f"Error launching {direct_cmd}: {e}", file=sys.stderr)
 
     def launch_app(self, cmd_args, desktop_name=None):
         """Safely launch applications natively via desktop or direct executable."""
@@ -1267,7 +1426,13 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
     def on_page_changed(self, carousel, index):
         total = carousel.get_n_pages()
-        self.prev_btn.set_visible(index > 0)
+        if index == 0:
+            self.prev_btn.set_opacity(0.0)
+            self.prev_btn.set_sensitive(False)
+        else:
+            self.prev_btn.set_opacity(1.0)
+            self.prev_btn.set_sensitive(True)
+
         if index == total - 1:
             self.next_btn.set_label(t("btn_start"))
         else:

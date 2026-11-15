@@ -23,6 +23,13 @@ from gi.repository import Gtk, Adw, GLib, Gio, Gdk, Pango, GObject
 
 TRANSLATIONS = {
     "en": {
+        "colors_banner_title": "Appearance & Accent Colors",
+        "colors_banner_desc": "Personalize desktop accents, visual highlights, and system appearance.",
+        "colors_preview_title": "Live Accent Preview",
+        "colors_preview_desc": "Sample controls showing the active accent color in real time",
+        "colors_preview_btn": "Primary Action",
+        "drv_banner_title": "Hardware & GPU Drivers",
+        "drv_banner_desc": "Manage graphics drivers, CUDA compute libraries, and hardware acceleration.",
         "app_title": "Sadeem System",
         "tab_updates": "Updates",
         "tab_colors": "Colors & Theme",
@@ -106,6 +113,13 @@ TRANSLATIONS = {
         "box_filter_all": "All Files (*)"
     },
     "ar": {
+        "colors_banner_title": "المظهر والألوان",
+        "colors_banner_desc": "خصص لون تمييز سطح المكتب ومظهر النظام وعناصر الواجهة التفاعلية.",
+        "colors_preview_title": "معاينة فورية للون التمييز",
+        "colors_preview_desc": "عناصر تفاعلية توضح مظهر لون التمييز المختار على عناصر الواجهة",
+        "colors_preview_btn": "زر أساسي",
+        "drv_banner_title": "تعريفات العتاد والرسوميات",
+        "drv_banner_desc": "إدارة وتثبيت تعريفات بطاقات العرض ومكتبات الحوسبة المتسارعة CUDA.",
         "app_title": "نظام سديم",
         "tab_updates": "التحديثات",
         "tab_colors": "الألوان والمظهر",
@@ -189,6 +203,13 @@ TRANSLATIONS = {
         "box_filter_all": "كافة الملفات (*)"
     },
     "fr": {
+        "colors_banner_title": "Apparence et couleurs d'accentuation",
+        "colors_banner_desc": "Personnalisez les accents du bureau et l'apparence du système.",
+        "colors_preview_title": "Aperçu de la couleur d'accentuation",
+        "colors_preview_desc": "Éléments interactifs montrant la couleur sélectionnée en direct",
+        "colors_preview_btn": "Action principale",
+        "drv_banner_title": "Pilotes matériels et graphiques",
+        "drv_banner_desc": "Gérez les pilotes graphiques, les bibliothèques CUDA et l'accélération matérielle.",
         "app_title": "Système Sadeem",
         "tab_updates": "Mises à jour",
         "tab_colors": "Couleurs & Thème",
@@ -272,6 +293,13 @@ TRANSLATIONS = {
         "box_filter_all": "Tous les fichiers (*)"
     },
     "es": {
+        "colors_banner_title": "Apariencia y colores de énfasis",
+        "colors_banner_desc": "Personalice los colores de énfasis del escritorio y la apariencia del sistema.",
+        "colors_preview_title": "Vista previa del color de énfasis",
+        "colors_preview_desc": "Elementos interactivos que muestran el color seleccionado en tiempo real",
+        "colors_preview_btn": "Acción principal",
+        "drv_banner_title": "Controladores de hardware y GPU",
+        "drv_banner_desc": "Administre controladores gráficos, librerías CUDA y aceleración por hardware.",
         "app_title": "Sistema Sadeem",
         "tab_updates": "Actualizaciones",
         "tab_colors": "Colores y tema",
@@ -355,6 +383,13 @@ TRANSLATIONS = {
         "box_filter_all": "Todos los archivos (*)"
     },
     "de": {
+        "colors_banner_title": "Erscheinungsbild & Akzentfarben",
+        "colors_banner_desc": "Passen Sie Desktop-Akzente und das Systemerscheinungsbild an.",
+        "colors_preview_title": "Live-Vorschau der Akzentfarbe",
+        "colors_preview_desc": "Interaktive Steuerelemente zeigen die gewählte Farbe in Echtzeit",
+        "colors_preview_btn": "Hauptaktion",
+        "drv_banner_title": "Hardware- & Grafiktreiber",
+        "drv_banner_desc": "Verwalten Sie Grafiktreiber, CUDA-Rechenbibliotheken und Hardwarebeschleunigung.",
         "app_title": "Sadeem-System",
         "tab_updates": "Aktualisierungen",
         "tab_colors": "Farben & Design",
@@ -438,6 +473,13 @@ TRANSLATIONS = {
         "box_filter_all": "Alle Dateien (*)"
     },
     "tr": {
+        "colors_banner_title": "Görünüm ve Vurgu Renkleri",
+        "colors_banner_desc": "Masaüstü vurgu renklerini ve sistem görünümünü kişiselleştirin.",
+        "colors_preview_title": "Canlı Vurgu Rengi Önizlemesi",
+        "colors_preview_desc": "Seçilen rengi gerçek zamanlı gösteren örnek arayüz öğeleri",
+        "colors_preview_btn": "Birincil Eylem",
+        "drv_banner_title": "Donanım ve GPU Sürücüleri",
+        "drv_banner_desc": "Grafik sürücülerini, CUDA kütüphanelerini ve donanım hızlandırmasını yönetin.",
         "app_title": "Sadeem Sistemi",
         "tab_updates": "Güncellemeler",
         "tab_colors": "Renkler ve Tema",
@@ -521,6 +563,13 @@ TRANSLATIONS = {
         "box_filter_all": "Tüm Dosyalar (*)"
     },
     "ru": {
+        "colors_banner_title": "Внешний вид и акцентные цвета",
+        "colors_banner_desc": "Настройте акцентные цвета рабочего стола и оформление системы.",
+        "colors_preview_title": "Живой просмотр акцентного цвета",
+        "colors_preview_desc": "Интерактивные элементы, показывающие выбранный цвет в реальном времени",
+        "colors_preview_btn": "Основное действие",
+        "drv_banner_title": "Драйверы оборудования и GPU",
+        "drv_banner_desc": "Управление графическими драйверами, библиотеками CUDA и аппаратным ускорением.",
         "app_title": "Система Sadeem",
         "tab_updates": "Обновления",
         "tab_colors": "Цвета и тема",
@@ -604,6 +653,13 @@ TRANSLATIONS = {
         "box_filter_all": "Все файлы (*)"
     },
     "pt": {
+        "colors_banner_title": "Aparência e Cores de Destaque",
+        "colors_banner_desc": "Personalize as cores de destaque e a aparência geral do sistema.",
+        "colors_preview_title": "Pré-visualização da Cor de Destaque",
+        "colors_preview_desc": "Elementos interativos mostrando a cor selecionada em tempo real",
+        "colors_preview_btn": "Ação Principal",
+        "drv_banner_title": "Drivers de Hardware e GPU",
+        "drv_banner_desc": "Gerencie drivers gráficos, bibliotecas CUDA e aceleração por hardware.",
         "app_title": "Sistema Sadeem",
         "tab_updates": "Atualizações",
         "tab_colors": "Cores e Tema",
@@ -687,6 +743,13 @@ TRANSLATIONS = {
         "box_filter_all": "Todos os Ficheiros (*)"
     },
     "it": {
+        "colors_banner_title": "Aspetto e colori di risalto",
+        "colors_banner_desc": "Personalizza i colori di risalto del desktop e l'aspetto del sistema.",
+        "colors_preview_title": "Anteprima colore di risalto",
+        "colors_preview_desc": "Elementi interattivi che mostrano il colore selezionato in tempo real",
+        "colors_preview_btn": "Azione principale",
+        "drv_banner_title": "Driver hardware e GPU",
+        "drv_banner_desc": "Gestisci i driver grafici, le librerie CUDA e l'accelerazione hardware.",
         "app_title": "Sistema Sadeem",
         "tab_updates": "Aggiornamenti",
         "tab_colors": "Colori e Aspetto",
@@ -770,6 +833,13 @@ TRANSLATIONS = {
         "box_filter_all": "Tutti i file (*)"
     },
     "zh": {
+        "colors_banner_title": "外观与强调色",
+        "colors_banner_desc": "个性化桌面强调色与系统视觉外观。",
+        "colors_preview_title": "强调色实时预览",
+        "colors_preview_desc": "实时展示所选强调色效果的交互式控件",
+        "colors_preview_btn": "主要操作",
+        "drv_banner_title": "硬件与显卡驱动",
+        "drv_banner_desc": "管理图形驱动程序、CUDA 计算库和硬件加速。",
         "app_title": "Sadeem 系统",
         "tab_updates": "更新",
         "tab_colors": "外观配色",
@@ -955,7 +1025,7 @@ def safe_icon(icon_names, fallback="application-x-executable-symbolic"):
     return fallback
 
 
-def create_badge(icon_names, size=64, icon_size=32, fallback="application-x-executable-symbolic"):
+def create_badge(icon_names, size=64, icon_size=28, fallback="application-x-executable-symbolic"):
     badge = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
     badge.set_halign(Gtk.Align.CENTER)
     badge.set_valign(Gtk.Align.CENTER)
@@ -971,6 +1041,31 @@ def create_badge(icon_names, size=64, icon_size=32, fallback="application-x-exec
     img.set_vexpand(True)
     badge.append(img)
     return badge
+
+
+def build_page_header(icon_names, title, subtitle):
+    box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+    box.set_halign(Gtk.Align.CENTER)
+    box.set_margin_bottom(6)
+
+    badge = create_badge(icon_names, size=64, icon_size=28)
+    badge.set_halign(Gtk.Align.CENTER)
+    box.append(badge)
+
+    title_lbl = Gtk.Label(label=title)
+    title_lbl.add_css_class("sadeem-header-title")
+    title_lbl.set_wrap(True)
+    title_lbl.set_justify(Gtk.Justification.CENTER)
+    box.append(title_lbl)
+
+    sub_lbl = Gtk.Label(label=subtitle)
+    sub_lbl.add_css_class("sadeem-header-subtitle")
+    sub_lbl.set_wrap(True)
+    sub_lbl.set_justify(Gtk.Justification.CENTER)
+    sub_lbl.set_max_width_chars(54)
+    box.append(sub_lbl)
+
+    return box
 
 
 def launch_boxbuddy():
@@ -1230,7 +1325,11 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 GLib.idle_add(_show)
         threading.Thread(target=_check, daemon=True).start()
 
+    def build_page_header(self, icon_names, title, subtitle):
+        return build_page_header(icon_names, title, subtitle)
+
     def setup_ui(self, initial_tab):
+        self.setup_color_css()
         self.toast_overlay = Adw.ToastOverlay()
         self.toolbar_view = Adw.ToolbarView()
         self.toast_overlay.set_child(self.toolbar_view)
@@ -1314,25 +1413,13 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         content.set_margin_end(20)
         clamp.set_child(content)
 
-        # Banner Header
-        banner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        banner_box.set_halign(Gtk.Align.CENTER)
-
-        badge = create_badge(["software-update-available-symbolic", "system-software-update-symbolic"], size=64, icon_size=32)
-        banner_box.append(badge)
-
-        title_lbl = Gtk.Label(label=t("upd_banner_title"))
-        title_lbl.add_css_class("title-1")
-        title_lbl.set_wrap(True)
-        title_lbl.set_justify(Gtk.Justification.CENTER)
-        banner_box.append(title_lbl)
-
-        desc_lbl = Gtk.Label(label=t("upd_banner_desc"))
-        desc_lbl.add_css_class("dim-label")
-        desc_lbl.set_wrap(True)
-        desc_lbl.set_justify(Gtk.Justification.CENTER)
-        banner_box.append(desc_lbl)
-        content.append(banner_box)
+        # Unified Banner Header
+        header = self.build_page_header(
+            ["software-update-available-symbolic", "system-software-update-symbolic"],
+            t("upd_banner_title"),
+            t("upd_banner_desc")
+        )
+        content.append(header)
 
         # Target Switches Group
         pref_group = Adw.PreferencesGroup()
@@ -1667,29 +1754,32 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
     def build_colors_page(self):
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
+        scrolled.set_propagate_natural_height(False)
 
         clamp = Adw.Clamp()
-        clamp.set_maximum_size(640)
+        clamp.set_maximum_size(620)
         clamp.set_tightening_threshold(480)
         scrolled.set_child(clamp)
 
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        content.set_valign(Gtk.Align.CENTER)
         content.set_margin_top(20)
         content.set_margin_bottom(24)
         content.set_margin_start(20)
         content.set_margin_end(20)
         clamp.set_child(content)
 
-        # Preset Colors Group - Clean group title without duplicate description
+        # Section 1: Unified Page Header
+        header = self.build_page_header(
+            ["preferences-desktop-appearance-symbolic", "preferences-desktop-theme-symbolic"],
+            t("colors_banner_title"),
+            t("colors_banner_desc")
+        )
+        content.append(header)
+
+        # Section 2: Preset Colors Group
         preset_group = Adw.PreferencesGroup(
             title=t("colors_presets_title")
-        )
-        content.append(preset_group)
-
-        # Header reset row
-        reset_row = Adw.ActionRow(
-            title=t("colors_presets_title"),
-            subtitle=t("colors_presets_desc")
         )
         self.restore_btn = Gtk.Button()
         restore_content = Adw.ButtonContent(
@@ -1699,16 +1789,18 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.restore_btn.set_child(restore_content)
         self.restore_btn.add_css_class("flat")
         self.restore_btn.connect("clicked", lambda b: self.set_color("#7a1c33"))
-        reset_row.add_suffix(self.restore_btn)
-        preset_group.add(reset_row)
+        preset_group.set_header_suffix(self.restore_btn)
+        content.append(preset_group)
 
         preset_row = Adw.ActionRow()
+        preset_row.set_activatable(False)
         palette_box = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=10,
+            spacing=12,
             halign=Gtk.Align.CENTER,
-            margin_top=8,
-            margin_bottom=8
+            hexpand=True,
+            margin_top=10,
+            margin_bottom=10
         )
         self.preset_buttons = []
         color_names = t("color_names") if isinstance(t("color_names"), list) else []
@@ -1718,6 +1810,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             btn.set_tooltip_text(f"{name} ({hex_code})")
             btn.add_css_class("color-circle")
             btn.add_css_class(f"preset-color-{i}")
+            btn.set_size_request(42, 42)
 
             icon = Gtk.Image.new_from_icon_name(safe_icon(["object-select-symbolic", "emblem-ok-symbolic"]))
             icon.set_visible(False)
@@ -1731,7 +1824,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         preset_row.set_child(palette_box)
         preset_group.add(preset_row)
 
-        # Custom Color Group
+        # Section 3: Custom Color Group
         custom_group = Adw.PreferencesGroup(title=t("colors_custom_title"))
         content.append(custom_group)
 
@@ -1747,7 +1840,37 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.custom_row.add_suffix(self.color_dialog_btn)
         custom_group.add(self.custom_row)
 
-        self.setup_color_css()
+        # Section 4: Live Accent Preview Group
+        preview_group = Adw.PreferencesGroup(title=t("colors_preview_title"))
+        content.append(preview_group)
+
+        preview_row = Adw.ActionRow(title=t("colors_preview_desc"))
+        preview_row.set_activatable(False)
+
+        preview_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14)
+        preview_box.set_valign(Gtk.Align.CENTER)
+        preview_box.set_halign(Gtk.Align.END)
+
+        self.preview_progress = Gtk.ProgressBar()
+        self.preview_progress.set_fraction(0.65)
+        self.preview_progress.set_valign(Gtk.Align.CENTER)
+        self.preview_progress.set_size_request(110, -1)
+        preview_box.append(self.preview_progress)
+
+        self.preview_switch = Gtk.Switch()
+        self.preview_switch.set_active(True)
+        self.preview_switch.set_valign(Gtk.Align.CENTER)
+        preview_box.append(self.preview_switch)
+
+        self.preview_btn = Gtk.Button(label=t("colors_preview_btn"))
+        self.preview_btn.add_css_class("suggested-action")
+        self.preview_btn.add_css_class("pill")
+        self.preview_btn.set_valign(Gtk.Align.CENTER)
+        preview_box.append(self.preview_btn)
+
+        preview_row.add_suffix(preview_box)
+        preview_group.add(preview_row)
+
         initial_color = self.detect_current_color()
         self.set_color(initial_color, is_init=True)
 
@@ -1757,18 +1880,27 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         palette_css = """
         .sadeem-gradient-badge {
             background: linear-gradient(135deg, #7a1c33 0%, #115e59 100%);
-            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(203, 213, 225, 0.45);
             border-radius: 9999px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         .sadeem-gradient-badge image {
             color: #ffffff;
         }
+        .sadeem-header-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .sadeem-header-subtitle {
+            font-size: 14px;
+            opacity: 0.85;
+        }
         .color-circle {
-            min-width: 38px;
-            min-height: 38px;
+            min-width: 42px;
+            min-height: 42px;
             border-radius: 9999px;
             padding: 0;
+            margin: 4px 6px;
             border: 2px solid rgba(255, 255, 255, 0.25);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
             transition: transform 120ms ease;
@@ -1861,6 +1993,16 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
           --accent-bg-color: {hex_norm};
           --accent-fg-color: {pal['accent_fg']};
           --accent-color: {pal['accent_color']};
+        }}
+        button.suggested-action {{
+          background-color: {hex_norm};
+          color: {pal['accent_fg']};
+        }}
+        switch:checked {{
+          background-color: {hex_norm};
+        }}
+        progressbar > trough > progress {{
+          background-color: {hex_norm};
         }}
         """
         self.live_css_provider.load_from_string(live_css)
@@ -1973,29 +2115,61 @@ stage {{
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
+        scrolled.set_propagate_natural_height(False)
 
         clamp = Adw.Clamp()
         clamp.set_maximum_size(640)
         clamp.set_tightening_threshold(480)
         scrolled.set_child(clamp)
 
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        content.set_margin_top(20)
+        content.set_margin_bottom(24)
+        content.set_margin_start(20)
+        content.set_margin_end(20)
+        clamp.set_child(content)
+
         # Case 1: No NVIDIA GPU
         if not gpus:
-            status = Adw.StatusPage()
-            status.set_icon_name(safe_icon(["video-display-symbolic", "computer-symbolic"]))
-            status.set_title(t("drv_no_gpu_title"))
-            status.set_description(t("drv_no_gpu_desc"))
-            clamp.set_child(status)
+            header = self.build_page_header(
+                ["video-display-symbolic", "computer-symbolic"],
+                t("drv_banner_title"),
+                t("drv_banner_desc")
+            )
+            content.append(header)
+
+            card_group = Adw.PreferencesGroup()
+            content.append(card_group)
+
+            row = Adw.ActionRow(
+                title=t("drv_no_gpu_title"),
+                subtitle=t("drv_no_gpu_desc")
+            )
+            row.set_subtitle_lines(4)
+            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic", "computer-symbolic"])))
+            card_group.add(row)
             return scrolled
 
         # Case 2: Driver already active
         if is_driver_installed():
-            status = Adw.StatusPage()
-            status.set_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"]))
-            status.set_title(t("drv_installed_title"))
+            header = self.build_page_header(
+                ["video-display-symbolic", "emblem-ok-symbolic"],
+                t("drv_banner_title"),
+                t("drv_banner_desc")
+            )
+            content.append(header)
+
+            card_group = Adw.PreferencesGroup()
+            content.append(card_group)
+
             detected_names = ", ".join([g["raw_name"] for g in gpus])
-            status.set_description(t("drv_installed_desc", card_names=detected_names))
-            clamp.set_child(status)
+            row = Adw.ActionRow(
+                title=t("drv_installed_title"),
+                subtitle=t("drv_installed_desc", card_names=detected_names)
+            )
+            row.set_subtitle_lines(3)
+            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"])))
+            card_group.add(row)
             return scrolled
 
         # Case 3: Unsupported legacy card
@@ -2003,20 +2177,32 @@ stage {{
         category, card_name, cat_info = classify_gpu(primary_gpu, db)
 
         if category == "unsupported":
-            status = Adw.StatusPage()
-            status.set_icon_name(safe_icon(["dialog-warning-symbolic"]))
-            status.set_title(t("drv_unsupported_title"))
-            status.set_description(t("drv_unsupported_desc"))
-            clamp.set_child(status)
+            header = self.build_page_header(
+                ["video-display-symbolic", "dialog-warning-symbolic"],
+                t("drv_banner_title"),
+                t("drv_banner_desc")
+            )
+            content.append(header)
+
+            card_group = Adw.PreferencesGroup()
+            content.append(card_group)
+
+            row = Adw.ActionRow(
+                title=t("drv_unsupported_title"),
+                subtitle=t("drv_unsupported_desc")
+            )
+            row.set_subtitle_lines(4)
+            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic"])))
+            card_group.add(row)
             return scrolled
 
         # Case 4: Supported GPU ready for installation
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
-        content.set_margin_top(20)
-        content.set_margin_bottom(24)
-        content.set_margin_start(20)
-        content.set_margin_end(20)
-        clamp.set_child(content)
+        header = self.build_page_header(
+            ["video-display-symbolic", "system-software-install-symbolic"],
+            t("drv_banner_title"),
+            t("drv_banner_desc")
+        )
+        content.append(header)
 
         # Hardware info group
         hw_group = Adw.PreferencesGroup(title=t("drv_hw_title"))
@@ -2041,6 +2227,7 @@ stage {{
         content.append(opt_group)
 
         self.cuda_switch = Adw.SwitchRow()
+        self.cuda_switch.set_use_markup(False)
         self.cuda_switch.set_title(t("drv_cuda_title"))
         self.cuda_switch.set_subtitle(t("drv_cuda_desc"))
         self.cuda_switch.set_active(True)
@@ -2096,6 +2283,7 @@ stage {{
         log_scrolled = Gtk.ScrolledWindow()
         log_scrolled.set_min_content_height(180)
         log_scrolled.set_max_content_height(260)
+        log_scrolled.set_propagate_natural_height(False)
         log_scrolled.add_css_class("card")
         self.drv_progress_box.append(log_scrolled)
 
@@ -2112,7 +2300,7 @@ stage {{
 
         # Reboot Button
         self.btn_reboot_drivers = Gtk.Button(label=t("btn_reboot_drivers"))
-        self.btn_reboot_drivers.add_css_class("destructive-action")
+        self.btn_reboot_drivers.add_css_class("suggested-action")
         self.btn_reboot_drivers.add_css_class("pill")
         self.btn_reboot_drivers.set_size_request(-1, 50)
         self.btn_reboot_drivers.set_visible(False)
@@ -2246,24 +2434,13 @@ stage {{
         content.set_margin_end(20)
         clamp.set_child(content)
 
-        # Header Banner
-        banner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        banner_box.set_halign(Gtk.Align.CENTER)
-
-        badge = create_badge(["package-x-generic-symbolic", "system-run-symbolic"], size=64, icon_size=32)
-        banner_box.append(badge)
-
-        title_lbl = Gtk.Label(label=t("box_header_title"))
-        title_lbl.add_css_class("title-1")
-        title_lbl.set_wrap(True)
-        banner_box.append(title_lbl)
-
-        desc_lbl = Gtk.Label(label=t("box_header_desc"))
-        desc_lbl.add_css_class("dim-label")
-        desc_lbl.set_wrap(True)
-        desc_lbl.set_justify(Gtk.Justification.CENTER)
-        banner_box.append(desc_lbl)
-        content.append(banner_box)
+        # Unified Header
+        header = self.build_page_header(
+            ["package-x-generic-symbolic", "system-run-symbolic"],
+            t("box_header_title"),
+            t("box_header_desc")
+        )
+        content.append(header)
 
         # Status Group
         status_group = Adw.PreferencesGroup()
