@@ -216,7 +216,6 @@ modules:
           echo 'LOGO="saifdora-logo-icon"' >> /usr/lib/os-release
         fi
         ln -sf ../usr/lib/os-release /etc/os-release
-        grep -q "SAIFDORA_FASTFETCH" /etc/bashrc || printf '\nif [ -x /usr/bin/fastfetch ] && [[ $- == *i* ]] && [ -z "$SAIFDORA_FASTFETCH" ]; then export SAIFDORA_FASTFETCH=1; fastfetch; fi\n' >> /etc/bashrc
         chmod +x /usr/bin/saifdora-colors /usr/bin/saifdora-accent-watcher || true
 
   # Enable flatpak system services and user systemd units
