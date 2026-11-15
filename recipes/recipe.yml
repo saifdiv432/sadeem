@@ -125,12 +125,14 @@ modules:
         cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg
         cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg
         cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg
+        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-dark.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text-dark.svg
+        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-light.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg
         rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png
         rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark.svg -o /usr/share/pixmaps/fedora-logo.png
-        rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark.svg -o /usr/share/pixmaps/fedora-logo-small.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark.svg -o /usr/share/pixmaps/system-logo-white.png
+        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png
+        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-light.svg -o /usr/share/pixmaps/fedora-logo.png
+        rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-light.svg -o /usr/share/pixmaps/fedora-logo-small.png
+        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-wordmark-dark.svg -o /usr/share/pixmaps/system-logo-white.png
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
         # Safely remove gnome-tweaks if present in base image
         rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
