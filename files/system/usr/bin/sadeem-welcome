@@ -1139,9 +1139,9 @@ class WelcomeApplication(Adw.Application):
 
     def do_command_line(self, command_line):
         args = command_line.get_arguments()
-        if "--autostart" in args:
-            if is_seen():
-                return 0
+        is_autostart = "--autostart" in args or "DESKTOP_AUTOSTART_ID" in os.environ
+        if is_autostart and is_seen():
+            return 0
 
         self.activate()
         return 0
@@ -1157,9 +1157,9 @@ class WelcomeApplication(Adw.Application):
 
 def main():
     # Fast exit for autostart if already seen before starting GTK
-    if "--autostart" in sys.argv:
-        if is_seen():
-            sys.exit(0)
+    is_autostart = "--autostart" in sys.argv or "DESKTOP_AUTOSTART_ID" in os.environ
+    if is_autostart and is_seen():
+        sys.exit(0)
 
     app = WelcomeApplication()
     return app.run(sys.argv)
