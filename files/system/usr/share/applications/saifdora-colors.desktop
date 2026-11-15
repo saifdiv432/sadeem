@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Saifdora Colors
-Name[ar]=ألوان سيفدورا
+Name=Sadeem Colors
+Name[ar]=ألوان سديم
 Comment=Customize system accent color with full color wheel
 Comment[ar]=تخصيص اللون الأساسي للواجهة عبر دائرة الألوان أو استعادة الخمري
 Exec=/usr/bin/saifdora-colors

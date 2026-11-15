@@ -5,7 +5,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-13 21:35+0200\n"
 "PO-Revision-Date: 2024-11-13 12:00+0000\n"
-"Last-Translator: Saifdora Translation Team\n"
+"Last-Translator: Sadeem Translation Team\n"
 "Language-Team: zh_CN Translation Team\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
@@ -14,8 +14,8 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: files/system/usr/bin/saifdora-welcome:92
-msgid "Welcome to Saifdora"
-msgstr "欢迎使用 Saifdora"
+msgid "Welcome to Sadeem"
+msgstr "欢迎使用 Sadeem"
 
 #: files/system/usr/bin/saifdora-welcome:114
 msgid "NVIDIA graphics card detected! Official drivers are not installed."
@@ -44,9 +44,9 @@ msgstr "开箱即用"
 
 #: files/system/usr/bin/saifdora-welcome:273
 msgid ""
-"Saifdora Silverblue 45 includes comprehensive codecs, hardware acceleration,"
+"Sadeem 45 includes comprehensive codecs, hardware acceleration,"
 " and essential utilities pre-configured."
-msgstr "Saifdora Silverblue 45 预先配置了全面的解码器、硬件加速及必备实用工具。"
+msgstr "Sadeem 45 预先配置了全面的解码器、硬件加速及必备实用工具。"
 
 #: files/system/usr/bin/saifdora-welcome:280
 msgid "Multimedia & Hardware Acceleration"

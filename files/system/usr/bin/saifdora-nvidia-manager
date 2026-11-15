@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Saifdora Silverblue 45 - NVIDIA & CUDA Driver Manager
+Sadeem 45 - NVIDIA & CUDA Driver Manager
 GUI Application built with Python 3, GTK 4, and Libadwaita.
 Supports multi-language localization via gettext.
 """
@@ -238,7 +238,7 @@ class NvidiaManagerWindow(Adw.ApplicationWindow):
         header = Adw.HeaderBar()
         title_widget = Adw.WindowTitle(
             title=_("NVIDIA Driver Manager"),
-            subtitle="Saifdora Silverblue 45"
+            subtitle="Sadeem 45"
         )
         header.set_title_widget(title_widget)
         main_box.append(header)
@@ -321,7 +321,7 @@ class NvidiaManagerWindow(Adw.ApplicationWindow):
             label_info.set_xalign(0.0)
             label_info.set_markup(
                 _("• This GPU belongs to a legacy generation (Kepler / Fermi series or earlier) which is no longer compatible with modern Linux kernels and Wayland.\n\n"
-                  "• <b>Saifdora Silverblue</b> automatically utilizes the built-in, stable open-source driver (<b>Nouveau / NVK</b>) to prevent display server crashes and ensure maximum stability.\n\n"
+                  "• <b>Sadeem</b> automatically utilizes the built-in, stable open-source driver (<b>Nouveau / NVK</b>) to prevent display server crashes and ensure maximum stability.\n\n"
                   "• <b>No action is required;</b> your system is ready and operating efficiently.")
             )
             info_group.add(label_info)
@@ -486,7 +486,7 @@ class NvidiaManagerWindow(Adw.ApplicationWindow):
         script_commands = [
             "set -euo pipefail",
             "echo '=================================================='",
-            "echo ' Starting NVIDIA Driver Setup for Saifdora '",
+            "echo ' Starting NVIDIA Driver Setup for Sadeem '",
             "echo '=================================================='",
         ]
 

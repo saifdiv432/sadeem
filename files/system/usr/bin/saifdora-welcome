@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Saifdora Welcome App (saifdora-welcome)
-Interactive onboarding application for Saifdora Silverblue 45.
+Sadeem Welcome App (saifdora-welcome)
+Interactive onboarding application for Sadeem 45.
 Built with Python 3, GTK 4, and Libadwaita following GNOME 51 Human Interface Guidelines.
 """
 
@@ -89,7 +89,7 @@ def check_nvidia_status():
 class WelcomeWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.set_title(_("Welcome to Saifdora"))
+        self.set_title(_("Welcome to Sadeem"))
         self.set_default_size(640, 620)
         self.set_resizable(False)
 
@@ -270,7 +270,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
         slide, box = self.create_slide_container(
             "computer-symbolic",
             _("Ready Out of the Box"),
-            _("Saifdora Silverblue 45 includes comprehensive codecs, hardware acceleration, and essential utilities pre-configured.")
+            _("Sadeem 45 includes comprehensive codecs, hardware acceleration, and essential utilities pre-configured.")
         )
         listbox = Gtk.ListBox()
         listbox.add_css_class("boxed-list")

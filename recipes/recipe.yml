@@ -202,9 +202,9 @@ modules:
         rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
 
         gtk-update-icon-cache -f /usr/share/icons/hicolor || true
-        sed -i 's/^NAME=.*/NAME="Saifdora"/' /usr/lib/os-release
-        sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="Saifdora 45 (Silverblue)"/' /usr/lib/os-release
-        sed -i 's/^DEFAULT_HOSTNAME=.*/DEFAULT_HOSTNAME="saifdora"/' /usr/lib/os-release
+        sed -i 's/^NAME=.*/NAME="Sadeem"/' /usr/lib/os-release
+        sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="Sadeem 45"/' /usr/lib/os-release
+        sed -i 's/^DEFAULT_HOSTNAME=.*/DEFAULT_HOSTNAME="sadeem"/' /usr/lib/os-release
         if grep -q '^ANSI_COLOR=' /usr/lib/os-release; then
           sed -i 's/^ANSI_COLOR=.*/ANSI_COLOR="0;38;2;122;28;51"/' /usr/lib/os-release
         else

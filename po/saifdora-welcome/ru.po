@@ -5,7 +5,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-13 21:35+0200\n"
 "PO-Revision-Date: 2024-11-13 12:00+0000\n"
-"Last-Translator: Saifdora Translation Team\n"
+"Last-Translator: Sadeem Translation Team\n"
 "Language-Team: ru Translation Team\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -14,8 +14,8 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: files/system/usr/bin/saifdora-welcome:92
-msgid "Welcome to Saifdora"
-msgstr "Добро пожаловать в Saifdora"
+msgid "Welcome to Sadeem"
+msgstr "Добро пожаловать в Sadeem"
 
 #: files/system/usr/bin/saifdora-welcome:114
 msgid "NVIDIA graphics card detected! Official drivers are not installed."
@@ -44,10 +44,10 @@ msgstr "Готовность «из коробки»"
 
 #: files/system/usr/bin/saifdora-welcome:273
 msgid ""
-"Saifdora Silverblue 45 includes comprehensive codecs, hardware acceleration,"
+"Sadeem 45 includes comprehensive codecs, hardware acceleration,"
 " and essential utilities pre-configured."
 msgstr ""
-"Saifdora Silverblue 45 содержит все кодеки, аппаратное ускорение и "
+"Sadeem 45 содержит все кодеки, аппаратное ускорение и "
 "необходимые утилиты."
 
 #: files/system/usr/bin/saifdora-welcome:280

@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: files/system/usr/bin/saifdora-welcome:92
-msgid "Welcome to Saifdora"
+msgid "Welcome to Sadeem"
 msgstr ""
 
 #: files/system/usr/bin/saifdora-welcome:114
@@ -48,7 +48,7 @@ msgstr ""
 
 #: files/system/usr/bin/saifdora-welcome:273
 msgid ""
-"Saifdora Silverblue 45 includes comprehensive codecs, hardware acceleration, "
+"Sadeem 45 includes comprehensive codecs, hardware acceleration, "
 "and essential utilities pre-configured."
 msgstr ""
 
