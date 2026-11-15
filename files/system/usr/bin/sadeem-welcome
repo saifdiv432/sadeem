@@ -30,10 +30,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 includes comprehensive codecs, hardware acceleration, and essential utilities pre-configured.",
         "s1_r1_t": "Multimedia & Hardware Acceleration",
         "s1_r1_d": "Full codec support (HEVC, AV1, HEIC) and hardware video decoding for Intel and AMD.",
-        "s1_r2_t": "Curated Repositories",
-        "s1_r2_d": "Flathub and RPM Fusion (Free & Non-Free) enabled out of the box.",
-        "s1_r3_t": "Localization & System Tools",
-        "s1_r3_d": "Full support for 12 languages with built-in tools for 7-Zip, RAR, and PDF.",
+        "s1_r2_t": "Universal App Ecosystem",
+        "s1_r2_d": "Full support for Flathub, double-click .rpm & .deb packages via Sadeem Box, and .AppImage via Gear Lever.",
+        "s1_r3_t": "Sadeem System Control Center",
+        "s1_r3_d": "Unified hub for updates, theme colors, GPU drivers, and containers.",
+        "s1_r3_b": "Open System",
         # Slide 2
         "s2_title": "Integrated Productivity Apps",
         "s2_sub": "High-performance desktop applications installed natively in your system.",
@@ -49,8 +50,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Interface Customization & Extensions",
         "s3_sub": "Enhance and personalize your GNOME desktop with pre-configured extensions and utilities.",
-        "s3_r1_t": "Lockscreen Clock",
-        "s3_r1_d": "Lockscreen clock with weather and smart regional dates, fully customizable.",
+        "s3_r1_t": "Colors & Visual Theme",
+        "s3_r1_d": "Custom Burgundy identity and dynamic accent color customization with live preview.",
+        "s3_r1_b": "Sadeem Colors",
         "s3_r2_t": "Desktop Extensions",
         "s3_r2_d": "Includes ArcMenu app launcher, Dash to Dock, and Clipboard Indicator.",
         "s3_r2_b": "Manage Extensions",
@@ -58,15 +60,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Fine-tune window buttons and GNOME appearance using Refine.",
         "s3_r3_b": "Customize Desktop",
         # Slide 4
-        "s4_title": "Hardware & System Updates",
-        "s4_sub": "Optimized for smooth performance across Intel, AMD, and NVIDIA hardware.",
-        "s4_r1_t": "Intel & AMD Acceleration",
-        "s4_r1_d": "Hardware video acceleration (VA-API / Mesa / Intel Media Driver) is pre-configured and active.",
-        "s4_r2_t": "NVIDIA & CUDA Drivers",
-        "s4_r2_d": "Detect your GPU model, install official drivers, configure CUDA, and manage Secure Boot.",
-        "s4_r2_b": "Open NVIDIA Manager",
-        "s4_r3_t": "Safe Atomic Updates",
-        "s4_r3_d": "Immutable Fedora Silverblue base protects the system and enables instant rollbacks.",
+        "s4_title": "Drivers, Containers & Updates",
+        "s4_sub": "Manage hardware drivers, external package runtimes, and atomic updates.",
+        "s4_r1_t": "NVIDIA & CUDA Drivers",
+        "s4_r1_d": "Detect your GPU model, install official drivers, configure CUDA, and manage Secure Boot.",
+        "s4_r1_b": "Manage Drivers",
+        "s4_r2_t": "Sadeem Box Containers",
+        "s4_r2_d": "Isolated runtime for .rpm & .deb packages without altering the immutable OS.",
+        "s4_r2_b": "Containers",
+        "s4_r3_t": "Safe On-Demand Updates",
+        "s4_r3_d": "One-click manual updates for core system, store apps, and containers with instant rollback.",
+        "s4_r3_b": "Check Updates",
         # Slide 5
         "s5_title": "GNOME Navigation Basics",
         "s5_sub": "Master simple gestures and shortcuts to move swiftly through your workspace.",
@@ -91,10 +95,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "يتضمن سديم 45 دعماً شاملاً لجميع برامج الترميز، وتسريع العتاد، والأدوات الأساسية مهيأة مسبقاً.",
         "s1_r1_t": "الوسائط المتعددة وتسريع العتاد",
         "s1_r1_d": "دعم كامل للترميزات (HEVC, AV1, HEIC) وفك تشفير الفيديو عبر العتاد لمعالجات Intel و AMD.",
-        "s1_r2_t": "مستودعات برمجية معتمدة",
-        "s1_r2_d": "مستودعات Flathub و RPM Fusion (الحرة وغير الحرة) مفعلة وجاهزة تلقائياً.",
-        "s1_r3_t": "التعريب وأدوات النظام",
-        "s1_r3_d": "دعم متكامل لـ 12 لغة مع أدوات مدمجة لملفات 7-Zip و RAR و PDF.",
+        "s1_r2_t": "منظومة التطبيقات الشاملة",
+        "s1_r2_d": "دعم متجر Flathub، حزم .rpm و .deb بالنقر المزدوج عبر Sadeem Box، وحزم .AppImage عبر Gear Lever.",
+        "s1_r3_t": "مركز التحكم 'نظام سديم'",
+        "s1_r3_d": "لوحة تحكم شاملة للتحديثات، تخصيص الألوان، تعريفات الرسوميات، وإدارة الحاويات.",
+        "s1_r3_b": "فتح نظام سديم",
         # Slide 2
         "s2_title": "تطبيقات إنتاجية مدمجة",
         "s2_sub": "تطبيقات سطح مكتب عالية الأداء ومثبتة أصلياً في نظامك.",
@@ -110,8 +115,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "تخصيص الواجهة والإضافات",
         "s3_sub": "حسّن وخصّص سطح مكتب جنوم عبر مجموعة إضافات وأدوات مهيأة مسبقاً.",
-        "s3_r1_t": "ساعة شاشة القفل",
-        "s3_r1_d": "ساعة شاشة القفل مع الطقس والتاريخ الإقليمي الذكي، قابلة للتخصيص بالكامل.",
+        "s3_r1_t": "الألوان والهوية البصرية",
+        "s3_r1_d": "تناسق الهوية الخمرية مع تخصيص فوري للألوان الأساسية للنظام والتطبيقات.",
+        "s3_r1_b": "ألوان سديم",
         "s3_r2_t": "إضافات سطح المكتب",
         "s3_r2_d": "تتضمن قائمة التطبيقات ArcMenu وشريط Dash to Dock وسجل الحافظة Clipboard Indicator.",
         "s3_r2_b": "إدارة الإضافات",
@@ -119,15 +125,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "تحكم دقيق بأزرار النوافذ ومظهر جنوم باستخدام أداة Refine.",
         "s3_r3_b": "تخصيص المظهر",
         # Slide 4
-        "s4_title": "العتاد وتحديثات النظام",
-        "s4_sub": "أداء فائق واستقرار عالٍ عبر معالجات وبطاقات Intel و AMD و NVIDIA.",
-        "s4_r1_t": "تسريع Intel و AMD",
-        "s4_r1_d": "تسريع الفيديو العتادي (VA-API / Mesa / Intel Media Driver) مهيأ ومفعّل مسبقاً.",
-        "s4_r2_t": "تعريفات NVIDIA و CUDA",
-        "s4_r2_d": "التعرف التلقائي على طراز كرت الشاشة وتثبيت التعريفات الرسمية و CUDA وإدارة الإقلاع الآمن.",
-        "s4_r2_b": "مدير تعريفات NVIDIA",
-        "s4_r3_t": "تحديثات ذرية آمنة",
-        "s4_r3_d": "قاعدة فيدورا سيلفربلو غير القابلة للتعديل تضمن حماية النظام والرجوع الفوري للإصدار السابق.",
+        "s4_title": "التعريفات والحاويات والتحديثات",
+        "s4_sub": "إدارة تعريفات العتاد، بيئة تشغيل الحزم، وتحديثات النظام بضغطة واحدة.",
+        "s4_r1_t": "تعريفات NVIDIA و CUDA",
+        "s4_r1_d": "التعرف التلقائي على طراز كرت الشاشة وتثبيت التعريفات الرسمية و CUDA وإدارة الإقلاع الآمن.",
+        "s4_r1_b": "إدارة التعريفات",
+        "s4_r2_t": "حاوية سديم (Sadeem Box)",
+        "s4_r2_d": "بيئة معزولة لتشغيل وتثبيت حزم .rpm و .deb دون المساس بالنظام الذري الأساسي.",
+        "s4_r2_b": "إدارة الحاويات",
+        "s4_r3_t": "تحديثات ذرية آمنة عند الطلب",
+        "s4_r3_d": "تحديث النظام وتطبيقات المتجر والحاويات بضغطة واحدة مع ميزة الرجوع الفوري.",
+        "s4_r3_b": "فحص التحديثات",
         # Slide 5
         "s5_title": "أساسيات التنقل في جنوم",
         "s5_sub": "تعرف على الإيماءات والاختصارات البسيطة للتنقل السريع في مساحات العمل.",
@@ -152,10 +160,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 inclut des codecs complets, l'accélération matérielle et des utilitaires essentiels préconfigurés.",
         "s1_r1_t": "Multimédia et accélération matérielle",
         "s1_r1_d": "Prise en charge complète des codecs (HEVC, AV1, HEIC) et décodage vidéo matériel pour Intel et AMD.",
-        "s1_r2_t": "Dépôts sélectionnés",
-        "s1_r2_d": "Flathub et RPM Fusion (Free et Non-Free) activés par défaut.",
-        "s1_r3_t": "Localisation et outils système",
-        "s1_r3_d": "Prise en charge de 12 langues avec des outils intégrés pour 7-Zip, RAR et PDF.",
+        "s1_r2_t": "Écosystème d'applications universel",
+        "s1_r2_d": "Prise en charge de Flathub, double-clic sur .rpm et .deb via Sadeem Box, et .AppImage via Gear Lever.",
+        "s1_r3_t": "Centre de contrôle Système Sadeem",
+        "s1_r3_d": "Centre unifié pour les mises à jour, couleurs, pilotes GPU et conteneurs.",
+        "s1_r3_b": "Ouvrir Système",
         # Slide 2
         "s2_title": "Applications de productivité intégrées",
         "s2_sub": "Applications de bureau hautes performances installées nativement sur votre système.",
@@ -171,8 +180,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Personnalisation et extensions",
         "s3_sub": "Améliorez et personnalisez votre bureau GNOME avec des extensions préconfigurées.",
-        "s3_r1_t": "Horloge de l'écran de verrouillage",
-        "s3_r1_d": "Horloge d'écran de verrouillage avec météo et dates régionales intelligentes, entièrement personnalisable.",
+        "s3_r1_t": "Couleurs et thème visuel",
+        "s3_r1_d": "Identité bordeaux personnalisée et ajustement instantané des couleurs d'accentuation.",
+        "s3_r1_b": "Couleurs Sadeem",
         "s3_r2_t": "Extensions de bureau",
         "s3_r2_d": "Comprend le lanceur ArcMenu, Dash to Dock et Clipboard Indicator.",
         "s3_r2_b": "Gérer les extensions",
@@ -180,15 +190,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Affinez les boutons de fenêtre et l'apparence de GNOME à l'aide de Refine.",
         "s3_r3_b": "Personnaliser le bureau",
         # Slide 4
-        "s4_title": "Matériel et mises à jour système",
-        "s4_sub": "Optimisé pour des performances fluides sur le matériel Intel, AMD et NVIDIA.",
-        "s4_r1_t": "Accélération Intel et AMD",
-        "s4_r1_d": "L'accélération vidéo matérielle (VA-API / Mesa / Intel Media Driver) est préconfigurée et active.",
-        "s4_r2_t": "Pilotes NVIDIA et CUDA",
-        "s4_r2_d": "Détectez votre carte graphique, installez les pilotes officiels, configurez CUDA et gérez Secure Boot.",
-        "s4_r2_b": "Ouvrir le gestionnaire NVIDIA",
-        "s4_r3_t": "Mises à jour atomiques sécurisées",
-        "s4_r3_d": "La base immuable de Fedora Silverblue protège le système et permet des retours arrière instantanés.",
+        "s4_title": "Pilotes, conteneurs et mises à jour",
+        "s4_sub": "Gérez les pilotes matériels, les conteneurs et les mises à jour en un clic.",
+        "s4_r1_t": "Pilotes NVIDIA et CUDA",
+        "s4_r1_d": "Détection automatique, pilotes officiels, bibliothèques CUDA et gestion Secure Boot.",
+        "s4_r1_b": "Pilotes GPU",
+        "s4_r2_t": "Conteneur Sadeem Box",
+        "s4_r2_d": "Environnement isolé pour les paquets .rpm et .deb sans modifier le système de base.",
+        "s4_r2_b": "Conteneurs",
+        "s4_r3_t": "Mises à jour sécurisées à la demande",
+        "s4_r3_d": "Mise à jour en un clic du système, des applications et conteneurs avec restauration instantanée.",
+        "s4_r3_b": "Mises à jour",
         # Slide 5
         "s5_title": "Bases de navigation GNOME",
         "s5_sub": "Maîtrisez les gestes simples et les raccourcis pour naviguer rapidement.",
@@ -213,10 +225,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 incluye códecs integrales, aceleración por hardware y utilidades esenciales preconfiguradas.",
         "s1_r1_t": "Multimedia y aceleración por hardware",
         "s1_r1_d": "Soporte completo de códecs (HEVC, AV1, HEIC) y decodificación de vídeo por hardware para Intel y AMD.",
-        "s1_r2_t": "Repositorios seleccionados",
-        "s1_r2_d": "Flathub y RPM Fusion (Free y Non-Free) habilitados por defecto.",
-        "s1_r3_t": "Localización y herramientas del sistema",
-        "s1_r3_d": "Soporte completo para 12 idiomas con herramientas integradas para 7-Zip, RAR y PDF.",
+        "s1_r2_t": "Ecosistema universal de aplicaciones",
+        "s1_r2_d": "Soporte para Flathub, doble clic en .rpm y .deb con Sadeem Box, y .AppImage con Gear Lever.",
+        "s1_r3_t": "Centro de control Sistema Sadeem",
+        "s1_r3_d": "Centro unificado para actualizaciones, colores, controladores y contenedores.",
+        "s1_r3_b": "Abrir Sistema",
         # Slide 2
         "s2_title": "Aplicaciones de productividad integradas",
         "s2_sub": "Aplicaciones de escritorio de alto rendimiento instaladas de forma nativa en su sistema.",
@@ -232,8 +245,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Personalización y extensiones de interfaz",
         "s3_sub": "Mejore y personalice su escritorio GNOME con extensiones y utilidades preconfiguradas.",
-        "s3_r1_t": "Reloj de pantalla de bloqueo",
-        "s3_r1_d": "Reloj de pantalla de bloqueo con clima y fechas regionales inteligentes, totalmente personalizable.",
+        "s3_r1_t": "Colores e identidad visual",
+        "s3_r1_d": "Identidad en tono burdeos y personalización dinámica del color de énfasis.",
+        "s3_r1_b": "Colores Sadeem",
         "s3_r2_t": "Extensiones de escritorio",
         "s3_r2_d": "Incluye el lanzador de aplicaciones ArcMenu, Dash to Dock e indicador de portapapeles.",
         "s3_r2_b": "Gestionar extensiones",
@@ -241,15 +255,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Ajuste con precisión los botones de ventana y la apariencia de GNOME con Refine.",
         "s3_r3_b": "Personalizar escritorio",
         # Slide 4
-        "s4_title": "Hardware y actualizaciones del sistema",
-        "s4_sub": "Optimizado para un rendimiento fluido en hardware Intel, AMD y NVIDIA.",
-        "s4_r1_t": "Aceleración de Intel y AMD",
-        "s4_r1_d": "La aceleración de vídeo por hardware (VA-API / Mesa / Intel Media Driver) está preconfigurada y activa.",
-        "s4_r2_t": "Controladores NVIDIA y CUDA",
-        "s4_r2_d": "Detecte su GPU, instale controladores oficiales, configure CUDA y gestione Secure Boot.",
-        "s4_r2_b": "Abrir gestor de NVIDIA",
-        "s4_r3_t": "Actualizaciones atómicas seguras",
-        "s4_r3_d": "La base inmutable de Fedora Silverblue protege el sistema y permite reversiones instantáneas.",
+        "s4_title": "Controladores, contenedores y actualizaciones",
+        "s4_sub": "Gestione controladores, paquetes externos y actualizaciones atómicas.",
+        "s4_r1_t": "Controladores NVIDIA y CUDA",
+        "s4_r1_d": "Detección de GPU, controladores oficiales, CUDA y gestión de Secure Boot.",
+        "s4_r1_b": "Controladores",
+        "s4_r2_t": "Contenedor Sadeem Box",
+        "s4_r2_d": "Entorno aislado para paquetería .rpm y .deb sin alterar el sistema base inmutable.",
+        "s4_r2_b": "Contenedores",
+        "s4_r3_t": "Actualizaciones a petición seguras",
+        "s4_r3_d": "Actualización en un clic de sistema, tiendas y contenedores con reversión instantánea.",
+        "s4_r3_b": "Actualizar",
         # Slide 5
         "s5_title": "Conceptos básicos de navegación en GNOME",
         "s5_sub": "Domine gestos sencillos y atajos para moverse rápidamente por su espacio de trabajo.",
@@ -274,10 +290,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 enthält umfassende Codecs, Hardwarebeschleunigung und vorkonfigurierte Dienstprogramme.",
         "s1_r1_t": "Multimedia & Hardwarebeschleunigung",
         "s1_r1_d": "Vollständige Codec-Unterstützung (HEVC, AV1, HEIC) und Hardware-Videodekodierung für Intel und AMD.",
-        "s1_r2_t": "Ausgewählte Repositorien",
-        "s1_r2_d": "Flathub und RPM Fusion (Free & Non-Free) sind standardmäßig aktiviert.",
-        "s1_r3_t": "Lokalisierung & Systemwerkzeuge",
-        "s1_r3_d": "Umfassende Unterstützung für 12 Sprachen mit integrierten Tools für 7-Zip, RAR und PDF.",
+        "s1_r2_t": "Universelles App-Ökosystem",
+        "s1_r2_d": "Unterstützung für Flathub, Doppelklick auf .rpm & .deb via Sadeem Box und .AppImage via Gear Lever.",
+        "s1_r3_t": "Sadeem-System Kontrollzentrum",
+        "s1_r3_d": "Zentrale Oberfläche für Aktualisierungen, Farben, GPU-Treiber und Container.",
+        "s1_r3_b": "System öffnen",
         # Slide 2
         "s2_title": "Integrierte Produktivitäts-Apps",
         "s2_sub": "Hochleistungs-Desktopanwendungen, die nativ auf Ihrem System installiert sind.",
@@ -293,8 +310,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Anpassung der Benutzeroberfläche & Erweiterungen",
         "s3_sub": "Verbessern und personalisieren Sie Ihren GNOME-Desktop mit vorkonfigurierten Erweiterungen.",
-        "s3_r1_t": "Sperrbildschirm-Uhr",
-        "s3_r1_d": "Sperrbildschirm-Uhr mit Wetter und regionalen Datumsformaten, vollständig anpassbar.",
+        "s3_r1_t": "Farben & visuelles Design",
+        "s3_r1_d": "Burgunderrote Designsprache und anpassbare Akzentfarben mit Live-Vorschau.",
+        "s3_r1_b": "Sadeem-Farben",
         "s3_r2_t": "Desktop-Erweiterungen",
         "s3_r2_d": "Enthält das ArcMenu-Startmenü, Dash to Dock und Clipboard Indicator.",
         "s3_r2_b": "Erweiterungen verwalten",
@@ -302,15 +320,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Passen Sie Fensterschaltflächen und das Erscheinungsbild von GNOME mit Refine an.",
         "s3_r3_b": "Desktop anpassen",
         # Slide 4
-        "s4_title": "Hardware & Systemaktualisierungen",
-        "s4_sub": "Optimiert für reibungslose Leistung auf Intel-, AMD- und NVIDIA-Hardware.",
-        "s4_r1_t": "Intel- & AMD-Beschleunigung",
-        "s4_r1_d": "Hardware-Videobeschleunigung (VA-API / Mesa / Intel Media Driver) ist vorkonfiguriert und aktiv.",
-        "s4_r2_t": "NVIDIA- & CUDA-Treiber",
-        "s4_r2_d": "Erkennen Sie Ihre GPU, installieren Sie offizielle Treiber, konfigurieren Sie CUDA und verwalten Sie Secure Boot.",
-        "s4_r2_b": "NVIDIA-Manager öffnen",
-        "s4_r3_t": "Sichere atomare Aktualisierungen",
-        "s4_r3_d": "Die unveränderliche Basis von Fedora Silverblue schützt das System und ermöglicht sofortige Rollbacks.",
+        "s4_title": "Treiber, Container & Aktualisierungen",
+        "s4_sub": "Hardwaretreiber, Paket-Laufzeitumgebungen und Systemaktualisierungen verwalten.",
+        "s4_r1_t": "NVIDIA- & CUDA-Treiber",
+        "s4_r1_d": "GPU-Erkennung, offizielle Treiber, CUDA-Bibliotheken und Secure-Boot-Verwaltung.",
+        "s4_r1_b": "Treiber",
+        "s4_r2_t": "Sadeem Box Container",
+        "s4_r2_d": "Isolierte Laufzeitumgebung für .rpm- & .deb-Pakete ohne Eingriff in das Basissystem.",
+        "s4_r2_b": "Container",
+        "s4_r3_t": "Sichere Aktualisierungen auf Abruf",
+        "s4_r3_d": "Ein-Klick-Aktualisierung für Basissystem, Apps und Container mit Rollback-Funktion.",
+        "s4_r3_b": "Aktualisieren",
         # Slide 5
         "s5_title": "Grundlagen der GNOME-Navigation",
         "s5_sub": "Meistern Sie einfache Gesten und Tastenkürzel für schnelles Arbeiten.",
@@ -335,10 +355,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 kapsamlı kodekler, donanım hızlandırma ve önceden yapılandırılmış temel yardımcı araçlar içerir.",
         "s1_r1_t": "Multimedya ve Donanım Hızlandırma",
         "s1_r1_d": "Intel ve AMD için tam kodek desteği (HEVC, AV1, HEIC) ve donanım video kod çözme.",
-        "s1_r2_t": "Seçkin Depolar",
-        "s1_r2_d": "Flathub ve RPM Fusion (Ücretsiz ve Tescilli) kullanıma hazır olarak etkindir.",
-        "s1_r3_t": "Yerelleştirme ve Sistem Araçları",
-        "s1_r3_d": "7-Zip, RAR ve PDF için yerleşik araçlarla 12 dil için tam destek.",
+        "s1_r2_t": "Evrensel Uygulama Ekosistemi",
+        "s1_r2_d": "Flathub, Sadeem Box ile çift tıklamayla .rpm ve .deb, Gear Lever ile .AppImage desteği.",
+        "s1_r3_t": "Sadeem Sistemi Kontrol Merkezi",
+        "s1_r3_d": "Güncellemeler, renkler, grafik sürücüleri ve kapsayıcılar için birleşik merkez.",
+        "s1_r3_b": "Sistemi Aç",
         # Slide 2
         "s2_title": "Entegre Verimlilik Uygulamaları",
         "s2_sub": "Sisteminizde yerel olarak yüklü yüksek performanslı masaüstü uygulamaları.",
@@ -354,8 +375,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Arayüz Özelleştirme ve Eklentiler",
         "s3_sub": "Önceden yapılandırılmış eklentilerle GNOME masaüstünüzü geliştirin ve kişiselleştirin.",
-        "s3_r1_t": "Kilit Ekranı Saati",
-        "s3_r1_d": "Hava durumu ve akıllı bölgesel tarihler içeren, tamamen özelleştirilebilir kilit ekranı saati.",
+        "s3_r1_t": "Renkler ve Görsel Tema",
+        "s3_r1_d": "Bordo kimliği ve dinamik vurgu rengi özelleştirmesi.",
+        "s3_r1_b": "Sadeem Renkleri",
         "s3_r2_t": "Masaüstü Eklentileri",
         "s3_r2_d": "ArcMenu başlatıcı, Dash to Dock ve Pano Göstergesi içerir.",
         "s3_r2_b": "Eklentileri Yönet",
@@ -363,15 +385,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Refine kullanarak pencere düğmelerini ve GNOME görünümünü ayrıntılı olarak ayarlayın.",
         "s3_r3_b": "Masaüstünü Özelleştir",
         # Slide 4
-        "s4_title": "Donanım ve Sistem Güncellemeleri",
-        "s4_sub": "Intel, AMD ve NVIDIA donanımlarında sorunsuz performans için optimize edilmiştir.",
-        "s4_r1_t": "Intel ve AMD Hızlandırma",
-        "s4_r1_d": "Donanım video hızlandırma (VA-API / Mesa / Intel Media Driver) önceden yapılandırılmış ve etkindir.",
-        "s4_r2_t": "NVIDIA ve CUDA Sürücüleri",
-        "s4_r2_d": "GPU modelinizi algılayın, resmi sürücüleri yükleyin, CUDA'yı yapılandırın ve Güvenli Önyüklemeyi yönetin.",
-        "s4_r2_b": "NVIDIA Yöneticisini Aç",
-        "s4_r3_t": "Güvenli Atomik Güncellemeler",
-        "s4_r3_d": "Değişmez Fedora Silverblue tabanı sistemi korur ve anında geri almayı sağlar.",
+        "s4_title": "Sürücüler, Kapsayıcılar ve Güncellemeler",
+        "s4_sub": "Donanım sürücülerini, paket ortamlarını ve sistem güncellemelerini yönetin.",
+        "s4_r1_t": "NVIDIA ve CUDA Sürücüleri",
+        "s4_r1_d": "GPU modeli algılama, resmi sürücüler, CUDA ve Secure Boot yönetimi.",
+        "s4_r1_b": "Sürücüler",
+        "s4_r2_t": "Sadeem Box Kapsayıcısı",
+        "s4_r2_d": "Değişmez işletim sistemine dokunmadan .rpm ve .deb için yalıtılmış ortam.",
+        "s4_r2_b": "Kapsayıcılar",
+        "s4_r3_t": "İsteğe Bağlı Güvenli Güncellemeler",
+        "s4_r3_d": "Tek tıkla sistem, mağaza ve kapsayıcı güncellemeleri ve anında geri alma.",
+        "s4_r3_b": "Güncelle",
         # Slide 5
         "s5_title": "GNOME Gezinme Temelleri",
         "s5_sub": "Çalışma alanınızda hızla gezinmek için basit hareketleri ve kısayolları öğrenin.",
@@ -396,10 +420,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 включает полный набор кодеков, аппаратное ускорение и предварительно настроенные утилиты.",
         "s1_r1_t": "Мультимедиа и аппаратное ускорение",
         "s1_r1_d": "Полная поддержка кодеков (HEVC, AV1, HEIC) и аппаратного декодирования видео для Intel и AMD.",
-        "s1_r2_t": "Проверенные репозитории",
-        "s1_r2_d": "Flathub и RPM Fusion (Free и Non-Free) включены по умолчанию.",
-        "s1_r3_t": "Локализация и системные утилиты",
-        "s1_r3_d": "Полная поддержка 12 языков со встроенными утилитами для 7-Zip, RAR и PDF.",
+        "s1_r2_t": "Универсальная экосистема приложений",
+        "s1_r2_d": "Поддержка Flathub, запуск .rpm и .deb в Sadeem Box и .AppImage через Gear Lever.",
+        "s1_r3_t": "Центр управления системой Sadeem",
+        "s1_r3_d": "Единый центр для обновлений, темы, драйверов GPU и контейнеров.",
+        "s1_r3_b": "Открыть систему",
         # Slide 2
         "s2_title": "Встроенные приложения для работы",
         "s2_sub": "Высокопроизводительные приложения, встроенные в систему.",
@@ -415,8 +440,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Настройка интерфейса и расширения",
         "s3_sub": "Настройте рабочий стол GNOME с помощью готовых расширений и утилит.",
-        "s3_r1_t": "Часы на экране блокировки",
-        "s3_r1_d": "Часы на экране блокировки с погодой и региональным форматом даты, полностью настраиваемые.",
+        "s3_r1_t": "Цвета и визуальное оформление",
+        "s3_r1_d": "Фирменная бордовая тема и мгновенная настройка акцентных цветов интерфейса.",
+        "s3_r1_b": "Цвета Sadeem",
         "s3_r2_t": "Расширения рабочего стола",
         "s3_r2_d": "Включает меню ArcMenu, панель Dash to Dock и индикатор буфера обмена.",
         "s3_r2_b": "Управление расширениями",
@@ -424,15 +450,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Тонкая настройка кнопок окон и внешнего вида GNOME с помощью Refine.",
         "s3_r3_b": "Настроить рабочий стол",
         # Slide 4
-        "s4_title": "Оборудование и обновления системы",
-        "s4_sub": "Оптимизировано для плавной работы на оборудовании Intel, AMD и NVIDIA.",
-        "s4_r1_t": "Ускорение Intel и AMD",
-        "s4_r1_d": "Аппаратное ускорение видео (VA-API / Mesa / Intel Media Driver) настроено и включено.",
-        "s4_r2_t": "Драйверы NVIDIA и CUDA",
-        "s4_r2_d": "Определение модели видеокарты, установка официальных драйверов, настройка CUDA и Secure Boot.",
-        "s4_r2_b": "Открыть менеджер NVIDIA",
-        "s4_r3_t": "Безопасные атомарные обновления",
-        "s4_r3_d": "Неизменяемая база Fedora Silverblue защищает систему и позволяет мгновенно откатить изменения.",
+        "s4_title": "Драйверы, контейнеры и обновления",
+        "s4_sub": "Управление драйверами оборудования, внешними пакетами и обновлениями.",
+        "s4_r1_t": "Драйверы NVIDIA и CUDA",
+        "s4_r1_d": "Определение GPU, официальные драйверы, CUDA и управление Secure Boot.",
+        "s4_r1_b": "Драйверы",
+        "s4_r2_t": "Контейнер Sadeem Box",
+        "s4_r2_d": "Изолированная среда для .rpm и .deb без изменений неизменяемой базы ОС.",
+        "s4_r2_b": "Контейнеры",
+        "s4_r3_t": "Безопасные обновления по запросу",
+        "s4_r3_d": "Обновление базовой системы, приложений и контейнеров в один клик с быстрым откатом.",
+        "s4_r3_b": "Обновления",
         # Slide 5
         "s5_title": "Основы навигации в GNOME",
         "s5_sub": "Освойте простые жесты и сочетания клавиш для быстрой работы.",
@@ -457,10 +485,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "O Sadeem 45 inclui codecs abrangentes, aceleração de hardware e utilitários essenciais pré-configurados.",
         "s1_r1_t": "Multimédia e Aceleração de Hardware",
         "s1_r1_d": "Suporte completo a codecs (HEVC, AV1, HEIC) e descodificação de vídeo por hardware para Intel e AMD.",
-        "s1_r2_t": "Repositórios Selecionados",
-        "s1_r2_d": "Flathub e RPM Fusion (Free e Non-Free) ativados por padrão.",
-        "s1_r3_t": "Localização e Ferramentas do Sistema",
-        "s1_r3_d": "Suporte completo para 12 idiomas com ferramentas integradas para 7-Zip, RAR e PDF.",
+        "s1_r2_t": "Ecossistema Universal de Aplicações",
+        "s1_r2_d": "Suporte a Flathub, clique duplo em .rpm e .deb com Sadeem Box e .AppImage via Gear Lever.",
+        "s1_r3_t": "Centro de Controlo Sistema Sadeem",
+        "s1_r3_d": "Centro unificado para atualizações, cores, controladores de GPU e contentores.",
+        "s1_r3_b": "Abrir Sistema",
         # Slide 2
         "s2_title": "Aplicações de Produtividade Integradas",
         "s2_sub": "Aplicações de desktop de alto desempenho instaladas nativamente no seu sistema.",
@@ -476,8 +505,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Personalização da Interface e Extensões",
         "s3_sub": "Melhore e personalize o seu ambiente de trabalho GNOME com extensões pré-configuradas.",
-        "s3_r1_t": "Relógio do Ecrã de Bloqueio",
-        "s3_r1_d": "Relógio de ecrã de bloqueio com meteorologia e datas regionais inteligentes, totalmente personalizável.",
+        "s3_r1_t": "Cores e Identidade Visual",
+        "s3_r1_d": "Identidade bordô personalizada e personalização da cor de destaque.",
+        "s3_r1_b": "Cores Sadeem",
         "s3_r2_t": "Extensões do Ambiente de Trabalho",
         "s3_r2_d": "Inclui o lançador ArcMenu, Dash to Dock e Clipboard Indicator.",
         "s3_r2_b": "Gerir Extensões",
@@ -485,15 +515,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Ajuste os botões das janelas e a aparência do GNOME usando o Refine.",
         "s3_r3_b": "Personalizar Desktop",
         # Slide 4
-        "s4_title": "Hardware e Atualizações do Sistema",
-        "s4_sub": "Otimizado para um desempenho suave em hardware Intel, AMD e NVIDIA.",
-        "s4_r1_t": "Aceleração Intel e AMD",
-        "s4_r1_d": "Aceleração de vídeo por hardware (VA-API / Mesa / Intel Media Driver) pré-configurada e ativa.",
-        "s4_r2_t": "Controladores NVIDIA e CUDA",
-        "s4_r2_d": "Detete a sua GPU, instale controladores oficiais, configure o CUDA e gira o Secure Boot.",
-        "s4_r2_b": "Abrir Gestor NVIDIA",
-        "s4_r3_t": "Atualizações Atómicas Seguras",
-        "s4_r3_d": "A base imutável do Fedora Silverblue protege o sistema e permite reversões instantâneas.",
+        "s4_title": "Controladores, Contentores e Atualizações",
+        "s4_sub": "Gerir controladores de hardware, pacotes externos e atualizações atómicas.",
+        "s4_r1_t": "Controladores NVIDIA e CUDA",
+        "s4_r1_d": "Deteção da GPU, controladores oficiais, CUDA e gestão do Secure Boot.",
+        "s4_r1_b": "Controladores",
+        "s4_r2_t": "Contêiner Sadeem Box",
+        "s4_r2_d": "Ambiente isolado para pacotes .rpm e .deb sem alterar a base do sistema.",
+        "s4_r2_b": "Contentores",
+        "s4_r3_t": "Atualizações Seguras sob Demanda",
+        "s4_r3_d": "Atualização em um clique do sistema, aplicações e contentores com reversão instantânea.",
+        "s4_r3_b": "Atualizar",
         # Slide 5
         "s5_title": "Noções Básicas de Navegação no GNOME",
         "s5_sub": "Domine gestos e atalhos simples para navegar rapidamente na área de trabalho.",
@@ -518,10 +550,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 include codec completi, accelerazione hardware e utilità essenziali preconfigurate.",
         "s1_r1_t": "Multimedia e accelerazione hardware",
         "s1_r1_d": "Supporto completo ai codec (HEVC, AV1, HEIC) e decodifica video hardware per Intel e AMD.",
-        "s1_r2_t": "Repository selezionati",
-        "s1_r2_d": "Flathub e RPM Fusion (Free e Non-Free) abilitati per impostazione predefinita.",
-        "s1_r3_t": "Localizzazione e strumenti di sistema",
-        "s1_r3_d": "Supporto completo per 12 lingue con strumenti integrati per 7-Zip, RAR e PDF.",
+        "s1_r2_t": "Ecosistema universale di applicazioni",
+        "s1_r2_d": "Supporto completo a Flathub, doppio clic su .rpm e .deb con Sadeem Box e .AppImage con Gear Lever.",
+        "s1_r3_t": "Centro di controllo Sistema Sadeem",
+        "s1_r3_d": "Hub unificato per aggiornamenti, colori, driver GPU e container.",
+        "s1_r3_b": "Apri Sistema",
         # Slide 2
         "s2_title": "Applicazioni di produttività integrate",
         "s2_sub": "Applicazioni desktop ad alte prestazioni installate nativamente nel sistema.",
@@ -537,8 +570,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "Personalizzazione interfaccia ed estensioni",
         "s3_sub": "Migliora e personalizza il desktop GNOME con estensioni e utilità preconfigurate.",
-        "s3_r1_t": "Orologio schermata di blocco",
-        "s3_r1_d": "Orologio della schermata di blocco con meteo e date regionali intelligenti, completamente personalizzabile.",
+        "s3_r1_t": "Colori e identità visiva",
+        "s3_r1_d": "Identità visiva bordeaux e personalizzazione istantanea del colore principale.",
+        "s3_r1_b": "Colori Sadeem",
         "s3_r2_t": "Estensioni desktop",
         "s3_r2_d": "Include il lanciatore ArcMenu, Dash to Dock e Clipboard Indicator.",
         "s3_r2_b": "Gestisci estensioni",
@@ -546,15 +580,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "Personalizza i pulsanti delle finestre e l'aspetto di GNOME con Refine.",
         "s3_r3_b": "Personalizza desktop",
         # Slide 4
-        "s4_title": "Hardware e aggiornamenti di sistema",
-        "s4_sub": "Ottimizzato per prestazioni fluide su hardware Intel, AMD e NVIDIA.",
-        "s4_r1_t": "Accelerazione Intel e AMD",
-        "s4_r1_d": "L'accelerazione video hardware (VA-API / Mesa / Intel Media Driver) è preconfigurata e attiva.",
-        "s4_r2_t": "Driver NVIDIA e CUDA",
-        "s4_r2_d": "Rileva la tua GPU, installa driver ufficiali, configura CUDA e gestisci Secure Boot.",
-        "s4_r2_b": "Apri gestore NVIDIA",
-        "s4_r3_t": "Aggiornamenti atomici sicuri",
-        "s4_r3_d": "La base immutabile di Fedora Silverblue protegge il sistema e consente ripristini istantanei.",
+        "s4_title": "Driver, container e aggiornamenti",
+        "s4_sub": "Gestisci driver grafici, ambienti per pacchetti esterni e aggiornamenti atomici.",
+        "s4_r1_t": "Driver NVIDIA e CUDA",
+        "s4_r1_d": "Rilevamento GPU, driver proprietari ufficiali, CUDA e gestione di Secure Boot.",
+        "s4_r1_b": "Driver GPU",
+        "s4_r2_t": "Container Sadeem Box",
+        "s4_r2_d": "Ambiente isolato per pacchetti .rpm e .deb senza intaccare il sistema operativo.",
+        "s4_r2_b": "Container",
+        "s4_r3_t": "Aggiornamenti sicuri su richiesta",
+        "s4_r3_d": "Aggiornamento in un clic per sistema, negozi e container con ripristino immediato.",
+        "s4_r3_b": "Aggiorna",
         # Slide 5
         "s5_title": "Basi di navigazione di GNOME",
         "s5_sub": "Impara semplici gesti e scorciatoie per muoverti rapidamente nello spazio di lavoro.",
@@ -579,10 +615,11 @@ WELCOME_TRANSLATIONS = {
         "s1_sub": "Sadeem 45 预先配置了全面的编解码器、硬件加速和必备实用工具。",
         "s1_r1_t": "多媒体与硬件加速",
         "s1_r1_d": "全面的编解码器支持 (HEVC、AV1、HEIC) 以及 Intel 和 AMD 的硬件视频解码。",
-        "s1_r2_t": "精选软件仓库",
-        "s1_r2_d": "默认启用 Flathub 和 RPM Fusion (Free 与 Non-Free)。",
-        "s1_r3_t": "本地化与系统工具",
-        "s1_r3_d": "全面支持 12 种语言，并内置对 7-Zip、RAR 和 PDF 的支持。",
+        "s1_r2_t": "全能应用生态系统",
+        "s1_r2_d": "全面支持 Flathub，通过 Sadeem Box 双击安装 .rpm 与 .deb，通过 Gear Lever 管理 .AppImage。",
+        "s1_r3_t": "Sadeem 系统控制中心",
+        "s1_r3_d": "用于更新、外观配色、显卡驱动和容器管理的统一控制中心。",
+        "s1_r3_b": "打开系统中心",
         # Slide 2
         "s2_title": "集成生产力应用",
         "s2_sub": "系统中原生安装的高性能桌面应用程序。",
@@ -598,8 +635,9 @@ WELCOME_TRANSLATIONS = {
         # Slide 3
         "s3_title": "界面自定义与扩展",
         "s3_sub": "通过预配置的扩展和工具增强并个性化您的 GNOME 桌面。",
-        "s3_r1_t": "锁屏时钟",
-        "s3_r1_d": "带有天气和智能区域日期的锁屏时钟，支持完全自定义。",
+        "s3_r1_t": "外观配色与视觉风格",
+        "s3_r1_d": "标志性酒红色彩与动态系统强调色自定义，支持实时预览。",
+        "s3_r1_b": "Sadeem 配色",
         "s3_r2_t": "桌面扩展",
         "s3_r2_d": "包含 ArcMenu 应用启动器、Dash to Dock 和剪贴板指示器。",
         "s3_r2_b": "管理扩展",
@@ -607,15 +645,17 @@ WELCOME_TRANSLATIONS = {
         "s3_r3_d": "使用 Refine 微调窗口按钮和 GNOME 外观。",
         "s3_r3_b": "自定义桌面",
         # Slide 4
-        "s4_title": "硬件与系统更新",
-        "s4_sub": "针对 Intel、AMD 和 NVIDIA 硬件进行了流畅性能优化。",
-        "s4_r1_t": "Intel 与 AMD 硬件加速",
-        "s4_r1_d": "硬件视频加速 (VA-API / Mesa / Intel Media Driver) 预先配置并已激活。",
-        "s4_r2_t": "NVIDIA 与 CUDA 驱动程序",
-        "s4_r2_d": "检测 GPU 型号、安装官方驱动程序、配置 CUDA 并管理安全启动。",
-        "s4_r2_b": "打开 NVIDIA 管理器",
-        "s4_r3_t": "安全的原子更新",
-        "s4_r3_d": "不可变的 Fedora Silverblue 底层保障系统安全并支持即时回滚。",
+        "s4_title": "驱动、容器与系统更新",
+        "s4_sub": "一站式管理硬件驱动、外部运行环境以及原子系统更新。",
+        "s4_r1_t": "NVIDIA 与 CUDA 驱动程序",
+        "s4_r1_d": "自动检测显卡型号、安装官方驱动程序、配置 CUDA 并管理安全启动。",
+        "s4_r1_b": "管理驱动",
+        "s4_r2_t": "Sadeem Box 容器环境",
+        "s4_r2_d": "在不修改不可变系统底层的前提下安全运行 .rpm 与 .deb 软件包。",
+        "s4_r2_b": "管理容器",
+        "s4_r3_t": "安全可靠的按需更新",
+        "s4_r3_d": "一键更新核心系统、应用商店软件和容器，随时支持即时回滚。",
+        "s4_r3_b": "检查更新",
         # Slide 5
         "s5_title": "GNOME 导航基础",
         "s5_sub": "掌握简单的手势和快捷键，在工作区中迅速切换。",
@@ -889,10 +929,12 @@ class WelcomeWindow(Adw.ApplicationWindow):
         )
         listbox.append(r2)
 
+        btn3 = self.create_row_button(_("s1_r3_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system"]))
         r3 = self.create_action_row(
             _("s1_r3_t"),
             _("s1_r3_d"),
-            "package-x-generic-symbolic"
+            "preferences-system-symbolic",
+            btn3
         )
         listbox.append(r3)
 
@@ -954,11 +996,13 @@ class WelcomeWindow(Adw.ApplicationWindow):
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
-        # Row 1: Lockscreen Clock (informational)
+        # Row 1: Colors & Theme
+        btn1 = self.create_row_button(_("s3_r1_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=colors"]))
         r1 = self.create_action_row(
             _("s3_r1_t"),
             _("s3_r1_d"),
-            "preferences-system-time-symbolic"
+            "preferences-desktop-appearance-symbolic",
+            btn1
         )
         listbox.append(r1)
 
@@ -986,7 +1030,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.carousel.append(slide)
 
     def build_slide_hardware(self):
-        """Slide 4: Hardware & system updates (3 rows)."""
+        """Slide 4: Hardware, drivers, containers & updates (3 rows)."""
         slide, box = self.create_slide_container(
             "video-display-symbolic",
             _("s4_title"),
@@ -996,26 +1040,33 @@ class WelcomeWindow(Adw.ApplicationWindow):
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
+        # Row 1: NVIDIA & Drivers
+        btn1 = self.create_row_button(_("s4_r1_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=drivers"]))
         r1 = self.create_action_row(
             _("s4_r1_t"),
             _("s4_r1_d"),
-            "video-joined-displays-symbolic"
+            "video-display-symbolic",
+            btn1
         )
         listbox.append(r1)
 
-        btn2 = self.create_row_button(_("s4_r2_b"), lambda *a: self.launch_local_app(["/usr/bin/saifdora-nvidia-manager"]))
+        # Row 2: Containers & Sadeem Box
+        btn2 = self.create_row_button(_("s4_r2_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=containers"]))
         r2 = self.create_action_row(
             _("s4_r2_t"),
             _("s4_r2_d"),
-            "display-projector-symbolic",
+            "package-x-generic-symbolic",
             btn2
         )
         listbox.append(r2)
 
+        # Row 3: Updates
+        btn3 = self.create_row_button(_("s4_r3_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=updates"]))
         r3 = self.create_action_row(
             _("s4_r3_t"),
             _("s4_r3_d"),
-            "software-update-available-symbolic"
+            "software-update-available-symbolic",
+            btn3
         )
         listbox.append(r3)
 
@@ -1087,7 +1138,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
             print(f"Error triggering flatpak install for {app_id}: {e}", file=sys.stderr)
 
     def on_install_nvidia(self, *args):
-        self.launch_local_app(["/usr/bin/saifdora-nvidia-manager"])
+        self.launch_local_app(["/usr/bin/sadeem-system", "--tab=drivers"])
 
     def on_prev_clicked(self, *args):
         curr = int(round(self.carousel.get_position()))

@@ -7,6 +7,7 @@ patch_desktop() {
         sed -i 's|^Icon=.*|Icon=sadeem-box|' "$DESKTOP_FILE"
         sed -i 's|^Name=.*|Name=Sadeem Box|' "$DESKTOP_FILE"
         grep -q '^Name\[ar\]=' "$DESKTOP_FILE" || sed -i '/^Name=/a Name[ar]=حاوية سديم' "$DESKTOP_FILE"
+        grep -q '^NoDisplay=' "$DESKTOP_FILE" && sed -i 's|^NoDisplay=.*|NoDisplay=true|' "$DESKTOP_FILE" || echo 'NoDisplay=true' >> "$DESKTOP_FILE"
         update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1 || true
     fi
 }

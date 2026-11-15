@@ -37,6 +37,7 @@ Comment[ms]=Urus dan pasang pemacu NVIDIA dan CUDA pada Sadeem 45
 Comment[id]=Kelola dan instal driver NVIDIA dan CUDA di Sadeem 45
 Exec=/usr/bin/saifdora-nvidia-manager
 Icon=video-display
+NoDisplay=true
 Terminal=false
 Type=Application
 Categories=Settings;System;HardwareSettings;

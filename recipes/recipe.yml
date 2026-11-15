@@ -155,17 +155,17 @@ modules:
         ln -sf ../usr/lib/os-release /etc/os-release
 
         mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text-dark.svg
-        cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg
-        rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png
-        rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo.png
-        rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo-small.png
-        rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text-dark.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo-small.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png || true
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
 
         # Generate Sadeem sound theme files if needed
@@ -227,7 +227,7 @@ modules:
         rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
         dconf update || true
-        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager || true
 
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs

@@ -21,6 +21,7 @@ Comment[it]=Personalizza il colore principale del sistema con la ruota dei color
 Comment[zh]=使用色轮自定义系统强调色
 Exec=/usr/bin/sadeem-colors
 Icon=preferences-color
+NoDisplay=true
 Terminal=false
 Type=Application
 Categories=Settings;DesktopSettings;GTK;
