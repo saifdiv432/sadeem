@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+if distrobox list 2>/dev/null | grep -q "sadeem-box"; then
+    exit 0
+fi
+for i in $(seq 1 30); do
+    if curl -fsI --max-time 5 https://registry.fedoraproject.org >/dev/null 2>&1; then
+        distrobox create --name sadeem-box --image registry.fedoraproject.org/fedora-toolbox:latest --yes >/dev/null 2>&1 || true
+        exit 0
+    fi
+    sleep 10
+done

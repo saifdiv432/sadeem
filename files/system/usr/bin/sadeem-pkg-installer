@@ -1,0 +1,536 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Sadeem Package Installer (sadeem-pkg-installer)
+Graphical installer for external .rpm and .deb packages using Distrobox sandboxes.
+Built with Python 3, GTK 4, and Libadwaita following GNOME Human Interface Guidelines.
+"""
+
+import sys
+import os
+import subprocess
+import threading
+import gi
+
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
+from gi.repository import Gtk, Adw, GLib, Gio, Gdk
+
+TRANSLATIONS = {
+    "en": {
+        "app_title": "Sadeem Package Installer",
+        "btn_install": "Install",
+        "btn_cancel": "Cancel",
+        "btn_close": "Close",
+        "pkg_type_rpm": "RPM Package (Fedora Sandbox)",
+        "pkg_type_deb": "Debian / Ubuntu Package (.deb)",
+        "pkg_type_unknown": "Unknown Package Format",
+        "status_ready": "Ready to install this package into an isolated sandbox.",
+        "status_init_box": "Preparing sandbox container ({box})...",
+        "status_installing": "Installing package and resolving dependencies...",
+        "status_exporting": "Adding application to desktop menu...",
+        "status_success": "Installation completed successfully! Added to apps menu.",
+        "status_error": "Installation failed: {error}",
+        "err_no_file": "No package file provided or file does not exist.",
+        "err_unsupported": "Unsupported file type. Only .rpm and .deb files are supported.",
+    },
+    "ar": {
+        "app_title": "مثبّت حزم سديم",
+        "btn_install": "تثبيت",
+        "btn_cancel": "إلغاء",
+        "btn_close": "إغلاق",
+        "pkg_type_rpm": "حزمة RPM (حاوية فيدورا)",
+        "pkg_type_deb": "حزمة دبيان / أوبونتو (.deb)",
+        "pkg_type_unknown": "صيغة حزمة غير معروفة",
+        "status_ready": "الحزمة جاهزة للتثبيت داخل حاوية آمنة ومعزولة.",
+        "status_init_box": "جارٍ إعداد وتهيئة الحاوية المعزولة ({box})...",
+        "status_installing": "جارٍ تثبيت الحزمة واستيفاء الاعتماديات...",
+        "status_exporting": "جارٍ إضافة التطبيق إلى قائمة البرامج...",
+        "status_success": "تم التثبيت بنجاح! تم إضافة التطبيق إلى قائمة البرامج.",
+        "status_error": "فشل التثبيت: {error}",
+        "err_no_file": "لم يتم تحديد ملف حزمة أو أن الملف غير موجود.",
+        "err_unsupported": "صيغة غير مدعومة. يدعم المثبت ملفات .rpm و .deb فقط.",
+    },
+    "fr": {
+        "app_title": "Installateur de paquets Sadeem",
+        "btn_install": "Installer",
+        "btn_cancel": "Annuler",
+        "btn_close": "Fermer",
+        "pkg_type_rpm": "Paquet RPM (Sandbox Fedora)",
+        "pkg_type_deb": "Paquet Debian / Ubuntu (.deb)",
+        "pkg_type_unknown": "Format de paquet inconnu",
+        "status_ready": "Prêt à installer ce paquet dans un bac à sable isolé.",
+        "status_init_box": "Préparation du conteneur ({box})...",
+        "status_installing": "Installation du paquet et résolution des dépendances...",
+        "status_exporting": "Ajout de l'application au menu...",
+        "status_success": "Installation réussie ! Application ajoutée au menu.",
+        "status_error": "Échec de l'installation : {error}",
+        "err_no_file": "Aucun fichier de paquet fourni ou fichier introuvable.",
+        "err_unsupported": "Type de fichier non supporté. Seuls .rpm et .deb sont supportés.",
+    },
+    "es": {
+        "app_title": "Instalador de paquetes de Sadeem",
+        "btn_install": "Instalar",
+        "btn_cancel": "Cancelar",
+        "btn_close": "Cerrar",
+        "pkg_type_rpm": "Paquete RPM (Sandbox Fedora)",
+        "pkg_type_deb": "Paquete Debian / Ubuntu (.deb)",
+        "pkg_type_unknown": "Formato de paquete desconocido",
+        "status_ready": "Listo para instalar este paquete en un entorno aislado.",
+        "status_init_box": "Preparando el contenedor ({box})...",
+        "status_installing": "Instalando el paquete y resolviendo dependencias...",
+        "status_exporting": "Añadiendo la aplicación al menú de aplicaciones...",
+        "status_success": "¡Instalación completada con éxito! Añadida al menú.",
+        "status_error": "Error de instalación: {error}",
+        "err_no_file": "No se proporcionó ningún archivo o el archivo no existe.",
+        "err_unsupported": "Tipo de archivo no compatible. Solo se admiten .rpm y .deb.",
+    },
+    "de": {
+        "app_title": "Sadeem-Paketinstaller",
+        "btn_install": "Installieren",
+        "btn_cancel": "Abbrechen",
+        "btn_close": "Schließen",
+        "pkg_type_rpm": "RPM-Paket (Fedora-Sandbox)",
+        "pkg_type_deb": "Debian- / Ubuntu-Paket (.deb)",
+        "pkg_type_unknown": "Unbekanntes Paketformat",
+        "status_ready": "Bereit zur Installation dieses Pakets in einer Sandbox.",
+        "status_init_box": "Sandbox-Container wird vorbereitet ({box})...",
+        "status_installing": "Paket wird installiert und Abhängigkeiten aufgelöst...",
+        "status_exporting": "Anwendung wird zum Startmenü hinzugefügt...",
+        "status_success": "Installation erfolgreich! Zum Anwendungsmenü hinzugefügt.",
+        "status_error": "Installation fehlgeschlagen: {error}",
+        "err_no_file": "Keine Paketdatei angegeben oder Datei existiert nicht.",
+        "err_unsupported": "Nicht unterstützter Dateityp. Nur .rpm und .deb werden unterstützt.",
+    },
+    "tr": {
+        "app_title": "Sadeem Paket Yükleyici",
+        "btn_install": "Yükle",
+        "btn_cancel": "İptal",
+        "btn_close": "Kapat",
+        "pkg_type_rpm": "RPM Paketi (Fedora Korumalı Alanı)",
+        "pkg_type_deb": "Debian / Ubuntu Paketi (.deb)",
+        "pkg_type_unknown": "Bilinmeyen Paket Biçimi",
+        "status_ready": "Bu paket yalıtılmış bir alana yüklenmeye hazır.",
+        "status_init_box": "Korumalı alan kapsayıcısı hazırlanıyor ({box})...",
+        "status_installing": "Paket yükleniyor ve bağımlılıklar çözülüyor...",
+        "status_exporting": "Uygulama menüye ekleniyor...",
+        "status_success": "Yükleme tamamlandı! Uygulamalar menüsüne eklendi.",
+        "status_error": "Yükleme başarısız: {error}",
+        "err_no_file": "Paket dosyası sağlanmadı veya dosya mevcut değil.",
+        "err_unsupported": "Desteklenmeyen dosya türü. Yalnızca .rpm ve .deb desteklenir.",
+    },
+    "ru": {
+        "app_title": "Установщик пакетов Sadeem",
+        "btn_install": "Установить",
+        "btn_cancel": "Отмена",
+        "btn_close": "Закрыть",
+        "pkg_type_rpm": "Пакет RPM (Песочница Fedora)",
+        "pkg_type_deb": "Пакет Debian / Ubuntu (.deb)",
+        "pkg_type_unknown": "Неизвестный формат пакета",
+        "status_ready": "Готово к установке пакета в изолированную песочницу.",
+        "status_init_box": "Подготовка контейнера ({box})...",
+        "status_installing": "Установка пакета и разрешение зависимостей...",
+        "status_exporting": "Добавление приложения в меню...",
+        "status_success": "Установка успешно завершена! Добавлено в меню приложений.",
+        "status_error": "Сбой установки: {error}",
+        "err_no_file": "Файл пакета не указан или не существует.",
+        "err_unsupported": "Неподдерживаемый тип файла. Поддерживаются только .rpm и .deb.",
+    },
+    "pt": {
+        "app_title": "Instalador de pacotes do Sadeem",
+        "btn_install": "Instalar",
+        "btn_cancel": "Cancelar",
+        "btn_close": "Fechar",
+        "pkg_type_rpm": "Pacote RPM (Sandbox Fedora)",
+        "pkg_type_deb": "Pacote Debian / Ubuntu (.deb)",
+        "pkg_type_unknown": "Formato de pacote desconhecido",
+        "status_ready": "Pronto para instalar este pacote numa sandbox isolada.",
+        "status_init_box": "A preparar contentor ({box})...",
+        "status_installing": "A instalar pacote e a resolver dependências...",
+        "status_exporting": "A adicionar a aplicação ao menu...",
+        "status_success": "Instalação concluída com sucesso! Adicionado ao menu.",
+        "status_error": "Falha na instalação: {error}",
+        "err_no_file": "Nenhum ficheiro fornecido ou ficheiro inexistente.",
+        "err_unsupported": "Tipo de ficheiro não suportado. Apenas .rpm e .deb são suportados.",
+    },
+    "it": {
+        "app_title": "Programma di installazione pacchetti Sadeem",
+        "btn_install": "Installa",
+        "btn_cancel": "Annulla",
+        "btn_close": "Chiudi",
+        "pkg_type_rpm": "Pacchetto RPM (Sandbox Fedora)",
+        "pkg_type_deb": "Pacchetto Debian / Ubuntu (.deb)",
+        "pkg_type_unknown": "Formato pacchetto sconosciuto",
+        "status_ready": "Pronto per installare questo pacchetto in una sandbox isolata.",
+        "status_init_box": "Preparazione del contenitore ({box})...",
+        "status_installing": "Installazione del pacchetto e risoluzione delle dipendenze...",
+        "status_exporting": "Aggiunta dell'applicazione al menu...",
+        "status_success": "Installazione completata! Aggiunta al menu delle app.",
+        "status_error": "Installazione non riuscita: {error}",
+        "err_no_file": "Nessun file fornito o file inesistente.",
+        "err_unsupported": "Tipo di file non supportato. Sono supportati solo .rpm e .deb.",
+    },
+    "zh": {
+        "app_title": "Sadeem 软件包安装器",
+        "btn_install": "安装",
+        "btn_cancel": "取消",
+        "btn_close": "关闭",
+        "pkg_type_rpm": "RPM 软件包 (Fedora 沙箱)",
+        "pkg_type_deb": "Debian / Ubuntu 软件包 (.deb)",
+        "pkg_type_unknown": "未知的软件包格式",
+        "status_ready": "准备将此软件包安装到隔离沙箱中。",
+        "status_init_box": "正在准备沙箱容器 ({box})...",
+        "status_installing": "正在安装软件包并解决依赖项...",
+        "status_exporting": "正在将应用程序添加到桌面菜单...",
+        "status_success": "安装成功！已添加到应用程序菜单。",
+        "status_error": "安装失败：{error}",
+        "err_no_file": "未提供软件包文件或文件不存在。",
+        "err_unsupported": "不支持的文件类型。仅支持 .rpm 和 .deb 文件。",
+    },
+}
+
+def get_language():
+    for var in ("LC_ALL", "LC_MESSAGES", "LANGUAGE", "LANG"):
+        val = os.environ.get(var, "")
+        if val:
+            code = val.split(":")[0].split(".")[0].split("_")[0].split("@")[0].lower()
+            if code in TRANSLATIONS:
+                return code
+    return "en"
+
+LANG = get_language()
+T = TRANSLATIONS[LANG]
+
+def _t(key):
+    return T.get(key, TRANSLATIONS["en"].get(key, key))
+
+
+class SadeemPkgInstallerWindow(Adw.ApplicationWindow):
+    def __init__(self, app, pkg_path=None):
+        super().__init__(application=app)
+        self.set_title(_t("app_title"))
+        self.set_default_size(460, 320)
+        self.set_resizable(False)
+
+        self.pkg_path = os.path.abspath(pkg_path) if pkg_path else None
+        self._is_installing = False
+
+        self.apply_custom_css()
+
+        self.toast_overlay = Adw.ToastOverlay()
+        self.toolbar_view = Adw.ToolbarView()
+        self.toast_overlay.set_child(self.toolbar_view)
+        self.set_content(self.toast_overlay)
+
+        # HeaderBar
+        header_bar = Adw.HeaderBar()
+        header_bar.set_title_widget(Adw.WindowTitle(title=_t("app_title")))
+        self.toolbar_view.add_top_bar(header_bar)
+
+        # Main Layout Box
+        main_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=12,
+            margin_top=16,
+            margin_bottom=18,
+            margin_start=24,
+            margin_end=24,
+            valign=Gtk.Align.CENTER
+        )
+        self.toolbar_view.set_content(main_box)
+
+        # 1. Icon Badge
+        badge = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        badge.set_halign(Gtk.Align.CENTER)
+        badge.set_valign(Gtk.Align.CENTER)
+        badge.set_size_request(68, 68)
+        badge.add_css_class("icon-badge")
+
+        icon_img = Gtk.Image.new_from_icon_name("system-software-install-symbolic")
+        icon_img.set_pixel_size(36)
+        icon_img.set_halign(Gtk.Align.CENTER)
+        icon_img.set_valign(Gtk.Align.CENTER)
+        icon_img.set_hexpand(True)
+        icon_img.set_vexpand(True)
+        badge.append(icon_img)
+        main_box.append(badge)
+
+        # 2. Package Name & Type
+        self.name_label = Gtk.Label()
+        self.name_label.add_css_class("title-3")
+        self.name_label.set_wrap(True)
+        self.name_label.set_justify(Gtk.Justification.CENTER)
+        self.name_label.set_ellipsize(3) # PANGO_ELLIPSIZE_END
+        main_box.append(self.name_label)
+
+        self.info_label = Gtk.Label()
+        self.info_label.add_css_class("body")
+        self.info_label.add_css_class("dim-label")
+        self.info_label.set_wrap(True)
+        self.info_label.set_justify(Gtk.Justification.CENTER)
+        main_box.append(self.info_label)
+
+        # 3. Status area with spinner
+        status_box = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=8,
+            halign=Gtk.Align.CENTER,
+            margin_top=6,
+            margin_bottom=4
+        )
+        self.spinner = Gtk.Spinner()
+        self.spinner.set_visible(False)
+        status_box.append(self.spinner)
+
+        self.status_label = Gtk.Label(label=_t("status_ready"))
+        self.status_label.set_wrap(True)
+        self.status_label.set_justify(Gtk.Justification.CENTER)
+        self.status_label.add_css_class("body")
+        status_box.append(self.status_label)
+        main_box.append(status_box)
+
+        # 4. Action Buttons Box
+        btn_box = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=12,
+            halign=Gtk.Align.CENTER,
+            margin_top=10
+        )
+        self.cancel_btn = Gtk.Button(label=_t("btn_cancel"))
+        self.cancel_btn.set_size_request(110, 36)
+        self.cancel_btn.connect("clicked", lambda b: self.close())
+        btn_box.append(self.cancel_btn)
+
+        self.install_btn = Gtk.Button(label=_t("btn_install"))
+        self.install_btn.set_size_request(130, 36)
+        self.install_btn.add_css_class("suggested-action")
+        self.install_btn.connect("clicked", self.on_install_clicked)
+        btn_box.append(self.install_btn)
+        main_box.append(btn_box)
+
+        self.inspect_package()
+
+    def apply_custom_css(self):
+        css = """
+        button {
+            border-radius: 10px;
+        }
+        .icon-badge {
+            background-color: alpha(@accent_bg_color, 0.14);
+            color: @accent_color;
+            border-radius: 9999px;
+        }
+        .status-success {
+            color: #2ec27e;
+            font-weight: 600;
+        }
+        .status-error {
+            color: #c01c28;
+            font-size: 0.88em;
+        }
+        """
+        provider = Gtk.CssProvider()
+        provider.load_from_string(css)
+        display = Gdk.Display.get_default()
+        if display:
+            Gtk.StyleContext.add_provider_for_display(
+                display,
+                provider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+
+    def inspect_package(self):
+        if not self.pkg_path or not os.path.isfile(self.pkg_path):
+            self.name_label.set_text(_t("err_no_file"))
+            self.info_label.set_text("")
+            self.install_btn.set_sensitive(False)
+            self.status_label.set_text("")
+            return
+
+        filename = os.path.basename(self.pkg_path)
+        self.name_label.set_text(filename)
+
+        lower = filename.lower()
+        if lower.endswith(".rpm"):
+            pkg_type_str = _t("pkg_type_rpm")
+        elif lower.endswith(".deb"):
+            pkg_type_str = _t("pkg_type_deb")
+        else:
+            pkg_type_str = _t("pkg_type_unknown")
+            self.install_btn.set_sensitive(False)
+            self.status_label.set_text(_t("err_unsupported"))
+            self.status_label.add_css_class("status-error")
+            return
+
+        try:
+            size_mb = os.path.getsize(self.pkg_path) / (1024 * 1024)
+            size_str = f"{size_mb:.1f} MB" if size_mb >= 1.0 else f"{int(size_mb * 1024)} KB"
+            self.info_label.set_text(f"{pkg_type_str} • {size_str}")
+        except Exception:
+            self.info_label.set_text(pkg_type_str)
+
+    def on_install_clicked(self, btn):
+        if self._is_installing:
+            return
+        self._is_installing = True
+        self.install_btn.set_sensitive(False)
+        self.cancel_btn.set_sensitive(False)
+        self.spinner.set_visible(True)
+        self.spinner.start()
+        self.status_label.remove_css_class("status-error")
+        self.status_label.remove_css_class("status-success")
+
+        threading.Thread(target=self._run_install_thread, daemon=True).start()
+
+    def _update_status(self, text):
+        self.status_label.set_text(text)
+
+    def _on_finished(self, success, message):
+        self._is_installing = False
+        self.spinner.stop()
+        self.spinner.set_visible(False)
+
+        if success:
+            self.status_label.set_text(message)
+            self.status_label.add_css_class("status-success")
+            self.install_btn.set_visible(False)
+            self.cancel_btn.set_label(_t("btn_close"))
+            self.cancel_btn.set_sensitive(True)
+            self.cancel_btn.add_css_class("suggested-action")
+            self.toast_overlay.add_toast(Adw.Toast.new(_t("status_success")))
+        else:
+            err_str = _t("status_error").format(error=message)
+            self.status_label.set_text(err_str)
+            self.status_label.add_css_class("status-error")
+            self.install_btn.set_sensitive(True)
+            self.cancel_btn.set_sensitive(True)
+
+    def _run_install_thread(self):
+        abs_pkg_path = self.pkg_path
+        lower = abs_pkg_path.lower()
+        is_rpm = lower.endswith(".rpm")
+        is_deb = lower.endswith(".deb")
+
+        if is_rpm:
+            box_name = "sadeem-box"
+            image_name = "registry.fedoraproject.org/fedora-toolbox:latest"
+        elif is_deb:
+            box_name = "sadeem-deb-box"
+            image_name = "quay.io/toolbx-images/ubuntu-toolbox:latest"
+        else:
+            GLib.idle_add(self._on_finished, False, _t("err_unsupported"))
+            return
+
+        # 1. Check if container exists, create if not
+        GLib.idle_add(self._update_status, _t("status_init_box").format(box=box_name))
+        try:
+            list_res = subprocess.run(["distrobox", "list"], capture_output=True, text=True, check=False)
+            if box_name not in list_res.stdout:
+                cr_res = subprocess.run(
+                    ["distrobox", "create", "--name", box_name, "--image", image_name, "--yes"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+                if cr_res.returncode != 0:
+                    err = cr_res.stderr.strip() or cr_res.stdout.strip() or "Container creation failed"
+                    GLib.idle_add(self._on_finished, False, err)
+                    return
+        except Exception as e:
+            GLib.idle_add(self._on_finished, False, str(e))
+            return
+
+        # 2. Get desktop files inside container before installation
+        def get_container_desktops():
+            cmd = ["distrobox", "enter", box_name, "--", "bash", "-c", "find /usr/share/applications /usr/local/share/applications -name '*.desktop' 2>/dev/null"]
+            try:
+                res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+                desks = set()
+                for line in res.stdout.splitlines():
+                    line = line.strip()
+                    if line.endswith(".desktop"):
+                        desks.add(os.path.basename(line))
+                return desks
+            except Exception:
+                return set()
+
+        pre_desktops = get_container_desktops()
+
+        # 3. Run installation command
+        GLib.idle_add(self._update_status, _t("status_installing"))
+        try:
+            if is_rpm:
+                install_cmd = [
+                    "distrobox", "enter", box_name, "--",
+                    "sudo", "dnf", "install", "-y", abs_pkg_path
+                ]
+            else:
+                install_cmd = [
+                    "distrobox", "enter", box_name, "--",
+                    "sudo", "bash", "-c",
+                    'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y "$1"',
+                    "_", abs_pkg_path
+                ]
+
+            res = subprocess.run(install_cmd, capture_output=True, text=True, check=False)
+            if res.returncode != 0:
+                raw_err = res.stderr.strip() or res.stdout.strip()
+                lines = raw_err.splitlines()
+                err_summary = "\n".join(lines[-6:]) if len(lines) > 6 else raw_err
+                GLib.idle_add(self._on_finished, False, err_summary or "Process exited with error")
+                return
+        except Exception as e:
+            GLib.idle_add(self._on_finished, False, str(e))
+            return
+
+        # 4. Check for newly installed desktop files & export them
+        GLib.idle_add(self._update_status, _t("status_exporting"))
+        post_desktops = get_container_desktops()
+        new_desktops = post_desktops - pre_desktops
+
+        for desk in new_desktops:
+            subprocess.run(
+                ["distrobox", "enter", box_name, "--", "distrobox-export", "--app", desk],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+
+        GLib.idle_add(self._on_finished, True, _t("status_success"))
+
+
+class SadeemPkgInstallerApp(Adw.Application):
+    def __init__(self):
+        super().__init__(
+            application_id="org.sadeem.PackageInstaller",
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE
+        )
+        self.pkg_arg = None
+        self.window = None
+
+    def do_command_line(self, command_line):
+        args = command_line.get_arguments()
+        # args[0] is executable name, args[1] is file if passed
+        if len(args) > 1:
+            self.pkg_arg = args[1]
+        self.activate()
+        return 0
+
+    def do_activate(self):
+        if LANG in ("ar", "ur"):
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
+        if not self.window:
+            self.window = SadeemPkgInstallerWindow(self, pkg_path=self.pkg_arg)
+        self.window.present()
+
+
+def main():
+    pkg_from_sys = sys.argv[1] if len(sys.argv) > 1 else None
+    app = SadeemPkgInstallerApp()
+    if pkg_from_sys:
+        app.pkg_arg = pkg_from_sys
+    return app.run(sys.argv)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

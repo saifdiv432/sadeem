@@ -1,0 +1,10 @@
+[Unit]
+Description=Initialize Sadeem Default Sandbox Container
+After=network-online.target graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sadeem-init-sandbox
+
+[Install]
+WantedBy=default.target

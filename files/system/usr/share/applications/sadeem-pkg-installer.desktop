@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Sadeem Package Installer
+Name[ar]=مثبّت حزم سديم
+Name[fr]=Installateur de paquets Sadeem
+Name[es]=Instalador de paquetes de Sadeem
+Name[de]=Sadeem-Paketinstaller
+Name[tr]=Sadeem Paket Yükleyici
+Name[ru]=Установщик пакетов Sadeem
+Name[pt]=Instalador de pacotes do Sadeem
+Name[it]=Programma di installazione pacchetti Sadeem
+Name[zh]=Sadeem 软件包安装器
+Exec=/usr/bin/sadeem-pkg-installer %f
+Icon=system-software-install
+Terminal=false
+Type=Application
+MimeType=application/x-rpm;application/vnd.debian.binary-package;application/x-deb;
+NoDisplay=true

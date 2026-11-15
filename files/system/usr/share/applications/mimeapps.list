@@ -1,7 +1,13 @@
 [Default Applications]
 x-scheme-handler/magnet=misterdownloadmanager.desktop
 application/x-bittorrent=misterdownloadmanager.desktop
+application/x-rpm=sadeem-pkg-installer.desktop;
+application/vnd.debian.binary-package=sadeem-pkg-installer.desktop;
+application/x-deb=sadeem-pkg-installer.desktop;
 
 [Added Associations]
 x-scheme-handler/magnet=misterdownloadmanager.desktop;
 application/x-bittorrent=misterdownloadmanager.desktop;
+application/x-rpm=sadeem-pkg-installer.desktop;
+application/vnd.debian.binary-package=sadeem-pkg-installer.desktop;
+application/x-deb=sadeem-pkg-installer.desktop;

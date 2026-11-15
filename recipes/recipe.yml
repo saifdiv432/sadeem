@@ -92,6 +92,9 @@ modules:
       - python3-cairo
       - python3-pillow
 
+      # Container sandbox & compatibility runtime
+      - distrobox
+
   # System-wide Flatpaks configuration (disables Fedora remote and enables Flathub)
   - type: default-flatpaks
     configurations:
@@ -108,6 +111,7 @@ modules:
           - page.tesk.Refine
           - com.usebottles.bottles
           - net.davidotek.pupgui2
+          - io.github.dvlv.boxbuddyrs
 
   # Compile dconf defaults, glib schemas, update MIME database, update logos and icon cache, fastfetch hook, and customize os-release
   - type: script
@@ -216,7 +220,7 @@ modules:
           echo 'LOGO="saifdora-logo-icon"' >> /usr/lib/os-release
         fi
         ln -sf ../usr/lib/os-release /etc/os-release
-        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/saifdora-accent-watcher || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer || true
 
   # Enable flatpak system services and user systemd units
   - type: systemd
@@ -229,6 +233,7 @@ modules:
         - saifdora-flatpak-dbus-reload.path
         - saifdora-apply-theme.service
         - saifdora-accent-watcher.service
+        - sadeem-init-sandbox.service
 
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs
