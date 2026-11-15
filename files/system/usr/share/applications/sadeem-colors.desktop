@@ -1,0 +1,27 @@
+[Desktop Entry]
+Name=Sadeem Colors
+Name[ar]=ألوان سديم
+Name[fr]=Couleurs Sadeem
+Name[es]=Colores de Sadeem
+Name[de]=Sadeem-Farben
+Name[tr]=Sadeem Renkleri
+Name[ru]=Цвета Sadeem
+Name[pt]=Cores do Sadeem
+Name[it]=Colori di Sadeem
+Name[zh]=Sadeem 配色
+Comment=Customize system accent color with full color wheel
+Comment[ar]=تخصيص اللون الأساسي للواجهة عبر دائرة الألوان أو استعادة الخمري
+Comment[fr]=Personnaliser la couleur d'accentuation du système avec la roue chromatique
+Comment[es]=Personalizar el color de énfasis del sistema con la rueda de colores
+Comment[de]=Systemakzentfarbe mit dem Farbrad anpassen
+Comment[tr]=Renk çarkı ile sistem vurgu rengini özelleştirin
+Comment[ru]=Настройка акцентного цвета системы с помощью цветового круга
+Comment[pt]=Personalizar a cor de destaque do sistema com o círculo cromático
+Comment[it]=Personalizza il colore principale del sistema con la ruota dei colori
+Comment[zh]=使用色轮自定义系统强调色
+Exec=/usr/bin/sadeem-colors
+Icon=preferences-color
+Terminal=false
+Type=Application
+Categories=Settings;DesktopSettings;GTK;
+Keywords=color;accent;theme;burgundy;sadeem;لون;ألوان;سمة;خمري;سديم;

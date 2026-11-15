@@ -5,10 +5,10 @@ gsettings monitor org.gnome.desktop.interface accent-color | while read -r line;
     if [ -n "$val" ] && [ "$val" != "red" ]; then
         gsettings set org.gnome.desktop.interface accent-color 'red' 2>/dev/null || true
         now=$(date +%s)
-        last=$(cat /tmp/saifdora-colors-last 2>/dev/null || echo 0)
+        last=$(cat /tmp/sadeem-colors-last 2>/dev/null || echo 0)
         if [ $((now - last)) -ge 2 ]; then
-            echo "$now" > /tmp/saifdora-colors-last
-            /usr/bin/saifdora-colors >/dev/null 2>&1 &
+            echo "$now" > /tmp/sadeem-colors-last
+            /usr/bin/sadeem-colors >/dev/null 2>&1 &
         fi
     fi
 done

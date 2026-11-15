@@ -216,7 +216,7 @@ modules:
           echo 'LOGO="saifdora-logo-icon"' >> /usr/lib/os-release
         fi
         ln -sf ../usr/lib/os-release /etc/os-release
-        chmod +x /usr/bin/saifdora-colors /usr/bin/saifdora-accent-watcher || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/saifdora-accent-watcher || true
 
   # Enable flatpak system services and user systemd units
   - type: systemd

@@ -1,0 +1,1169 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Sadeem Welcome App (sadeem-welcome)
+Interactive onboarding application for Sadeem 45.
+Built with Python 3, GTK 4, and Libadwaita following GNOME Human Interface Guidelines.
+"""
+
+import sys
+import os
+import subprocess
+import gi
+
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
+from gi.repository import Gtk, Adw, GLib, Gio, Gdk
+
+WELCOME_TRANSLATIONS = {
+    "en": {
+        "window_title": "Welcome to Sadeem",
+        "banner_title": "NVIDIA graphics card detected! Official drivers are not installed.",
+        "banner_btn": "Install NVIDIA & CUDA Driver",
+        "btn_prev": "Previous",
+        "btn_next": "Next",
+        "btn_start": "Get Started",
+        "check_startup": "Show on startup",
+        "toast_installing": "Application installation is completing in the background, it will appear in the menu within minutes",
+        # Slide 1
+        "s1_title": "Ready Out of the Box",
+        "s1_sub": "Sadeem 45 includes comprehensive codecs, hardware acceleration, and essential utilities pre-configured.",
+        "s1_r1_t": "Multimedia & Hardware Acceleration",
+        "s1_r1_d": "Full codec support (HEVC, AV1, HEIC) and hardware video decoding for Intel and AMD.",
+        "s1_r2_t": "Curated Repositories",
+        "s1_r2_d": "Flathub and RPM Fusion (Free & Non-Free) enabled out of the box.",
+        "s1_r3_t": "Localization & System Tools",
+        "s1_r3_d": "Full support for 12 languages with built-in tools for 7-Zip, RAR, and PDF.",
+        # Slide 2
+        "s2_title": "Integrated Productivity Apps",
+        "s2_sub": "High-performance desktop applications installed natively in your system.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Fast, lightweight file converter: drag any file and hold Shift to drop it onto matching formats.",
+        "s2_r1_b": "Launch Rumman",
+        "s2_r2_t": "Download Manager",
+        "s2_r2_d": "Fast download manager automatically integrated with Firefox (Mister Download Manager).",
+        "s2_r2_b": "Launch MDM",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Fast native desktop WhatsApp client built with Rust.",
+        "s2_r3_b": "Launch ZapFast",
+        # Slide 3
+        "s3_title": "Interface Customization & Extensions",
+        "s3_sub": "Enhance and personalize your GNOME desktop with pre-configured extensions and utilities.",
+        "s3_r1_t": "Lockscreen Clock",
+        "s3_r1_d": "Lockscreen clock with weather and smart regional dates, fully customizable.",
+        "s3_r2_t": "Desktop Extensions",
+        "s3_r2_d": "Includes ArcMenu app launcher, Dash to Dock, and Clipboard Indicator.",
+        "s3_r2_b": "Manage Extensions",
+        "s3_r3_t": "Interface Tweaks",
+        "s3_r3_d": "Fine-tune window buttons and GNOME appearance using Refine.",
+        "s3_r3_b": "Customize Desktop",
+        # Slide 4
+        "s4_title": "Hardware & System Updates",
+        "s4_sub": "Optimized for smooth performance across Intel, AMD, and NVIDIA hardware.",
+        "s4_r1_t": "Intel & AMD Acceleration",
+        "s4_r1_d": "Hardware video acceleration (VA-API / Mesa / Intel Media Driver) is pre-configured and active.",
+        "s4_r2_t": "NVIDIA & CUDA Drivers",
+        "s4_r2_d": "Detect your GPU model, install official drivers, configure CUDA, and manage Secure Boot.",
+        "s4_r2_b": "Open NVIDIA Manager",
+        "s4_r3_t": "Safe Atomic Updates",
+        "s4_r3_d": "Immutable Fedora Silverblue base protects the system and enables instant rollbacks.",
+        # Slide 5
+        "s5_title": "GNOME Navigation Basics",
+        "s5_sub": "Master simple gestures and shortcuts to move swiftly through your workspace.",
+        "s5_r1_t": "Super Key & Search",
+        "s5_r1_d": "Press the Super (Windows) key to open the Activities Overview, search apps, files, or do quick math.",
+        "s5_r2_t": "Touchpad Gestures",
+        "s5_r2_d": "Swipe up/down with 3 fingers for Overview; swipe left/right with 3 fingers to switch workspaces.",
+        "s5_r3_t": "Dynamic Workspaces",
+        "s5_r3_d": "Workspaces are created automatically as you open windows to keep your desktop organized.",
+    },
+    "ar": {
+        "window_title": "مرحباً بك في سديم",
+        "banner_title": "تم اكتشاف بطاقة رسوميات NVIDIA! التعريفات الرسمية غير مثبتة.",
+        "banner_btn": "تثبيت تعريف NVIDIA و CUDA",
+        "btn_prev": "السابق",
+        "btn_next": "التالي",
+        "btn_start": "ابدأ الآن",
+        "check_startup": "العرض عند بدء التشغيل",
+        "toast_installing": "يتم استكمال تثبيت التطبيق في الخلفية، وسيظهر في القائمة خلال دقائق",
+        # Slide 1
+        "s1_title": "جاهز للاستخدام الفوري",
+        "s1_sub": "يتضمن سديم 45 دعماً شاملاً لجميع برامج الترميز، وتسريع العتاد، والأدوات الأساسية مهيأة مسبقاً.",
+        "s1_r1_t": "الوسائط المتعددة وتسريع العتاد",
+        "s1_r1_d": "دعم كامل للترميزات (HEVC, AV1, HEIC) وفك تشفير الفيديو عبر العتاد لمعالجات Intel و AMD.",
+        "s1_r2_t": "مستودعات برمجية معتمدة",
+        "s1_r2_d": "مستودعات Flathub و RPM Fusion (الحرة وغير الحرة) مفعلة وجاهزة تلقائياً.",
+        "s1_r3_t": "التعريب وأدوات النظام",
+        "s1_r3_d": "دعم متكامل لـ 12 لغة مع أدوات مدمجة لملفات 7-Zip و RAR و PDF.",
+        # Slide 2
+        "s2_title": "تطبيقات إنتاجية مدمجة",
+        "s2_sub": "تطبيقات سطح مكتب عالية الأداء ومثبتة أصلياً في نظامك.",
+        "s2_r1_t": "رمان (Rumman)",
+        "s2_r1_d": "محول ملفات سريع وخفيف: اسحب أي ملف مع الضغط على Shift لإفلاته بالصيغة المطلوبة.",
+        "s2_r1_b": "تشغيل رمان",
+        "s2_r2_t": "مدير التنزيلات (MDM)",
+        "s2_r2_d": "مدير تنزيلات فائق السرعة ومتكامل تلقائياً مع متصفح فايرفوكس (Mister Download Manager).",
+        "s2_r2_b": "تشغيل MDM",
+        "s2_r3_t": "زاب فاست (ZapFast)",
+        "s2_r3_d": "عميل واتساب سريع لسطح المكتب مبني بلغة Rust.",
+        "s2_r3_b": "تشغيل ZapFast",
+        # Slide 3
+        "s3_title": "تخصيص الواجهة والإضافات",
+        "s3_sub": "حسّن وخصّص سطح مكتب جنوم عبر مجموعة إضافات وأدوات مهيأة مسبقاً.",
+        "s3_r1_t": "ساعة شاشة القفل",
+        "s3_r1_d": "ساعة شاشة القفل مع الطقس والتاريخ الإقليمي الذكي، قابلة للتخصيص بالكامل.",
+        "s3_r2_t": "إضافات سطح المكتب",
+        "s3_r2_d": "تتضمن قائمة التطبيقات ArcMenu وشريط Dash to Dock وسجل الحافظة Clipboard Indicator.",
+        "s3_r2_b": "إدارة الإضافات",
+        "s3_r3_t": "تعديلات المظهر",
+        "s3_r3_d": "تحكم دقيق بأزرار النوافذ ومظهر جنوم باستخدام أداة Refine.",
+        "s3_r3_b": "تخصيص المظهر",
+        # Slide 4
+        "s4_title": "العتاد وتحديثات النظام",
+        "s4_sub": "أداء فائق واستقرار عالٍ عبر معالجات وبطاقات Intel و AMD و NVIDIA.",
+        "s4_r1_t": "تسريع Intel و AMD",
+        "s4_r1_d": "تسريع الفيديو العتادي (VA-API / Mesa / Intel Media Driver) مهيأ ومفعّل مسبقاً.",
+        "s4_r2_t": "تعريفات NVIDIA و CUDA",
+        "s4_r2_d": "التعرف التلقائي على طراز كرت الشاشة وتثبيت التعريفات الرسمية و CUDA وإدارة الإقلاع الآمن.",
+        "s4_r2_b": "مدير تعريفات NVIDIA",
+        "s4_r3_t": "تحديثات ذرية آمنة",
+        "s4_r3_d": "قاعدة فيدورا سيلفربلو غير القابلة للتعديل تضمن حماية النظام والرجوع الفوري للإصدار السابق.",
+        # Slide 5
+        "s5_title": "أساسيات التنقل في جنوم",
+        "s5_sub": "تعرف على الإيماءات والاختصارات البسيطة للتنقل السريع في مساحات العمل.",
+        "s5_r1_t": "زر Super والبحث الفوري",
+        "s5_r1_d": "اضغط على زر Super (Windows) لفتح الأنشطة والبحث عن التطبيقات والملفات أو إجراء عمليات حسابية.",
+        "s5_r2_t": "إيماءات لوحة اللمس",
+        "s5_r2_d": "اسحب بثلاثة أصابع لأعلى/لأسفل لعرض الأنشطة، واسحب يميناً/يساراً للتبديل بين مساحات العمل.",
+        "s5_r3_t": "مساحات عمل ديناميكية",
+        "s5_r3_d": "يتم إنشاء مساحات العمل تلقائياً بمجرد فتح النوافذ للحفاظ على ترتيب سطح المكتب.",
+    },
+    "fr": {
+        "window_title": "Bienvenue dans Sadeem",
+        "banner_title": "Carte graphique NVIDIA détectée ! Les pilotes officiels ne sont pas installés.",
+        "banner_btn": "Installer le pilote NVIDIA et CUDA",
+        "btn_prev": "Précédent",
+        "btn_next": "Suivant",
+        "btn_start": "Commencer",
+        "check_startup": "Afficher au démarrage",
+        "toast_installing": "L'installation de l'application se termine en arrière-plan, elle apparaîtra dans le menu d'ici quelques minutes",
+        # Slide 1
+        "s1_title": "Prêt à l'emploi",
+        "s1_sub": "Sadeem 45 inclut des codecs complets, l'accélération matérielle et des utilitaires essentiels préconfigurés.",
+        "s1_r1_t": "Multimédia et accélération matérielle",
+        "s1_r1_d": "Prise en charge complète des codecs (HEVC, AV1, HEIC) et décodage vidéo matériel pour Intel et AMD.",
+        "s1_r2_t": "Dépôts sélectionnés",
+        "s1_r2_d": "Flathub et RPM Fusion (Free et Non-Free) activés par défaut.",
+        "s1_r3_t": "Localisation et outils système",
+        "s1_r3_d": "Prise en charge de 12 langues avec des outils intégrés pour 7-Zip, RAR et PDF.",
+        # Slide 2
+        "s2_title": "Applications de productivité intégrées",
+        "s2_sub": "Applications de bureau hautes performances installées nativement sur votre système.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Convertisseur de fichiers rapide et léger : glissez un fichier et maintenez Maj pour le convertir.",
+        "s2_r1_b": "Lancer Rumman",
+        "s2_r2_t": "Gestionnaire de téléchargement",
+        "s2_r2_d": "Gestionnaire de téléchargement rapide intégré automatiquement avec Firefox (Mister Download Manager).",
+        "s2_r2_b": "Lancer MDM",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Client WhatsApp de bureau rapide et natif développé en Rust.",
+        "s2_r3_b": "Lancer ZapFast",
+        # Slide 3
+        "s3_title": "Personnalisation et extensions",
+        "s3_sub": "Améliorez et personnalisez votre bureau GNOME avec des extensions préconfigurées.",
+        "s3_r1_t": "Horloge de l'écran de verrouillage",
+        "s3_r1_d": "Horloge d'écran de verrouillage avec météo et dates régionales intelligentes, entièrement personnalisable.",
+        "s3_r2_t": "Extensions de bureau",
+        "s3_r2_d": "Comprend le lanceur ArcMenu, Dash to Dock et Clipboard Indicator.",
+        "s3_r2_b": "Gérer les extensions",
+        "s3_r3_t": "Ajustements de l'interface",
+        "s3_r3_d": "Affinez les boutons de fenêtre et l'apparence de GNOME à l'aide de Refine.",
+        "s3_r3_b": "Personnaliser le bureau",
+        # Slide 4
+        "s4_title": "Matériel et mises à jour système",
+        "s4_sub": "Optimisé pour des performances fluides sur le matériel Intel, AMD et NVIDIA.",
+        "s4_r1_t": "Accélération Intel et AMD",
+        "s4_r1_d": "L'accélération vidéo matérielle (VA-API / Mesa / Intel Media Driver) est préconfigurée et active.",
+        "s4_r2_t": "Pilotes NVIDIA et CUDA",
+        "s4_r2_d": "Détectez votre carte graphique, installez les pilotes officiels, configurez CUDA et gérez Secure Boot.",
+        "s4_r2_b": "Ouvrir le gestionnaire NVIDIA",
+        "s4_r3_t": "Mises à jour atomiques sécurisées",
+        "s4_r3_d": "La base immuable de Fedora Silverblue protège le système et permet des retours arrière instantanés.",
+        # Slide 5
+        "s5_title": "Bases de navigation GNOME",
+        "s5_sub": "Maîtrisez les gestes simples et les raccourcis pour naviguer rapidement.",
+        "s5_r1_t": "Touche Super et recherche",
+        "s5_r1_d": "Appuyez sur la touche Super (Windows) pour ouvrir la vue d'ensemble, rechercher des applications ou des fichiers.",
+        "s5_r2_t": "Gestes du pavé tactile",
+        "s5_r2_d": "Glissez avec 3 doigts vers le haut/bas pour la vue d'ensemble ; glissez à gauche/droite pour changer d'espace.",
+        "s5_r3_t": "Espaces de travail dynamiques",
+        "s5_r3_d": "Les espaces de travail sont créés automatiquement pour garder votre bureau organisé.",
+    },
+    "es": {
+        "window_title": "Bienvenido a Sadeem",
+        "banner_title": "¡Tarjeta gráfica NVIDIA detectada! Los controladores oficiales no están instalados.",
+        "banner_btn": "Instalar controlador NVIDIA y CUDA",
+        "btn_prev": "Anterior",
+        "btn_next": "Siguiente",
+        "btn_start": "Comenzar",
+        "check_startup": "Mostrar al iniciar",
+        "toast_installing": "La instalación de la aplicación se está completando en segundo plano, aparecerá en el menú en unos minutos",
+        # Slide 1
+        "s1_title": "Listo para usar",
+        "s1_sub": "Sadeem 45 incluye códecs integrales, aceleración por hardware y utilidades esenciales preconfiguradas.",
+        "s1_r1_t": "Multimedia y aceleración por hardware",
+        "s1_r1_d": "Soporte completo de códecs (HEVC, AV1, HEIC) y decodificación de vídeo por hardware para Intel y AMD.",
+        "s1_r2_t": "Repositorios seleccionados",
+        "s1_r2_d": "Flathub y RPM Fusion (Free y Non-Free) habilitados por defecto.",
+        "s1_r3_t": "Localización y herramientas del sistema",
+        "s1_r3_d": "Soporte completo para 12 idiomas con herramientas integradas para 7-Zip, RAR y PDF.",
+        # Slide 2
+        "s2_title": "Aplicaciones de productividad integradas",
+        "s2_sub": "Aplicaciones de escritorio de alto rendimiento instaladas de forma nativa en su sistema.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Conversor de archivos rápido y ligero: arrastre cualquier archivo y mantenga pulsado Shift.",
+        "s2_r1_b": "Iniciar Rumman",
+        "s2_r2_t": "Gestor de descargas",
+        "s2_r2_d": "Gestor de descargas rápido integrado automáticamente con Firefox (Mister Download Manager).",
+        "s2_r2_b": "Iniciar MDM",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Cliente de escritorio nativo y rápido de WhatsApp desarrollado con Rust.",
+        "s2_r3_b": "Iniciar ZapFast",
+        # Slide 3
+        "s3_title": "Personalización y extensiones de interfaz",
+        "s3_sub": "Mejore y personalice su escritorio GNOME con extensiones y utilidades preconfiguradas.",
+        "s3_r1_t": "Reloj de pantalla de bloqueo",
+        "s3_r1_d": "Reloj de pantalla de bloqueo con clima y fechas regionales inteligentes, totalmente personalizable.",
+        "s3_r2_t": "Extensiones de escritorio",
+        "s3_r2_d": "Incluye el lanzador de aplicaciones ArcMenu, Dash to Dock e indicador de portapapeles.",
+        "s3_r2_b": "Gestionar extensiones",
+        "s3_r3_t": "Ajustes de la interfaz",
+        "s3_r3_d": "Ajuste con precisión los botones de ventana y la apariencia de GNOME con Refine.",
+        "s3_r3_b": "Personalizar escritorio",
+        # Slide 4
+        "s4_title": "Hardware y actualizaciones del sistema",
+        "s4_sub": "Optimizado para un rendimiento fluido en hardware Intel, AMD y NVIDIA.",
+        "s4_r1_t": "Aceleración de Intel y AMD",
+        "s4_r1_d": "La aceleración de vídeo por hardware (VA-API / Mesa / Intel Media Driver) está preconfigurada y activa.",
+        "s4_r2_t": "Controladores NVIDIA y CUDA",
+        "s4_r2_d": "Detecte su GPU, instale controladores oficiales, configure CUDA y gestione Secure Boot.",
+        "s4_r2_b": "Abrir gestor de NVIDIA",
+        "s4_r3_t": "Actualizaciones atómicas seguras",
+        "s4_r3_d": "La base inmutable de Fedora Silverblue protege el sistema y permite reversiones instantáneas.",
+        # Slide 5
+        "s5_title": "Conceptos básicos de navegación en GNOME",
+        "s5_sub": "Domine gestos sencillos y atajos para moverse rápidamente por su espacio de trabajo.",
+        "s5_r1_t": "Tecla Super y búsqueda",
+        "s5_r1_d": "Presione la tecla Super (Windows) para abrir Actividades, buscar aplicaciones, archivos o hacer cálculos.",
+        "s5_r2_t": "Gestos del panel táctil",
+        "s5_r2_d": "Deslice 3 dedos arriba/abajo para Actividades; deslice izquierda/derecha para cambiar de espacio.",
+        "s5_r3_t": "Espacios de trabajo dinámicos",
+        "s5_r3_d": "Los espacios de trabajo se crean automáticamente para mantener su escritorio organizado.",
+    },
+    "de": {
+        "window_title": "Willkommen bei Sadeem",
+        "banner_title": "NVIDIA-Grafikkarte erkannt! Offizielle Treiber sind nicht installiert.",
+        "banner_btn": "NVIDIA- und CUDA-Treiber installieren",
+        "btn_prev": "Zurück",
+        "btn_next": "Weiter",
+        "btn_start": "Loslegen",
+        "check_startup": "Beim Start anzeigen",
+        "toast_installing": "Die Installation der Anwendung wird im Hintergrund abgeschlossen, sie erscheint in wenigen Minuten im Menü",
+        # Slide 1
+        "s1_title": "Sofort einsatzbereit",
+        "s1_sub": "Sadeem 45 enthält umfassende Codecs, Hardwarebeschleunigung und vorkonfigurierte Dienstprogramme.",
+        "s1_r1_t": "Multimedia & Hardwarebeschleunigung",
+        "s1_r1_d": "Vollständige Codec-Unterstützung (HEVC, AV1, HEIC) und Hardware-Videodekodierung für Intel und AMD.",
+        "s1_r2_t": "Ausgewählte Repositorien",
+        "s1_r2_d": "Flathub und RPM Fusion (Free & Non-Free) sind standardmäßig aktiviert.",
+        "s1_r3_t": "Lokalisierung & Systemwerkzeuge",
+        "s1_r3_d": "Umfassende Unterstützung für 12 Sprachen mit integrierten Tools für 7-Zip, RAR und PDF.",
+        # Slide 2
+        "s2_title": "Integrierte Produktivitäts-Apps",
+        "s2_sub": "Hochleistungs-Desktopanwendungen, die nativ auf Ihrem System installiert sind.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Schneller, leichter Dateikonverter: Datei ziehen und Umschalt gedrückt halten zum Konvertieren.",
+        "s2_r1_b": "Rumman starten",
+        "s2_r2_t": "Download-Manager",
+        "s2_r2_d": "Schneller Download-Manager, automatisch in Firefox integriert (Mister Download Manager).",
+        "s2_r2_b": "MDM starten",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Schneller nativer Desktop-WhatsApp-Client, entwickelt in Rust.",
+        "s2_r3_b": "ZapFast starten",
+        # Slide 3
+        "s3_title": "Anpassung der Benutzeroberfläche & Erweiterungen",
+        "s3_sub": "Verbessern und personalisieren Sie Ihren GNOME-Desktop mit vorkonfigurierten Erweiterungen.",
+        "s3_r1_t": "Sperrbildschirm-Uhr",
+        "s3_r1_d": "Sperrbildschirm-Uhr mit Wetter und regionalen Datumsformaten, vollständig anpassbar.",
+        "s3_r2_t": "Desktop-Erweiterungen",
+        "s3_r2_d": "Enthält das ArcMenu-Startmenü, Dash to Dock und Clipboard Indicator.",
+        "s3_r2_b": "Erweiterungen verwalten",
+        "s3_r3_t": "Oberflächen-Feintuning",
+        "s3_r3_d": "Passen Sie Fensterschaltflächen und das Erscheinungsbild von GNOME mit Refine an.",
+        "s3_r3_b": "Desktop anpassen",
+        # Slide 4
+        "s4_title": "Hardware & Systemaktualisierungen",
+        "s4_sub": "Optimiert für reibungslose Leistung auf Intel-, AMD- und NVIDIA-Hardware.",
+        "s4_r1_t": "Intel- & AMD-Beschleunigung",
+        "s4_r1_d": "Hardware-Videobeschleunigung (VA-API / Mesa / Intel Media Driver) ist vorkonfiguriert und aktiv.",
+        "s4_r2_t": "NVIDIA- & CUDA-Treiber",
+        "s4_r2_d": "Erkennen Sie Ihre GPU, installieren Sie offizielle Treiber, konfigurieren Sie CUDA und verwalten Sie Secure Boot.",
+        "s4_r2_b": "NVIDIA-Manager öffnen",
+        "s4_r3_t": "Sichere atomare Aktualisierungen",
+        "s4_r3_d": "Die unveränderliche Basis von Fedora Silverblue schützt das System und ermöglicht sofortige Rollbacks.",
+        # Slide 5
+        "s5_title": "Grundlagen der GNOME-Navigation",
+        "s5_sub": "Meistern Sie einfache Gesten und Tastenkürzel für schnelles Arbeiten.",
+        "s5_r1_t": "Super-Taste & Suche",
+        "s5_r1_d": "Drücken Sie die Super-Taste (Windows), um die Übersicht zu öffnen und nach Apps oder Dateien zu suchen.",
+        "s5_r2_t": "Touchpad-Gesten",
+        "s5_r2_d": "Mit 3 Fingern nach oben/unten wischen für die Übersicht; nach links/rechts zum Wechseln der Arbeitsflächen.",
+        "s5_r3_t": "Dynamische Arbeitsflächen",
+        "s5_r3_d": "Arbeitsflächen werden beim Öffnen von Fenstern automatisch erstellt, um Übersicht zu behalten.",
+    },
+    "tr": {
+        "window_title": "Sadeem'e Hoş Geldiniz",
+        "banner_title": "NVIDIA grafik kartı algılandı! Resmi sürücüler yüklü değil.",
+        "banner_btn": "NVIDIA ve CUDA Sürücüsünü Yükle",
+        "btn_prev": "Önceki",
+        "btn_next": "İleri",
+        "btn_start": "Başlayın",
+        "check_startup": "Başlangıçta göster",
+        "toast_installing": "Uygulama yüklemesi arka planda tamamlanıyor, birkaç dakika içinde menüde görünecektir",
+        # Slide 1
+        "s1_title": "Kullanıma Hazır",
+        "s1_sub": "Sadeem 45 kapsamlı kodekler, donanım hızlandırma ve önceden yapılandırılmış temel yardımcı araçlar içerir.",
+        "s1_r1_t": "Multimedya ve Donanım Hızlandırma",
+        "s1_r1_d": "Intel ve AMD için tam kodek desteği (HEVC, AV1, HEIC) ve donanım video kod çözme.",
+        "s1_r2_t": "Seçkin Depolar",
+        "s1_r2_d": "Flathub ve RPM Fusion (Ücretsiz ve Tescilli) kullanıma hazır olarak etkindir.",
+        "s1_r3_t": "Yerelleştirme ve Sistem Araçları",
+        "s1_r3_d": "7-Zip, RAR ve PDF için yerleşik araçlarla 12 dil için tam destek.",
+        # Slide 2
+        "s2_title": "Entegre Verimlilik Uygulamaları",
+        "s2_sub": "Sisteminizde yerel olarak yüklü yüksek performanslı masaüstü uygulamaları.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Hızlı, hafif dosya dönüştürücü: herhangi bir dosyayı sürükleyin ve uygun formata bırakmak için Shift tuşuna basın.",
+        "s2_r1_b": "Rumman'ı Başlat",
+        "s2_r2_t": "İndirme Yöneticisi",
+        "s2_r2_d": "Firefox ile otomatik olarak entegre edilmiş hızlı indirme yöneticisi (Mister Download Manager).",
+        "s2_r2_b": "MDM'yi Başlat",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Rust ile geliştirilmiş hızlı ve yerel masaüstü WhatsApp istemcisi.",
+        "s2_r3_b": "ZapFast'ı Başlat",
+        # Slide 3
+        "s3_title": "Arayüz Özelleştirme ve Eklentiler",
+        "s3_sub": "Önceden yapılandırılmış eklentilerle GNOME masaüstünüzü geliştirin ve kişiselleştirin.",
+        "s3_r1_t": "Kilit Ekranı Saati",
+        "s3_r1_d": "Hava durumu ve akıllı bölgesel tarihler içeren, tamamen özelleştirilebilir kilit ekranı saati.",
+        "s3_r2_t": "Masaüstü Eklentileri",
+        "s3_r2_d": "ArcMenu başlatıcı, Dash to Dock ve Pano Göstergesi içerir.",
+        "s3_r2_b": "Eklentileri Yönet",
+        "s3_r3_t": "Arayüz İnce Ayarları",
+        "s3_r3_d": "Refine kullanarak pencere düğmelerini ve GNOME görünümünü ayrıntılı olarak ayarlayın.",
+        "s3_r3_b": "Masaüstünü Özelleştir",
+        # Slide 4
+        "s4_title": "Donanım ve Sistem Güncellemeleri",
+        "s4_sub": "Intel, AMD ve NVIDIA donanımlarında sorunsuz performans için optimize edilmiştir.",
+        "s4_r1_t": "Intel ve AMD Hızlandırma",
+        "s4_r1_d": "Donanım video hızlandırma (VA-API / Mesa / Intel Media Driver) önceden yapılandırılmış ve etkindir.",
+        "s4_r2_t": "NVIDIA ve CUDA Sürücüleri",
+        "s4_r2_d": "GPU modelinizi algılayın, resmi sürücüleri yükleyin, CUDA'yı yapılandırın ve Güvenli Önyüklemeyi yönetin.",
+        "s4_r2_b": "NVIDIA Yöneticisini Aç",
+        "s4_r3_t": "Güvenli Atomik Güncellemeler",
+        "s4_r3_d": "Değişmez Fedora Silverblue tabanı sistemi korur ve anında geri almayı sağlar.",
+        # Slide 5
+        "s5_title": "GNOME Gezinme Temelleri",
+        "s5_sub": "Çalışma alanınızda hızla gezinmek için basit hareketleri ve kısayolları öğrenin.",
+        "s5_r1_t": "Super Tuşu ve Arama",
+        "s5_r1_d": "Etkinlikler Genel Bakışını açmak, uygulamaları, dosyaları aramak için Super (Windows) tuşuna basın.",
+        "s5_r2_t": "Dokunmatik Yüzey Hareketleri",
+        "s5_r2_d": "Genel bakış için 3 parmakla yukarı/aşağı; çalışma alanlarını değiştirmek için 3 parmakla sola/sağa kaydırın.",
+        "s5_r3_t": "Dinamik Çalışma Alanları",
+        "s5_r3_d": "Pencereler açıldıkça çalışma alanları masaüstünüzü düzenli tutmak için otomatik olarak oluşturulur.",
+    },
+    "ru": {
+        "window_title": "Добро пожаловать в Sadeem",
+        "banner_title": "Обнаружена видеокарта NVIDIA! Официальные драйверы не установлены.",
+        "banner_btn": "Установить драйвер NVIDIA и CUDA",
+        "btn_prev": "Назад",
+        "btn_next": "Далее",
+        "btn_start": "Начать",
+        "check_startup": "Показывать при запуске",
+        "toast_installing": "Установка приложения завершается в фоновом режиме, оно появится в меню через несколько минут",
+        # Slide 1
+        "s1_title": "Готов к работе",
+        "s1_sub": "Sadeem 45 включает полный набор кодеков, аппаратное ускорение и предварительно настроенные утилиты.",
+        "s1_r1_t": "Мультимедиа и аппаратное ускорение",
+        "s1_r1_d": "Полная поддержка кодеков (HEVC, AV1, HEIC) и аппаратного декодирования видео для Intel и AMD.",
+        "s1_r2_t": "Проверенные репозитории",
+        "s1_r2_d": "Flathub и RPM Fusion (Free и Non-Free) включены по умолчанию.",
+        "s1_r3_t": "Локализация и системные утилиты",
+        "s1_r3_d": "Полная поддержка 12 языков со встроенными утилитами для 7-Zip, RAR и PDF.",
+        # Slide 2
+        "s2_title": "Встроенные приложения для работы",
+        "s2_sub": "Высокопроизводительные приложения, встроенные в систему.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Быстрый конвертер файлов: перетащите любой файл и удерживайте Shift для конвертации.",
+        "s2_r1_b": "Запустить Rumman",
+        "s2_r2_t": "Менеджер загрузок",
+        "s2_r2_d": "Быстрый менеджер загрузок с автоматической интеграцией в Firefox (Mister Download Manager).",
+        "s2_r2_b": "Запустить MDM",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Быстрый нативный клиент WhatsApp для рабочего стола, написанный на Rust.",
+        "s2_r3_b": "Запустить ZapFast",
+        # Slide 3
+        "s3_title": "Настройка интерфейса и расширения",
+        "s3_sub": "Настройте рабочий стол GNOME с помощью готовых расширений и утилит.",
+        "s3_r1_t": "Часы на экране блокировки",
+        "s3_r1_d": "Часы на экране блокировки с погодой и региональным форматом даты, полностью настраиваемые.",
+        "s3_r2_t": "Расширения рабочего стола",
+        "s3_r2_d": "Включает меню ArcMenu, панель Dash to Dock и индикатор буфера обмена.",
+        "s3_r2_b": "Управление расширениями",
+        "s3_r3_t": "Настройка оформления",
+        "s3_r3_d": "Тонкая настройка кнопок окон и внешнего вида GNOME с помощью Refine.",
+        "s3_r3_b": "Настроить рабочий стол",
+        # Slide 4
+        "s4_title": "Оборудование и обновления системы",
+        "s4_sub": "Оптимизировано для плавной работы на оборудовании Intel, AMD и NVIDIA.",
+        "s4_r1_t": "Ускорение Intel и AMD",
+        "s4_r1_d": "Аппаратное ускорение видео (VA-API / Mesa / Intel Media Driver) настроено и включено.",
+        "s4_r2_t": "Драйверы NVIDIA и CUDA",
+        "s4_r2_d": "Определение модели видеокарты, установка официальных драйверов, настройка CUDA и Secure Boot.",
+        "s4_r2_b": "Открыть менеджер NVIDIA",
+        "s4_r3_t": "Безопасные атомарные обновления",
+        "s4_r3_d": "Неизменяемая база Fedora Silverblue защищает систему и позволяет мгновенно откатить изменения.",
+        # Slide 5
+        "s5_title": "Основы навигации в GNOME",
+        "s5_sub": "Освойте простые жесты и сочетания клавиш для быстрой работы.",
+        "s5_r1_t": "Клавиша Super и поиск",
+        "s5_r1_d": "Нажмите клавишу Super (Windows), чтобы открыть обзор, найти приложения, файлы или сделать вычисления.",
+        "s5_r2_t": "Жесты сенсорной панели",
+        "s5_r2_d": "Проведите 3 пальцами вверх/вниз для Обзора; проведите влево/вправо для переключения рабочих мест.",
+        "s5_r3_t": "Динамические рабочие места",
+        "s5_r3_d": "Рабочие места создаются автоматически по мере открытия окон для поддержания порядка.",
+    },
+    "pt": {
+        "window_title": "Bem-vindo ao Sadeem",
+        "banner_title": "Placa gráfica NVIDIA detetada! Os controladores oficiais não estão instalados.",
+        "banner_btn": "Instalar controlador NVIDIA e CUDA",
+        "btn_prev": "Anterior",
+        "btn_next": "Seguinte",
+        "btn_start": "Começar",
+        "check_startup": "Mostrar no arranque",
+        "toast_installing": "A instalação do aplicativo está a terminar em segundo plano, ele aparecerá no menu dentro de instantes",
+        # Slide 1
+        "s1_title": "Pronto a utilizar",
+        "s1_sub": "O Sadeem 45 inclui codecs abrangentes, aceleração de hardware e utilitários essenciais pré-configurados.",
+        "s1_r1_t": "Multimédia e Aceleração de Hardware",
+        "s1_r1_d": "Suporte completo a codecs (HEVC, AV1, HEIC) e descodificação de vídeo por hardware para Intel e AMD.",
+        "s1_r2_t": "Repositórios Selecionados",
+        "s1_r2_d": "Flathub e RPM Fusion (Free e Non-Free) ativados por padrão.",
+        "s1_r3_t": "Localização e Ferramentas do Sistema",
+        "s1_r3_d": "Suporte completo para 12 idiomas com ferramentas integradas para 7-Zip, RAR e PDF.",
+        # Slide 2
+        "s2_title": "Aplicações de Produtividade Integradas",
+        "s2_sub": "Aplicações de desktop de alto desempenho instaladas nativamente no seu sistema.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Conversor de ficheiros rápido e leve: arraste qualquer ficheiro e prima Shift para converter.",
+        "s2_r1_b": "Iniciar Rumman",
+        "s2_r2_t": "Gestor de Transferências",
+        "s2_r2_d": "Gestor de transferências rápido integrado automaticamente com o Firefox (Mister Download Manager).",
+        "s2_r2_b": "Iniciar MDM",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Cliente nativo e rápido do WhatsApp para desktop desenvolvido em Rust.",
+        "s2_r3_b": "Iniciar ZapFast",
+        # Slide 3
+        "s3_title": "Personalização da Interface e Extensões",
+        "s3_sub": "Melhore e personalize o seu ambiente de trabalho GNOME com extensões pré-configuradas.",
+        "s3_r1_t": "Relógio do Ecrã de Bloqueio",
+        "s3_r1_d": "Relógio de ecrã de bloqueio com meteorologia e datas regionais inteligentes, totalmente personalizável.",
+        "s3_r2_t": "Extensões do Ambiente de Trabalho",
+        "s3_r2_d": "Inclui o lançador ArcMenu, Dash to Dock e Clipboard Indicator.",
+        "s3_r2_b": "Gerir Extensões",
+        "s3_r3_t": "Ajustes de Interface",
+        "s3_r3_d": "Ajuste os botões das janelas e a aparência do GNOME usando o Refine.",
+        "s3_r3_b": "Personalizar Desktop",
+        # Slide 4
+        "s4_title": "Hardware e Atualizações do Sistema",
+        "s4_sub": "Otimizado para um desempenho suave em hardware Intel, AMD e NVIDIA.",
+        "s4_r1_t": "Aceleração Intel e AMD",
+        "s4_r1_d": "Aceleração de vídeo por hardware (VA-API / Mesa / Intel Media Driver) pré-configurada e ativa.",
+        "s4_r2_t": "Controladores NVIDIA e CUDA",
+        "s4_r2_d": "Detete a sua GPU, instale controladores oficiais, configure o CUDA e gira o Secure Boot.",
+        "s4_r2_b": "Abrir Gestor NVIDIA",
+        "s4_r3_t": "Atualizações Atómicas Seguras",
+        "s4_r3_d": "A base imutável do Fedora Silverblue protege o sistema e permite reversões instantâneas.",
+        # Slide 5
+        "s5_title": "Noções Básicas de Navegação no GNOME",
+        "s5_sub": "Domine gestos e atalhos simples para navegar rapidamente na área de trabalho.",
+        "s5_r1_t": "Tecla Super e Pesquisa",
+        "s5_r1_d": "Prima a tecla Super (Windows) para abrir a Visão Geral, procurar aplicações, ficheiros ou fazer contas.",
+        "s5_r2_t": "Gestos do Touchpad",
+        "s5_r2_d": "Deslize com 3 dedos para cima/baixo para a Visão Geral; deslize para a esquerda/direita para mudar de espaço.",
+        "s5_r3_t": "Espaços de Trabalho Dinâmicos",
+        "s5_r3_d": "Os espaços de trabalho são criados automaticamente para manter o ambiente organizado.",
+    },
+    "it": {
+        "window_title": "Benvenuto in Sadeem",
+        "banner_title": "Scheda grafica NVIDIA rilevata! I driver ufficiali non sono installati.",
+        "banner_btn": "Installa driver NVIDIA e CUDA",
+        "btn_prev": "Precedente",
+        "btn_next": "Avanti",
+        "btn_start": "Inizia",
+        "check_startup": "Mostra all'avvio",
+        "toast_installing": "L'installazione dell'applicazione sta per essere completata in background, apparirà nel menu entro pochi minuti",
+        # Slide 1
+        "s1_title": "Pronto all'uso",
+        "s1_sub": "Sadeem 45 include codec completi, accelerazione hardware e utilità essenziali preconfigurate.",
+        "s1_r1_t": "Multimedia e accelerazione hardware",
+        "s1_r1_d": "Supporto completo ai codec (HEVC, AV1, HEIC) e decodifica video hardware per Intel e AMD.",
+        "s1_r2_t": "Repository selezionati",
+        "s1_r2_d": "Flathub e RPM Fusion (Free e Non-Free) abilitati per impostazione predefinita.",
+        "s1_r3_t": "Localizzazione e strumenti di sistema",
+        "s1_r3_d": "Supporto completo per 12 lingue con strumenti integrati per 7-Zip, RAR e PDF.",
+        # Slide 2
+        "s2_title": "Applicazioni di produttività integrate",
+        "s2_sub": "Applicazioni desktop ad alte prestazioni installate nativamente nel sistema.",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "Convertitore rapido e leggero: trascina qualsiasi file e tieni premuto Maiusc per convertirlo.",
+        "s2_r1_b": "Avvia Rumman",
+        "s2_r2_t": "Gestore scaricamenti",
+        "s2_r2_d": "Gestore dei download rapido integrato automaticamente con Firefox (Mister Download Manager).",
+        "s2_r2_b": "Avvia MDM",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "Client WhatsApp per desktop nativo e veloce scritto in Rust.",
+        "s2_r3_b": "Avvia ZapFast",
+        # Slide 3
+        "s3_title": "Personalizzazione interfaccia ed estensioni",
+        "s3_sub": "Migliora e personalizza il desktop GNOME con estensioni e utilità preconfigurate.",
+        "s3_r1_t": "Orologio schermata di blocco",
+        "s3_r1_d": "Orologio della schermata di blocco con meteo e date regionali intelligenti, completamente personalizzabile.",
+        "s3_r2_t": "Estensioni desktop",
+        "s3_r2_d": "Include il lanciatore ArcMenu, Dash to Dock e Clipboard Indicator.",
+        "s3_r2_b": "Gestisci estensioni",
+        "s3_r3_t": "Ritocchi all'interfaccia",
+        "s3_r3_d": "Personalizza i pulsanti delle finestre e l'aspetto di GNOME con Refine.",
+        "s3_r3_b": "Personalizza desktop",
+        # Slide 4
+        "s4_title": "Hardware e aggiornamenti di sistema",
+        "s4_sub": "Ottimizzato per prestazioni fluide su hardware Intel, AMD e NVIDIA.",
+        "s4_r1_t": "Accelerazione Intel e AMD",
+        "s4_r1_d": "L'accelerazione video hardware (VA-API / Mesa / Intel Media Driver) è preconfigurata e attiva.",
+        "s4_r2_t": "Driver NVIDIA e CUDA",
+        "s4_r2_d": "Rileva la tua GPU, installa driver ufficiali, configura CUDA e gestisci Secure Boot.",
+        "s4_r2_b": "Apri gestore NVIDIA",
+        "s4_r3_t": "Aggiornamenti atomici sicuri",
+        "s4_r3_d": "La base immutabile di Fedora Silverblue protegge il sistema e consente ripristini istantanei.",
+        # Slide 5
+        "s5_title": "Basi di navigazione di GNOME",
+        "s5_sub": "Impara semplici gesti e scorciatoie per muoverti rapidamente nello spazio di lavoro.",
+        "s5_r1_t": "Tasto Super e ricerca",
+        "s5_r1_d": "Premi il tasto Super (Windows) per aprire la Panoramica Attività, cercare app, file o fare calcoli.",
+        "s5_r2_t": "Gesti del touchpad",
+        "s5_r2_d": "Scorri con 3 dita verso l'alto/il basso per la Panoramica; scorri a sinistra/destra per cambiare spazio.",
+        "s5_r3_t": "Spazi di lavoro dinamici",
+        "s5_r3_d": "Gli spazi di lavoro vengono creati automaticamente quando apri le finestre per tenere in ordine il desktop.",
+    },
+    "zh": {
+        "window_title": "欢迎使用 Sadeem",
+        "banner_title": "检测到 NVIDIA 显卡！尚未安装官方驱动程序。",
+        "banner_btn": "安装 NVIDIA 和 CUDA 驱动程序",
+        "btn_prev": "上一步",
+        "btn_next": "下一步",
+        "btn_start": "开始使用",
+        "check_startup": "开机时显示",
+        "toast_installing": "应用程序正在后台完成安装，将在数分钟内出现在菜单中",
+        # Slide 1
+        "s1_title": "开箱即用",
+        "s1_sub": "Sadeem 45 预先配置了全面的编解码器、硬件加速和必备实用工具。",
+        "s1_r1_t": "多媒体与硬件加速",
+        "s1_r1_d": "全面的编解码器支持 (HEVC、AV1、HEIC) 以及 Intel 和 AMD 的硬件视频解码。",
+        "s1_r2_t": "精选软件仓库",
+        "s1_r2_d": "默认启用 Flathub 和 RPM Fusion (Free 与 Non-Free)。",
+        "s1_r3_t": "本地化与系统工具",
+        "s1_r3_d": "全面支持 12 种语言，并内置对 7-Zip、RAR 和 PDF 的支持。",
+        # Slide 2
+        "s2_title": "集成生产力应用",
+        "s2_sub": "系统中原生安装的高性能桌面应用程序。",
+        "s2_r1_t": "Rumman",
+        "s2_r1_d": "快速轻量的文件转换器：拖动任何文件并按住 Shift 键即可转换格式。",
+        "s2_r1_b": "启动 Rumman",
+        "s2_r2_t": "下载管理器",
+        "s2_r2_d": "快速下载管理器，自动与 Firefox 集成 (Mister Download Manager)。",
+        "s2_r2_b": "启动 MDM",
+        "s2_r3_t": "ZapFast",
+        "s2_r3_d": "使用 Rust 构建的高性能原生 WhatsApp 桌面客户端。",
+        "s2_r3_b": "启动 ZapFast",
+        # Slide 3
+        "s3_title": "界面自定义与扩展",
+        "s3_sub": "通过预配置的扩展和工具增强并个性化您的 GNOME 桌面。",
+        "s3_r1_t": "锁屏时钟",
+        "s3_r1_d": "带有天气和智能区域日期的锁屏时钟，支持完全自定义。",
+        "s3_r2_t": "桌面扩展",
+        "s3_r2_d": "包含 ArcMenu 应用启动器、Dash to Dock 和剪贴板指示器。",
+        "s3_r2_b": "管理扩展",
+        "s3_r3_t": "界面微调",
+        "s3_r3_d": "使用 Refine 微调窗口按钮和 GNOME 外观。",
+        "s3_r3_b": "自定义桌面",
+        # Slide 4
+        "s4_title": "硬件与系统更新",
+        "s4_sub": "针对 Intel、AMD 和 NVIDIA 硬件进行了流畅性能优化。",
+        "s4_r1_t": "Intel 与 AMD 硬件加速",
+        "s4_r1_d": "硬件视频加速 (VA-API / Mesa / Intel Media Driver) 预先配置并已激活。",
+        "s4_r2_t": "NVIDIA 与 CUDA 驱动程序",
+        "s4_r2_d": "检测 GPU 型号、安装官方驱动程序、配置 CUDA 并管理安全启动。",
+        "s4_r2_b": "打开 NVIDIA 管理器",
+        "s4_r3_t": "安全的原子更新",
+        "s4_r3_d": "不可变的 Fedora Silverblue 底层保障系统安全并支持即时回滚。",
+        # Slide 5
+        "s5_title": "GNOME 导航基础",
+        "s5_sub": "掌握简单的手势和快捷键，在工作区中迅速切换。",
+        "s5_r1_t": "Super 键与搜索",
+        "s5_r1_d": "按下 Super (Windows) 键打开活动概览，搜索应用程序、文件或进行快速计算。",
+        "s5_r2_t": "触控板手势",
+        "s5_r2_d": "三指向上/下滑动打开活动概览；三指向左/右滑动切换工作区。",
+        "s5_r3_t": "动态工作区",
+        "s5_r3_d": "打开窗口时会自动创建工作区，使桌面始终井井有条。",
+    },
+}
+
+def get_language():
+    for var in ("LC_ALL", "LC_MESSAGES", "LANGUAGE", "LANG"):
+        val = os.environ.get(var, "")
+        if val:
+            code = val.split(":")[0].split(".")[0].split("_")[0].split("@")[0].lower()
+            if code in WELCOME_TRANSLATIONS:
+                return code
+    return "en"
+
+LANG = get_language()
+T = WELCOME_TRANSLATIONS[LANG]
+
+def _(key):
+    return T.get(key, WELCOME_TRANSLATIONS["en"].get(key, key))
+
+# --- Configuration & Paths ---
+APP_ID = "org.sadeem.welcome"
+CONFIG_DIR = os.path.expanduser("~/.config/sadeem")
+SEEN_FILE = os.path.join(CONFIG_DIR, "welcome-seen")
+LEGACY_SEEN_FILE = os.path.expanduser("~/.config/saifdora/welcome-seen")
+
+def is_seen():
+    return os.path.exists(SEEN_FILE) or os.path.exists(LEGACY_SEEN_FILE)
+
+def check_nvidia_status():
+    """Detect presence of NVIDIA GPU and whether proprietary driver is installed."""
+    has_nvidia = False
+    driver_installed = False
+    try:
+        res = subprocess.run(["lspci", "-nn"], capture_output=True, text=True, check=False)
+        for line in res.stdout.splitlines():
+            if "[10de:" in line:
+                has_nvidia = True
+                break
+    except Exception:
+        pass
+
+    if has_nvidia:
+        try:
+            res_rpm = subprocess.run(["rpm", "-q", "akmod-nvidia", "akmod-nvidia-580xx"],
+                                     capture_output=True, text=True, check=False)
+            if "akmod-nvidia" in res_rpm.stdout and "not installed" not in res_rpm.stdout:
+                driver_installed = True
+        except Exception:
+            pass
+
+        try:
+            if os.path.exists("/proc/modules"):
+                with open("/proc/modules", "r") as f:
+                    if "nvidia " in f.read():
+                        driver_installed = True
+        except Exception:
+            pass
+
+    return has_nvidia, driver_installed
+
+
+class WelcomeWindow(Adw.ApplicationWindow):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.set_title(_("window_title"))
+        self.set_default_size(640, 620)
+        self.set_resizable(False)
+
+        # Apply cohesive GNOME HIG styling
+        self.apply_custom_css()
+
+        # Root ToastOverlay
+        self.toast_overlay = Adw.ToastOverlay()
+        self.set_content(self.toast_overlay)
+
+        # Main ToolbarView
+        self.toolbar_view = Adw.ToolbarView()
+        self.toast_overlay.set_child(self.toolbar_view)
+
+        # Flat HeaderBar with Centered Indicator Dots
+        self.header_bar = Adw.HeaderBar()
+        self.header_bar.add_css_class("flat")
+        self.toolbar_view.add_top_bar(self.header_bar)
+
+        # NVIDIA Notification Banner
+        self.banner = Adw.Banner()
+        self.banner.set_title(_("banner_title"))
+        self.banner.set_button_label(_("banner_btn"))
+        self.banner.connect("button-clicked", self.on_install_nvidia)
+        self.toolbar_view.add_top_bar(self.banner)
+
+        # Check NVIDIA status
+        has_nvidia, driver_installed = check_nvidia_status()
+        if has_nvidia and not driver_installed:
+            self.banner.set_revealed(True)
+
+        # Carousel Container (Disable scroll wheel to avoid touchpad conflict)
+        self.carousel = Adw.Carousel()
+        self.carousel.set_allow_scroll_wheel(False)
+        self.carousel.set_hexpand(True)
+        self.carousel.set_vexpand(True)
+        self.carousel.connect("page-changed", self.on_page_changed)
+        self.toolbar_view.set_content(self.carousel)
+
+        # Set Centered Indicator Dots in HeaderBar
+        self.dots = Adw.CarouselIndicatorDots()
+        self.dots.set_carousel(self.carousel)
+        self.header_bar.set_title_widget(self.dots)
+
+        # Bottom Action Bar with transparent seamless background
+        self.action_bar = Gtk.ActionBar()
+
+        # Start: Previous button
+        self.prev_btn = Gtk.Button(label=_("btn_prev"))
+        self.prev_btn.set_size_request(115, 36)
+        self.prev_btn.set_visible(False)
+        self.prev_btn.connect("clicked", self.on_prev_clicked)
+        self.action_bar.pack_start(self.prev_btn)
+
+        # Center: Show on startup checkbox
+        self.startup_check = Gtk.CheckButton(label=_("check_startup"))
+        self.startup_check.set_active(not is_seen())
+        self.startup_check.connect("toggled", self.on_startup_toggled)
+        self.action_bar.set_center_widget(self.startup_check)
+
+        # End: Next / Get Started button
+        self.next_btn = Gtk.Button(label=_("btn_next"))
+        self.next_btn.add_css_class("suggested-action")
+        self.next_btn.set_size_request(115, 36)
+        self.next_btn.connect("clicked", self.on_next_clicked)
+        self.action_bar.pack_end(self.next_btn)
+
+        self.toolbar_view.add_bottom_bar(self.action_bar)
+
+        # Build 5 Carousel Slides (3 rows each)
+        self.build_slide_ready()
+        self.build_slide_apps()
+        self.build_slide_extensions()
+        self.build_slide_hardware()
+        self.build_slide_navigation()
+
+    def apply_custom_css(self):
+        """Apply CSS rules for seamless background, rounded buttons, and badges."""
+        css = """
+        actionbar > revealer > box {
+            background: transparent;
+            border-top: none;
+            box-shadow: none;
+            padding: 12px 24px 18px 24px;
+        }
+
+        button {
+            border-radius: 10px;
+        }
+
+        .boxed-list {
+            border-radius: 12px;
+        }
+
+        .icon-badge {
+            background-color: alpha(@accent_bg_color, 0.14);
+            color: @accent_color;
+            border-radius: 9999px;
+        }
+        """
+        provider = Gtk.CssProvider()
+        provider.load_from_string(css)
+        display = Gdk.Display.get_default()
+        if display:
+            Gtk.StyleContext.add_provider_for_display(
+                display,
+                provider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+
+    def create_slide_container(self, icon_name, title, subtitle):
+        """Helper to create standard clamped slide layout with circular tinted badge."""
+        clamp = Adw.Clamp()
+        clamp.set_maximum_size(530)
+        clamp.set_margin_start(24)
+        clamp.set_margin_end(24)
+        clamp.set_valign(Gtk.Align.CENTER)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        clamp.set_child(box)
+
+        # Header Circular Tinted Badge
+        if icon_name:
+            badge = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            badge.set_halign(Gtk.Align.CENTER)
+            badge.set_valign(Gtk.Align.CENTER)
+            badge.set_size_request(76, 76)
+            badge.add_css_class("icon-badge")
+
+            img = Gtk.Image.new_from_icon_name(icon_name)
+            img.set_pixel_size(40)
+            img.set_halign(Gtk.Align.CENTER)
+            img.set_valign(Gtk.Align.CENTER)
+            img.set_hexpand(True)
+            img.set_vexpand(True)
+            badge.append(img)
+            box.append(badge)
+
+        title_lbl = Gtk.Label(label=title)
+        title_lbl.add_css_class("title-1")
+        title_lbl.set_wrap(True)
+        title_lbl.set_justify(Gtk.Justification.CENTER)
+        box.append(title_lbl)
+
+        sub_lbl = Gtk.Label(label=subtitle)
+        sub_lbl.add_css_class("body")
+        sub_lbl.add_css_class("dim-label")
+        sub_lbl.set_wrap(True)
+        sub_lbl.set_justify(Gtk.Justification.CENTER)
+        box.append(sub_lbl)
+
+        return clamp, box
+
+    def create_action_row(self, title, subtitle, icon_name=None, suffix_btn=None):
+        """Helper to create an unactivatable ActionRow with uniform styling."""
+        row = Adw.ActionRow(title=title, subtitle=subtitle)
+        row.set_activatable(False)
+        row.set_title_lines(1)
+        row.set_subtitle_lines(2)
+        if icon_name:
+            row.add_prefix(Gtk.Image.new_from_icon_name(icon_name))
+        if suffix_btn:
+            row.add_suffix(suffix_btn)
+        return row
+
+    def create_row_button(self, label, on_click, suggested=False):
+        """Helper to create uniform rectangular row button (width=125, height=34)."""
+        btn = Gtk.Button(label=label)
+        btn.set_valign(Gtk.Align.CENTER)
+        btn.set_size_request(125, 34)
+        if suggested:
+            btn.add_css_class("suggested-action")
+        btn.connect("clicked", on_click)
+        return btn
+
+    def build_slide_ready(self):
+        """Slide 1: Out-of-the-box readiness (3 rows)."""
+        slide, box = self.create_slide_container(
+            "computer-symbolic",
+            _("s1_title"),
+            _("s1_sub")
+        )
+        listbox = Gtk.ListBox()
+        listbox.add_css_class("boxed-list")
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        r1 = self.create_action_row(
+            _("s1_r1_t"),
+            _("s1_r1_d"),
+            "video-x-generic-symbolic"
+        )
+        listbox.append(r1)
+
+        r2 = self.create_action_row(
+            _("s1_r2_t"),
+            _("s1_r2_d"),
+            "software-properties-symbolic"
+        )
+        listbox.append(r2)
+
+        r3 = self.create_action_row(
+            _("s1_r3_t"),
+            _("s1_r3_d"),
+            "package-x-generic-symbolic"
+        )
+        listbox.append(r3)
+
+        box.append(listbox)
+        self.carousel.append(slide)
+
+    def build_slide_apps(self):
+        """Slide 2: Integrated productivity apps (3 rows)."""
+        slide, box = self.create_slide_container(
+            "system-software-install-symbolic",
+            _("s2_title"),
+            _("s2_sub")
+        )
+        listbox = Gtk.ListBox()
+        listbox.add_css_class("boxed-list")
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        # Rumman
+        btn1 = self.create_row_button(_("s2_r1_b"), lambda *a: self.launch_local_app(["/usr/bin/rumman"]))
+        r1 = self.create_action_row(
+            _("s2_r1_t"),
+            _("s2_r1_d"),
+            "system-run-symbolic",
+            btn1
+        )
+        listbox.append(r1)
+
+        # Mister Download Manager
+        btn2 = self.create_row_button(_("s2_r2_b"), lambda *a: self.launch_local_app(["/usr/bin/misterdownloadmanager"]))
+        r2 = self.create_action_row(
+            _("s2_r2_t"),
+            _("s2_r2_d"),
+            "folder-download-symbolic",
+            btn2
+        )
+        listbox.append(r2)
+
+        # ZapFast
+        btn3 = self.create_row_button(_("s2_r3_b"), lambda *a: self.launch_local_app(["/usr/bin/zapfast"]))
+        r3 = self.create_action_row(
+            _("s2_r3_t"),
+            _("s2_r3_d"),
+            "chat-message-new-symbolic",
+            btn3
+        )
+        listbox.append(r3)
+
+        box.append(listbox)
+        self.carousel.append(slide)
+
+    def build_slide_extensions(self):
+        """Slide 3: Interface customization & extensions (3 rows)."""
+        slide, box = self.create_slide_container(
+            "preferences-desktop-appearance-symbolic",
+            _("s3_title"),
+            _("s3_sub")
+        )
+        listbox = Gtk.ListBox()
+        listbox.add_css_class("boxed-list")
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        # Row 1: Lockscreen Clock (informational)
+        r1 = self.create_action_row(
+            _("s3_r1_t"),
+            _("s3_r1_d"),
+            "preferences-system-time-symbolic"
+        )
+        listbox.append(r1)
+
+        # Row 2: Desktop Extensions (Smart Flatpak Launcher)
+        btn2 = self.create_row_button(_("s3_r2_b"), lambda *a: self.launch_flatpak_app("com.mattjakeman.ExtensionManager"))
+        r2 = self.create_action_row(
+            _("s3_r2_t"),
+            _("s3_r2_d"),
+            "application-x-addon-symbolic",
+            btn2
+        )
+        listbox.append(r2)
+
+        # Row 3: Interface Tweaks (Smart Flatpak Launcher)
+        btn3 = self.create_row_button(_("s3_r3_b"), lambda *a: self.launch_flatpak_app("page.tesk.Refine"))
+        r3 = self.create_action_row(
+            _("s3_r3_t"),
+            _("s3_r3_d"),
+            "preferences-system-symbolic",
+            btn3
+        )
+        listbox.append(r3)
+
+        box.append(listbox)
+        self.carousel.append(slide)
+
+    def build_slide_hardware(self):
+        """Slide 4: Hardware & system updates (3 rows)."""
+        slide, box = self.create_slide_container(
+            "video-display-symbolic",
+            _("s4_title"),
+            _("s4_sub")
+        )
+        listbox = Gtk.ListBox()
+        listbox.add_css_class("boxed-list")
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        r1 = self.create_action_row(
+            _("s4_r1_t"),
+            _("s4_r1_d"),
+            "video-joined-displays-symbolic"
+        )
+        listbox.append(r1)
+
+        btn2 = self.create_row_button(_("s4_r2_b"), lambda *a: self.launch_local_app(["/usr/bin/saifdora-nvidia-manager"]))
+        r2 = self.create_action_row(
+            _("s4_r2_t"),
+            _("s4_r2_d"),
+            "display-projector-symbolic",
+            btn2
+        )
+        listbox.append(r2)
+
+        r3 = self.create_action_row(
+            _("s4_r3_t"),
+            _("s4_r3_d"),
+            "software-update-available-symbolic"
+        )
+        listbox.append(r3)
+
+        box.append(listbox)
+        self.carousel.append(slide)
+
+    def build_slide_navigation(self):
+        """Slide 5: GNOME navigation basics (3 rows)."""
+        slide, box = self.create_slide_container(
+            "preferences-desktop-keyboard-shortcuts-symbolic",
+            _("s5_title"),
+            _("s5_sub")
+        )
+        listbox = Gtk.ListBox()
+        listbox.add_css_class("boxed-list")
+        listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        r1 = self.create_action_row(
+            _("s5_r1_t"),
+            _("s5_r1_d"),
+            "system-search-symbolic"
+        )
+        listbox.append(r1)
+
+        r2 = self.create_action_row(
+            _("s5_r2_t"),
+            _("s5_r2_d"),
+            "input-touchpad-symbolic"
+        )
+        listbox.append(r2)
+
+        r3 = self.create_action_row(
+            _("s5_r3_t"),
+            _("s5_r3_d"),
+            "view-paged-symbolic"
+        )
+        listbox.append(r3)
+
+        box.append(listbox)
+        self.carousel.append(slide)
+
+    def launch_local_app(self, cmd_args):
+        """Safely launch local applications asynchronously."""
+        try:
+            subprocess.Popen(cmd_args)
+        except Exception as e:
+            print(f"Error launching {cmd_args}: {e}", file=sys.stderr)
+
+    def launch_flatpak_app(self, app_id):
+        """Smart Flatpak launcher with background installation toast fallback."""
+        try:
+            res = subprocess.run(["flatpak", "info", app_id], capture_output=True, text=True, check=False)
+            if res.returncode == 0:
+                subprocess.Popen(["flatpak", "run", app_id])
+                return
+        except Exception:
+            pass
+
+        # App is not yet installed or downloading in background
+        msg = _("toast_installing")
+        toast = Adw.Toast.new(msg)
+        toast.set_timeout(4)
+        self.toast_overlay.add_toast(toast)
+
+        # Trigger background installation
+        try:
+            subprocess.Popen(["flatpak", "install", "-y", "--system", "flathub", app_id])
+        except Exception as e:
+            print(f"Error triggering flatpak install for {app_id}: {e}", file=sys.stderr)
+
+    def on_install_nvidia(self, *args):
+        self.launch_local_app(["/usr/bin/saifdora-nvidia-manager"])
+
+    def on_prev_clicked(self, *args):
+        curr = int(round(self.carousel.get_position()))
+        if curr > 0:
+            self.carousel.scroll_to(self.carousel.get_nth_page(curr - 1), True)
+
+    def on_next_clicked(self, *args):
+        curr = int(round(self.carousel.get_position()))
+        total = self.carousel.get_n_pages()
+        if curr < total - 1:
+            self.carousel.scroll_to(self.carousel.get_nth_page(curr + 1), True)
+        else:
+            self.close()
+
+    def on_page_changed(self, carousel, index):
+        total = carousel.get_n_pages()
+        self.prev_btn.set_visible(index > 0)
+        if index == total - 1:
+            self.next_btn.set_label(_("btn_start"))
+        else:
+            self.next_btn.set_label(_("btn_next"))
+
+    def on_startup_toggled(self, button):
+        state = button.get_active()
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+        if state:
+            # Active means show on startup -> remove seen files
+            for sf in (SEEN_FILE, LEGACY_SEEN_FILE):
+                if os.path.exists(sf):
+                    try:
+                        os.remove(sf)
+                    except Exception:
+                        pass
+        else:
+            # Inactive means do not show on startup -> create seen file
+            try:
+                with open(SEEN_FILE, "w") as f:
+                    f.write("seen\n")
+            except Exception:
+                pass
+
+
+class WelcomeApplication(Adw.Application):
+    def __init__(self):
+        super().__init__(
+            application_id=APP_ID,
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE
+        )
+
+    def do_command_line(self, command_line):
+        args = command_line.get_arguments()
+        if "--autostart" in args:
+            if is_seen():
+                return 0
+
+        self.activate()
+        return 0
+
+    def do_activate(self):
+        if LANG in ("ar", "ur"):
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
+        win = self.get_active_window()
+        if not win:
+            win = WelcomeWindow(application=self)
+        win.present()
+
+
+def main():
+    # Fast exit for autostart if already seen before starting GTK
+    if "--autostart" in sys.argv:
+        if is_seen():
+            sys.exit(0)
+
+    app = WelcomeApplication()
+    return app.run(sys.argv)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

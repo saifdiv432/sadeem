@@ -16,15 +16,140 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, Gdk, Gio, GLib
 
-PRESET_COLORS = [
-    ("الخمري الافتراضي", "#7a1c33"),
-    ("التركوازي الداكن", "#135d66"),
-    ("الأزرق", "#1c71d8"),
-    ("الأخضر", "#2ec27e"),
-    ("البنفسجي", "#813d9c"),
-    ("البرتقالي", "#e66100"),
-    ("الأحمر القاني", "#c01c28"),
-    ("الرمادي الفولاذي", "#5e5c64"),
+TRANSLATIONS = {
+    "en": {
+        "app_title": "Sadeem Colors",
+        "reset_btn": "Reset to Burgundy",
+        "presets_title": "Preset Colors",
+        "presets_desc": "Choose a color to apply immediately to the desktop and apps",
+        "custom_title": "Custom Color",
+        "custom_row_title": "Pick a shade from the color wheel",
+        "current_color": "Current color: {color}",
+        "toast_applied": "Accent color applied successfully",
+        "colors": ["Default Burgundy", "Dark Turquoise", "Blue", "Green", "Purple", "Orange", "Crimson Red", "Steel Gray"],
+    },
+    "ar": {
+        "app_title": "ألوان سديم",
+        "reset_btn": "استعادة الخمري",
+        "presets_title": "الألوان الجاهزة",
+        "presets_desc": "اختر لوناً لتطبيقه فوراً على الواجهة والتطبيقات",
+        "custom_title": "لون مخصص",
+        "custom_row_title": "اختيار درجة لونية من دائرة الألوان",
+        "current_color": "اللون الحالي: {color}",
+        "toast_applied": "تم تطبيق اللون بنجاح",
+        "colors": ["الخمري الافتراضي", "التركوازي الداكن", "الأزرق", "الأخضر", "البنفسجي", "البرتقالي", "الأحمر القاني", "الرمادي الفولاذي"],
+    },
+    "fr": {
+        "app_title": "Couleurs Sadeem",
+        "reset_btn": "Rétablir le bordeaux",
+        "presets_title": "Couleurs prédéfinies",
+        "presets_desc": "Choisissez une couleur à appliquer immédiatement au bureau et aux applications",
+        "custom_title": "Couleur personnalisée",
+        "custom_row_title": "Choisir une nuance depuis la roue chromatique",
+        "current_color": "Couleur actuelle : {color}",
+        "toast_applied": "Couleur d'accentuation appliquée avec succès",
+        "colors": ["Bordeaux par défaut", "Turquoise foncé", "Bleu", "Vert", "Violet", "Orange", "Rouge carmin", "Gris acier"],
+    },
+    "es": {
+        "app_title": "Colores de Sadeem",
+        "reset_btn": "Restaurar burdeos",
+        "presets_title": "Colores predefinidos",
+        "presets_desc": "Elige un color para aplicarlo de inmediato al escritorio y las aplicaciones",
+        "custom_title": "Color personalizado",
+        "custom_row_title": "Elegir un tono desde la rueda de colores",
+        "current_color": "Color actual: {color}",
+        "toast_applied": "Color de énfasis aplicado correctamente",
+        "colors": ["Burdeos predeterminado", "Turquesa oscuro", "Azul", "Verde", "Púrpura", "Naranja", "Rojo carmesí", "Gris acero"],
+    },
+    "de": {
+        "app_title": "Sadeem-Farben",
+        "reset_btn": "Burgunderrot wiederherstellen",
+        "presets_title": "Voreingestellte Farben",
+        "presets_desc": "Wählen Sie eine Farbe, um sie sofort auf Desktop und Anwendungen anzuwenden",
+        "custom_title": "Benutzerdefinierte Farbe",
+        "custom_row_title": "Farbton aus dem Farbrad auswählen",
+        "current_color": "Aktuelle Farbe: {color}",
+        "toast_applied": "Akzentfarbe erfolgreich angewendet",
+        "colors": ["Standard-Burgunderrot", "Dunkeltürkis", "Blau", "Grün", "Violett", "Orange", "Karmesinrot", "Stahlgrau"],
+    },
+    "tr": {
+        "app_title": "Sadeem Renkleri",
+        "reset_btn": "Bordo Rengine Sıfırla",
+        "presets_title": "Hazır Renkler",
+        "presets_desc": "Masaüstüne ve uygulamalara hemen uygulamak için bir renk seçin",
+        "custom_title": "Özel Renk",
+        "custom_row_title": "Renk çarkından bir ton seçin",
+        "current_color": "Mevcut renk: {color}",
+        "toast_applied": "Vurgu rengi başarıyla uygulandı",
+        "colors": ["Varsayılan Bordo", "Koyu Turkuaz", "Mavi", "Yeşil", "Mor", "Turuncu", "Kızıl Kırmızı", "Çelik Grisi"],
+    },
+    "ru": {
+        "app_title": "Цвета Sadeem",
+        "reset_btn": "Вернуть бордовый",
+        "presets_title": "Готовые цвета",
+        "presets_desc": "Выберите цвет, чтобы сразу применить его к рабочему столу и приложениям",
+        "custom_title": "Пользовательский цвет",
+        "custom_row_title": "Выбрать оттенок на цветовом круге",
+        "current_color": "Текущий цвет: {color}",
+        "toast_applied": "Акцентный цвет успешно применён",
+        "colors": ["Бордовый по умолчанию", "Тёмно-бирюзовый", "Синий", "Зелёный", "Фиолетовый", "Оранжевый", "Малиново-красный", "Стальной серый"],
+    },
+    "pt": {
+        "app_title": "Cores do Sadeem",
+        "reset_btn": "Restaurar bordô",
+        "presets_title": "Cores predefinidas",
+        "presets_desc": "Escolha uma cor para aplicar imediatamente à área de trabalho e aos aplicativos",
+        "custom_title": "Cor personalizada",
+        "custom_row_title": "Escolher um tom no círculo cromático",
+        "current_color": "Cor atual: {color}",
+        "toast_applied": "Cor de destaque aplicada com sucesso",
+        "colors": ["Bordô padrão", "Turquesa escuro", "Azul", "Verde", "Roxo", "Laranja", "Vermelho carmesim", "Cinza aço"],
+    },
+    "it": {
+        "app_title": "Colori di Sadeem",
+        "reset_btn": "Ripristina bordeaux",
+        "presets_title": "Colori predefiniti",
+        "presets_desc": "Scegli un colore da applicare subito al desktop e alle applicazioni",
+        "custom_title": "Colore personalizzato",
+        "custom_row_title": "Scegli una tonalità dalla ruota dei colori",
+        "current_color": "Colore attuale: {color}",
+        "toast_applied": "Colore principale applicato con successo",
+        "colors": ["Bordeaux predefinito", "Turchese scuro", "Blu", "Verde", "Viola", "Arancione", "Rosso cremisi", "Grigio acciaio"],
+    },
+    "zh": {
+        "app_title": "Sadeem 配色",
+        "reset_btn": "恢复酒红色",
+        "presets_title": "预设颜色",
+        "presets_desc": "选择一种颜色并立即应用到桌面和应用程序",
+        "custom_title": "自定义颜色",
+        "custom_row_title": "从色轮中选择色调",
+        "current_color": "当前颜色：{color}",
+        "toast_applied": "强调色已成功应用",
+        "colors": ["默认酒红", "深青绿", "蓝色", "绿色", "紫色", "橙色", "深红色", "钢灰色"],
+    },
+}
+
+def get_language():
+    for var in ("LC_ALL", "LC_MESSAGES", "LANGUAGE", "LANG"):
+        val = os.environ.get(var, "")
+        if val:
+            code = val.split(":")[0].split(".")[0].split("_")[0].split("@")[0].lower()
+            if code in TRANSLATIONS:
+                return code
+    return "en"
+
+LANG = get_language()
+T = TRANSLATIONS[LANG]
+
+PRESET_HEXES = [
+    "#7a1c33",
+    "#135d66",
+    "#1c71d8",
+    "#2ec27e",
+    "#813d9c",
+    "#e66100",
+    "#c01c28",
+    "#5e5c64",
 ]
 
 def hex_to_rgb(hex_str):
@@ -72,10 +197,10 @@ def compute_color_palette(hex_str):
         "arrow": arrow_color,
     }
 
-class SaifdoraColorsWindow(Adw.ApplicationWindow):
+class SadeemColorsWindow(Adw.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app)
-        self.set_title("ألوان سديم")
+        self.set_title(T["app_title"])
         self.set_default_size(440, 350)
         self._updating = False
 
@@ -86,14 +211,14 @@ class SaifdoraColorsWindow(Adw.ApplicationWindow):
 
         # 1. شريط العنوان العلوي في المنتصف
         header_bar = Adw.HeaderBar()
-        header_bar.set_title_widget(Adw.WindowTitle(title="ألوان سديم"))
+        header_bar.set_title_widget(Adw.WindowTitle(title=T["app_title"]))
         self.toolbar_view.add_top_bar(header_bar)
 
         # زر استعادة الخمري (أيقونة + نص وحساسية ديناميكية)
         self.restore_btn = Gtk.Button()
         restore_content = Adw.ButtonContent(
             icon_name="edit-undo-symbolic",
-            label="استعادة الخمري"
+            label=T["reset_btn"]
         )
         self.restore_btn.set_child(restore_content)
         self.restore_btn.add_css_class("flat")
@@ -106,8 +231,8 @@ class SaifdoraColorsWindow(Adw.ApplicationWindow):
 
         # 2. القسم الأول: الألوان الجاهزة
         preset_group = Adw.PreferencesGroup(
-            title="الألوان الجاهزة",
-            description="اختر لوناً لتطبيقه فوراً على الواجهة والتطبيقات"
+            title=T["presets_title"],
+            description=T["presets_desc"]
         )
         page.add(preset_group)
 
@@ -120,9 +245,10 @@ class SaifdoraColorsWindow(Adw.ApplicationWindow):
             margin_bottom=8
         )
         self.preset_buttons = []
-        for i, (name, hex_code) in enumerate(PRESET_COLORS):
+        for i, hex_code in enumerate(PRESET_HEXES):
+            color_name = T["colors"][i] if i < len(T["colors"]) else hex_code
             btn = Gtk.Button()
-            btn.set_tooltip_text(f"{name} ({hex_code})")
+            btn.set_tooltip_text(f"{color_name} ({hex_code})")
             btn.add_css_class("color-circle")
             btn.add_css_class(f"preset-color-{i}")
 
@@ -139,12 +265,12 @@ class SaifdoraColorsWindow(Adw.ApplicationWindow):
         preset_group.add(preset_row)
 
         # 3. القسم الثاني: لون مخصص
-        custom_group = Adw.PreferencesGroup(title="لون مخصص")
+        custom_group = Adw.PreferencesGroup(title=T["custom_title"])
         page.add(custom_group)
 
         self.custom_row = Adw.ActionRow(
-            title="اختيار درجة لونية من دائرة الألوان",
-            subtitle="اللون الحالي: #7a1c33"
+            title=T["custom_row_title"],
+            subtitle=T["current_color"].format(color="#7a1c33")
         )
         self.color_dialog = Gtk.ColorDialog(with_alpha=False)
         self.color_dialog_btn = Gtk.ColorDialogButton(dialog=self.color_dialog)
@@ -182,7 +308,7 @@ class SaifdoraColorsWindow(Adw.ApplicationWindow):
             color: #ffffff;
         }
         """
-        for i, (_, hex_code) in enumerate(PRESET_COLORS):
+        for i, hex_code in enumerate(PRESET_HEXES):
             palette_css += f"""
             .preset-color-{i} {{
                 background-color: {hex_code};
@@ -241,7 +367,7 @@ class SaifdoraColorsWindow(Adw.ApplicationWindow):
         self.restore_btn.set_sensitive(not is_burgundy)
 
         # تحديث كود اللون في وصف الصف
-        self.custom_row.set_subtitle(f"اللون الحالي: {hex_norm}")
+        self.custom_row.set_subtitle(T["current_color"].format(color=hex_norm))
 
         self._updating = True
         rgba = Gdk.RGBA()
@@ -279,7 +405,7 @@ class SaifdoraColorsWindow(Adw.ApplicationWindow):
 
         if not is_init:
             self.write_theme_files(pal)
-            self.toast_overlay.add_toast(Adw.Toast.new("تم تطبيق اللون بنجاح"))
+            self.toast_overlay.add_toast(Adw.Toast.new(T["toast_applied"]))
 
     def write_theme_files(self, pal):
         hex_val = pal["hex"]
@@ -384,19 +510,21 @@ stage {{
             time.sleep(0.05)
             subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Saifdora-Custom"], check=False)
 
-class SaifdoraColorsApp(Adw.Application):
+class SadeemColorsApp(Adw.Application):
     def __init__(self):
         super().__init__(
-            application_id="org.saifdora.Colors",
+            application_id="org.sadeem.Colors",
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS
         )
         self.window = None
 
     def do_activate(self):
+        if LANG in ("ar", "ur"):
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
         if not self.window:
-            self.window = SaifdoraColorsWindow(self)
+            self.window = SadeemColorsWindow(self)
         self.window.present()
 
 if __name__ == "__main__":
-    app = SaifdoraColorsApp()
+    app = SadeemColorsApp()
     sys.exit(app.run(sys.argv))
