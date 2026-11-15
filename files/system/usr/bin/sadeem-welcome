@@ -677,11 +677,99 @@ def get_language():
                 return code
     return "en"
 
-LANG = get_language()
-T = WELCOME_TRANSLATIONS[LANG]
 
-def _(key):
-    return T.get(key, WELCOME_TRANSLATIONS["en"].get(key, key))
+LANG = get_language()
+
+
+def t(key, **kwargs):
+    entry = WELCOME_TRANSLATIONS.get(LANG, {})
+    val = entry.get(key)
+    if val is None or val == "":
+        val = WELCOME_TRANSLATIONS.get("en", {}).get(key, key)
+    if kwargs and isinstance(val, str):
+        try:
+            return val.format(**kwargs)
+        except Exception:
+            return val
+    return val
+
+
+_ = t
+
+
+def setup_icon_theme():
+    display = Gdk.Display.get_default()
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        search_paths = [
+            "/usr/share/icons/hicolor/scalable/apps",
+            "/usr/share/icons/hicolor/256x256/apps",
+            "/usr/share/icons/hicolor/128x128/apps",
+            "/usr/share/icons/hicolor/64x64/apps",
+            "/usr/share/icons/hicolor/48x48/apps",
+            "/usr/share/pixmaps",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "scalable", "apps")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "256x256", "apps")),
+        ]
+        for p in search_paths:
+            if os.path.isdir(p):
+                theme.add_search_path(p)
+
+
+def safe_icon(icon_names, fallback="application-x-executable-symbolic"):
+    if isinstance(icon_names, str):
+        icon_names = [icon_names]
+    display = Gdk.Display.get_default()
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        for name in icon_names:
+            if name and theme.has_icon(name):
+                return name
+    for name in icon_names:
+        if name:
+            if os.path.isabs(name) and os.path.exists(name):
+                return name
+            for prefix in ("/usr/share/icons/hicolor/scalable/apps",
+                           "/usr/share/icons/hicolor/256x256/apps",
+                           "/usr/share/pixmaps"):
+                for ext in (".svg", ".png"):
+                    p = os.path.join(prefix, f"{name}{ext}")
+                    if os.path.exists(p):
+                        return name
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        if theme.has_icon(fallback):
+            return fallback
+        for fb in ("application-x-executable-symbolic", "system-run-symbolic", "image-missing-symbolic"):
+            if theme.has_icon(fb):
+                return fb
+    return fallback
+
+
+def create_badge(icon_names, size=64, icon_size=32, fallback="application-x-executable-symbolic"):
+    badge = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+    badge.set_halign(Gtk.Align.CENTER)
+    badge.set_valign(Gtk.Align.CENTER)
+    badge.set_size_request(size, size)
+    badge.add_css_class("sadeem-gradient-badge")
+
+    icon = safe_icon(icon_names, fallback=fallback)
+    img = Gtk.Image.new_from_icon_name(icon)
+    img.set_pixel_size(icon_size)
+    img.set_halign(Gtk.Align.CENTER)
+    img.set_valign(Gtk.Align.CENTER)
+    img.set_hexpand(True)
+    img.set_vexpand(True)
+    badge.append(img)
+    return badge
+
+
+def create_app_icon(icon_names, size=40, fallback="application-x-executable-symbolic"):
+    icon_name = safe_icon(icon_names, fallback=fallback)
+    img = Gtk.Image.new_from_icon_name(icon_name)
+    img.set_pixel_size(size)
+    return img
+
 
 # --- Configuration & Paths ---
 APP_ID = "org.sadeem.welcome"
@@ -689,8 +777,10 @@ CONFIG_DIR = os.path.expanduser("~/.config/sadeem")
 SEEN_FILE = os.path.join(CONFIG_DIR, "welcome-seen")
 LEGACY_SEEN_FILE = os.path.expanduser("~/.config/saifdora/welcome-seen")
 
+
 def is_seen():
     return os.path.exists(SEEN_FILE) or os.path.exists(LEGACY_SEEN_FILE)
+
 
 def check_nvidia_status():
     """Detect presence of NVIDIA GPU and whether proprietary driver is installed."""
@@ -728,8 +818,8 @@ def check_nvidia_status():
 class WelcomeWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.set_title(_("window_title"))
-        self.set_default_size(640, 620)
+        self.set_title(t("window_title"))
+        self.set_default_size(700, 660)
         self.set_resizable(False)
 
         # Apply cohesive GNOME HIG styling
@@ -743,15 +833,36 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.toolbar_view = Adw.ToolbarView()
         self.toast_overlay.set_child(self.toolbar_view)
 
-        # Flat HeaderBar with Centered Indicator Dots
+        # HeaderBar with clear title and centered indicator dots
         self.header_bar = Adw.HeaderBar()
         self.header_bar.add_css_class("flat")
         self.toolbar_view.add_top_bar(self.header_bar)
 
+        # Title widget containing app title and indicator dots
+        title_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        title_box.set_valign(Gtk.Align.CENTER)
+
+        title_lbl = Gtk.Label(label=t("window_title"))
+        title_lbl.add_css_class("heading")
+
+        self.carousel = Adw.Carousel()
+        self.carousel.set_allow_scroll_wheel(False)
+        self.carousel.set_hexpand(True)
+        self.carousel.set_vexpand(True)
+        self.carousel.connect("page-changed", self.on_page_changed)
+        self.toolbar_view.set_content(self.carousel)
+
+        self.dots = Adw.CarouselIndicatorDots()
+        self.dots.set_carousel(self.carousel)
+
+        title_box.append(title_lbl)
+        title_box.append(self.dots)
+        self.header_bar.set_title_widget(title_box)
+
         # NVIDIA Notification Banner
         self.banner = Adw.Banner()
-        self.banner.set_title(_("banner_title"))
-        self.banner.set_button_label(_("banner_btn"))
+        self.banner.set_title(t("banner_title"))
+        self.banner.set_button_label(t("banner_btn"))
         self.banner.connect("button-clicked", self.on_install_nvidia)
         self.toolbar_view.add_top_bar(self.banner)
 
@@ -760,39 +871,28 @@ class WelcomeWindow(Adw.ApplicationWindow):
         if has_nvidia and not driver_installed:
             self.banner.set_revealed(True)
 
-        # Carousel Container (Disable scroll wheel to avoid touchpad conflict)
-        self.carousel = Adw.Carousel()
-        self.carousel.set_allow_scroll_wheel(False)
-        self.carousel.set_hexpand(True)
-        self.carousel.set_vexpand(True)
-        self.carousel.connect("page-changed", self.on_page_changed)
-        self.toolbar_view.set_content(self.carousel)
-
-        # Set Centered Indicator Dots in HeaderBar
-        self.dots = Adw.CarouselIndicatorDots()
-        self.dots.set_carousel(self.carousel)
-        self.header_bar.set_title_widget(self.dots)
-
         # Bottom Action Bar with transparent seamless background
         self.action_bar = Gtk.ActionBar()
 
         # Start: Previous button
-        self.prev_btn = Gtk.Button(label=_("btn_prev"))
+        self.prev_btn = Gtk.Button(label=t("btn_prev"))
         self.prev_btn.set_size_request(115, 36)
+        self.prev_btn.add_css_class("pill")
         self.prev_btn.set_visible(False)
         self.prev_btn.connect("clicked", self.on_prev_clicked)
         self.action_bar.pack_start(self.prev_btn)
 
         # Center: Show on startup checkbox
-        self.startup_check = Gtk.CheckButton(label=_("check_startup"))
+        self.startup_check = Gtk.CheckButton(label=t("check_startup"))
         self.startup_check.set_active(not is_seen())
         self.startup_check.connect("toggled", self.on_startup_toggled)
         self.action_bar.set_center_widget(self.startup_check)
 
         # End: Next / Get Started button
-        self.next_btn = Gtk.Button(label=_("btn_next"))
+        self.next_btn = Gtk.Button(label=t("btn_next"))
         self.next_btn.add_css_class("suggested-action")
-        self.next_btn.set_size_request(115, 36)
+        self.next_btn.add_css_class("pill")
+        self.next_btn.set_size_request(130, 36)
         self.next_btn.connect("clicked", self.on_next_clicked)
         self.action_bar.pack_end(self.next_btn)
 
@@ -823,10 +923,15 @@ class WelcomeWindow(Adw.ApplicationWindow):
             border-radius: 12px;
         }
 
-        .icon-badge {
-            background-color: alpha(@accent_bg_color, 0.14);
-            color: @accent_color;
+        .sadeem-gradient-badge {
+            background: linear-gradient(135deg, #7a1c33 0%, #115e59 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
             border-radius: 9999px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .sadeem-gradient-badge image {
+            color: #ffffff;
         }
         """
         provider = Gtk.CssProvider()
@@ -839,10 +944,10 @@ class WelcomeWindow(Adw.ApplicationWindow):
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
             )
 
-    def create_slide_container(self, icon_name, title, subtitle):
-        """Helper to create standard clamped slide layout with circular tinted badge."""
+    def create_slide_container(self, icon_names, title, subtitle):
+        """Helper to create standard clamped slide layout with gradient badge."""
         clamp = Adw.Clamp()
-        clamp.set_maximum_size(530)
+        clamp.set_maximum_size(580)
         clamp.set_margin_start(24)
         clamp.set_margin_end(24)
         clamp.set_valign(Gtk.Align.CENTER)
@@ -850,21 +955,9 @@ class WelcomeWindow(Adw.ApplicationWindow):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         clamp.set_child(box)
 
-        # Header Circular Tinted Badge
-        if icon_name:
-            badge = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            badge.set_halign(Gtk.Align.CENTER)
-            badge.set_valign(Gtk.Align.CENTER)
-            badge.set_size_request(76, 76)
-            badge.add_css_class("icon-badge")
-
-            img = Gtk.Image.new_from_icon_name(icon_name)
-            img.set_pixel_size(40)
-            img.set_halign(Gtk.Align.CENTER)
-            img.set_valign(Gtk.Align.CENTER)
-            img.set_hexpand(True)
-            img.set_vexpand(True)
-            badge.append(img)
+        # Header Gradient Badge
+        if icon_names:
+            badge = create_badge(icon_names, size=64, icon_size=32)
             box.append(badge)
 
         title_lbl = Gtk.Label(label=title)
@@ -882,23 +975,26 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
         return clamp, box
 
-    def create_action_row(self, title, subtitle, icon_name=None, suffix_btn=None):
+    def create_action_row(self, title, subtitle, icon_name=None, icon_widget=None, suffix_btn=None):
         """Helper to create an unactivatable ActionRow with uniform styling."""
         row = Adw.ActionRow(title=title, subtitle=subtitle)
         row.set_activatable(False)
         row.set_title_lines(1)
         row.set_subtitle_lines(2)
-        if icon_name:
-            row.add_prefix(Gtk.Image.new_from_icon_name(icon_name))
+        if icon_widget:
+            row.add_prefix(icon_widget)
+        elif icon_name:
+            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(icon_name)))
         if suffix_btn:
             row.add_suffix(suffix_btn)
         return row
 
     def create_row_button(self, label, on_click, suggested=False):
-        """Helper to create uniform rectangular row button (width=125, height=34)."""
+        """Helper to create uniform row button (width=155, height=36, pill)."""
         btn = Gtk.Button(label=label)
         btn.set_valign(Gtk.Align.CENTER)
-        btn.set_size_request(125, 34)
+        btn.set_size_request(155, 36)
+        btn.add_css_class("pill")
         if suggested:
             btn.add_css_class("suggested-action")
         btn.connect("clicked", on_click)
@@ -907,34 +1003,34 @@ class WelcomeWindow(Adw.ApplicationWindow):
     def build_slide_ready(self):
         """Slide 1: Out-of-the-box readiness (3 rows)."""
         slide, box = self.create_slide_container(
-            "computer-symbolic",
-            _("s1_title"),
-            _("s1_sub")
+            ["computer-symbolic", "system-run-symbolic"],
+            t("s1_title"),
+            t("s1_sub")
         )
         listbox = Gtk.ListBox()
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
         r1 = self.create_action_row(
-            _("s1_r1_t"),
-            _("s1_r1_d"),
-            "video-x-generic-symbolic"
+            t("s1_r1_t"),
+            t("s1_r1_d"),
+            icon_name=["video-x-generic-symbolic", "video-display-symbolic"]
         )
         listbox.append(r1)
 
         r2 = self.create_action_row(
-            _("s1_r2_t"),
-            _("s1_r2_d"),
-            "software-properties-symbolic"
+            t("s1_r2_t"),
+            t("s1_r2_d"),
+            icon_name=["software-properties-symbolic", "package-x-generic-symbolic"]
         )
         listbox.append(r2)
 
-        btn3 = self.create_row_button(_("s1_r3_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system"]))
+        btn3 = self.create_row_button(t("s1_r3_b"), lambda *a: self.launch_app(["/usr/bin/sadeem-system"]))
         r3 = self.create_action_row(
-            _("s1_r3_t"),
-            _("s1_r3_d"),
-            "preferences-system-symbolic",
-            btn3
+            t("s1_r3_t"),
+            t("s1_r3_d"),
+            icon_name=["preferences-system-symbolic", "applications-system-symbolic"],
+            suffix_btn=btn3
         )
         listbox.append(r3)
 
@@ -942,43 +1038,46 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.carousel.append(slide)
 
     def build_slide_apps(self):
-        """Slide 2: Integrated productivity apps (3 rows)."""
+        """Slide 2: Integrated productivity apps (3 rows with real 40x40 colorful icons)."""
         slide, box = self.create_slide_container(
-            "system-software-install-symbolic",
-            _("s2_title"),
-            _("s2_sub")
+            ["application-x-executable-symbolic", "system-software-install-symbolic"],
+            t("s2_title"),
+            t("s2_sub")
         )
         listbox = Gtk.ListBox()
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
-        # Rumman
-        btn1 = self.create_row_button(_("s2_r1_b"), lambda *a: self.launch_local_app(["/usr/bin/rumman"]))
+        # Rumman - Real colorful 40x40 icon
+        icon_rumman = create_app_icon(["io.github.Rumman", "rumman"], size=40, fallback="system-run-symbolic")
+        btn1 = self.create_row_button(t("s2_r1_b"), lambda *a: self.launch_app(["/usr/bin/rumman"], "io.github.Rumman"))
         r1 = self.create_action_row(
-            _("s2_r1_t"),
-            _("s2_r1_d"),
-            "system-run-symbolic",
-            btn1
+            t("s2_r1_t"),
+            t("s2_r1_d"),
+            icon_widget=icon_rumman,
+            suffix_btn=btn1
         )
         listbox.append(r1)
 
-        # Mister Download Manager
-        btn2 = self.create_row_button(_("s2_r2_b"), lambda *a: self.launch_local_app(["/usr/bin/misterdownloadmanager"]))
+        # Mister Download Manager - Real colorful 40x40 icon
+        icon_mdm = create_app_icon(["misterdownloadmanager"], size=40, fallback="folder-download-symbolic")
+        btn2 = self.create_row_button(t("s2_r2_b"), lambda *a: self.launch_app(["/usr/bin/misterdownloadmanager"], "misterdownloadmanager"))
         r2 = self.create_action_row(
-            _("s2_r2_t"),
-            _("s2_r2_d"),
-            "folder-download-symbolic",
-            btn2
+            t("s2_r2_t"),
+            t("s2_r2_d"),
+            icon_widget=icon_mdm,
+            suffix_btn=btn2
         )
         listbox.append(r2)
 
-        # ZapFast
-        btn3 = self.create_row_button(_("s2_r3_b"), lambda *a: self.launch_local_app(["/usr/bin/zapfast"]))
+        # ZapFast - Real colorful 40x40 icon
+        icon_zapfast = create_app_icon(["zapfast"], size=40, fallback="chat-message-new-symbolic")
+        btn3 = self.create_row_button(t("s2_r3_b"), lambda *a: self.launch_app(["/usr/bin/zapfast"], "zapfast"))
         r3 = self.create_action_row(
-            _("s2_r3_t"),
-            _("s2_r3_d"),
-            "chat-message-new-symbolic",
-            btn3
+            t("s2_r3_t"),
+            t("s2_r3_d"),
+            icon_widget=icon_zapfast,
+            suffix_btn=btn3
         )
         listbox.append(r3)
 
@@ -988,41 +1087,41 @@ class WelcomeWindow(Adw.ApplicationWindow):
     def build_slide_extensions(self):
         """Slide 3: Interface customization & extensions (3 rows)."""
         slide, box = self.create_slide_container(
-            "preferences-desktop-appearance-symbolic",
-            _("s3_title"),
-            _("s3_sub")
+            ["preferences-desktop-appearance-symbolic"],
+            t("s3_title"),
+            t("s3_sub")
         )
         listbox = Gtk.ListBox()
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
         # Row 1: Colors & Theme
-        btn1 = self.create_row_button(_("s3_r1_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=colors"]))
+        btn1 = self.create_row_button(t("s3_r1_b"), lambda *a: self.launch_app(["/usr/bin/sadeem-system", "--tab=colors"]))
         r1 = self.create_action_row(
-            _("s3_r1_t"),
-            _("s3_r1_d"),
-            "preferences-desktop-appearance-symbolic",
-            btn1
+            t("s3_r1_t"),
+            t("s3_r1_d"),
+            icon_name=["preferences-desktop-appearance-symbolic"],
+            suffix_btn=btn1
         )
         listbox.append(r1)
 
-        # Row 2: Desktop Extensions (Smart Flatpak Launcher)
-        btn2 = self.create_row_button(_("s3_r2_b"), lambda *a: self.launch_flatpak_app("com.mattjakeman.ExtensionManager"))
+        # Row 2: Desktop Extensions
+        btn2 = self.create_row_button(t("s3_r2_b"), lambda *a: self.launch_desktop_or_flatpak("com.mattjakeman.ExtensionManager"))
         r2 = self.create_action_row(
-            _("s3_r2_t"),
-            _("s3_r2_d"),
-            "application-x-addon-symbolic",
-            btn2
+            t("s3_r2_t"),
+            t("s3_r2_d"),
+            icon_name=["application-x-addon-symbolic", "preferences-system-symbolic"],
+            suffix_btn=btn2
         )
         listbox.append(r2)
 
-        # Row 3: Interface Tweaks (Smart Flatpak Launcher)
-        btn3 = self.create_row_button(_("s3_r3_b"), lambda *a: self.launch_flatpak_app("page.tesk.Refine"))
+        # Row 3: Interface Tweaks (Refine)
+        btn3 = self.create_row_button(t("s3_r3_b"), lambda *a: self.launch_desktop_or_flatpak("page.tesk.Refine"))
         r3 = self.create_action_row(
-            _("s3_r3_t"),
-            _("s3_r3_d"),
-            "preferences-system-symbolic",
-            btn3
+            t("s3_r3_t"),
+            t("s3_r3_d"),
+            icon_name=["preferences-other-symbolic", "preferences-desktop-theme-symbolic", "preferences-system-symbolic"],
+            suffix_btn=btn3
         )
         listbox.append(r3)
 
@@ -1032,41 +1131,41 @@ class WelcomeWindow(Adw.ApplicationWindow):
     def build_slide_hardware(self):
         """Slide 4: Hardware, drivers, containers & updates (3 rows)."""
         slide, box = self.create_slide_container(
-            "video-display-symbolic",
-            _("s4_title"),
-            _("s4_sub")
+            ["video-display-symbolic", "package-x-generic-symbolic"],
+            t("s4_title"),
+            t("s4_sub")
         )
         listbox = Gtk.ListBox()
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
         # Row 1: NVIDIA & Drivers
-        btn1 = self.create_row_button(_("s4_r1_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=drivers"]))
+        btn1 = self.create_row_button(t("s4_r1_b"), lambda *a: self.launch_app(["/usr/bin/sadeem-system", "--tab=drivers"]))
         r1 = self.create_action_row(
-            _("s4_r1_t"),
-            _("s4_r1_d"),
-            "video-display-symbolic",
-            btn1
+            t("s4_r1_t"),
+            t("s4_r1_d"),
+            icon_name=["video-display-symbolic"],
+            suffix_btn=btn1
         )
         listbox.append(r1)
 
         # Row 2: Containers & Sadeem Box
-        btn2 = self.create_row_button(_("s4_r2_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=containers"]))
+        btn2 = self.create_row_button(t("s4_r2_b"), lambda *a: self.launch_app(["/usr/bin/sadeem-system", "--tab=containers"]))
         r2 = self.create_action_row(
-            _("s4_r2_t"),
-            _("s4_r2_d"),
-            "package-x-generic-symbolic",
-            btn2
+            t("s4_r2_t"),
+            t("s4_r2_d"),
+            icon_name=["package-x-generic-symbolic"],
+            suffix_btn=btn2
         )
         listbox.append(r2)
 
         # Row 3: Updates
-        btn3 = self.create_row_button(_("s4_r3_b"), lambda *a: self.launch_local_app(["/usr/bin/sadeem-system", "--tab=updates"]))
+        btn3 = self.create_row_button(t("s4_r3_b"), lambda *a: self.launch_app(["/usr/bin/sadeem-system", "--tab=updates"]))
         r3 = self.create_action_row(
-            _("s4_r3_t"),
-            _("s4_r3_d"),
-            "software-update-available-symbolic",
-            btn3
+            t("s4_r3_t"),
+            t("s4_r3_d"),
+            icon_name=["software-update-available-symbolic", "system-software-update-symbolic"],
+            suffix_btn=btn3
         )
         listbox.append(r3)
 
@@ -1076,47 +1175,60 @@ class WelcomeWindow(Adw.ApplicationWindow):
     def build_slide_navigation(self):
         """Slide 5: GNOME navigation basics (3 rows)."""
         slide, box = self.create_slide_container(
-            "preferences-desktop-keyboard-shortcuts-symbolic",
-            _("s5_title"),
-            _("s5_sub")
+            ["preferences-desktop-keyboard-shortcuts-symbolic", "input-keyboard-symbolic"],
+            t("s5_title"),
+            t("s5_sub")
         )
         listbox = Gtk.ListBox()
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
         r1 = self.create_action_row(
-            _("s5_r1_t"),
-            _("s5_r1_d"),
-            "system-search-symbolic"
+            t("s5_r1_t"),
+            t("s5_r1_d"),
+            icon_name=["system-search-symbolic"]
         )
         listbox.append(r1)
 
         r2 = self.create_action_row(
-            _("s5_r2_t"),
-            _("s5_r2_d"),
-            "input-touchpad-symbolic"
+            t("s5_r2_t"),
+            t("s5_r2_d"),
+            icon_name=["input-touchpad-symbolic", "input-mouse-symbolic"]
         )
         listbox.append(r2)
 
         r3 = self.create_action_row(
-            _("s5_r3_t"),
-            _("s5_r3_d"),
-            "view-paged-symbolic"
+            t("s5_r3_t"),
+            t("s5_r3_d"),
+            icon_name=["view-paged-symbolic", "view-grid-symbolic"]
         )
         listbox.append(r3)
 
         box.append(listbox)
         self.carousel.append(slide)
 
-    def launch_local_app(self, cmd_args):
-        """Safely launch local applications asynchronously."""
+    def launch_app(self, cmd_args, desktop_name=None):
+        """Safely launch applications natively via desktop or direct executable."""
+        if desktop_name:
+            try:
+                res = subprocess.run(["gtk-launch", desktop_name], capture_output=True, check=False)
+                if res.returncode == 0:
+                    return
+            except Exception:
+                pass
         try:
             subprocess.Popen(cmd_args)
         except Exception as e:
             print(f"Error launching {cmd_args}: {e}", file=sys.stderr)
 
-    def launch_flatpak_app(self, app_id):
-        """Smart Flatpak launcher with background installation toast fallback."""
+    def launch_desktop_or_flatpak(self, app_id):
+        """Smart launcher trying desktop file first, flatpak next, and flathub install toast fallback."""
+        try:
+            res = subprocess.run(["gtk-launch", app_id], capture_output=True, check=False)
+            if res.returncode == 0:
+                return
+        except Exception:
+            pass
         try:
             res = subprocess.run(["flatpak", "info", app_id], capture_output=True, text=True, check=False)
             if res.returncode == 0:
@@ -1126,7 +1238,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
             pass
 
         # App is not yet installed or downloading in background
-        msg = _("toast_installing")
+        msg = t("toast_installing")
         toast = Adw.Toast.new(msg)
         toast.set_timeout(4)
         self.toast_overlay.add_toast(toast)
@@ -1138,7 +1250,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
             print(f"Error triggering flatpak install for {app_id}: {e}", file=sys.stderr)
 
     def on_install_nvidia(self, *args):
-        self.launch_local_app(["/usr/bin/sadeem-system", "--tab=drivers"])
+        self.launch_app(["/usr/bin/sadeem-system", "--tab=drivers"])
 
     def on_prev_clicked(self, *args):
         curr = int(round(self.carousel.get_position()))
@@ -1157,9 +1269,9 @@ class WelcomeWindow(Adw.ApplicationWindow):
         total = carousel.get_n_pages()
         self.prev_btn.set_visible(index > 0)
         if index == total - 1:
-            self.next_btn.set_label(_("btn_start"))
+            self.next_btn.set_label(t("btn_start"))
         else:
-            self.next_btn.set_label(_("btn_next"))
+            self.next_btn.set_label(t("btn_next"))
 
     def on_startup_toggled(self, button):
         state = button.get_active()
@@ -1198,8 +1310,11 @@ class WelcomeApplication(Adw.Application):
         return 0
 
     def do_activate(self):
+        setup_icon_theme()
         if LANG in ("ar", "ur"):
             Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
+        else:
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.LTR)
         win = self.get_active_window()
         if not win:
             win = WelcomeWindow(application=self)

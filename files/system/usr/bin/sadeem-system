@@ -28,12 +28,11 @@ TRANSLATIONS = {
         "tab_colors": "Colors & Theme",
         "tab_drivers": "Drivers & GPU",
         "tab_containers": "Containers & Packages",
-        # Updates
         "upd_banner_title": "System & Software Updates",
         "upd_banner_desc": "Update system, apps, and containers on demand with zero background data usage.",
         "upd_group_targets": "Update Targets",
-        "upd_sys_title": "Core System & Drivers",
-        "upd_sys_desc": "Atomic system image upgrade (rpm-ostree)",
+        "upd_sys_title": "System Image Updates",
+        "upd_sys_desc": "Atomic system image and drivers upgrade via rpm-ostree",
         "upd_flatpak_title": "Store Applications (Flatpak)",
         "upd_flatpak_desc": "Update all applications installed from Flathub",
         "upd_box_title": "Sadeem Box Container",
@@ -49,7 +48,6 @@ TRANSLATIONS = {
         "status_done": "All updates completed successfully!",
         "status_reboot": "System update is ready. Please restart to apply changes.",
         "status_error": "Update process encountered warnings or errors.",
-        # Colors
         "colors_presets_title": "Preset Colors",
         "colors_presets_desc": "Choose a color to apply immediately to the desktop and apps",
         "colors_custom_title": "Custom Color",
@@ -57,8 +55,16 @@ TRANSLATIONS = {
         "colors_current": "Current color: {color}",
         "colors_reset": "Reset to Burgundy",
         "colors_toast_applied": "Accent color applied successfully",
-        "color_names": ["Default Burgundy", "Dark Turquoise", "Blue", "Green", "Purple", "Orange", "Crimson Red", "Steel Gray"],
-        # Drivers
+        "color_names": [
+            "Default Burgundy",
+            "Dark Turquoise",
+            "Blue",
+            "Green",
+            "Purple",
+            "Orange",
+            "Crimson Red",
+            "Steel Gray"
+        ],
         "drv_no_gpu_title": "No NVIDIA GPU Found",
         "drv_no_gpu_desc": "The system did not detect any NVIDIA graphics card connected to your device.\nIf your computer has hybrid graphics, please ensure it is enabled in your BIOS/UEFI settings.",
         "drv_installed_title": "NVIDIA Driver is Installed and Active!",
@@ -80,11 +86,10 @@ TRANSLATIONS = {
         "drv_auth": "Requesting administrator privileges and connecting to repositories...",
         "drv_done": "Driver installation completed successfully! Please restart to activate.",
         "drv_error": "Installation encountered errors or was cancelled.",
-        # Containers
         "box_header_title": "Sadeem Box Container Runtime",
         "box_header_desc": "Sadeem Box runs transparently in the background to install and execute external .rpm and .deb packages safely without modifying the immutable OS core.",
         "box_status_title": "Container Environment Status",
-        "box_status_active": "Ready & Operational",
+        "box_status_active": "Ready (Fedora Toolbox container installed)",
         "box_status_init": "Initializing in the background...",
         "box_actions_title": "Container Tools & Package Management",
         "box_btn_terminal": "Open Container Terminal",
@@ -98,7 +103,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Choose Package...",
         "box_dialog_title": "Select Software Package",
         "box_filter_pkgs": "Software Packages (*.rpm, *.deb)",
-        "box_filter_all": "All Files (*)",
+        "box_filter_all": "All Files (*)"
     },
     "ar": {
         "app_title": "نظام سديم",
@@ -106,12 +111,11 @@ TRANSLATIONS = {
         "tab_colors": "الألوان والمظهر",
         "tab_drivers": "التعريفات والرسوميات",
         "tab_containers": "الحاويات والحزم",
-        # Updates
         "upd_banner_title": "تحديثات النظام والبرامج",
         "upd_banner_desc": "تحديث النظام والتطبيقات عند طلبك وبضغطة واحدة، دون أي استهلاك للبيانات في الخلفية.",
         "upd_group_targets": "أقسام التحديث",
-        "upd_sys_title": "نظام التشغيل الأساسي والتعريفات",
-        "upd_sys_desc": "تحديث صورة النظام الذرية (rpm-ostree)",
+        "upd_sys_title": "تحديثات النظام الأساسي",
+        "upd_sys_desc": "ترقية نواة النظام والتعريفات عبر rpm-ostree",
         "upd_flatpak_title": "تطبيقات المتجر (Flatpak)",
         "upd_flatpak_desc": "تحديث كافة التطبيقات المثبتة من Flathub",
         "upd_box_title": "حاوية سديم (Sadeem Box)",
@@ -127,7 +131,6 @@ TRANSLATIONS = {
         "status_done": "اكتملت جميع التحديثات بنجاح!",
         "status_reboot": "تم تجهيز تحديث النظام الأساسي. يرجى إعادة التشغيل لتطبيقه.",
         "status_error": "انتهت العملية مع بعض التنبيهات أو الأخطاء.",
-        # Colors
         "colors_presets_title": "الألوان الجاهزة",
         "colors_presets_desc": "اختر لوناً لتطبيقه فوراً على الواجهة والتطبيقات",
         "colors_custom_title": "لون مخصص",
@@ -135,8 +138,16 @@ TRANSLATIONS = {
         "colors_current": "اللون الحالي: {color}",
         "colors_reset": "استعادة الخمري",
         "colors_toast_applied": "تم تطبيق اللون بنجاح",
-        "color_names": ["الخمري الافتراضي", "التركوازي الداكن", "الأزرق", "الأخضر", "البنفسجي", "البرتقالي", "الأحمر القاني", "الرمادي الفولاذي"],
-        # Drivers
+        "color_names": [
+            "الخمري الافتراضي",
+            "التركوازي الداكن",
+            "الأزرق",
+            "الأخضر",
+            "البنفسجي",
+            "البرتقالي",
+            "الأحمر القاني",
+            "الرمادي الفولاذي"
+        ],
         "drv_no_gpu_title": "لم يتم العثور على بطاقة NVIDIA",
         "drv_no_gpu_desc": "لم يعثر النظام على بطاقة رسوميات NVIDIA متصلة بجهازك.\nإذا كان جهازك يحتوي على معالج رسومي مدمج وهجين، تأكد من تفعيله من إعدادات BIOS/UEFI.",
         "drv_installed_title": "تعريف NVIDIA مثبت ويعمل بكامل كفاءته!",
@@ -158,11 +169,10 @@ TRANSLATIONS = {
         "drv_auth": "جاري طلب الصلاحيات والاتصال بالمستودعات...",
         "drv_done": "اكتمل تثبيت التعريف بنجاح! يرجى إعادة تشغيل الجهاز لتفعيله.",
         "drv_error": "حدث خطأ أثناء التثبيت أو تم إلغاؤه من المستخدم.",
-        # Containers
         "box_header_title": "بيئة تشغيل وحاويات سديم بوكس (Sadeem Box)",
         "box_header_desc": "تعمل حاوية سديم في الخلفية بسلاسة لتثبيت وتشغيل الحزم الخارجية بصيغ .rpm و .deb دون المساس بالنظام الذري الأساسي.",
         "box_status_title": "حالة بيئة الحاويات",
-        "box_status_active": "جاهزة وتعمل بكفاءة",
+        "box_status_active": "جاهزة للعمل (بيئة Fedora Toolbox مثبتة)",
         "box_status_init": "جاري التهيئة في الخلفية...",
         "box_actions_title": "أدوات الحاويات وإدارة الحزم",
         "box_btn_terminal": "تشغيل موجه أوامر الحاوية",
@@ -176,7 +186,7 @@ TRANSLATIONS = {
         "btn_choose_package": "اختيار حزمة...",
         "box_dialog_title": "اختر ملف الحزمة البرمجية",
         "box_filter_pkgs": "حزم البرامج (*.rpm, *.deb)",
-        "box_filter_all": "كافة الملفات (*)",
+        "box_filter_all": "كافة الملفات (*)"
     },
     "fr": {
         "app_title": "Système Sadeem",
@@ -184,12 +194,11 @@ TRANSLATIONS = {
         "tab_colors": "Couleurs & Thème",
         "tab_drivers": "Pilotes & GPU",
         "tab_containers": "Conteneurs & Paquets",
-        # Updates
         "upd_banner_title": "Mises à jour du système",
         "upd_banner_desc": "Mettez à jour le système et les applications à la demande sans données en arrière-plan.",
         "upd_group_targets": "Cibles de mise à jour",
-        "upd_sys_title": "Système de base et pilotes",
-        "upd_sys_desc": "Mise à jour du système atomique (rpm-ostree)",
+        "upd_sys_title": "Mises à jour du système de base",
+        "upd_sys_desc": "Mise à niveau atomique du noyau et des pilotes via rpm-ostree",
         "upd_flatpak_title": "Applications du magasin (Flatpak)",
         "upd_flatpak_desc": "Mettre à jour toutes les applications Flathub",
         "upd_box_title": "Conteneur Sadeem Box",
@@ -205,7 +214,6 @@ TRANSLATIONS = {
         "status_done": "Toutes les mises à jour sont terminées avec succès !",
         "status_reboot": "Mise à jour prête. Veuillez redémarrer pour appliquer les changements.",
         "status_error": "Le processus s'est terminé avec des erreurs.",
-        # Colors
         "colors_presets_title": "Couleurs prédéfinies",
         "colors_presets_desc": "Choisissez une couleur à appliquer immédiatement",
         "colors_custom_title": "Couleur personnalisée",
@@ -213,8 +221,16 @@ TRANSLATIONS = {
         "colors_current": "Couleur actuelle : {color}",
         "colors_reset": "Rétablir le bordeaux",
         "colors_toast_applied": "Couleur d'accentuation appliquée avec succès",
-        "color_names": ["Bordeaux par défaut", "Turquoise foncé", "Bleu", "Vert", "Violet", "Orange", "Rouge carmin", "Gris acier"],
-        # Drivers
+        "color_names": [
+            "Bordeaux par défaut",
+            "Turquoise foncé",
+            "Bleu",
+            "Vert",
+            "Violet",
+            "Orange",
+            "Rouge carmin",
+            "Gris acier"
+        ],
         "drv_no_gpu_title": "Aucun GPU NVIDIA détecté",
         "drv_no_gpu_desc": "Le système n'a détecté aucune carte graphique NVIDIA connectée.",
         "drv_installed_title": "Pilote NVIDIA installé et actif !",
@@ -236,11 +252,10 @@ TRANSLATIONS = {
         "drv_auth": "Demande des privilèges administrateur...",
         "drv_done": "Installation du pilote terminée avec succès ! Veuillez redémarrer.",
         "drv_error": "L'installation a rencontré des erreurs ou a été annulée.",
-        # Containers
         "box_header_title": "Environnement conteneurisé Sadeem Box",
         "box_header_desc": "Sadeem Box exécute les paquets .rpm et .deb en toute sécurité sans modifier le cœur immuable du système.",
         "box_status_title": "État de l'environnement",
-        "box_status_active": "Prêt et opérationnel",
+        "box_status_active": "Prêt à l'emploi (conteneur Fedora Toolbox installé)",
         "box_status_init": "Initialisation en arrière-plan...",
         "box_actions_title": "Outils de conteneurs et paquets",
         "box_btn_terminal": "Terminal du conteneur",
@@ -254,7 +269,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Choisir un paquet...",
         "box_dialog_title": "Sélectionner un paquet logiciel",
         "box_filter_pkgs": "Paquets logiciels (*.rpm, *.deb)",
-        "box_filter_all": "Tous les fichiers (*)",
+        "box_filter_all": "Tous les fichiers (*)"
     },
     "es": {
         "app_title": "Sistema Sadeem",
@@ -262,12 +277,11 @@ TRANSLATIONS = {
         "tab_colors": "Colores y tema",
         "tab_drivers": "Controladores y GPU",
         "tab_containers": "Contenedores y paquetes",
-        # Updates
         "upd_banner_title": "Actualizaciones del sistema",
         "upd_banner_desc": "Actualice su sistema y aplicaciones a petición sin consumo de datos en segundo plano.",
         "upd_group_targets": "Objetivos de actualización",
-        "upd_sys_title": "Sistema base y controladores",
-        "upd_sys_desc": "Actualización de imagen atómica (rpm-ostree)",
+        "upd_sys_title": "Actualizaciones del sistema base",
+        "upd_sys_desc": "Actualización atómica del núcleo y controladores mediante rpm-ostree",
         "upd_flatpak_title": "Aplicaciones de la tienda (Flatpak)",
         "upd_flatpak_desc": "Actualizar todas las aplicaciones de Flathub",
         "upd_box_title": "Contenedor Sadeem Box",
@@ -283,7 +297,6 @@ TRANSLATIONS = {
         "status_done": "¡Todas las actualizaciones se completaron con éxito!",
         "status_reboot": "Actualización lista. Reinicie para aplicar los cambios.",
         "status_error": "El proceso finalizó con advertencias o errores.",
-        # Colors
         "colors_presets_title": "Colores predefinidos",
         "colors_presets_desc": "Elige un color para aplicarlo de inmediato",
         "colors_custom_title": "Color personalizado",
@@ -291,8 +304,16 @@ TRANSLATIONS = {
         "colors_current": "Color actual: {color}",
         "colors_reset": "Restaurar burdeos",
         "colors_toast_applied": "Color de énfasis aplicado correctamente",
-        "color_names": ["Burdeos predeterminado", "Turquesa oscuro", "Azul", "Verde", "Púrpura", "Naranja", "Rojo carmesí", "Gris acero"],
-        # Drivers
+        "color_names": [
+            "Burdeos predeterminado",
+            "Turquesa oscuro",
+            "Azul",
+            "Verde",
+            "Púrpura",
+            "Naranja",
+            "Rojo carmesí",
+            "Gris acero"
+        ],
         "drv_no_gpu_title": "No se encontró GPU NVIDIA",
         "drv_no_gpu_desc": "El sistema no detectó ninguna tarjeta gráfica NVIDIA conectada.",
         "drv_installed_title": "¡Controlador NVIDIA instalado y activo!",
@@ -314,11 +335,10 @@ TRANSLATIONS = {
         "drv_auth": "Solicitando privilegios de administrador...",
         "drv_done": "¡Instalación completada con éxito! Reinicie el equipo.",
         "drv_error": "La instalación falló o fue cancelada.",
-        # Containers
         "box_header_title": "Entorno de contenedores Sadeem Box",
         "box_header_desc": "Sadeem Box ejecuta paquetes .rpm y .deb de forma transparente y segura sin alterar el núcleo atómico.",
         "box_status_title": "Estado del entorno",
-        "box_status_active": "Listo y operativo",
+        "box_status_active": "Listo para funcionar (contenedor Fedora Toolbox instalado)",
         "box_status_init": "Inicializando en segundo plano...",
         "box_actions_title": "Herramientas de contenedores y paquetes",
         "box_btn_terminal": "Terminal del contenedor",
@@ -332,7 +352,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Elegir paquete...",
         "box_dialog_title": "Seleccionar paquete de software",
         "box_filter_pkgs": "Paquetes de software (*.rpm, *.deb)",
-        "box_filter_all": "Todos los archivos (*)",
+        "box_filter_all": "Todos los archivos (*)"
     },
     "de": {
         "app_title": "Sadeem-System",
@@ -340,12 +360,11 @@ TRANSLATIONS = {
         "tab_colors": "Farben & Design",
         "tab_drivers": "Treiber & GPU",
         "tab_containers": "Container & Pakete",
-        # Updates
         "upd_banner_title": "System- & Softwareaktualisierungen",
         "upd_banner_desc": "Aktualisieren Sie System und Apps auf Abruf ohne Hintergrund-Datenverbrauch.",
         "upd_group_targets": "Aktualisierungsziele",
-        "upd_sys_title": "Basissystem & Treiber",
-        "upd_sys_desc": "Aktualisierung des atomaren Systems (rpm-ostree)",
+        "upd_sys_title": "Basis-Systemaktualisierungen",
+        "upd_sys_desc": "Atomare Systemaktualisierung für Kernel und Treiber über rpm-ostree",
         "upd_flatpak_title": "Store-Anwendungen (Flatpak)",
         "upd_flatpak_desc": "Alle Flathub-Anwendungen aktualisieren",
         "upd_box_title": "Sadeem Box Container",
@@ -361,7 +380,6 @@ TRANSLATIONS = {
         "status_done": "Alle Aktualisierungen erfolgreich abgeschlossen!",
         "status_reboot": "Aktualisierung bereit. Bitte neu starten, um Änderungen anzuwenden.",
         "status_error": "Der Vorgang endete mit Warnungen oder Fehlern.",
-        # Colors
         "colors_presets_title": "Voreingestellte Farben",
         "colors_presets_desc": "Wählen Sie eine Farbe, um sie sofort anzuwenden",
         "colors_custom_title": "Benutzerdefinierte Farbe",
@@ -369,8 +387,16 @@ TRANSLATIONS = {
         "colors_current": "Aktuelle Farbe: {color}",
         "colors_reset": "Burgunderrot wiederherstellen",
         "colors_toast_applied": "Akzentfarbe erfolgreich angewendet",
-        "color_names": ["Standard-Burgunderrot", "Dunkeltürkis", "Blau", "Grün", "Violett", "Orange", "Karmesinrot", "Stahlgrau"],
-        # Drivers
+        "color_names": [
+            "Standard-Burgunderrot",
+            "Dunkeltürkis",
+            "Blau",
+            "Grün",
+            "Violett",
+            "Orange",
+            "Karmesinrot",
+            "Stahlgrau"
+        ],
         "drv_no_gpu_title": "Keine NVIDIA-GPU gefunden",
         "drv_no_gpu_desc": "Das System hat keine angeschlossene NVIDIA-Grafikkarte erkannt.",
         "drv_installed_title": "NVIDIA-Treiber ist installiert und aktiv!",
@@ -392,11 +418,10 @@ TRANSLATIONS = {
         "drv_auth": "Administratorrechte anfordern...",
         "drv_done": "Installation erfolgreich abgeschlossen! Bitte neu starten.",
         "drv_error": "Installation fehlgeschlagen oder abgebrochen.",
-        # Containers
         "box_header_title": "Sadeem Box Container-Laufzeitumgebung",
         "box_header_desc": "Sadeem Box führt .rpm- und .deb-Pakete isoliert und sicher aus, ohne das atomare Basissystem zu verändern.",
         "box_status_title": "Status der Containerumgebung",
-        "box_status_active": "Bereit & betriebsbereit",
+        "box_status_active": "Einsatzbereit (Fedora Toolbox-Container installiert)",
         "box_status_init": "Wird im Hintergrund initialisiert...",
         "box_actions_title": "Container-Werkzeuge & Paketverwaltung",
         "box_btn_terminal": "Container-Terminal öffnen",
@@ -410,7 +435,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Paket wählen...",
         "box_dialog_title": "Softwarepaket auswählen",
         "box_filter_pkgs": "Softwarepakete (*.rpm, *.deb)",
-        "box_filter_all": "Alle Dateien (*)",
+        "box_filter_all": "Alle Dateien (*)"
     },
     "tr": {
         "app_title": "Sadeem Sistemi",
@@ -418,12 +443,11 @@ TRANSLATIONS = {
         "tab_colors": "Renkler ve Tema",
         "tab_drivers": "Sürücüler ve GPU",
         "tab_containers": "Kapsayıcılar ve Paketler",
-        # Updates
         "upd_banner_title": "Sistem ve Yazılım Güncellemeleri",
         "upd_banner_desc": "Arka planda veri tüketimi olmadan tek tıkla sisteminizi ve uygulamalarınızı güncelleyin.",
         "upd_group_targets": "Güncelleme Hedefleri",
-        "upd_sys_title": "Çekirdek Sistem ve Sürücüler",
-        "upd_sys_desc": "Atomik sistem görüntüsü güncellemesi (rpm-ostree)",
+        "upd_sys_title": "Temel Sistem Güncellemeleri",
+        "upd_sys_desc": "rpm-ostree ile çekirdek ve sürücülerin atomik yükseltmesi",
         "upd_flatpak_title": "Mağaza Uygulamaları (Flatpak)",
         "upd_flatpak_desc": "Flathub üzerinden yüklenen tüm uygulamaları güncelleyin",
         "upd_box_title": "Sadeem Box Kapsayıcısı",
@@ -439,7 +463,6 @@ TRANSLATIONS = {
         "status_done": "Tüm güncellemeler başarıyla tamamlandı!",
         "status_reboot": "Güncelleme hazır. Değişiklikleri uygulamak için yeniden başlatın.",
         "status_error": "İşlem bazı hatalarla tamamlandı.",
-        # Colors
         "colors_presets_title": "Hazır Renkler",
         "colors_presets_desc": "Masaüstüne ve uygulamalara hemen uygulamak için bir renk seçin",
         "colors_custom_title": "Özel Renk",
@@ -447,8 +470,16 @@ TRANSLATIONS = {
         "colors_current": "Mevcut renk: {color}",
         "colors_reset": "Bordo Rengine Sıfırla",
         "colors_toast_applied": "Vurgu rengi başarıyla uygulandı",
-        "color_names": ["Varsayılan Bordo", "Koyu Turkuaz", "Mavi", "Yeşil", "Mor", "Turuncu", "Kızıl Kırmızı", "Çelik Grisi"],
-        # Drivers
+        "color_names": [
+            "Varsayılan Bordo",
+            "Koyu Turkuaz",
+            "Mavi",
+            "Yeşil",
+            "Mor",
+            "Turuncu",
+            "Kızıl Kırmızı",
+            "Çelik Grisi"
+        ],
         "drv_no_gpu_title": "NVIDIA GPU Bulunamadı",
         "drv_no_gpu_desc": "Sisteminizde bağlı herhangi bir NVIDIA grafik kartı algılanmadı.",
         "drv_installed_title": "NVIDIA Sürücüsü Yüklü ve Etkin!",
@@ -470,12 +501,11 @@ TRANSLATIONS = {
         "drv_auth": "Yönetici yetkileri isteniyor...",
         "drv_done": "Sürücü kurulumu başarıyla tamamlandı! Yeniden başlatın.",
         "drv_error": "Kurulum sırasında hata oluştu veya iptal edildi.",
-        # Containers
         "box_header_title": "Sadeem Box Kapsayıcı Çalışma Ortamı",
         "box_header_desc": "Sadeem Box, atomik işletim sistemine dokunmadan harici .rpm ve .deb paketlerini güvenle çalıştırır.",
         "box_status_title": "Kapsayıcı Ortamı Durumu",
-        "box_status_active": "Hazır ve çalışıyor",
-        "box_status_init": "Arka planda hazırlanıyor...",
+        "box_status_active": "Kullanıma hazır (Fedora Toolbox konteyneri kurulu)",
+        "box_status_init": "Arka planda başlatılıyor...",
         "box_actions_title": "Kapsayıcı Araçları ve Paket Yönetimi",
         "box_btn_terminal": "Kapsayıcı Terminalini Aç",
         "box_btn_terminal_desc": "Sadeem-box kapsayıcısı içinde komut satırı başlat",
@@ -488,7 +518,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Paket Seç...",
         "box_dialog_title": "Yazılım Paketi Seçin",
         "box_filter_pkgs": "Yazılım Paketleri (*.rpm, *.deb)",
-        "box_filter_all": "Tüm Dosyalar (*)",
+        "box_filter_all": "Tüm Dosyalar (*)"
     },
     "ru": {
         "app_title": "Система Sadeem",
@@ -496,12 +526,11 @@ TRANSLATIONS = {
         "tab_colors": "Цвета и тема",
         "tab_drivers": "Драйверы и GPU",
         "tab_containers": "Контейнеры и пакеты",
-        # Updates
         "upd_banner_title": "Обновления системы и ПО",
         "upd_banner_desc": "Обновляйте систему и приложения в один клик без фонового расхода трафика.",
         "upd_group_targets": "Компоненты для обновления",
-        "upd_sys_title": "Базовая система и драйверы",
-        "upd_sys_desc": "Обновление атомарного образа (rpm-ostree)",
+        "upd_sys_title": "Обновления базовой системы",
+        "upd_sys_desc": "Атомарное обновление ядра и драйверов через rpm-ostree",
         "upd_flatpak_title": "Приложения каталога (Flatpak)",
         "upd_flatpak_desc": "Обновить все приложения из Flathub",
         "upd_box_title": "Контейнер Sadeem Box",
@@ -517,7 +546,6 @@ TRANSLATIONS = {
         "status_done": "Все обновления успешно завершены!",
         "status_reboot": "Обновление готово. Перезагрузите компьютер.",
         "status_error": "Процесс завершился с предупреждениями или ошибками.",
-        # Colors
         "colors_presets_title": "Готовые цвета",
         "colors_presets_desc": "Выберите цвет для немедленного применения",
         "colors_custom_title": "Пользовательский цвет",
@@ -525,8 +553,16 @@ TRANSLATIONS = {
         "colors_current": "Текущий цвет: {color}",
         "colors_reset": "Вернуть бордовый",
         "colors_toast_applied": "Акцентный цвет успешно применён",
-        "color_names": ["Бордовый по умолчанию", "Тёмно-бирюзовый", "Синий", "Зелёный", "Фиолетовый", "Оранжевый", "Малиново-красный", "Стальной серый"],
-        # Drivers
+        "color_names": [
+            "Бордовый по умолчанию",
+            "Тёмно-бирюзовый",
+            "Синий",
+            "Зелёный",
+            "Фиолетовый",
+            "Оранжевый",
+            "Малиново-красный",
+            "Стальной серый"
+        ],
         "drv_no_gpu_title": "Видеокарта NVIDIA не найдена",
         "drv_no_gpu_desc": "В системе не обнаружена подключённая видеокарта NVIDIA.",
         "drv_installed_title": "Драйвер NVIDIA установлен и активен!",
@@ -548,12 +584,11 @@ TRANSLATIONS = {
         "drv_auth": "Запрос прав администратора...",
         "drv_done": "Установка драйвера успешно завершена! Перезагрузите ПК.",
         "drv_error": "Ошибка при установке или отменено пользователем.",
-        # Containers
         "box_header_title": "Среда контейнеров Sadeem Box",
         "box_header_desc": "Sadeem Box безопасно запускает пакеты .rpm и .deb в изолированной среде без изменений базовой ОС.",
         "box_status_title": "Статус среды контейнеров",
-        "box_status_active": "Готова к работе",
-        "box_status_init": "Инициализация в фоне...",
+        "box_status_active": "Готов к работе (контейнер Fedora Toolbox установлен)",
+        "box_status_init": "Инициализация в фоновом режиме...",
         "box_actions_title": "Инструменты контейнеров и пакетов",
         "box_btn_terminal": "Терминал контейнера",
         "box_btn_terminal_desc": "Запустить командную строку внутри контейнера",
@@ -566,7 +601,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Выбрать пакет...",
         "box_dialog_title": "Выберите пакет программы",
         "box_filter_pkgs": "Пакеты программ (*.rpm, *.deb)",
-        "box_filter_all": "Все файлы (*)",
+        "box_filter_all": "Все файлы (*)"
     },
     "pt": {
         "app_title": "Sistema Sadeem",
@@ -574,12 +609,11 @@ TRANSLATIONS = {
         "tab_colors": "Cores e Tema",
         "tab_drivers": "Controladores e GPU",
         "tab_containers": "Contentores e Pacotes",
-        # Updates
         "upd_banner_title": "Atualizações do Sistema",
         "upd_banner_desc": "Atualize sistema e aplicativos sob demanda em um clique, sem uso de dados em segundo plano.",
         "upd_group_targets": "Alvos de Atualização",
-        "upd_sys_title": "Sistema Básico e Drivers",
-        "upd_sys_desc": "Atualização de imagem atômica (rpm-ostree)",
+        "upd_sys_title": "Atualizações do sistema base",
+        "upd_sys_desc": "Atualização atómica do kernel e controladores via rpm-ostree",
         "upd_flatpak_title": "Aplicativos da Loja (Flatpak)",
         "upd_flatpak_desc": "Atualizar todos os aplicativos do Flathub",
         "upd_box_title": "Contêiner Sadeem Box",
@@ -595,7 +629,6 @@ TRANSLATIONS = {
         "status_done": "Todas as atualizações foram concluídas com sucesso!",
         "status_reboot": "Atualização pronta. Reinicie para aplicar as alterações.",
         "status_error": "O processo foi concluído com avisos ou erros.",
-        # Colors
         "colors_presets_title": "Cores predefinidas",
         "colors_presets_desc": "Escolha uma cor para aplicar imediatamente",
         "colors_custom_title": "Cor personalizada",
@@ -603,8 +636,16 @@ TRANSLATIONS = {
         "colors_current": "Cor atual: {color}",
         "colors_reset": "Restaurar bordô",
         "colors_toast_applied": "Cor de destaque aplicada com sucesso",
-        "color_names": ["Bordô padrão", "Turquesa escuro", "Azul", "Verde", "Roxo", "Laranja", "Vermelho carmesim", "Cinza aço"],
-        # Drivers
+        "color_names": [
+            "Bordô padrão",
+            "Turquesa escuro",
+            "Azul",
+            "Verde",
+            "Roxo",
+            "Laranja",
+            "Vermelho carmesim",
+            "Cinza aço"
+        ],
         "drv_no_gpu_title": "Nenhuma GPU NVIDIA Encontrada",
         "drv_no_gpu_desc": "O sistema não detectou nenhuma placa gráfica NVIDIA conectada.",
         "drv_installed_title": "Controlador NVIDIA Instalado e Ativo!",
@@ -626,11 +667,10 @@ TRANSLATIONS = {
         "drv_auth": "A solicitar privilégios de administrador...",
         "drv_done": "Instalação concluída com sucesso! Reinicie o computador.",
         "drv_error": "A instalação falhou ou foi cancelada.",
-        # Containers
         "box_header_title": "Ambiente de Contentores Sadeem Box",
         "box_header_desc": "O Sadeem Box executa pacotes .rpm e .deb com segurança sem modificar a base imutável do sistema operativo.",
         "box_status_title": "Estado do Ambiente",
-        "box_status_active": "Pronto e operacional",
+        "box_status_active": "Pronto a funcionar (contentor Fedora Toolbox instalado)",
         "box_status_init": "A inicializar em segundo plano...",
         "box_actions_title": "Ferramentas de Contentores e Pacotes",
         "box_btn_terminal": "Terminal do Contentor",
@@ -644,7 +684,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Escolher Pacote...",
         "box_dialog_title": "Selecionar Pacote de Software",
         "box_filter_pkgs": "Pacotes de Software (*.rpm, *.deb)",
-        "box_filter_all": "Todos os Ficheiros (*)",
+        "box_filter_all": "Todos os Ficheiros (*)"
     },
     "it": {
         "app_title": "Sistema Sadeem",
@@ -652,12 +692,11 @@ TRANSLATIONS = {
         "tab_colors": "Colori e Aspetto",
         "tab_drivers": "Driver e GPU",
         "tab_containers": "Container e Pacchetti",
-        # Updates
         "upd_banner_title": "Aggiornamenti di sistema",
         "upd_banner_desc": "Aggiorna sistema e app su richiesta con un clic, senza consumo dati in background.",
         "upd_group_targets": "Componenti da aggiornare",
-        "upd_sys_title": "Sistema di base e driver",
-        "upd_sys_desc": "Aggiornamento dell'immagine atomica (rpm-ostree)",
+        "upd_sys_title": "Aggiornamenti del sistema di base",
+        "upd_sys_desc": "Aggiornamento atomico del kernel e dei driver tramite rpm-ostree",
         "upd_flatpak_title": "Applicazioni del negozio (Flatpak)",
         "upd_flatpak_desc": "Aggiorna tutte le applicazioni installate da Flathub",
         "upd_box_title": "Container Sadeem Box",
@@ -673,7 +712,6 @@ TRANSLATIONS = {
         "status_done": "Tutti gli aggiornamenti completati con successo!",
         "status_reboot": "Aggiornamento pronto. Riavvia per applicare le modifiche.",
         "status_error": "Il processo si è concluso con avvisi o errori.",
-        # Colors
         "colors_presets_title": "Colori predefiniti",
         "colors_presets_desc": "Scegli un colore da applicare subito",
         "colors_custom_title": "Colore personalizzato",
@@ -681,8 +719,16 @@ TRANSLATIONS = {
         "colors_current": "Colore attuale: {color}",
         "colors_reset": "Ripristina bordeaux",
         "colors_toast_applied": "Colore principale applicato con successo",
-        "color_names": ["Bordeaux predefinito", "Turchese scuro", "Blu", "Verde", "Viola", "Arancione", "Rosso cremisi", "Grigio acciaio"],
-        # Drivers
+        "color_names": [
+            "Bordeaux predefinito",
+            "Turchese scuro",
+            "Blu",
+            "Verde",
+            "Viola",
+            "Arancione",
+            "Rosso cremisi",
+            "Grigio acciaio"
+        ],
         "drv_no_gpu_title": "Nessuna GPU NVIDIA trovata",
         "drv_no_gpu_desc": "Il sistema non ha rilevato schede grafiche NVIDIA collegate.",
         "drv_installed_title": "Driver NVIDIA installato e attivo!",
@@ -704,11 +750,10 @@ TRANSLATIONS = {
         "drv_auth": "Richiesta privilegi di amministratore...",
         "drv_done": "Installazione completata con successo! Riavvia il computer.",
         "drv_error": "Installazione non riuscita o annullata.",
-        # Containers
         "box_header_title": "Ambiente runtime Sadeem Box",
         "box_header_desc": "Sadeem Box gestisce ed esegue pacchetti .rpm e .deb in modo sicuro senza toccare il sistema atomico.",
         "box_status_title": "Stato dell'ambiente",
-        "box_status_active": "Pronto e operativo",
+        "box_status_active": "Pronto all'uso (container Fedora Toolbox installato)",
         "box_status_init": "Inizializzazione in background...",
         "box_actions_title": "Strumenti per container e pacchetti",
         "box_btn_terminal": "Terminale del container",
@@ -722,7 +767,7 @@ TRANSLATIONS = {
         "btn_choose_package": "Scegli pacchetto...",
         "box_dialog_title": "Seleziona pacchetto software",
         "box_filter_pkgs": "Pacchetti software (*.rpm, *.deb)",
-        "box_filter_all": "Tutti i file (*)",
+        "box_filter_all": "Tutti i file (*)"
     },
     "zh": {
         "app_title": "Sadeem 系统",
@@ -730,12 +775,11 @@ TRANSLATIONS = {
         "tab_colors": "外观配色",
         "tab_drivers": "显卡驱动",
         "tab_containers": "容器与软件包",
-        # Updates
         "upd_banner_title": "系统与软件更新",
         "upd_banner_desc": "一键按需更新系统和应用，无后台流量消耗。",
         "upd_group_targets": "更新目标",
-        "upd_sys_title": "核心系统与驱动",
-        "upd_sys_desc": "原子系统镜像升级 (rpm-ostree)",
+        "upd_sys_title": "基础系统镜像更新",
+        "upd_sys_desc": "通过 rpm-ostree 进行内核与驱动的原子级升级",
         "upd_flatpak_title": "应用商店软件 (Flatpak)",
         "upd_flatpak_desc": "更新所有从 Flathub 安装的应用",
         "upd_box_title": "Sadeem Box 容器",
@@ -751,7 +795,6 @@ TRANSLATIONS = {
         "status_done": "所有更新已成功完成！",
         "status_reboot": "系统更新已准备就绪。请重启以应用更改。",
         "status_error": "更新过程中遇到警告或错误。",
-        # Colors
         "colors_presets_title": "预设颜色",
         "colors_presets_desc": "选择一种颜色并立即应用到桌面和应用程序",
         "colors_custom_title": "自定义颜色",
@@ -759,8 +802,16 @@ TRANSLATIONS = {
         "colors_current": "当前颜色：{color}",
         "colors_reset": "恢复酒红色",
         "colors_toast_applied": "强调色已成功应用",
-        "color_names": ["默认酒红", "深青绿", "蓝色", "绿色", "紫色", "橙色", "深红色", "钢灰色"],
-        # Drivers
+        "color_names": [
+            "默认酒红",
+            "深青绿",
+            "蓝色",
+            "绿色",
+            "紫色",
+            "橙色",
+            "深红色",
+            "钢灰色"
+        ],
         "drv_no_gpu_title": "未检测到 NVIDIA 显卡",
         "drv_no_gpu_desc": "系统未检测到连接的 NVIDIA 显卡。如果您的电脑使用混合显卡，请在 BIOS/UEFI 中确认已启用。",
         "drv_installed_title": "NVIDIA 驱动程序已安装并激活！",
@@ -782,11 +833,10 @@ TRANSLATIONS = {
         "drv_auth": "正在请求管理员权限并连接软件源...",
         "drv_done": "驱动程序安装成功！请重启电脑以生效。",
         "drv_error": "安装过程中出错或已被用户取消。",
-        # Containers
         "box_header_title": "Sadeem Box 容器运行环境",
         "box_header_desc": "Sadeem Box 在后台透明安全地运行，无需修改不可变的操作系统核心即可安装和运行外部 .rpm 与 .deb 软件包。",
         "box_status_title": "容器环境状态",
-        "box_status_active": "准备就绪且运行正常",
+        "box_status_active": "准备就绪（已安装 Fedora Toolbox 容器环境）",
         "box_status_init": "正在后台初始化...",
         "box_actions_title": "容器工具与软件包管理",
         "box_btn_terminal": "打开容器终端",
@@ -800,10 +850,9 @@ TRANSLATIONS = {
         "btn_choose_package": "选择软件包...",
         "box_dialog_title": "选择软件包",
         "box_filter_pkgs": "软件包 (*.rpm, *.deb)",
-        "box_filter_all": "所有文件 (*)",
+        "box_filter_all": "所有文件 (*)"
     }
 }
-
 PRESET_HEXES = [
     "#7a1c33",
     "#135d66",
@@ -833,6 +882,109 @@ def get_language():
 
 
 LANG = get_language()
+
+
+def t(key, **kwargs):
+    entry = TRANSLATIONS.get(LANG, {})
+    val = entry.get(key)
+    if val is None or val == "":
+        val = TRANSLATIONS.get("en", {}).get(key, key)
+    if kwargs and isinstance(val, str):
+        try:
+            return val.format(**kwargs)
+        except Exception:
+            return val
+    return val
+
+
+class TranslationProxy:
+    def __getitem__(self, key):
+        return t(key)
+
+    def get(self, key, default=None):
+        val = t(key)
+        return val if val != key else default
+
+
+def setup_icon_theme():
+    display = Gdk.Display.get_default()
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        search_paths = [
+            "/usr/share/icons/hicolor/scalable/apps",
+            "/usr/share/icons/hicolor/256x256/apps",
+            "/usr/share/icons/hicolor/128x128/apps",
+            "/usr/share/icons/hicolor/64x64/apps",
+            "/usr/share/icons/hicolor/48x48/apps",
+            "/usr/share/pixmaps",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "scalable", "apps")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "share", "icons", "hicolor", "256x256", "apps")),
+        ]
+        for p in search_paths:
+            if os.path.isdir(p):
+                theme.add_search_path(p)
+
+
+def safe_icon(icon_names, fallback="application-x-executable-symbolic"):
+    if isinstance(icon_names, str):
+        icon_names = [icon_names]
+    display = Gdk.Display.get_default()
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        for name in icon_names:
+            if name and theme.has_icon(name):
+                return name
+    for name in icon_names:
+        if name:
+            if os.path.isabs(name) and os.path.exists(name):
+                return name
+            for prefix in ("/usr/share/icons/hicolor/scalable/apps",
+                           "/usr/share/icons/hicolor/256x256/apps",
+                           "/usr/share/pixmaps"):
+                for ext in (".svg", ".png"):
+                    p = os.path.join(prefix, f"{name}{ext}")
+                    if os.path.exists(p):
+                        return name
+    if display:
+        theme = Gtk.IconTheme.get_for_display(display)
+        if theme.has_icon(fallback):
+            return fallback
+        for fb in ("application-x-executable-symbolic", "system-run-symbolic", "image-missing-symbolic"):
+            if theme.has_icon(fb):
+                return fb
+    return fallback
+
+
+def create_badge(icon_names, size=64, icon_size=32, fallback="application-x-executable-symbolic"):
+    badge = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+    badge.set_halign(Gtk.Align.CENTER)
+    badge.set_valign(Gtk.Align.CENTER)
+    badge.set_size_request(size, size)
+    badge.add_css_class("sadeem-gradient-badge")
+
+    icon = safe_icon(icon_names, fallback=fallback)
+    img = Gtk.Image.new_from_icon_name(icon)
+    img.set_pixel_size(icon_size)
+    img.set_halign(Gtk.Align.CENTER)
+    img.set_valign(Gtk.Align.CENTER)
+    img.set_hexpand(True)
+    img.set_vexpand(True)
+    badge.append(img)
+    return badge
+
+
+def launch_boxbuddy():
+    for cmd in [
+        ["gtk-launch", "io.github.dvlv.boxbuddyrs"],
+        ["boxbuddy-rs"],
+        ["boxbuddy"],
+        ["flatpak", "run", "io.github.dvlv.boxbuddyrs"]
+    ]:
+        try:
+            subprocess.Popen(cmd)
+            return
+        except Exception:
+            pass
 
 
 def hex_to_rgb(hex_str):
@@ -1043,10 +1195,10 @@ def launch_container_terminal():
 class SadeemSystemWindow(Adw.ApplicationWindow):
     def __init__(self, app, initial_tab="updates"):
         super().__init__(application=app)
-        self.t = TRANSLATIONS.get(LANG, TRANSLATIONS["en"])
+        self.t = TranslationProxy()
 
-        self.set_title(self.t["app_title"])
-        self.set_default_size(680, 720)
+        self.set_title(t("app_title"))
+        self.set_default_size(760, 650)
 
         # State tracking
         self.is_updating = False
@@ -1065,7 +1217,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         # HeaderBar with ViewSwitcherTitle
         self.header_bar = Adw.HeaderBar()
         self.switcher_title = Adw.ViewSwitcherTitle()
-        self.switcher_title.set_title(self.t["app_title"])
+        self.switcher_title.set_title(t("app_title"))
 
         # ViewStack
         self.view_stack = Adw.ViewStack()
@@ -1099,16 +1251,16 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         page_containers = self.build_containers_page()
 
         self.view_stack.add_titled_with_icon(
-            page_updates, "updates", self.t["tab_updates"], "software-update-available-symbolic"
+            page_updates, "updates", t("tab_updates"), safe_icon(["software-update-available-symbolic", "system-software-update-symbolic"])
         )
         self.view_stack.add_titled_with_icon(
-            page_colors, "colors", self.t["tab_colors"], "preferences-desktop-appearance-symbolic"
+            page_colors, "colors", t("tab_colors"), safe_icon(["preferences-desktop-appearance-symbolic"])
         )
         self.view_stack.add_titled_with_icon(
-            page_drivers, "drivers", self.t["tab_drivers"], "video-display-symbolic"
+            page_drivers, "drivers", t("tab_drivers"), safe_icon(["video-display-symbolic"])
         )
         self.view_stack.add_titled_with_icon(
-            page_containers, "containers", self.t["tab_containers"], "package-x-generic-symbolic"
+            page_containers, "containers", t("tab_containers"), safe_icon(["package-x-generic-symbolic"])
         )
 
         self.toolbar_view.set_content(self.view_stack)
@@ -1128,8 +1280,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         scrolled.set_vexpand(True)
 
         clamp = Adw.Clamp()
-        clamp.set_maximum_size(600)
-        clamp.set_tightening_threshold(450)
+        clamp.set_maximum_size(640)
+        clamp.set_tightening_threshold(480)
         scrolled.set_child(clamp)
 
         content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
@@ -1140,19 +1292,19 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         clamp.set_child(content)
 
         # Banner Header
-        banner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        banner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         banner_box.set_halign(Gtk.Align.CENTER)
 
-        icon_img = Gtk.Image.new_from_icon_name("software-update-available-symbolic")
-        icon_img.set_pixel_size(64)
-        banner_box.append(icon_img)
+        badge = create_badge(["software-update-available-symbolic", "system-software-update-symbolic"], size=64, icon_size=32)
+        banner_box.append(badge)
 
-        title_lbl = Gtk.Label(label=self.t["upd_banner_title"])
+        title_lbl = Gtk.Label(label=t("upd_banner_title"))
         title_lbl.add_css_class("title-1")
         title_lbl.set_wrap(True)
+        title_lbl.set_justify(Gtk.Justification.CENTER)
         banner_box.append(title_lbl)
 
-        desc_lbl = Gtk.Label(label=self.t["upd_banner_desc"])
+        desc_lbl = Gtk.Label(label=t("upd_banner_desc"))
         desc_lbl.add_css_class("dim-label")
         desc_lbl.set_wrap(True)
         desc_lbl.set_justify(Gtk.Justification.CENTER)
@@ -1161,30 +1313,30 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         # Target Switches Group
         pref_group = Adw.PreferencesGroup()
-        pref_group.set_title(self.t["upd_group_targets"])
+        pref_group.set_title(t("upd_group_targets"))
         content.append(pref_group)
 
         self.sys_row = Adw.SwitchRow()
-        self.sys_row.set_title(self.t["upd_sys_title"])
-        self.sys_row.set_subtitle(self.t["upd_sys_desc"])
+        self.sys_row.set_title(t("upd_sys_title"))
+        self.sys_row.set_subtitle(t("upd_sys_desc"))
         self.sys_row.set_active(True)
         pref_group.add(self.sys_row)
 
         self.flatpak_row = Adw.SwitchRow()
-        self.flatpak_row.set_title(self.t["upd_flatpak_title"])
-        self.flatpak_row.set_subtitle(self.t["upd_flatpak_desc"])
+        self.flatpak_row.set_title(t("upd_flatpak_title"))
+        self.flatpak_row.set_subtitle(t("upd_flatpak_desc"))
         self.flatpak_row.set_active(True)
         pref_group.add(self.flatpak_row)
 
         self.box_row = Adw.SwitchRow()
-        self.box_row.set_title(self.t["upd_box_title"])
-        self.box_row.set_subtitle(self.t["upd_box_desc"])
+        self.box_row.set_title(t("upd_box_title"))
+        self.box_row.set_subtitle(t("upd_box_desc"))
         self.box_row.set_active(True)
         pref_group.add(self.box_row)
 
         # Progress Area
         self.upd_progress_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        self.upd_status_label = Gtk.Label(label=self.t["status_ready"])
+        self.upd_status_label = Gtk.Label(label=t("status_ready"))
         self.upd_status_label.add_css_class("body")
         self.upd_status_label.set_halign(Gtk.Align.START)
         self.upd_progress_box.append(self.upd_status_label)
@@ -1197,14 +1349,14 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         # Action Buttons
         actions_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
 
-        self.btn_start_update = Gtk.Button(label=self.t["btn_start_update"])
+        self.btn_start_update = Gtk.Button(label=t("btn_start_update"))
         self.btn_start_update.add_css_class("suggested-action")
         self.btn_start_update.add_css_class("pill")
         self.btn_start_update.set_size_request(-1, 48)
         self.btn_start_update.connect("clicked", self.on_start_updates_clicked)
         actions_box.append(self.btn_start_update)
 
-        self.btn_reboot_update = Gtk.Button(label=self.t["btn_reboot_now"])
+        self.btn_reboot_update = Gtk.Button(label=t("btn_reboot_now"))
         self.btn_reboot_update.add_css_class("destructive-action")
         self.btn_reboot_update.add_css_class("pill")
         self.btn_reboot_update.set_size_request(-1, 48)
@@ -1214,7 +1366,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         content.append(actions_box)
 
         # Details Expander
-        self.upd_expander = Gtk.Expander(label=self.t["upd_details_title"])
+        self.upd_expander = Gtk.Expander(label=t("upd_details_title"))
         self.upd_expander.set_expanded(False)
 
         scrolled_text = Gtk.ScrolledWindow()
@@ -1242,7 +1394,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         def _append():
             buf = self.upd_text_view.get_buffer()
             end_iter = buf.get_end_iter()
-            buf.insert(end_iter, text + "\n")
+            buf.insert(end_iter, text + chr(10))
             mark = buf.create_mark(None, buf.get_end_iter(), False)
             self.upd_text_view.scroll_to_mark(mark, 0.05, False, 0.0, 1.0)
             return False
@@ -1261,7 +1413,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         self.is_updating = True
         self.btn_start_update.set_sensitive(False)
-        self.btn_start_update.set_label(self.t["btn_updating"])
+        self.btn_start_update.set_label(t("btn_updating"))
         self.sys_row.set_sensitive(False)
         self.flatpak_row.set_sensitive(False)
         self.box_row.set_sensitive(False)
@@ -1285,7 +1437,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 output_lines.append(line_str)
             proc.wait()
             self.append_upd_log("")
-            return proc.returncode, "\n".join(output_lines)
+            return proc.returncode, chr(10).join(output_lines)
         except Exception as e:
             err_msg = f"Error executing {cmd[0]}: {str(e)}"
             self.append_upd_log(err_msg)
@@ -1306,25 +1458,25 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         for task in tasks:
             if task == "sys":
-                GLib.idle_add(lambda: self.upd_status_label.set_text(self.t["status_sys"]))
+                GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_sys")))
                 GLib.idle_add(lambda s=step, tot=total: self.upd_progress_bar.set_fraction(s / tot))
                 code, out = self.run_upd_command(["pkexec", "rpm-ostree", "upgrade"], "rpm-ostree upgrade")
                 if code == 0:
                     out_lower = out.lower()
-                    if "upgraded:" in out_lower or "changes:" in out_lower or "staged" in out_lower:
+                    if "upgraded:" in out_lower or "changes:" in out_lower or "staged" in out_lower or "freed" in out_lower or "pinned" in out_lower or "installed" in out_lower:
                         self.reboot_required = True
                 else:
                     overall_success = False
 
             elif task == "flatpak":
-                GLib.idle_add(lambda: self.upd_status_label.set_text(self.t["status_flatpak"]))
+                GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_flatpak")))
                 GLib.idle_add(lambda s=step, tot=total: self.upd_progress_bar.set_fraction(s / tot))
                 code, out = self.run_upd_command(["flatpak", "update", "-y", "--noninteractive"], "flatpak update")
                 if code != 0:
                     overall_success = False
 
             elif task == "box":
-                GLib.idle_add(lambda: self.upd_status_label.set_text(self.t["status_box"]))
+                GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_box")))
                 GLib.idle_add(lambda s=step, tot=total: self.upd_progress_bar.set_fraction(s / tot))
                 code, out = self.run_upd_command(["distrobox", "upgrade", "sadeem-box"], "distrobox upgrade sadeem-box")
                 if code != 0:
@@ -1339,42 +1491,54 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.is_updating = False
         self.upd_progress_bar.set_fraction(1.0)
         self.btn_start_update.set_sensitive(True)
-        self.btn_start_update.set_label(self.t["btn_start_update"])
+        self.btn_start_update.set_label(t("btn_start_update"))
         self.sys_row.set_sensitive(True)
         self.flatpak_row.set_sensitive(True)
         self.check_box_availability()
 
         if self.reboot_required:
-            self.upd_status_label.set_text(self.t["status_reboot"])
+            self.upd_status_label.set_text(t("status_reboot"))
             self.btn_reboot_update.set_visible(True)
         elif success:
-            self.upd_status_label.set_text(self.t["status_done"])
+            self.upd_status_label.set_text(t("status_done"))
         else:
-            self.upd_status_label.set_text(self.t["status_error"])
+            self.upd_status_label.set_text(t("status_error"))
         return False
 
     # =========================================================================
     # TAB 2: COLORS & THEME
     # =========================================================================
     def build_colors_page(self):
-        page = Adw.PreferencesPage()
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
 
-        # Preset Colors Group
+        clamp = Adw.Clamp()
+        clamp.set_maximum_size(640)
+        clamp.set_tightening_threshold(480)
+        scrolled.set_child(clamp)
+
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        content.set_margin_top(20)
+        content.set_margin_bottom(24)
+        content.set_margin_start(20)
+        content.set_margin_end(20)
+        clamp.set_child(content)
+
+        # Preset Colors Group - Clean group title without duplicate description
         preset_group = Adw.PreferencesGroup(
-            title=self.t["colors_presets_title"],
-            description=self.t["colors_presets_desc"]
+            title=t("colors_presets_title")
         )
-        page.add(preset_group)
+        content.append(preset_group)
 
         # Header reset row
         reset_row = Adw.ActionRow(
-            title=self.t["colors_presets_title"],
-            subtitle=self.t["colors_presets_desc"]
+            title=t("colors_presets_title"),
+            subtitle=t("colors_presets_desc")
         )
         self.restore_btn = Gtk.Button()
         restore_content = Adw.ButtonContent(
-            icon_name="edit-undo-symbolic",
-            label=self.t["colors_reset"]
+            icon_name=safe_icon(["edit-undo-symbolic", "view-refresh-symbolic"]),
+            label=t("colors_reset")
         )
         self.restore_btn.set_child(restore_content)
         self.restore_btn.add_css_class("flat")
@@ -1391,7 +1555,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             margin_bottom=8
         )
         self.preset_buttons = []
-        color_names = self.t.get("color_names", [])
+        color_names = t("color_names") if isinstance(t("color_names"), list) else []
         for i, hex_code in enumerate(PRESET_HEXES):
             name = color_names[i] if i < len(color_names) else hex_code
             btn = Gtk.Button()
@@ -1399,7 +1563,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             btn.add_css_class("color-circle")
             btn.add_css_class(f"preset-color-{i}")
 
-            icon = Gtk.Image.new_from_icon_name("object-select-symbolic")
+            icon = Gtk.Image.new_from_icon_name(safe_icon(["object-select-symbolic", "emblem-ok-symbolic"]))
             icon.set_visible(False)
             icon.add_css_class("check-icon")
             btn.set_child(icon)
@@ -1412,12 +1576,12 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         preset_group.add(preset_row)
 
         # Custom Color Group
-        custom_group = Adw.PreferencesGroup(title=self.t["colors_custom_title"])
-        page.add(custom_group)
+        custom_group = Adw.PreferencesGroup(title=t("colors_custom_title"))
+        content.append(custom_group)
 
         self.custom_row = Adw.ActionRow(
-            title=self.t["colors_custom_desc"],
-            subtitle=self.t["colors_current"].format(color="#7a1c33")
+            title=t("colors_custom_desc"),
+            subtitle=t("colors_current", color="#7A1C33")
         )
         self.color_dialog = Gtk.ColorDialog.new()
         self.color_dialog.set_with_alpha(False)
@@ -1431,10 +1595,19 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         initial_color = self.detect_current_color()
         self.set_color(initial_color, is_init=True)
 
-        return page
+        return scrolled
 
     def setup_color_css(self):
         palette_css = """
+        .sadeem-gradient-badge {
+            background: linear-gradient(135deg, #7a1c33 0%, #115e59 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 9999px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .sadeem-gradient-badge image {
+            color: #ffffff;
+        }
         .color-circle {
             min-width: 38px;
             min-height: 38px;
@@ -1511,7 +1684,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         is_burgundy = (hex_norm.lower() == "#7a1c33")
         self.restore_btn.set_sensitive(not is_burgundy)
-        self.custom_row.set_subtitle(self.t["colors_current"].format(color=hex_norm))
+        self.custom_row.set_subtitle(t("colors_current", color=hex_norm.upper()))
 
         self._color_updating = True
         rgba = Gdk.RGBA()
@@ -1538,7 +1711,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         if not is_init:
             self.write_theme_files(pal)
-            self.toast_overlay.add_toast(Adw.Toast.new(self.t["colors_toast_applied"]))
+            self.toast_overlay.add_toast(Adw.Toast.new(t("colors_toast_applied")))
 
     def write_theme_files(self, pal):
         hex_val = pal["hex"]
@@ -1646,26 +1819,26 @@ stage {{
         scrolled.set_vexpand(True)
 
         clamp = Adw.Clamp()
-        clamp.set_maximum_size(700)
-        clamp.set_tightening_threshold(520)
+        clamp.set_maximum_size(640)
+        clamp.set_tightening_threshold(480)
         scrolled.set_child(clamp)
 
         # Case 1: No NVIDIA GPU
         if not gpus:
             status = Adw.StatusPage()
-            status.set_icon_name("video-display-symbolic")
-            status.set_title(self.t["drv_no_gpu_title"])
-            status.set_description(self.t["drv_no_gpu_desc"])
+            status.set_icon_name(safe_icon(["video-display-symbolic", "computer-symbolic"]))
+            status.set_title(t("drv_no_gpu_title"))
+            status.set_description(t("drv_no_gpu_desc"))
             clamp.set_child(status)
             return scrolled
 
         # Case 2: Driver already active
         if is_driver_installed():
             status = Adw.StatusPage()
-            status.set_icon_name("emblem-ok-symbolic")
-            status.set_title(self.t["drv_installed_title"])
+            status.set_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"]))
+            status.set_title(t("drv_installed_title"))
             detected_names = ", ".join([g["raw_name"] for g in gpus])
-            status.set_description(self.t["drv_installed_desc"].format(card_names=detected_names))
+            status.set_description(t("drv_installed_desc", card_names=detected_names))
             clamp.set_child(status)
             return scrolled
 
@@ -1675,67 +1848,71 @@ stage {{
 
         if category == "unsupported":
             status = Adw.StatusPage()
-            status.set_icon_name("dialog-warning-symbolic")
-            status.set_title(self.t["drv_unsupported_title"])
-            status.set_description(self.t["drv_unsupported_desc"])
+            status.set_icon_name(safe_icon(["dialog-warning-symbolic"]))
+            status.set_title(t("drv_unsupported_title"))
+            status.set_description(t("drv_unsupported_desc"))
             clamp.set_child(status)
             return scrolled
 
         # Case 4: Supported GPU ready for installation
-        page = Adw.PreferencesPage()
-        clamp.set_child(page)
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        content.set_margin_top(20)
+        content.set_margin_bottom(24)
+        content.set_margin_start(20)
+        content.set_margin_end(20)
+        clamp.set_child(content)
 
         # Hardware info group
-        hw_group = Adw.PreferencesGroup(title=self.t["drv_hw_title"])
-        page.add(hw_group)
+        hw_group = Adw.PreferencesGroup(title=t("drv_hw_title"))
+        content.append(hw_group)
 
         row_card = Adw.ActionRow(
-            title=self.t["drv_card_title"],
+            title=t("drv_card_title"),
             subtitle=f"{card_name} [PCI: {primary_gpu['device_id']}]"
         )
-        row_card.add_prefix(Gtk.Image.new_from_icon_name("video-display-symbolic"))
+        row_card.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic"])))
         hw_group.add(row_card)
 
         row_driver = Adw.ActionRow(
-            title=self.t["drv_recommended_title"],
+            title=t("drv_recommended_title"),
             subtitle=cat_info.get("driver_package", "akmod-nvidia")
         )
-        row_driver.add_prefix(Gtk.Image.new_from_icon_name("package-x-generic-symbolic"))
+        row_driver.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["package-x-generic-symbolic"])))
         hw_group.add(row_driver)
 
         # Options group
         opt_group = Adw.PreferencesGroup()
-        page.add(opt_group)
+        content.append(opt_group)
 
         self.cuda_switch = Adw.SwitchRow()
-        self.cuda_switch.set_title(self.t["drv_cuda_title"])
-        self.cuda_switch.set_subtitle(self.t["drv_cuda_desc"])
+        self.cuda_switch.set_title(t("drv_cuda_title"))
+        self.cuda_switch.set_subtitle(t("drv_cuda_desc"))
         self.cuda_switch.set_active(True)
         opt_group.add(self.cuda_switch)
 
         # Secure boot group
         if sb_enabled:
-            sb_group = Adw.PreferencesGroup(title=self.t["drv_sb_title"])
-            page.add(sb_group)
+            sb_group = Adw.PreferencesGroup(title=t("drv_sb_title"))
+            content.append(sb_group)
 
             sb_row = Adw.ActionRow(
-                title=self.t["drv_sb_title"],
-                subtitle=self.t["drv_sb_desc"]
+                title=t("drv_sb_title"),
+                subtitle=t("drv_sb_desc")
             )
-            sb_row.add_prefix(Gtk.Image.new_from_icon_name("channel-secure-symbolic"))
+            sb_row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["channel-secure-symbolic", "security-high-symbolic"])))
             sb_group.add(sb_row)
 
             self.mok_password_row = Adw.PasswordEntryRow()
-            self.mok_password_row.set_title(self.t["drv_mok_pass"])
+            self.mok_password_row.set_title(t("drv_mok_pass"))
             sb_group.add(self.mok_password_row)
         else:
             self.mok_password_row = None
 
         # Action group
         action_group = Adw.PreferencesGroup()
-        page.add(action_group)
+        content.append(action_group)
 
-        self.btn_install_drivers = Gtk.Button(label=self.t["btn_install_drivers"])
+        self.btn_install_drivers = Gtk.Button(label=t("btn_install_drivers"))
         self.btn_install_drivers.add_css_class("suggested-action")
         self.btn_install_drivers.add_css_class("pill")
         self.btn_install_drivers.set_size_request(-1, 50)
@@ -1755,7 +1932,7 @@ stage {{
         self.drv_progress_bar.set_pulse_step(0.1)
         self.drv_progress_box.append(self.drv_progress_bar)
 
-        self.lbl_drv_status = Gtk.Label(label=self.t["drv_preparing"])
+        self.lbl_drv_status = Gtk.Label(label=t("drv_preparing"))
         self.lbl_drv_status.set_halign(Gtk.Align.START)
         self.lbl_drv_status.add_css_class("dim-label")
         self.drv_progress_box.append(self.lbl_drv_status)
@@ -1778,7 +1955,7 @@ stage {{
         log_scrolled.set_child(self.drv_text_view)
 
         # Reboot Button
-        self.btn_reboot_drivers = Gtk.Button(label=self.t["btn_reboot_drivers"])
+        self.btn_reboot_drivers = Gtk.Button(label=t("btn_reboot_drivers"))
         self.btn_reboot_drivers.add_css_class("destructive-action")
         self.btn_reboot_drivers.add_css_class("pill")
         self.btn_reboot_drivers.set_size_request(-1, 50)
@@ -1792,16 +1969,15 @@ stage {{
         end_iter = self.drv_text_buffer.get_end_iter()
         self.drv_text_buffer.insert(end_iter, text)
         mark = self.drv_text_buffer.create_mark(None, self.drv_text_buffer.get_end_iter(), False)
-        self.drv_text_view.scroll_to_mark(mark, 0.05, True, 0.0, 1.0)
+        self.drv_text_view.scroll_to_mark(mark, 0.05, False, 0.0, 1.0)
 
     def on_install_drivers_clicked(self, cat_info, sb_enabled):
         mok_pass = ""
-        if self.mok_password_row:
+        if sb_enabled and self.mok_password_row:
             mok_pass = self.mok_password_row.get_text().strip()
             if not mok_pass:
-                toast = Adw.Toast.new(self.t["drv_mok_warn"])
+                toast = Adw.Toast.new(t("drv_mok_warn"))
                 self.toast_overlay.add_toast(toast)
-                self.mok_password_row.grab_focus()
                 return
 
         self.btn_install_drivers.set_sensitive(False)
@@ -1810,40 +1986,37 @@ stage {{
             self.mok_password_row.set_sensitive(False)
 
         self.drv_progress_box.set_visible(True)
-        self.drv_pulse_timer = GLib.timeout_add(150, lambda: self.drv_progress_bar.pulse() or True)
+        self.drv_text_buffer.set_text("")
 
-        packages = []
-        driver_pkg = cat_info.get("driver_package", "akmod-nvidia")
-        userspace_pkg = cat_info.get("userspace_package", "xorg-x11-drv-nvidia")
-        packages.extend([driver_pkg, userspace_pkg])
-
-        if self.cuda_switch.get_active():
-            cuda_pkg = cat_info.get("cuda_package", "xorg-x11-drv-nvidia-cuda")
-            packages.append(cuda_pkg)
-
+        self.drv_pulse_timer = GLib.timeout_add(100, self._pulse_drv_progress)
         threading.Thread(
-            target=self.run_drv_installation,
-            args=(packages, mok_pass, sb_enabled),
+            target=self.run_driver_install_thread,
+            args=(cat_info, sb_enabled, mok_pass),
             daemon=True
         ).start()
 
-    def run_drv_installation(self, packages, mok_pass, sb_enabled):
-        pkg_str = " ".join(packages)
-        script_commands = [
-            "set -euo pipefail",
-            "echo '=================================================='",
-            "echo ' Starting NVIDIA Driver Setup for Sadeem '",
-            "echo '=================================================='",
-        ]
+    def _pulse_drv_progress(self):
+        self.drv_progress_bar.pulse()
+        return True
 
-        if sb_enabled and mok_pass:
+    def run_driver_install_thread(self, cat_info, sb_enabled, mok_pass):
+        pkgs = [cat_info.get("driver_package", "akmod-nvidia")]
+        if cat_info.get("userspace_package"):
+            pkgs.append(cat_info["userspace_package"])
+        if self.cuda_switch.get_active() and cat_info.get("cuda_package"):
+            pkgs.append(cat_info["cuda_package"])
+
+        pkg_str = " ".join(pkgs)
+        script_commands = ["set -e"]
+
+        if sb_enabled:
             script_commands.extend([
                 "echo '[1/3] Checking and preparing Secure Boot signing key...'",
                 "if [ ! -f /etc/pki/akmods/certs/public_key.der ]; then",
                 "    kmodgenca -a || true",
                 "fi",
                 "if [ -f /etc/pki/akmods/certs/public_key.der ]; then",
-                f"    printf '%s\\n%s\\n' '{mok_pass}' '{mok_pass}' | mokutil --import /etc/pki/akmods/certs/public_key.der || true",
+                f"    printf '%s\n%s\n' '{mok_pass}' '{mok_pass}' | mokutil --import /etc/pki/akmods/certs/public_key.der || true",
                 "    echo '--> MOK enrollment request prepared successfully.'",
                 "fi",
                 "echo '[2/3] Downloading and layering driver packages via rpm-ostree...'"
@@ -1859,10 +2032,10 @@ stage {{
             "echo '=================================================='"
         ])
 
-        full_script = "\n".join(script_commands)
+        full_script = chr(10).join(script_commands)
 
         try:
-            GLib.idle_add(self.lbl_drv_status.set_text, self.t["drv_auth"])
+            GLib.idle_add(self.lbl_drv_status.set_text, t("drv_auth"))
             proc = subprocess.Popen(
                 ["pkexec", "/usr/bin/bash", "-c", full_script],
                 stdout=subprocess.PIPE,
@@ -1875,7 +2048,7 @@ stage {{
             rc = proc.wait()
             GLib.idle_add(self.on_drv_finished, rc)
         except Exception as e:
-            GLib.idle_add(self.append_drv_log, f"\n[Error]: {e}\n")
+            GLib.idle_add(self.append_drv_log, "\n[Error]: " + str(e) + "\n")
             GLib.idle_add(self.on_drv_finished, 1)
 
     def on_drv_finished(self, rc):
@@ -1885,14 +2058,14 @@ stage {{
 
         if rc == 0:
             self.drv_progress_bar.set_fraction(1.0)
-            self.lbl_drv_status.set_text(self.t["drv_done"])
+            self.lbl_drv_status.set_text(t("drv_done"))
             self.btn_install_drivers.set_visible(False)
             self.btn_reboot_drivers.set_visible(True)
-            toast = Adw.Toast.new(self.t["drv_done"])
+            toast = Adw.Toast.new(t("drv_done"))
             self.toast_overlay.add_toast(toast)
         else:
             self.drv_progress_bar.set_fraction(0.0)
-            self.lbl_drv_status.set_text(self.t["drv_error"])
+            self.lbl_drv_status.set_text(t("drv_error"))
             self.btn_install_drivers.set_sensitive(True)
             self.cuda_switch.set_sensitive(True)
             if self.mok_password_row:
@@ -1906,7 +2079,7 @@ stage {{
         scrolled.set_vexpand(True)
 
         clamp = Adw.Clamp()
-        clamp.set_maximum_size(620)
+        clamp.set_maximum_size(640)
         clamp.set_tightening_threshold(480)
         scrolled.set_child(clamp)
 
@@ -1918,19 +2091,18 @@ stage {{
         clamp.set_child(content)
 
         # Header Banner
-        banner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        banner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         banner_box.set_halign(Gtk.Align.CENTER)
 
-        icon_img = Gtk.Image.new_from_icon_name("package-x-generic-symbolic")
-        icon_img.set_pixel_size(64)
-        banner_box.append(icon_img)
+        badge = create_badge(["package-x-generic-symbolic", "system-run-symbolic"], size=64, icon_size=32)
+        banner_box.append(badge)
 
-        title_lbl = Gtk.Label(label=self.t["box_header_title"])
+        title_lbl = Gtk.Label(label=t("box_header_title"))
         title_lbl.add_css_class("title-1")
         title_lbl.set_wrap(True)
         banner_box.append(title_lbl)
 
-        desc_lbl = Gtk.Label(label=self.t["box_header_desc"])
+        desc_lbl = Gtk.Label(label=t("box_header_desc"))
         desc_lbl.add_css_class("dim-label")
         desc_lbl.set_wrap(True)
         desc_lbl.set_justify(Gtk.Justification.CENTER)
@@ -1942,25 +2114,26 @@ stage {{
         content.append(status_group)
 
         self.box_status_row = Adw.ActionRow(
-            title=self.t["box_status_title"],
-            subtitle=self.t["box_status_init"]
+            title=t("box_status_title"),
+            subtitle=t("box_status_init")
         )
-        self.box_status_icon = Gtk.Image.new_from_icon_name("content-loading-symbolic")
+        self.box_status_icon = Gtk.Image.new_from_icon_name(safe_icon(["content-loading-symbolic", "process-working-symbolic"]))
         self.box_status_row.add_prefix(self.box_status_icon)
         status_group.add(self.box_status_row)
 
         # Actions Group
-        actions_group = Adw.PreferencesGroup(title=self.t["box_actions_title"])
+        actions_group = Adw.PreferencesGroup(title=t("box_actions_title"))
         content.append(actions_group)
 
         # Row 1: Container Terminal
         row_term = Adw.ActionRow(
-            title=self.t["box_btn_terminal"],
-            subtitle=self.t["box_btn_terminal_desc"]
+            title=t("box_btn_terminal"),
+            subtitle=t("box_btn_terminal_desc")
         )
-        row_term.add_prefix(Gtk.Image.new_from_icon_name("utilities-terminal-symbolic"))
-        btn_term = Gtk.Button(label=self.t["btn_open_terminal"])
+        row_term.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["utilities-terminal-symbolic", "terminal-symbolic"])))
+        btn_term = Gtk.Button(label=t("btn_open_terminal"))
         btn_term.set_valign(Gtk.Align.CENTER)
+        btn_term.set_size_request(165, -1)
         btn_term.add_css_class("pill")
         btn_term.connect("clicked", lambda b: launch_container_terminal())
         row_term.add_suffix(btn_term)
@@ -1968,25 +2141,27 @@ stage {{
 
         # Row 2: BoxBuddy
         row_buddy = Adw.ActionRow(
-            title=self.t["box_btn_boxbuddy"],
-            subtitle=self.t["box_btn_boxbuddy_desc"]
+            title=t("box_btn_boxbuddy"),
+            subtitle=t("box_btn_boxbuddy_desc")
         )
-        row_buddy.add_prefix(Gtk.Image.new_from_icon_name("system-run-symbolic"))
-        btn_buddy = Gtk.Button(label=self.t["btn_open_boxbuddy"])
+        row_buddy.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-run-symbolic", "application-x-executable-symbolic"])))
+        btn_buddy = Gtk.Button(label=t("btn_open_boxbuddy"))
         btn_buddy.set_valign(Gtk.Align.CENTER)
+        btn_buddy.set_size_request(165, -1)
         btn_buddy.add_css_class("pill")
-        btn_buddy.connect("clicked", lambda b: subprocess.Popen(["flatpak", "run", "io.github.dvlv.boxbuddyrs"]))
+        btn_buddy.connect("clicked", lambda b: launch_boxbuddy())
         row_buddy.add_suffix(btn_buddy)
         actions_group.add(row_buddy)
 
         # Row 3: Manual Package Installer
         row_pkg = Adw.ActionRow(
-            title=self.t["box_btn_install"],
-            subtitle=self.t["box_btn_install_desc"]
+            title=t("box_btn_install"),
+            subtitle=t("box_btn_install_desc")
         )
-        row_pkg.add_prefix(Gtk.Image.new_from_icon_name("document-open-symbolic"))
-        btn_pkg = Gtk.Button(label=self.t["btn_choose_package"])
+        row_pkg.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["document-open-symbolic", "folder-open-symbolic"])))
+        btn_pkg = Gtk.Button(label=t("btn_choose_package"))
         btn_pkg.set_valign(Gtk.Align.CENTER)
+        btn_pkg.set_size_request(165, -1)
         btn_pkg.add_css_class("pill")
         btn_pkg.add_css_class("suggested-action")
         btn_pkg.connect("clicked", self.on_choose_package_clicked)
@@ -1998,17 +2173,17 @@ stage {{
     def on_choose_package_clicked(self, btn):
         try:
             dialog = Gtk.FileDialog.new()
-            dialog.set_title(self.t["box_dialog_title"])
+            dialog.set_title(t("box_dialog_title"))
 
             filters = Gio.ListStore.new(Gtk.FileFilter)
             f_pkg = Gtk.FileFilter.new()
-            f_pkg.set_name(self.t["box_filter_pkgs"])
+            f_pkg.set_name(t("box_filter_pkgs"))
             f_pkg.add_pattern("*.rpm")
             f_pkg.add_pattern("*.deb")
             filters.append(f_pkg)
 
             f_all = Gtk.FileFilter.new()
-            f_all.set_name(self.t["box_filter_all"])
+            f_all.set_name(t("box_filter_all"))
             f_all.add_pattern("*")
             filters.append(f_all)
 
@@ -2030,7 +2205,7 @@ stage {{
             # Fallback
             try:
                 res = subprocess.run(
-                    ["zenity", "--file-selection", "--title=" + self.t["box_dialog_title"], "--file-filter=Packages | *.rpm *.deb", "--file-filter=All | *"],
+                    ["zenity", "--file-selection", "--title=" + t("box_dialog_title"), "--file-filter=Packages | *.rpm *.deb", "--file-filter=All | *"],
                     capture_output=True, text=True
                 )
                 if res.returncode == 0 and res.stdout.strip():
@@ -2040,26 +2215,35 @@ stage {{
 
     def check_box_availability(self):
         def _check():
+            has_box = False
             try:
-                res = subprocess.run(["distrobox", "list"], capture_output=True, text=True, timeout=5)
-                has_box = "sadeem-box" in res.stdout
+                res = subprocess.run(
+                    ["distrobox", "list", "--no-color"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=False
+                )
+                if res.returncode == 0 and "sadeem-box" in res.stdout:
+                    has_box = True
             except Exception:
                 has_box = False
 
             def _update():
                 if hasattr(self, "box_row") and self.box_row:
-                    if not has_box:
-                        self.box_row.set_active(False)
-                        self.box_row.set_sensitive(False)
+                    self.box_row.set_sensitive(True)
+                    self.box_row.set_active(has_box)
                 if hasattr(self, "box_status_row") and self.box_status_row:
                     if has_box:
-                        self.box_status_row.set_subtitle(self.t["box_status_active"])
-                        self.box_status_icon.set_from_icon_name("emblem-ok-symbolic")
+                        self.box_status_row.set_subtitle(t("box_status_active"))
+                        self.box_status_icon.set_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"]))
                     else:
-                        self.box_status_row.set_subtitle(self.t["box_status_init"])
-                        self.box_status_icon.set_from_icon_name("content-loading-symbolic")
+                        self.box_status_row.set_subtitle(t("box_status_init"))
+                        self.box_status_icon.set_from_icon_name(safe_icon(["content-loading-symbolic", "process-working-symbolic"]))
                 return False
+
             GLib.idle_add(_update)
+
         threading.Thread(target=_check, daemon=True).start()
 
 
@@ -2093,8 +2277,11 @@ class SadeemSystemApp(Adw.Application):
                 return 0
             tab = "drivers"
 
+        setup_icon_theme()
         if LANG in ("ar", "ur"):
             Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
+        else:
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.LTR)
 
         if not self.window:
             self.window = SadeemSystemWindow(self, initial_tab=tab)
