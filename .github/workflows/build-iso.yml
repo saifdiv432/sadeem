@@ -1,0 +1,66 @@
+name: build-iso
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  iso:
+    name: Build ISO
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free build disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache
+          echo "Disk space after cleanup:"
+          df -h
+
+      - name: Install BlueBuild CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/blue-build/cli/main/install.sh | sudo bash
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          sudo mkdir -p /root/.docker
+          sudo cp ~/.docker/config.json /root/.docker/config.json
+          sudo mkdir -p /root/.config/containers
+          sudo cp ~/.docker/config.json /root/.config/containers/auth.json
+
+      - name: Generate ISO
+        run: |
+          mkdir -p build-output
+          sudo bluebuild generate-iso \
+            --output-dir build-output \
+            --iso-name sadeem-45.iso \
+            --variant silverblue \
+            image "ghcr.io/saifeldinosama9677-ctrl/sadeem:45"
+          sudo chmod -R 777 build-output
+
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sadeem-45-iso
+          path: |
+            build-output/*.iso
+            build-output/*-CHECKSUM
+          retention-days: 7
+          if-no-files-found: error
