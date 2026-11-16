@@ -238,7 +238,8 @@ modules:
         fi
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
         dconf update || true
-        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager || true
+        mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping || true
 
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs

@@ -1,0 +1,9 @@
+[Unit]
+Description=Sadeem Automatic Disk & Runtime Cleanup
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sadeem-housekeeping
+Nice=19
+IOSchedulingClass=idle

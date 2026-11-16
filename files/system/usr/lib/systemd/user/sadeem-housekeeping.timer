@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly and Post-Boot Cleanup of Unused Runtimes and Caches
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=7d
+Persistent=true
+
+[Install]
+WantedBy=timers.target

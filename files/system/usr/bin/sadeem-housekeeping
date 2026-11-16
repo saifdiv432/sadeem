@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 1. إزالة مكتبات Flatpak غير المستخدمة (تعمل محلياً دون إنترنت)
+if command -v flatpak >/dev/null 2>&1; then
+  flatpak uninstall --unused -y --noninteractive >/dev/null 2>&1 || true
+fi
+
+# 2. تنظيف كاش dnf داخل حاوية sadeem-box فقط إذا كانت الحاوية قيد التشغيل حالياً (دون إيقاظها إن كانت متوقفة)
+if command -v podman >/dev/null 2>&1; then
+  if podman ps --format '{{.Names}}' 2>/dev/null | grep -qx 'sadeem-box'; then
+    podman exec sadeem-box dnf clean all >/dev/null 2>&1 || true
+  fi
+fi

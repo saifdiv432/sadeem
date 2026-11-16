@@ -63,6 +63,8 @@ TRANSLATIONS = {
         "status_sys": "Updating core system (rpm-ostree)...",
         "status_flatpak": "Updating Store applications (Flatpak)...",
         "status_box": "Updating Sadeem Box container...",
+        "status_flatpak_cleanup": "Cleaning up unused store runtimes...",
+        "status_box_cleanup": "Cleaning up temporary container cache...",
         "status_done": "System and all applications are up to date.",
         "status_reboot": "Update ready to apply. Restart your device to complete installation.",
         "status_error": "Update process encountered warnings or errors.",
@@ -164,6 +166,8 @@ TRANSLATIONS = {
         "status_sys": "جاري فحص وتحديث النظام الأساسي...",
         "status_flatpak": "جاري تحديث تطبيقات المتجر (Flatpak)...",
         "status_box": "جاري تحديث حاوية سديم (Sadeem Box)...",
+        "status_flatpak_cleanup": "جارٍ تنظيف مكتبات المتجر غير المستخدمة...",
+        "status_box_cleanup": "جارٍ تنظيف ملفات التثبيت المؤقتة...",
         "status_done": "النظام وجميع التطبيقات محدّثة بالكامل.",
         "status_reboot": "التحديث جاهز للتطبيق. أعد تشغيل الجهاز لإكمال التثبيت.",
         "status_error": "انتهت العملية مع بعض التنبيهات أو الأخطاء.",
@@ -265,6 +269,8 @@ TRANSLATIONS = {
         "status_sys": "Mise à jour du système de base (rpm-ostree)...",
         "status_flatpak": "Mise à jour des applications Flatpak...",
         "status_box": "Mise à jour du conteneur Sadeem Box...",
+        "status_flatpak_cleanup": "Nettoyage des bibliothèques de runtime inutilisées...",
+        "status_box_cleanup": "Nettoyage du cache temporaire du conteneur...",
         "status_done": "Le système et toutes les applications sont entièrement à jour.",
         "status_reboot": "Mise à jour prête à être appliquée. Redémarrez votre appareil pour terminer l'installation.",
         "status_error": "Le processus s'est terminé avec des erreurs.",
@@ -366,6 +372,8 @@ TRANSLATIONS = {
         "status_sys": "Actualizando sistema base (rpm-ostree)...",
         "status_flatpak": "Actualizando aplicaciones Flatpak...",
         "status_box": "Actualizando contenedor Sadeem Box...",
+        "status_flatpak_cleanup": "Limpiando entornos de ejecución no utilizados...",
+        "status_box_cleanup": "Limpiando la caché temporal del contenedor...",
         "status_done": "El sistema y todas las aplicaciones están completamente actualizados.",
         "status_reboot": "Actualización lista para aplicar. Reinicie su dispositivo para completar la instalación.",
         "status_error": "El proceso finalizó con advertencias o errores.",
@@ -467,6 +475,8 @@ TRANSLATIONS = {
         "status_sys": "Basissystem wird aktualisiert (rpm-ostree)...",
         "status_flatpak": "Flatpak-Anwendungen werden aktualisiert...",
         "status_box": "Sadeem Box Container wird aktualisiert...",
+        "status_flatpak_cleanup": "Bereinigung ungenutzter Laufzeitumgebungen...",
+        "status_box_cleanup": "Bereinigung des temporären Container-Caches...",
         "status_done": "Das System und alle Anwendungen sind auf dem neuesten Stand.",
         "status_reboot": "Aktualisierung bereit. Starten Sie Ihr Gerät neu, um die Installation abzuschließen.",
         "status_error": "Der Vorgang endete mit Warnungen oder Fehlern.",
@@ -568,6 +578,8 @@ TRANSLATIONS = {
         "status_sys": "Çekirdek sistem güncelleniyor (rpm-ostree)...",
         "status_flatpak": "Flatpak uygulamaları güncelleniyor...",
         "status_box": "Sadeem Box kapsayıcısı güncelleniyor...",
+        "status_flatpak_cleanup": "Kullanılmayan mağaza çalışma zamanları temizleniyor...",
+        "status_box_cleanup": "Geçici kapsayıcı önbelleği temizleniyor...",
         "status_done": "Sistem ve tüm uygulamalar tamamen güncel.",
         "status_reboot": "Güncelleme uygulanmaya hazır. Yüklemeyi tamamlamak için cihazınızı yeniden başlatın.",
         "status_error": "İşlem bazı hatalarla tamamlandı.",
@@ -669,6 +681,8 @@ TRANSLATIONS = {
         "status_sys": "Обновление базовой системы (rpm-ostree)...",
         "status_flatpak": "Обновление приложений Flatpak...",
         "status_box": "Обновление контейнера Sadeem Box...",
+        "status_flatpak_cleanup": "Очистка неиспользуемых библиотек времени выполнения...",
+        "status_box_cleanup": "Очистка временного кэша контейнера...",
         "status_done": "Система и все приложения полностью обновлены.",
         "status_reboot": "Обновление готово к применению. Перезагрузите устройство для завершения установки.",
         "status_error": "Процесс завершился с предупреждениями или ошибками.",
@@ -770,6 +784,8 @@ TRANSLATIONS = {
         "status_sys": "Atualizando sistema básico (rpm-ostree)...",
         "status_flatpak": "Atualizando aplicativos Flatpak...",
         "status_box": "Atualizando contêiner Sadeem Box...",
+        "status_flatpak_cleanup": "A limpar ambientes de execução não utilizados...",
+        "status_box_cleanup": "A limpar a cache temporária do contentor...",
         "status_done": "O sistema e todas as aplicações estão totalmente atualizados.",
         "status_reboot": "Atualização pronta para aplicar. Reinicie o seu dispositivo para concluir a instalação.",
         "status_error": "O processo foi concluído com avisos ou erros.",
@@ -871,6 +887,8 @@ TRANSLATIONS = {
         "status_sys": "Aggiornamento del sistema di base (rpm-ostree)...",
         "status_flatpak": "Aggiornamento delle applicazioni Flatpak...",
         "status_box": "Aggiornamento del container Sadeem Box...",
+        "status_flatpak_cleanup": "Pulizia dei runtime non utilizzati in corso...",
+        "status_box_cleanup": "Pulizia della cache temporanea del container in corso...",
         "status_done": "Il sistema e tutte le applicazioni sono completamente aggiornati.",
         "status_reboot": "Aggiornamento pronto per essere applicato. Riavvia il dispositivo per completare l'installazione.",
         "status_error": "Il processo si è concluso con avvisi o errori.",
@@ -972,6 +990,8 @@ TRANSLATIONS = {
         "status_sys": "正在更新核心系统 (rpm-ostree)...",
         "status_flatpak": "正在更新应用商店软件 (Flatpak)...",
         "status_box": "正在更新 Sadeem Box 容器...",
+        "status_flatpak_cleanup": "正在清理未使用的应用运行库...",
+        "status_box_cleanup": "正在清理容器临时安装缓存...",
         "status_done": "系统和所有应用程序已全部是最新版本。",
         "status_reboot": "更新已准备好应用。请重启设备以完成安装。",
         "status_error": "更新过程中遇到警告或错误。",
@@ -2097,7 +2117,15 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     idx,
                     total
                 )
-                if code != 0:
+                if code == 0:
+                    GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_flatpak_cleanup")))
+                    self.run_upd_command(
+                        ["flatpak", "uninstall", "--unused", "-y", "--noninteractive"],
+                        "flatpak cleanup",
+                        idx,
+                        total
+                    )
+                else:
                     overall_success = False
 
             elif task == "box":
@@ -2108,7 +2136,15 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     idx,
                     total
                 )
-                if code != 0:
+                if code == 0:
+                    GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_box_cleanup")))
+                    self.run_upd_command(
+                        ["distrobox", "enter", "sadeem-box", "--", "sudo", "dnf", "clean", "all"],
+                        "distrobox clean cache",
+                        idx,
+                        total
+                    )
+                else:
                     overall_success = False
 
         GLib.idle_add(self.on_updates_finished, overall_success)

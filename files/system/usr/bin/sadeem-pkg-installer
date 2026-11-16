@@ -496,6 +496,25 @@ class SadeemPkgInstallerWindow(Adw.ApplicationWindow):
                 check=False
             )
 
+        # 5. Clean up package manager cache
+        try:
+            if is_rpm:
+                subprocess.run(
+                    ["distrobox", "enter", box_name, "--", "sudo", "dnf", "clean", "all"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+            else:
+                subprocess.run(
+                    ["distrobox", "enter", box_name, "--", "sudo", "apt-get", "clean"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+        except Exception:
+            pass
+
         GLib.idle_add(self._on_finished, True, _t("status_success"))
 
 
