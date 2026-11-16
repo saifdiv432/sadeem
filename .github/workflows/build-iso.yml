@@ -61,7 +61,7 @@ jobs:
             --output-dir build-output \
             --iso-name sadeem-45.iso \
             --variant silverblue \
-            image "ghcr.io/saifeldinosama9677-ctrl/sadeem:45"
+            image "ghcr.io/saifdiv432/sadeem:45"
           sudo chmod -R 777 build-output
 
       - name: Calculate Checksum

@@ -1064,7 +1064,7 @@ PRESET_HEXES = [
     "#5e5c64",
 ]
 
-REMOTE_DB_URL = "https://raw.githubusercontent.com/saifeldinosama9677-ctrl/saifdora-Silverblue-45/main/data/nvidia-gpu-ids.json"
+REMOTE_DB_URL = "https://raw.githubusercontent.com/saifdiv432/saifdora-Silverblue-45/main/data/nvidia-gpu-ids.json"
 LOCAL_DB_PATHS = [
     "/usr/share/saifdora-nvidia/gpu-ids.json",
     "/usr/share/sadeem-system/gpu-ids.json",

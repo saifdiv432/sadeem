@@ -17,7 +17,7 @@ You can download the single complete installation ISO image (`sadeem-45.iso`) di
 
 ### 🚀 Direct Download Links:
 * **Direct Download (Hugging Face - Single Complete ISO):** **[Download sadeem-45.iso](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)**
-* **Latest Official Release:** **[GitHub Releases (v45)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
+* **Latest Official Release:** **[GitHub Releases (v45)](https://github.com/saifdiv432/sadeem/releases/latest)**
 
 ---
 
@@ -41,7 +41,7 @@ Write the complete `sadeem-45.iso` image directly to a USB flash drive using one
 If you are already running Fedora Silverblue 45 (or any Fedora Atomic desktop), you can switch directly to **Sadeem 45** while preserving all your personal data, home files, and Flatpaks with a single command:
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifdiv432/sadeem:latest
 systemctl reboot
 ```
 
@@ -85,14 +85,14 @@ All distribution utilities follow modern GNOME human interface guidelines and au
 ### Fresh Installation (ISO Image)
 Download the complete single installer image (`sadeem-45.iso`) directly with one click:
 - **Direct Download (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)
-- **Official Releases:** **[GitHub Releases (Latest)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
+- **Official Releases:** **[GitHub Releases (Latest)](https://github.com/saifdiv432/sadeem/releases/latest)**
 - Flash `sadeem-45.iso` directly to a USB drive (8 GB minimum) using **Fedora Media Writer**, **BalenaEtcher**, or **Rufus** (in DD Image mode).
 - Recommended storage space: at least **40 GB** free disk space.
 
 ### Rebase from Existing Fedora Silverblue 45
 If you are already running Fedora Silverblue 45 or any Fedora Atomic desktop, you can switch to **Sadeem 45** while keeping all your personal files and Flatpak apps:
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifdiv432/sadeem:latest
 systemctl reboot
 ```
 
@@ -114,7 +114,7 @@ systemctl reboot
 
 ### 🚀 روابط التنزيل المباشر (Direct Download):
 * **[تنزيل مباشر لملف sadeem-45.iso الكامل بنقرة واحدة (Hugging Face)](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)**
-* **صفحة الإصدارات الرسمية:** **[GitHub Releases (أحدث إصدار)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
+* **صفحة الإصدارات الرسمية:** **[GitHub Releases (أحدث إصدار)](https://github.com/saifdiv432/sadeem/releases/latest)**
 
 ---
 
@@ -138,7 +138,7 @@ systemctl reboot
 إذا كنت تستخدم حالياً نظام **Fedora Silverblue 45** (أو أي توزيعة ذرية مبنية عليه)، يمكنك التحويل مباشرة إلى **سديم 45** مع الاحتفاظ الكامل ببياناتك وملفاتك الشخصية وتطبيقاتك عبر تنفيذ أمر واحد في الطرفية:
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifdiv432/sadeem:latest
 systemctl reboot
 ```
 
@@ -182,14 +182,14 @@ systemctl reboot
 ### التثبيت الجديد (ملف ISO)
 يمكنك تنزيل ملف التثبيت المكتمل بنقرة واحدة (`sadeem-45.iso`) دون الحاجة لأي دمج أو تجزئة:
 - **رابط التنزيل المباشر (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)
-- **صفحة الإصدارات:** **[GitHub Releases (أحدث إصدار)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
+- **صفحة الإصدارات:** **[GitHub Releases (أحدث إصدار)](https://github.com/saifdiv432/sadeem/releases/latest)**
 - احرق `sadeem-45.iso` مباشرة على ذاكرة USB (8 جيجابايت كحد أدنى) باستخدام **Fedora Media Writer** أو **BalenaEtcher** أو **Rufus** (بوضع DD Image mode).
 - متطلبات التخزين: مساحة حرة لا تقل عن **40 جيجابايت** على القرص.
 
 ### التحويل من Fedora Silverblue 45 الحالي
 إذا كنت تستخدم Fedora Silverblue 45 حالياً (أو أي توزيعة ذرية مبنية عليه)، يمكنك التحويل إلى **سديم 45** مع الحفاظ على ملفاتك وتطبيقاتك عبر أمر واحد في الطرفية:
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifdiv432/sadeem:latest
 systemctl reboot
 ```
 

@@ -50,7 +50,7 @@ Verify that your downloaded ISO matches the attached `SHA256SUMS` file:
 ### 🔄 Direct Rebase for Fedora Atomic Users:
 If you are already running Fedora Silverblue 45 (or any Fedora Atomic desktop), you can switch to Sadeem 45 with a single command without flashing an ISO:
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifdiv432/sadeem:latest
 systemctl reboot
 ```
 
@@ -97,7 +97,7 @@ systemctl reboot
 ### 🔄 التحويل المباشر لمستخدمي فيدورا الذرية:
 إذا كنت تستخدم حالياً أي توزيعة ذرية مبنية على فيدورا (مثل Fedora Silverblue 45)، يمكنك التحويل مباشرة عبر طرفية نظامك دون الحاجة لحرق الـ ISO:
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifdiv432/sadeem:latest
 systemctl reboot
 ```
 """
