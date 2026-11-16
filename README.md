@@ -11,13 +11,110 @@
 
 ---
 
+## 📥 Download & Install (تنزيل التوزيعة وتثبيتها)
+
+You can download the single complete installation ISO image (`sadeem-45.iso`) directly with one click, or switch immediately using `rpm-ostree` if you already run a Fedora Atomic desktop:
+
+### 🚀 Direct Download Links:
+* **Direct Download (Hugging Face - Single Complete ISO):** **[Download sadeem-45.iso](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)**
+* **Latest Official Release:** **[GitHub Releases (v45)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
+
+---
+
+### ⚙️ System Requirements:
+* **Storage:** At least **40 GB** free disk space (SSD strongly recommended) for system deployments and container storage.
+* **RAM:** 4 GB minimum (8 GB recommended for containers and gaming).
+* **USB Flash Drive:** 8 GB or larger.
+
+---
+
+### 💾 Flashing to USB:
+Write the complete `sadeem-45.iso` image directly to a USB flash drive using one of the following tools:
+1. **Fedora Media Writer** (Recommended for Linux, Windows, macOS).
+2. **BalenaEtcher** (Cross-platform).
+3. **Rufus** (On Windows: ensure you select **DD Image mode** when prompted after clicking Start).
+4. **Ventoy** (Simply copy `sadeem-45.iso` directly onto your Ventoy drive).
+
+---
+
+### 🔄 Direct Rebase for Existing Fedora Atomic Users:
+If you are already running Fedora Silverblue 45 (or any Fedora Atomic desktop), you can switch directly to **Sadeem 45** while preserving all your personal data, home files, and Flatpaks with a single command:
+
+```bash
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+systemctl reboot
+```
+
+---
+
+## ✨ Key Features & Additions
+
+### 1. Custom Built-in Sadeem Suite (GTK4 / Libadwaita)
+All distribution utilities follow modern GNOME human interface guidelines and automatically adapt to **10 languages** (Arabic, English, French, Spanish, German, Turkish, Russian, Portuguese, Italian, and Chinese):
+* **Sadeem System (Unified Control Center):** A comprehensive unified control center featuring 4 core tabs:
+  * **Graphical Update Center:** Checks core system updates (`rpm-ostree`), Flatpak store apps, and `sadeem-box` container packages, displaying package counts and download sizes graphically before starting. Automatically morphs the update button into **"Install & Restart"** once the new system image is staged and ready.
+  * **Colors & Theme:** Customize the system accent color using 8 curated presets or pick any shade from the full color wheel, instantly syncing `GNOME Shell`, `Libadwaita (GTK4)`, and `GTK3`, with a one-click reset to signature Burgundy (`#7a1c33`).
+  * **NVIDIA & CUDA Manager:** Easily install official NVIDIA proprietary drivers and CUDA toolkits with full Secure Boot support.
+  * **Containers & Packages:** Quick access to `sadeem-box` and `BoxBuddy`, and external package management.
+* **Sadeem Package Installer:** Install external **`.rpm`** and **`.deb`** packages via double-click directly from the file manager. It automatically provisions isolated containers in the background, installs the package with its dependencies, exports application icons to the app grid, and cleans up temporary package manager caches (`dnf clean all` / `apt-get clean`) upon completion without terminal commands or system reboots.
+* **Welcome to Sadeem:** An interactive onboarding tour in **10 languages** upon first login to explore system features, configure desktop preferences, and quickly launch essential apps.
+* **Automatic Disk & Runtime Housekeeping:** A silent systemd user service and timer (`sadeem-housekeeping`) that runs post-boot (after 10 minutes) and weekly, plus automatic cleanup executed immediately after updates in Sadeem System, safely pruning unused Flatpak runtimes (`flatpak uninstall --unused`) and container cache without user intervention.
+
+### 2. Pre-configured App Ecosystem & Containers
+* **Full Flathub Repository Enabled by Default:** With Fedora's filtered Flatpak remote disabled, plus automatic Flatpak locale synchronization (`ar;en`) handled via a dedicated systemd service.
+* **Ready-to-Use Isolated Containers (`Distrobox` + `BoxBuddy`):** Silent background initialization of the default `sadeem-box` container upon first internet connection, paired with **BoxBuddy** for graphical container management.
+* **Pre-installed Daily Applications:**
+  * **Mister Download Manager (MDM):** High-speed download manager pre-integrated with Firefox.
+  * **ZapFast:** Lightweight and fast native desktop WhatsApp client built in Rust.
+  * **Rumman:** Drag-and-drop media and file converter.
+  * **Media, Gaming & Customization Suite:** `VLC`, `Extension Manager`, `Refine`, `Flatseal`, `Bottles`, and `ProtonUp-Qt`.
+
+### 3. Polished & Pre-tuned Desktop Experience
+* **Tailored GNOME Desktop Out of the Box:** Top panel centered with **ArcMenu** in a clean layout, pre-tuned **Dash to Dock** bottom bar, **Clipboard Indicator** for clipboard history management, and **Adwaita 24H Lockscreen Clock & Weather**.
+* **Comprehensive Typography & Localization:** Full right-to-left (RTL) layout support and bundled Arabic and office-compatible fonts (`Vazirmatn`, `Noto Sans Arabic`, `Amiri`, `Carlito`, `Caladea`, `Liberation`), with `Vazirmatn` configured as the default interface font and `Noto Sans Arabic` as the default document font.
+
+### 4. Complete Codecs & Hardware Acceleration
+* **RPM Fusion** (Free and Non-Free) repositories enabled out of the box.
+* Hardware-accelerated video decoding (`intel-media-driver`, `mesa-va-drivers-freeworld`, `mesa-vdpau-drivers-freeworld`) and full multimedia codecs (`libavcodec-freeworld`, `gstreamer1-plugins-*`).
+* Viewing and thumbnail generation support for `HEIF/HEIC` and `WebP` images, video thumbnails (`ffmpegthumbnailer`), and archive extraction for `RAR` and `7z`.
+
+---
+
+## 💿 Installation & Upgrade
+
+### Fresh Installation (ISO Image)
+Download the complete single installer image (`sadeem-45.iso`) directly with one click:
+- **Direct Download (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)
+- **Official Releases:** **[GitHub Releases (Latest)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
+- Flash `sadeem-45.iso` directly to a USB drive (8 GB minimum) using **Fedora Media Writer**, **BalenaEtcher**, or **Rufus** (in DD Image mode).
+- Recommended storage space: at least **40 GB** free disk space.
+
+### Rebase from Existing Fedora Silverblue 45
+If you are already running Fedora Silverblue 45 or any Fedora Atomic desktop, you can switch to **Sadeem 45** while keeping all your personal files and Flatpak apps:
+```bash
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+systemctl reboot
+```
+
+---
+
+<div dir="rtl">
+
+# 🚀 سـديـم 45 (Sadeem 45)
+
+**توزيعة لينكس ذرية (Atomic) مبنية على Fedora Silverblue 45 باستخدام إطار عمل [BlueBuild](https://blue-build.org/) وواجهة GNOME 51.**
+
+صُممت **سديم 45** لتكون جاهزة للاستخدام اليومي والإنتاجية فور الإقلاع الأول دون الحاجة لإعدادات ما بعد التثبيت؛ حيث تجمع بين استقرار الأنظمة الذرية غير القابلة للكسر، وهوية بصرية خمرية متكاملة، ودعم كامل للغة العربية و9 لغات عالمية أخرى، إلى جانب أدوات رسومية تبسّط تثبيت البرامج الخارجية وإدارة تعريفات العتاد.
+
+---
+
 ## 📥 تنزيل التوزيعة وتثبيتها (Download & Install)
 
 يمكنك تنزيل ملف التثبيت المكتمل بنقرة واحدة مباشرة (`sadeem-45.iso`)، أو التحويل المباشر لمستخدمي فيدورا الذرية عبر طرفية النظام:
 
 ### 🚀 روابط التنزيل المباشر (Direct Download):
-* **[تنزيل مباشر لملف sadeem-45.iso الكامل بنقرة واحدة (Hugging Face)](https://huggingface.co/datasets/saifeldinosama9677-ctrl/sadeem-iso/resolve/main/sadeem-45.iso)**
-* **صفحة الإصدارات الرسمية:** **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**
+* **[تنزيل مباشر لملف sadeem-45.iso الكامل بنقرة واحدة (Hugging Face)](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)**
+* **صفحة الإصدارات الرسمية:** **[GitHub Releases (أحدث إصدار)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
 
 ---
 
@@ -47,71 +144,18 @@ systemctl reboot
 
 ---
 
-## ✨ Key Features & Additions
-
-### 1. Custom Built-in Sadeem Suite (GTK4 / Libadwaita)
-All distribution utilities follow modern GNOME human interface guidelines and automatically adapt to **10 languages** (Arabic, English, French, Spanish, German, Turkish, Russian, Portuguese, Italian, and Chinese):
-* **Sadeem Colors:** Customize the system accent color using 8 curated presets or pick any shade from the full color wheel, instantly syncing `GNOME Shell`, `Libadwaita (GTK4)`, and `GTK3`, with a one-click reset to signature Burgundy (`#7a1c33`).
-* **Sadeem Package Installer:** Install external **`.rpm`** and **`.deb`** packages via double-click directly from the file manager. It automatically provisions isolated containers in the background, installs the package along with its dependencies, and exports its application icon to the app grid without terminal commands or system reboots.
-* **Sadeem NVIDIA & CUDA Manager:** A graphical utility to easily install official NVIDIA drivers and CUDA toolkits with full Secure Boot support.
-* **Welcome to Sadeem:** An interactive onboarding tour upon first login to explore system features and quickly configure essential desktop preferences.
-
-### 2. Pre-configured App Ecosystem & Containers
-* **Full Flathub Repository Enabled by Default:** With Fedora's filtered Flatpak remote disabled, plus automatic Flatpak locale synchronization (`ar;en`) handled via a dedicated systemd service.
-* **Ready-to-Use Isolated Containers (`Distrobox` + `BoxBuddy`):** Silent background initialization of the default `sadeem-box` container upon first internet connection, paired with **BoxBuddy** for graphical container management.
-* **Pre-installed Daily Applications:**
-  * **Mister Download Manager (MDM):** High-speed download manager pre-integrated with Firefox.
-  * **ZapFast:** Lightweight and fast native desktop WhatsApp client built in Rust.
-  * **Rumman:** Drag-and-drop media and file converter.
-  * **Media, Gaming & Customization Suite:** `VLC`, `Extension Manager`, `Refine`, `Flatseal`, `Bottles`, and `ProtonUp-Qt`.
-
-### 3. Polished & Pre-tuned Desktop Experience
-* **Tailored GNOME Desktop Out of the Box:** Top panel centered with **ArcMenu** in a clean layout, pre-tuned **Dash to Dock** bottom bar, **Clipboard Indicator** for clipboard history management, and **Adwaita 24H Lockscreen Clock & Weather**.
-* **Comprehensive Typography & Localization:** Full right-to-left (RTL) layout support and bundled Arabic and office-compatible fonts (`Vazirmatn`, `Noto Sans Arabic`, `Amiri`, `Carlito`, `Caladea`, `Liberation`), with `Vazirmatn` configured as the default interface font and `Noto Sans Arabic` as the default document font.
-
-### 4. Complete Codecs & Hardware Acceleration
-* **RPM Fusion** (Free and Non-Free) repositories enabled out of the box.
-* Hardware-accelerated video decoding (`intel-media-driver`, `mesa-va-drivers-freeworld`, `mesa-vdpau-drivers-freeworld`) and full multimedia codecs (`libavcodec-freeworld`, `gstreamer1-plugins-*`).
-* Viewing and thumbnail generation support for `HEIF/HEIC` and `WebP` images, video thumbnails (`ffmpegthumbnailer`), and archive extraction for `RAR` and `7z`.
-
----
-
-## 💿 Installation & Upgrade
-
-### Fresh Installation (ISO Image)
-Download the complete single installer image (`sadeem-45.iso`) directly with one click:
-- **Direct Download (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldinosama9677-ctrl/sadeem-iso/resolve/main/sadeem-45.iso)
-- **Official Releases:** **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**
-- Flash `sadeem-45.iso` directly to a USB drive (8 GB minimum) using **Fedora Media Writer**, **BalenaEtcher**, or **Rufus** (in DD Image mode).
-- Recommended storage space: at least **40 GB** free disk space.
-
-### Rebase from Existing Fedora Silverblue 45
-If you are already running Fedora Silverblue 45 or any Fedora Atomic system, you can switch to **Sadeem 45** while keeping all your personal files and Flatpak apps:
-```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
-systemctl reboot
-```
-
----
-
-<div dir="rtl">
-
-# 🚀 سـديـم 45 (Sadeem 45)
-
-**توزيعة لينكس ذرية (Atomic) مبنية على Fedora Silverblue 45 باستخدام إطار عمل [BlueBuild](https://blue-build.org/) وواجهة GNOME 51.**
-
-صُممت **سديم 45** لتكون جاهزة للاستخدام اليومي والإنتاجية فور الإقلاع الأول دون الحاجة لإعدادات ما بعد التثبيت؛ حيث تجمع بين استقرار الأنظمة الذرية غير القابلة للكسر، وهوية بصرية خمرية متكاملة، ودعم كامل للغة العربية و9 لغات عالمية أخرى، إلى جانب أدوات رسومية تبسّط تثبيت البرامج الخارجية وإدارة تعريفات العتاد.
-
----
-
 ## ✨ أبرز المزايا والإضافات
 
 ### 1. تطبيقات وأدوات سديم المدمجة (GTK4 / Libadwaita)
 جميع أدوات التوزيعة مصممة بلغة تصميم جنوم الحديثة وتدعم **10 لغات تلقائياً** (العربية، الإنجليزية، الفرنسية، الإسبانية، الألمانية، التركية، الروسية، البرتغالية، الإيطالية، والصينية):
-* **ألوان سديم (Sadeem Colors):** أداة لتخصيص اللون الأساسي للنظام عبر 8 ألوان جاهزة أو اختيار أي درجة من دائرة الألوان، مع مزامنة فورية لسمات `GNOME Shell` و `Libadwaita (GTK4)` و `GTK3` وإمكانية استعادة اللون الخمري الأصيل (`#7a1c33`) بضغطة زر.
-* **مثبّت حزم سديم (Sadeem Package Installer):** يتيح تثبيت حزم **`.rpm`** و **`.deb`** الخارجية بالنقر المزدوج مباشرة من مدير الملفات؛ حيث يتولى إنشاء حاويات معزولة في الخلفية وتثبيت الحزمة مع اعتمادياتها وتصدير أيقونتها إلى قائمة التطبيقات دون الحاجة لأوامر طرفية أو إعادة تشغيل.
-* **مدير تعريفات NVIDIA و CUDA:** أداة رسومية لتثبيت تعريفات NVIDIA الرسمية وحزم CUDA بسهولة مع دعم الإقلاع الآمن (Secure Boot).
-* **مرحباً بك في سديم (Welcome to Sadeem):** جولة تعريفية تفاعلية عند أول تسجيل دخول لاستكشاف مزايا النظام وضبط الإعدادات الأساسية بسرعة.
+* **تطبيق نظام سديم الموحد (Sadeem System):** مركز تحكم شامل يضم 4 تبويبات رئيسية:
+  * **مركز التحديثات الرسومي (Graphical Update Center):** يفحص تحديثات النظام الأساسي (`rpm-ostree`) وتطبيقات المتجر (`Flatpak`) وحاوية البرامج (`Sadeem Box`) ويعرض عددها وحجم تنزيلها رسومياً قبل البدء، ثم يحوّل زر التحديث نفسه تلقائياً إلى "تثبيت وإعادة التشغيل" (Install & Restart) فور جاهزية الصورة الجديدة.
+  * **المظهر والألوان (Colors & Theme):** تخصيص اللون الأساسي للنظام عبر 8 ألوان جاهزة أو أي درجة لونية مع مزامنة فورية لسمات `GNOME Shell` و `Libadwaita (GTK4)` و `GTK3` واستعادة اللون الخمري الأصيل (`#7a1c33`) بضغطة زر.
+  * **مدير تعريفات NVIDIA و CUDA:** تثبيت تعريفات NVIDIA الرسمية وحزم CUDA بسهولة مع دعم الإقلاع الآمن (Secure Boot).
+  * **إدارة الحاويات والحزم:** الوصول السريع إلى حاوية `sadeem-box` وتطبيق `BoxBuddy` وتثبيت الحزم الخارجية.
+* **مثبّت حزم سديم (Sadeem Package Installer):** يتيح تثبيت حزم **`.rpm`** و **`.deb`** الخارجية بالنقر المزدوج مباشرة من مدير الملفات؛ حيث يتولى إنشاء حاويات معزولة في الخلفية وتثبيت الحزمة مع اعتمادياتها وتصدير أيقونتها إلى قائمة التطبيقات مع تنظيف ملفات التثبيت المؤقتة تلقائياً (`dnf clean all` / `apt-get clean`) دون الحاجة لأوامر طرفية أو إعادة تشغيل.
+* **مرحباً بك في سديم (Welcome to Sadeem):** جولة تعريفية تفاعلية بـ 10 لغات عند أول تسجيل دخول لاستكشاف مزايا النظام وضبط الإعدادات الأساسية وإطلاق التطبيقات الأساسية.
+* **الصيانة التلقائية للمساحة (Automatic Disk & Runtime Housekeeping):** خدمة صيانة صامتة (`sadeem-housekeeping`) تعمل بعد الإقلاع (10 دقائق) وأسبوعياً بالإضافة إلى التنظيف الفوري بعد كل تحديث في تطبيق النظام، لإزالة مكتبات Flatpak غير المستخدمة (`flatpak uninstall --unused`) وذاكرة الحزم المؤقتة داخل الحاوية دون أي تدخل يدوي من المستخدم.
 
 ### 2. بيئة التطبيقات والحاويات الجاهزة
 * **متجر Flathub الكامل مفعّل افتراضياً:** مع إزالة القيود المفروضة على مستودع فيدورا الافتراضي، ومزامنة لغات التطبيقات (`ar;en`) تلقائياً عبر خدمة نظام مخصصة.
@@ -137,8 +181,8 @@ systemctl reboot
 
 ### التثبيت الجديد (ملف ISO)
 يمكنك تنزيل ملف التثبيت المكتمل بنقرة واحدة (`sadeem-45.iso`) دون الحاجة لأي دمج أو تجزئة:
-- **رابط التنزيل المباشر (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldinosama9677-ctrl/sadeem-iso/resolve/main/sadeem-45.iso)
-- **صفحة الإصدارات:** **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**
+- **رابط التنزيل المباشر (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldin432/sadeem-iso/resolve/main/sadeem-45.iso)
+- **صفحة الإصدارات:** **[GitHub Releases (أحدث إصدار)](https://github.com/saifeldinosama9677-ctrl/sadeem/releases/latest)**
 - احرق `sadeem-45.iso` مباشرة على ذاكرة USB (8 جيجابايت كحد أدنى) باستخدام **Fedora Media Writer** أو **BalenaEtcher** أو **Rufus** (بوضع DD Image mode).
 - متطلبات التخزين: مساحة حرة لا تقل عن **40 جيجابايت** على القرص.
 

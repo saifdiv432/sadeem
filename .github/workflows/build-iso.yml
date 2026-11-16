@@ -110,7 +110,7 @@ jobs:
             TAG="v45"
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "title=Sadeem 45 (${TAG})" >> $GITHUB_OUTPUT
+          echo "title=Sadeem 45 (${TAG}) — سديم 45" >> $GITHUB_OUTPUT
 
           python3 .github/scripts/generate_release_notes.py
 
