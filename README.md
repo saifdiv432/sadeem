@@ -13,38 +13,33 @@
 
 ## 📥 تنزيل التوزيعة وتثبيتها (Download & Install)
 
-يمكنك تنزيل أحدث نسخ النظام بصيغة ISO الرسمية من صفحة **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**، أو التحويل المباشر عبر `rpm-ostree` لمستخدمي فيدورا الذرية.
+يمكنك تنزيل ملف التثبيت المكتمل بنقرة واحدة مباشرة (`sadeem-45.iso`)، أو التحويل المباشر لمستخدمي فيدورا الذرية عبر طرفية النظام:
+
+### 🚀 روابط التنزيل المباشر (Direct Download):
+* **[تنزيل مباشر لملف sadeem-45.iso الكامل بنقرة واحدة (Hugging Face)](https://huggingface.co/datasets/saifeldinosama9677-ctrl/sadeem-iso/resolve/main/sadeem-45.iso)**
+* **صفحة الإصدارات الرسمية:** **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**
+
+---
 
 ### ⚙️ متطلبات التثبيت على القرص (System Requirements):
-* **المساحة التخزينية:** مساحة حرة لا تقل عن **35 إلى 40 جيجابايت** على القرص (SSD موصى به) لضمان تجربة سلسة مع النظام وحاويات التطبيقات.
-* **الذاكرة العشوائية (RAM):** 4 جيجابايت كحد أدنى (8 جيجابايت لتشغيل الحاويات والألعاب).
-* **ذاكرة فلاشية (USB):** بسعة 8 جيجابايت أو أكثر لحرق ملف الـ ISO باستخدام **Fedora Media Writer** أو **Ventoy**.
+* **المساحة التخزينية:** مساحة حرة لا تقل عن **40 جيجابايت** على القرص (SSD موصى به) لتثبيت النظام وتشغيل الحاويات والتطبيقات بسلاسة.
+* **الذاكرة العشوائية (RAM):** 4 جيجابايت كحد أدنى (8 جيجابايت موصى بها لتشغيل الحاويات والألعاب).
+* **ذاكرة فلاشية (USB):** بسعة 8 جيجابايت أو أكثر.
 
-### 📦 دمج أجزاء ملف الـ ISO بعد التنزيل (Reassemble Split ISO):
-نظراً لحدود أحجام الملفات على منصة GitHub (أقل من 2 جيجابايت لكل ملف)، يتم رفع صورة التثبيت مقسّمة إلى أجزاء بحجم 1900 ميجابايت (`sadeem-45.iso.partaa`، `sadeem-45.iso.partab`). بعد تنزيل كافة الأجزاء مع ملف `SHA256SUMS` في مجلد واحد، يمكن دمجها بأمر واحد:
+---
 
-* **على لينكس أو ماك (Linux / macOS):**
-  ```bash
-  cat sadeem-45.iso.part* > sadeem-45.iso
-  ```
-* **على ويندوز (Windows CMD):**
-  ```cmd
-  copy /b sadeem-45.iso.part* sadeem-45.iso
-  ```
+### 💾 حرق ملف الـ ISO على ذاكرة فلاشية (Flashing to USB):
+احرق ملف `sadeem-45.iso` الكامل مباشرة على ذاكرة فلاشية باستخدام أحد البرامج التالية:
+1. **Fedora Media Writer** (موصى به لجميع المنصات - Linux, Windows, macOS).
+2. **BalenaEtcher** (متوفر لجميع الأنظمة).
+3. **Rufus** (على Windows: تأكد من اختيار **وضع كتابة صورة DD** أو **DD Image mode** عند ظهور رسالة التأكيد بعد الضغط على Start).
+4. **Ventoy** (يمكنك نسخ ملف `sadeem-45.iso` مباشرة إلى فلاشة Ventoy).
 
-> للتحقق من سلامة الملف بعد الدمج:
-> * لينكس وماك: `sha256sum -c SHA256SUMS`
-> * ويندوز (PowerShell): `Get-FileHash -Algorithm SHA256 .\sadeem-45.iso`
+---
 
 ### 🔄 التحويل المباشر لمستخدمي فيدورا الذرية (Direct Rebase for Fedora Atomic):
-إذا كنت تستخدم حالياً نظام **Fedora Silverblue 45** (أو أي توزيعة ذرية مبنية عليه)، يمكنك التحويل مباشرة إلى **سديم 45** مع الاحتفاظ الكامل ببياناتك وملفاتك الشخصية وتطبيقات Flatpak عبر تنفيذ:
+إذا كنت تستخدم حالياً نظام **Fedora Silverblue 45** (أو أي توزيعة ذرية مبنية عليه)، يمكنك التحويل مباشرة إلى **سديم 45** مع الاحتفاظ الكامل ببياناتك وملفاتك الشخصية وتطبيقاتك عبر تنفيذ أمر واحد في الطرفية:
 
-```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
-systemctl reboot
-```
-
-*(أو إذا كنت تقوم بالتحويل لأول مرة قبل استيراد مفتاح التحقق بالتوقيع الرقمي):*
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
 systemctl reboot
@@ -84,23 +79,16 @@ All distribution utilities follow modern GNOME human interface guidelines and au
 ## 💿 Installation & Upgrade
 
 ### Fresh Installation (ISO Image)
-Download the latest installer image split parts (`sadeem-45.iso.part*`) and `SHA256SUMS` from the **[Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)** page.
-- Merge the parts in Terminal: `cat sadeem-45.iso.part* > sadeem-45.iso` (or on Windows CMD: `copy /b sadeem-45.iso.part* sadeem-45.iso`).
-- Flash `sadeem-45.iso` to a USB drive (8 GB minimum) using **Fedora Media Writer** or **Ventoy**.
-- Recommended storage space: at least **35-40 GB** free disk space.
+Download the complete single installer image (`sadeem-45.iso`) directly with one click:
+- **Direct Download (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldinosama9677-ctrl/sadeem-iso/resolve/main/sadeem-45.iso)
+- **Official Releases:** **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**
+- Flash `sadeem-45.iso` directly to a USB drive (8 GB minimum) using **Fedora Media Writer**, **BalenaEtcher**, or **Rufus** (in DD Image mode).
+- Recommended storage space: at least **40 GB** free disk space.
 
 ### Rebase from Existing Fedora Silverblue 45
-If you are already running Fedora Silverblue 45, you can switch to **Sadeem 45** while keeping all your personal files and Flatpak apps in two steps:
-
-1. Initial rebase to the Sadeem image and reboot:
+If you are already running Fedora Silverblue 45 or any Fedora Atomic system, you can switch to **Sadeem 45** while keeping all your personal files and Flatpak apps:
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
-systemctl reboot
-```
-
-2. Switch to cryptographic signature verification for verified daily updates:
-```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
 systemctl reboot
 ```
 
@@ -148,23 +136,16 @@ systemctl reboot
 ## 💿 التثبيت والترقية
 
 ### التثبيت الجديد (ملف ISO)
-يمكنك تنزيل أجزاء ملف التثبيت (`sadeem-45.iso.part*`) وملف `SHA256SUMS` مباشرة من صفحة **[Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**.
-- ادمج الأجزاء في الطرفية: `cat sadeem-45.iso.part* > sadeem-45.iso` (أو في ويندوز عبر CMD: `copy /b sadeem-45.iso.part* sadeem-45.iso`).
-- احرق `sadeem-45.iso` على ذاكرة USB (8 جيجابايت كحد أدنى) باستخدام **Fedora Media Writer** أو **Ventoy**.
-- متطلبات التخزين: مساحة حرة لا تقل عن **35 إلى 40 جيجابايت** على القرص.
+يمكنك تنزيل ملف التثبيت المكتمل بنقرة واحدة (`sadeem-45.iso`) دون الحاجة لأي دمج أو تجزئة:
+- **رابط التنزيل المباشر (Hugging Face):** [sadeem-45.iso](https://huggingface.co/datasets/saifeldinosama9677-ctrl/sadeem-iso/resolve/main/sadeem-45.iso)
+- **صفحة الإصدارات:** **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**
+- احرق `sadeem-45.iso` مباشرة على ذاكرة USB (8 جيجابايت كحد أدنى) باستخدام **Fedora Media Writer** أو **BalenaEtcher** أو **Rufus** (بوضع DD Image mode).
+- متطلبات التخزين: مساحة حرة لا تقل عن **40 جيجابايت** على القرص.
 
 ### التحويل من Fedora Silverblue 45 الحالي
-إذا كنت تستخدم Fedora Silverblue 45 حالياً، يمكنك التحويل إلى **سديم 45** مع الحفاظ على ملفاتك وتطبيقاتك عبر الخطوتين التاليتين:
-
-1. التحويل المبدئي إلى صورة سديم وإعادة التشغيل:
+إذا كنت تستخدم Fedora Silverblue 45 حالياً (أو أي توزيعة ذرية مبنية عليه)، يمكنك التحويل إلى **سديم 45** مع الحفاظ على ملفاتك وتطبيقاتك عبر أمر واحد في الطرفية:
 ```bash
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
-systemctl reboot
-```
-
-2. تفعيل التحقق بالتوقيع الرقمي المشفّر للتحديثات المستقبلية:
-```bash
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
 systemctl reboot
 ```
 
