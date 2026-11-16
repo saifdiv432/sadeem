@@ -1,11 +1,20 @@
 name: build-iso
 on:
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag (e.g. v45)"
+        required: false
+        default: "v45"
   release:
     types: [published]
   push:
     tags:
       - "v*"
+
+permissions:
+  contents: write
+  packages: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -16,8 +25,8 @@ jobs:
     name: Build ISO
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: read
+      contents: write
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,12 +64,115 @@ jobs:
             image "ghcr.io/saifeldinosama9677-ctrl/sadeem:45"
           sudo chmod -R 777 build-output
 
-      - name: Upload ISO Artifact
+      - name: Split ISO and Generate Checksums
+        run: |
+          cd build-output
+          ISO_FILE="sadeem-45.iso"
+          if [ ! -f "$ISO_FILE" ]; then
+            ISO_FILE=$(ls -1 *.iso 2>/dev/null | head -n 1)
+          fi
+
+          if [ -z "$ISO_FILE" ] || [ ! -f "$ISO_FILE" ]; then
+            echo "Error: No ISO file found to split"
+            exit 1
+          fi
+
+          echo "Generating SHA256 checksum for original $ISO_FILE..."
+          sha256sum "$ISO_FILE" > SHA256SUMS
+
+          echo "Splitting $ISO_FILE into 1900M parts..."
+          split -b 1900M "$ISO_FILE" "${ISO_FILE}.part"
+
+          echo "Generating SHA256 checksums for parts..."
+          sha256sum ${ISO_FILE}.part* >> SHA256SUMS
+
+          echo "Removing un-split ISO to free disk space..."
+          rm -f "$ISO_FILE"
+
+          echo "Split completed successfully. Output files:"
+          ls -lh
+          cat SHA256SUMS
+
+      - name: Upload ISO Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sadeem-45-iso
           path: |
-            build-output/*.iso
-            build-output/*-CHECKSUM
+            build-output/sadeem-45.iso.part*
+            build-output/SHA256SUMS
+            build-output/*CHECKSUM*
           retention-days: 7
-          if-no-files-found: error
+          if-no-files-found: warn
+
+      - name: Prepare Release Metadata
+        id: release_meta
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          elif [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            TAG="v45"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "title=Sadeem 45 (${TAG})" >> $GITHUB_OUTPUT
+
+          cat << 'EOF' | sed 's/^[ ]\{10\}//' > build-output/RELEASE_NOTES.md
+          ## 🚀 سديم 45 - وسائط التثبيت (Sadeem 45 Installation ISO)
+
+          تم تقسيم ملف تثبيت النظام (`sadeem-45.iso`) إلى أجزاء بحجم 1900 ميجابايت لتجاوز الحد الأقصى للملفات على GitHub Releases.
+
+          The installation image (`sadeem-45.iso`) is split into 1900MB parts (`sadeem-45.iso.part*`) due to GitHub Releases file size limits.
+
+          ---
+
+          ### 📦 طريقة دمج أجزاء ملف الـ ISO (How to Reassemble the ISO)
+
+          قم بتنزيل كافة أجزاء `sadeem-45.iso.part*` وملف `SHA256SUMS` في نفس المجلد، ثم نفّذ الأمر التالي:
+
+          #### 🐧 على لينكس أو ماك (Linux / macOS):
+          ```bash
+          cat sadeem-45.iso.part* > sadeem-45.iso
+          ```
+
+          #### 🪟 على ويندوز (Windows CMD):
+          ```cmd
+          copy /b sadeem-45.iso.part* sadeem-45.iso
+          ```
+
+          ---
+
+          ### 🔍 التحقق من صحة وسلامة الملف (Verify Checksum):
+
+          #### Linux / macOS:
+          ```bash
+          sha256sum -c SHA256SUMS
+          ```
+
+          #### Windows (PowerShell):
+          ```powershell
+          Get-FileHash -Algorithm SHA256 .\sadeem-45.iso
+          ```
+
+          ---
+
+          ### 💾 التثبيت ومتطلبات التشغيل (Installation & Requirements):
+          * **حرق الملف:** بعد دمج الملف، احرق `sadeem-45.iso` على فلاش USB (8 جيجابايت كحد أدنى) باستخدام **Fedora Media Writer** أو **Ventoy**.
+          * **متطلبات التخزين:** مساحة قرص حرة لا تقل عن **35 إلى 40 جيجابايت**.
+          EOF
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ github.token }}
+          tag_name: ${{ steps.release_meta.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.release_meta.outputs.title }}
+          body_path: build-output/RELEASE_NOTES.md
+          append_body: true
+          fail_on_unmatched_files: false
+          files: |
+            build-output/sadeem-45.iso.part*
+            build-output/SHA256SUMS

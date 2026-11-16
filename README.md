@@ -11,6 +11,47 @@
 
 ---
 
+## 📥 تنزيل التوزيعة وتثبيتها (Download & Install)
+
+يمكنك تنزيل أحدث نسخ النظام بصيغة ISO الرسمية من صفحة **[GitHub Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**، أو التحويل المباشر عبر `rpm-ostree` لمستخدمي فيدورا الذرية.
+
+### ⚙️ متطلبات التثبيت على القرص (System Requirements):
+* **المساحة التخزينية:** مساحة حرة لا تقل عن **35 إلى 40 جيجابايت** على القرص (SSD موصى به) لضمان تجربة سلسة مع النظام وحاويات التطبيقات.
+* **الذاكرة العشوائية (RAM):** 4 جيجابايت كحد أدنى (8 جيجابايت لتشغيل الحاويات والألعاب).
+* **ذاكرة فلاشية (USB):** بسعة 8 جيجابايت أو أكثر لحرق ملف الـ ISO باستخدام **Fedora Media Writer** أو **Ventoy**.
+
+### 📦 دمج أجزاء ملف الـ ISO بعد التنزيل (Reassemble Split ISO):
+نظراً لحدود أحجام الملفات على منصة GitHub (أقل من 2 جيجابايت لكل ملف)، يتم رفع صورة التثبيت مقسّمة إلى أجزاء بحجم 1900 ميجابايت (`sadeem-45.iso.partaa`، `sadeem-45.iso.partab`). بعد تنزيل كافة الأجزاء مع ملف `SHA256SUMS` في مجلد واحد، يمكن دمجها بأمر واحد:
+
+* **على لينكس أو ماك (Linux / macOS):**
+  ```bash
+  cat sadeem-45.iso.part* > sadeem-45.iso
+  ```
+* **على ويندوز (Windows CMD):**
+  ```cmd
+  copy /b sadeem-45.iso.part* sadeem-45.iso
+  ```
+
+> للتحقق من سلامة الملف بعد الدمج:
+> * لينكس وماك: `sha256sum -c SHA256SUMS`
+> * ويندوز (PowerShell): `Get-FileHash -Algorithm SHA256 .\sadeem-45.iso`
+
+### 🔄 التحويل المباشر لمستخدمي فيدورا الذرية (Direct Rebase for Fedora Atomic):
+إذا كنت تستخدم حالياً نظام **Fedora Silverblue 45** (أو أي توزيعة ذرية مبنية عليه)، يمكنك التحويل مباشرة إلى **سديم 45** مع الاحتفاظ الكامل ببياناتك وملفاتك الشخصية وتطبيقات Flatpak عبر تنفيذ:
+
+```bash
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+systemctl reboot
+```
+
+*(أو إذا كنت تقوم بالتحويل لأول مرة قبل استيراد مفتاح التحقق بالتوقيع الرقمي):*
+```bash
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/saifeldinosama9677-ctrl/sadeem:latest
+systemctl reboot
+```
+
+---
+
 ## ✨ Key Features & Additions
 
 ### 1. Custom Built-in Sadeem Suite (GTK4 / Libadwaita)
@@ -43,7 +84,10 @@ All distribution utilities follow modern GNOME human interface guidelines and au
 ## 💿 Installation & Upgrade
 
 ### Fresh Installation (ISO Image)
-Download the latest installer image (`sadeem-45.iso`) from the **[Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)** page and flash it to a USB drive using **Fedora Media Writer** or **Ventoy**.
+Download the latest installer image split parts (`sadeem-45.iso.part*`) and `SHA256SUMS` from the **[Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)** page.
+- Merge the parts in Terminal: `cat sadeem-45.iso.part* > sadeem-45.iso` (or on Windows CMD: `copy /b sadeem-45.iso.part* sadeem-45.iso`).
+- Flash `sadeem-45.iso` to a USB drive (8 GB minimum) using **Fedora Media Writer** or **Ventoy**.
+- Recommended storage space: at least **35-40 GB** free disk space.
 
 ### Rebase from Existing Fedora Silverblue 45
 If you are already running Fedora Silverblue 45, you can switch to **Sadeem 45** while keeping all your personal files and Flatpak apps in two steps:
@@ -104,7 +148,10 @@ systemctl reboot
 ## 💿 التثبيت والترقية
 
 ### التثبيت الجديد (ملف ISO)
-يمكنك تنزيل أحدث نسخة تثبيت مباشرة (`sadeem-45.iso`) من صفحة **[Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)** وحرقها على ذاكرة USB باستخدام أداة **Fedora Media Writer** أو **Ventoy**.
+يمكنك تنزيل أجزاء ملف التثبيت (`sadeem-45.iso.part*`) وملف `SHA256SUMS` مباشرة من صفحة **[Releases](https://github.com/saifeldinosama9677-ctrl/sadeem/releases)**.
+- ادمج الأجزاء في الطرفية: `cat sadeem-45.iso.part* > sadeem-45.iso` (أو في ويندوز عبر CMD: `copy /b sadeem-45.iso.part* sadeem-45.iso`).
+- احرق `sadeem-45.iso` على ذاكرة USB (8 جيجابايت كحد أدنى) باستخدام **Fedora Media Writer** أو **Ventoy**.
+- متطلبات التخزين: مساحة حرة لا تقل عن **35 إلى 40 جيجابايت** على القرص.
 
 ### التحويل من Fedora Silverblue 45 الحالي
 إذا كنت تستخدم Fedora Silverblue 45 حالياً، يمكنك التحويل إلى **سديم 45** مع الحفاظ على ملفاتك وتطبيقاتك عبر الخطوتين التاليتين:
