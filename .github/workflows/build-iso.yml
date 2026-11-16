@@ -61,7 +61,14 @@ jobs:
             --output-dir build-output \
             --iso-name sadeem-45.iso \
             --variant silverblue \
+            --web-ui \
             image "ghcr.io/saifdiv432/sadeem:45"
+          sudo chmod -R 777 build-output
+
+      - name: Customize Anaconda WebUI and Branding in Installer ISO
+        run: |
+          sudo apt-get update && sudo apt-get install -y xorriso squashfs-tools
+          sudo GITHUB_WORKSPACE="$GITHUB_WORKSPACE" bash .github/scripts/customize_iso_branding.sh build-output/sadeem-45.iso
           sudo chmod -R 777 build-output
 
       - name: Calculate Checksum

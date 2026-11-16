@@ -154,6 +154,30 @@ modules:
         done
         ln -sf ../usr/lib/os-release /etc/os-release
 
+        # Configure Anaconda product name and branding
+        mkdir -p /etc/anaconda/product.d
+        for CONF in /etc/anaconda/product.d/*.conf /usr/share/anaconda/product.d/*.conf /etc/anaconda/product.conf; do
+          if [ -f "$CONF" ]; then
+            sed -i 's|product_name = .*|product_name = Sadeem 45|g' "$CONF"
+          fi
+        done
+        echo -e "[Product]\nproduct_name = Sadeem 45" > /etc/anaconda/product.d/sadeem.conf
+
+        # Apply Sadeem burgundy CSS to Cockpit and Anaconda WebUI
+        if [ -f /usr/share/sadeem/anaconda-burgundy.css ]; then
+          for CSS_FILE in /usr/share/cockpit/branding/fedora/branding.css /usr/share/cockpit/branding/*/*.css /usr/share/cockpit/anaconda/*.css; do
+            if [ -f "$CSS_FILE" ]; then
+              echo -e "\n/* Sadeem Burgundy Theme */\n" >> "$CSS_FILE"
+              cat /usr/share/sadeem/anaconda-burgundy.css >> "$CSS_FILE"
+            fi
+          done
+          for HTML_FILE in /usr/share/cockpit/anaconda/*.html /usr/share/cockpit/anaconda/index.html; do
+            if [ -f "$HTML_FILE" ] && ! grep -q "anaconda-burgundy.css" "$HTML_FILE"; then
+              sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$HTML_FILE" 2>/dev/null || true
+            fi
+          done
+        fi
+
         mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg || true

@@ -1,0 +1,67 @@
+/* ==========================================================================
+   Sadeem 45 - Anaconda WebUI Burgundy Theme
+   Brand Color: #7a1c33 | Hover: #5e1426 | Accent: #a32645
+   ========================================================================== */
+
+:root, body, .pf-v5-theme-dark, .pf-v6-theme-dark {
+  --pf-v5-global--primary-color--100: #7a1c33 !important;
+  --pf-v5-global--primary-color--200: #5e1426 !important;
+  --pf-v5-global--link--Color: #a32645 !important;
+  --pf-v5-global--link--Color--hover: #5e1426 !important;
+  --pf-v5-global--active-color--100: #7a1c33 !important;
+  --pf-v5-global--active-color--200: #5e1426 !important;
+  --pf-t--global--color--brand--default: #7a1c33 !important;
+  --pf-t--global--color--brand--hover: #5e1426 !important;
+  --pf-t--global--background--color--brand--default: #7a1c33 !important;
+  --pf-v5-c-button--m-primary--BackgroundColor: #7a1c33 !important;
+  --pf-v5-c-button--m-primary--hover--BackgroundColor: #5e1426 !important;
+  --pf-v5-c-button--m-primary--focus--BackgroundColor: #5e1426 !important;
+  --pf-v5-c-button--m-primary--active--BackgroundColor: #4a0f1d !important;
+  --pf-v5-c-progress__bar--BackgroundColor: #7a1c33 !important;
+  --pf-v6-c-progress__bar--BackgroundColor: #7a1c33 !important;
+}
+
+header, .pf-v5-c-masthead, .pf-v6-c-masthead, [class*="header"], [class*="masthead"] {
+  --pf-v5-c-masthead--BackgroundColor: #7a1c33 !important;
+  background-color: #7a1c33 !important;
+}
+
+/* Primary buttons */
+.pf-v5-c-button.pf-m-primary, .pf-v6-c-button.pf-m-primary, button.pf-m-primary {
+  background-color: #7a1c33 !important;
+  border-color: #7a1c33 !important;
+  color: #ffffff !important;
+}
+
+.pf-v5-c-button.pf-m-primary:hover, .pf-v6-c-button.pf-m-primary:hover, button.pf-m-primary:hover {
+  background-color: #5e1426 !important;
+  border-color: #5e1426 !important;
+  color: #ffffff !important;
+}
+
+.pf-v5-c-button.pf-m-primary:active, .pf-v6-c-button.pf-m-primary:active, button.pf-m-primary:active {
+  background-color: #4a0f1d !important;
+  border-color: #4a0f1d !important;
+}
+
+/* Progress bars and indicators */
+.pf-v5-c-progress__bar, .pf-v6-c-progress__bar, [class*="progress__bar"] {
+  background-color: #7a1c33 !important;
+}
+
+.pf-v5-c-spinner, .pf-v6-c-spinner {
+  stroke: #7a1c33 !important;
+}
+
+/* Navigation items */
+.pf-v5-c-nav__link.pf-m-current, .pf-v6-c-nav__link.pf-m-current, [class*="nav__link"][class*="current"] {
+  --pf-v5-c-nav__link--m-current--Color: #7a1c33 !important;
+  border-left-color: #7a1c33 !important;
+}
+
+/* Radio & Checkbox active highlights */
+.pf-v5-c-radio__input:checked, .pf-v6-c-radio__input:checked,
+.pf-v5-c-check__input:checked, .pf-v6-c-check__input:checked {
+  border-color: #7a1c33 !important;
+  background-color: #7a1c33 !important;
+}
