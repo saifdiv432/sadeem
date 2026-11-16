@@ -229,6 +229,13 @@ modules:
 
         # Safely remove gnome-tweaks if present in base image
         rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
+        if [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ]; then
+          rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png
+          rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png
+          for OLD_LOGO in /usr/share/pixmaps/saifdora*.png; do
+            [ -f "$OLD_LOGO" ] && cp -f /usr/share/pixmaps/fedora-gdm-logo.png "$OLD_LOGO"
+          done
+        fi
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
         dconf update || true
         chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager || true

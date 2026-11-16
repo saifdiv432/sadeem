@@ -928,6 +928,25 @@ def check_nvidia_status():
     return has_nvidia, driver_installed
 
 
+def get_active_accent_color():
+    gtk4_file = os.path.expanduser("~/.config/gtk-4.0/gtk.css")
+    if os.path.exists(gtk4_file):
+        try:
+            with open(gtk4_file, "r") as f:
+                for line in f:
+                    if "--accent-bg-color:" in line:
+                        val = line.split("--accent-bg-color:")[1].split(";")[0].strip()
+                        if val.startswith("#") and len(val) in (4, 7):
+                            return val
+                    elif "accent_bg_color" in line:
+                        val = line.split("accent_bg_color")[1].strip().rstrip(";").strip()
+                        if val.startswith("#") and len(val) in (4, 7):
+                            return val
+        except Exception:
+            pass
+    return "#7a1c33"
+
+
 class WelcomeWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1008,6 +1027,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.next_btn = Gtk.Button(label=t("btn_next"))
         self.next_btn.add_css_class("suggested-action")
         self.next_btn.add_css_class("pill")
+        self.next_btn.add_css_class("sadeem-primary-btn")
         self.next_btn.set_size_request(120, 36)
         self.next_btn.connect("clicked", self.on_next_clicked)
         self.bottom_bar.set_end_widget(self.next_btn)
@@ -1023,54 +1043,73 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
     def apply_custom_css(self):
         """Apply CSS rules for seamless background, rounded buttons, and badges."""
-        css = """
-        actionbar > revealer > box {
+        accent_color = get_active_accent_color()
+        css = f"""
+        @define-color sadeem_accent @accent_bg_color;
+
+        actionbar > revealer > box {{
             background: transparent;
             border-top: none;
             box-shadow: none;
             padding: 12px 24px 18px 24px;
-        }
+        }}
 
-        button {
+        button {{
             border-radius: 10px;
-        }
+        }}
 
-        .boxed-list {
+        button.sadeem-primary-btn,
+        button.suggested-action.pill {{
+            background-image: none;
+            background-color: {accent_color};
+            background-color: @accent_bg_color;
+            background-color: shade(@accent_bg_color, 1.0);
+            color: #ffffff;
+            font-weight: 700;
+            border: none;
+        }}
+
+        button.sadeem-primary-btn:hover,
+        button.suggested-action.pill:hover {{
+            filter: brightness(1.1);
+        }}
+
+        .boxed-list {{
             border-radius: 12px;
-        }
+        }}
 
         .boxed-list row .title,
         row.activatable .title,
-        row .title {
+        row .title {{
             font-weight: bold;
-        }
+        }}
 
         .boxed-list row .subtitle,
         row.activatable .subtitle,
-        row .subtitle {
+        row .subtitle {{
             opacity: 0.85;
-        }
+        }}
 
-        .sadeem-gradient-badge {
+        .sadeem-gradient-badge {{
             background: linear-gradient(135deg, #7a1c33 0%, #115e59 100%);
             border: 2px solid rgba(203, 213, 225, 0.45);
             border-radius: 9999px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
+        }}
 
-        .sadeem-gradient-badge image {
+        .sadeem-gradient-badge image {{
             color: #ffffff;
-        }
+        }}
 
-        .sadeem-header-title {
+        .sadeem-header-title {{
             font-size: 22px;
             font-weight: bold;
-        }
+        }}
 
-        .sadeem-header-subtitle {
+        .sadeem-header-subtitle {{
             font-size: 14px;
             opacity: 0.85;
-        }
+        }}
         """
         provider = Gtk.CssProvider()
         provider.load_from_string(css)
@@ -1079,7 +1118,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
             Gtk.StyleContext.add_provider_for_display(
                 display,
                 provider,
-                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION + 200
             )
 
     def create_slide_container(self, icon_names, title, subtitle):
@@ -1440,6 +1479,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
             self.prev_btn.add_css_class("pill")
         if self.prev_btn.has_css_class("suggested-action"):
             self.prev_btn.remove_css_class("suggested-action")
+        if self.prev_btn.has_css_class("sadeem-primary-btn"):
+            self.prev_btn.remove_css_class("sadeem-primary-btn")
 
         if index == total - 1:
             self.next_btn.set_label(t("btn_start"))
@@ -1450,6 +1491,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
             self.next_btn.add_css_class("suggested-action")
         if not self.next_btn.has_css_class("pill"):
             self.next_btn.add_css_class("pill")
+        if not self.next_btn.has_css_class("sadeem-primary-btn"):
+            self.next_btn.add_css_class("sadeem-primary-btn")
 
     def on_startup_toggled(self, button):
         state = button.get_active()
