@@ -1100,7 +1100,10 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
     def create_action_row(self, title, subtitle, icon_name=None, icon_widget=None, suffix_btn=None):
         """Helper to create an unactivatable ActionRow with uniform styling."""
-        row = Adw.ActionRow(title=title, subtitle=subtitle)
+        row = Adw.ActionRow()
+        row.set_use_markup(False)
+        row.set_title(title)
+        row.set_subtitle(subtitle)
         row.set_activatable(False)
         row.set_title_lines(1)
         row.set_subtitle_lines(2)
@@ -1171,8 +1174,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
         listbox.add_css_class("boxed-list")
         listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 
-        # Rumman - Real colorful 40x40 icon
-        icon_rumman = create_colorful_app_icon(["io.github.Rumman", "rumman"], ["rumman", "io.github.Rumman"], size=40)
+        # Rumman - Real colorful 38x38 icon
+        icon_rumman = create_colorful_app_icon(["io.github.Rumman", "rumman"], ["rumman", "io.github.Rumman"], size=38)
         btn1 = self.create_row_button(t("s2_r1_b"), lambda *a: self.launch_app_smart(["io.github.Rumman", "rumman"], flatpak_id="io.github.Rumman", direct_cmd=["/usr/bin/rumman"]))
         r1 = self.create_action_row(
             t("s2_r1_t"),
@@ -1182,8 +1185,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
         )
         listbox.append(r1)
 
-        # Mister Download Manager - Real colorful 40x40 icon
-        icon_mdm = create_colorful_app_icon(["misterdownloadmanager", "com.misterdownloadmanager"], ["misterdownloadmanager"], size=40)
+        # Mister Download Manager - Real colorful 38x38 icon
+        icon_mdm = create_colorful_app_icon(["misterdownloadmanager", "com.misterdownloadmanager"], ["misterdownloadmanager"], size=38)
         btn2 = self.create_row_button(t("s2_r2_b"), lambda *a: self.launch_app_smart(["misterdownloadmanager", "com.misterdownloadmanager"], flatpak_id="com.misterdownloadmanager", direct_cmd=["/usr/bin/misterdownloadmanager"]))
         r2 = self.create_action_row(
             t("s2_r2_t"),
@@ -1193,8 +1196,8 @@ class WelcomeWindow(Adw.ApplicationWindow):
         )
         listbox.append(r2)
 
-        # ZapFast - Real colorful 40x40 icon
-        icon_zapfast = create_colorful_app_icon(["zapfast", "rocks.zapfast.ZapFast"], ["zapfast"], size=40)
+        # ZapFast - Real colorful 38x38 icon
+        icon_zapfast = create_colorful_app_icon(["zapfast", "rocks.zapfast.ZapFast"], ["zapfast"], size=38)
         btn3 = self.create_row_button(t("s2_r3_b"), lambda *a: self.launch_app_smart(["zapfast", "rocks.zapfast.ZapFast"], flatpak_id="rocks.zapfast.ZapFast", direct_cmd=["/usr/bin/zapfast"]))
         r3 = self.create_action_row(
             t("s2_r3_t"),
@@ -1433,10 +1436,20 @@ class WelcomeWindow(Adw.ApplicationWindow):
             self.prev_btn.set_opacity(1.0)
             self.prev_btn.set_sensitive(True)
 
+        if not self.prev_btn.has_css_class("pill"):
+            self.prev_btn.add_css_class("pill")
+        if self.prev_btn.has_css_class("suggested-action"):
+            self.prev_btn.remove_css_class("suggested-action")
+
         if index == total - 1:
             self.next_btn.set_label(t("btn_start"))
         else:
             self.next_btn.set_label(t("btn_next"))
+
+        if not self.next_btn.has_css_class("suggested-action"):
+            self.next_btn.add_css_class("suggested-action")
+        if not self.next_btn.has_css_class("pill"):
+            self.next_btn.add_css_class("pill")
 
     def on_startup_toggled(self, button):
         state = button.get_active()

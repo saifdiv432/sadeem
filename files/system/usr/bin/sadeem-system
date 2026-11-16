@@ -49,7 +49,17 @@ TRANSLATIONS = {
         "btn_updating": "Updating...",
         "btn_reboot_now": "Restart Now",
         "upd_details_title": "Process Details & Output",
-        "status_ready": "Ready to update",
+        "status_ready": "Click below to check for available updates",
+        "status_checking": "Checking for updates...",
+        "status_all_updated": "Your system and apps are up to date",
+        "status_updates_available": "Updates are available for installation",
+        "btn_check_updates": "Check for Updates",
+        "btn_check_again": "Check Again",
+        "btn_install_updates": "Download & Install Updates",
+        "upd_results_title": "Update Results",
+        "upd_apps_available": "app(s) with updates",
+        "upd_pkgs_available": "package(s) can be upgraded",
+        "upd_no_updates_desc": "No new updates are currently available",
         "status_sys": "Updating core system (rpm-ostree)...",
         "status_flatpak": "Updating Store applications (Flatpak)...",
         "status_box": "Updating Sadeem Box container...",
@@ -140,7 +150,17 @@ TRANSLATIONS = {
         "btn_updating": "جاري التحديث...",
         "btn_reboot_now": "إعادة التشغيل الآن",
         "upd_details_title": "تفاصيل العملية وسجل الأوامر",
-        "status_ready": "جاهز للبدء",
+        "status_ready": "اضغط للتحقق من وجود تحديثات جديدة للنظام والتطبيقات",
+        "status_checking": "جارٍ البحث عن تحديثات...",
+        "status_all_updated": "النظام وجميع التطبيقات محدّثة بالكامل",
+        "status_updates_available": "توجد تحديثات جديدة جاهزة للتثبيت",
+        "btn_check_updates": "التحقق من وجود تحديثات",
+        "btn_check_again": "إعادة التحقق من التحديثات",
+        "btn_install_updates": "تنزيل وتثبيت التحديثات",
+        "upd_results_title": "نتائج الفحص",
+        "upd_apps_available": "تطبيق متوفر له تحديث",
+        "upd_pkgs_available": "حزمة قابلة للترقية",
+        "upd_no_updates_desc": "لا توجد تحديثات جديدة متوفرة حالياً",
         "status_sys": "جاري فحص وتحديث النظام الأساسي...",
         "status_flatpak": "جاري تحديث تطبيقات المتجر (Flatpak)...",
         "status_box": "جاري تحديث حاوية سديم (Sadeem Box)...",
@@ -231,7 +251,17 @@ TRANSLATIONS = {
         "btn_updating": "Mise à jour en cours...",
         "btn_reboot_now": "Redémarrer maintenant",
         "upd_details_title": "Détails du processus et journal",
-        "status_ready": "Prêt pour la mise à jour",
+        "status_ready": "Cliquez ci-dessous pour vérifier les mises à jour disponibles",
+        "status_checking": "Recherche de mises à jour...",
+        "status_all_updated": "Votre système et vos applications sont à jour",
+        "status_updates_available": "Des mises à jour sont prêtes à être installées",
+        "btn_check_updates": "Vérifier les mises à jour",
+        "btn_check_again": "Vérifier à nouveau",
+        "btn_install_updates": "Télécharger et installer les mises à jour",
+        "upd_results_title": "Résultats de la vérification",
+        "upd_apps_available": "application(s) à mettre à jour",
+        "upd_pkgs_available": "paquet(s) pouvant être mis à jour",
+        "upd_no_updates_desc": "Aucune mise à jour disponible actuellement",
         "status_sys": "Mise à jour du système de base (rpm-ostree)...",
         "status_flatpak": "Mise à jour des applications Flatpak...",
         "status_box": "Mise à jour du conteneur Sadeem Box...",
@@ -322,7 +352,17 @@ TRANSLATIONS = {
         "btn_updating": "Actualizando...",
         "btn_reboot_now": "Reiniciar ahora",
         "upd_details_title": "Detalles del proceso y registro",
-        "status_ready": "Listo para actualizar",
+        "status_ready": "Haga clic abajo para comprobar actualizaciones disponibles",
+        "status_checking": "Buscando actualizaciones...",
+        "status_all_updated": "Su sistema y aplicaciones están totalmente actualizados",
+        "status_updates_available": "Hay actualizaciones disponibles para instalar",
+        "btn_check_updates": "Buscar actualizaciones",
+        "btn_check_again": "Comprobar de nuevo",
+        "btn_install_updates": "Descargar e instalar actualizaciones",
+        "upd_results_title": "Resultados de la comprobación",
+        "upd_apps_available": "aplicación(es) con actualizaciones",
+        "upd_pkgs_available": "paquete(s) actualizables",
+        "upd_no_updates_desc": "No hay nuevas actualizaciones disponibles actualmente",
         "status_sys": "Actualizando sistema base (rpm-ostree)...",
         "status_flatpak": "Actualizando aplicaciones Flatpak...",
         "status_box": "Actualizando contenedor Sadeem Box...",
@@ -413,7 +453,17 @@ TRANSLATIONS = {
         "btn_updating": "Wird aktualisiert...",
         "btn_reboot_now": "Jetzt neu starten",
         "upd_details_title": "Prozessdetails und Protokoll",
-        "status_ready": "Bereit zur Aktualisierung",
+        "status_ready": "Klicken Sie unten, um nach verfügbaren Updates zu suchen",
+        "status_checking": "Suche nach Updates...",
+        "status_all_updated": "Ihr System und Ihre Anwendungen sind auf dem neuesten Stand",
+        "status_updates_available": "Updates stehen zur Installation bereit",
+        "btn_check_updates": "Nach Updates suchen",
+        "btn_check_again": "Erneut prüfen",
+        "btn_install_updates": "Updates herunterladen und installieren",
+        "upd_results_title": "Prüfungsergebnisse",
+        "upd_apps_available": "Anwendung(en) mit Updates",
+        "upd_pkgs_available": "Paket(e) aktualisierbar",
+        "upd_no_updates_desc": "Derzeit sind keine neuen Updates verfügbar",
         "status_sys": "Basissystem wird aktualisiert (rpm-ostree)...",
         "status_flatpak": "Flatpak-Anwendungen werden aktualisiert...",
         "status_box": "Sadeem Box Container wird aktualisiert...",
@@ -504,7 +554,17 @@ TRANSLATIONS = {
         "btn_updating": "Güncelleniyor...",
         "btn_reboot_now": "Şimdi Yeniden Başlat",
         "upd_details_title": "İşlem Ayrıntıları ve Günlük",
-        "status_ready": "Güncellemeye hazır",
+        "status_ready": "Mevcut güncellemeleri kontrol etmek için aşağıya tıklayın",
+        "status_checking": "Güncellemeler kontrol ediliyor...",
+        "status_all_updated": "Sisteminiz ve uygulamalarınız tamamen güncel",
+        "status_updates_available": "Yüklemeye hazır güncellemeler mevcut",
+        "btn_check_updates": "Güncellemeleri Kontrol Et",
+        "btn_check_again": "Yeniden Kontrol Et",
+        "btn_install_updates": "Güncellemeleri İndir ve Yükle",
+        "upd_results_title": "Kontrol Sonuçları",
+        "upd_apps_available": "güncellemesi olan uygulama",
+        "upd_pkgs_available": "yükseltilebilir paket",
+        "upd_no_updates_desc": "Şu anda yeni güncelleme bulunmuyor",
         "status_sys": "Çekirdek sistem güncelleniyor (rpm-ostree)...",
         "status_flatpak": "Flatpak uygulamaları güncelleniyor...",
         "status_box": "Sadeem Box kapsayıcısı güncelleniyor...",
@@ -595,7 +655,17 @@ TRANSLATIONS = {
         "btn_updating": "Обновление...",
         "btn_reboot_now": "Перезагрузить сейчас",
         "upd_details_title": "Подробности процесса и журнал",
-        "status_ready": "Готов к обновлению",
+        "status_ready": "Нажмите ниже, чтобы проверить наличие обновлений",
+        "status_checking": "Поиск обновлений...",
+        "status_all_updated": "Система и приложения полностью обновлены",
+        "status_updates_available": "Доступны обновления для установки",
+        "btn_check_updates": "Проверить обновления",
+        "btn_check_again": "Проверить снова",
+        "btn_install_updates": "Скачать и установить обновления",
+        "upd_results_title": "Результаты проверки",
+        "upd_apps_available": "приложений с обновлениями",
+        "upd_pkgs_available": "пакетов доступно для обновления",
+        "upd_no_updates_desc": "В настоящее время новых обновлений нет",
         "status_sys": "Обновление базовой системы (rpm-ostree)...",
         "status_flatpak": "Обновление приложений Flatpak...",
         "status_box": "Обновление контейнера Sadeem Box...",
@@ -686,7 +756,17 @@ TRANSLATIONS = {
         "btn_updating": "Atualizando...",
         "btn_reboot_now": "Reiniciar Agora",
         "upd_details_title": "Detalhes do Processo e Registro",
-        "status_ready": "Pronto para atualizar",
+        "status_ready": "Clique abaixo para verificar atualizações disponíveis",
+        "status_checking": "A procurar atualizações...",
+        "status_all_updated": "O seu sistema e aplicações estão totalmente atualizados",
+        "status_updates_available": "Atualizações disponíveis para instalação",
+        "btn_check_updates": "Verificar atualizações",
+        "btn_check_again": "Verificar novamente",
+        "btn_install_updates": "Descarregar e instalar atualizações",
+        "upd_results_title": "Resultados da verificação",
+        "upd_apps_available": "aplicação(ões) com atualizações",
+        "upd_pkgs_available": "pacote(s) atualizáveis",
+        "upd_no_updates_desc": "Não há novas atualizações disponíveis no momento",
         "status_sys": "Atualizando sistema básico (rpm-ostree)...",
         "status_flatpak": "Atualizando aplicativos Flatpak...",
         "status_box": "Atualizando contêiner Sadeem Box...",
@@ -777,7 +857,17 @@ TRANSLATIONS = {
         "btn_updating": "Aggiornamento in corso...",
         "btn_reboot_now": "Riavvia ora",
         "upd_details_title": "Dettagli del processo e registro",
-        "status_ready": "Pronto per l'aggiornamento",
+        "status_ready": "Fai clic qui sotto per cercare gli aggiornamenti disponibili",
+        "status_checking": "Ricerca aggiornamenti in corso...",
+        "status_all_updated": "Il sistema e le applicazioni sono completamente aggiornati",
+        "status_updates_available": "Sono disponibili aggiornamenti da installare",
+        "btn_check_updates": "Verifica aggiornamenti",
+        "btn_check_again": "Controlla di nuovo",
+        "btn_install_updates": "Scarica e installa aggiornamenti",
+        "upd_results_title": "Risultati del controllo",
+        "upd_apps_available": "applicazioni con aggiornamenti",
+        "upd_pkgs_available": "pacchetti aggiornabili",
+        "upd_no_updates_desc": "Al momento non ci sono nuovi aggiornamenti disponibili",
         "status_sys": "Aggiornamento del sistema di base (rpm-ostree)...",
         "status_flatpak": "Aggiornamento delle applicazioni Flatpak...",
         "status_box": "Aggiornamento del container Sadeem Box...",
@@ -868,7 +958,17 @@ TRANSLATIONS = {
         "btn_updating": "正在更新...",
         "btn_reboot_now": "立即重启",
         "upd_details_title": "过程详情与输出日志",
-        "status_ready": "准备就绪",
+        "status_ready": "点击下方检查可用的系统与应用更新",
+        "status_checking": "正在检查更新...",
+        "status_all_updated": "系统与所有应用程序均已是最新版本",
+        "status_updates_available": "有可用更新等待安装",
+        "btn_check_updates": "检查更新",
+        "btn_check_again": "重新检查",
+        "btn_install_updates": "下载并安装更新",
+        "upd_results_title": "检查结果",
+        "upd_apps_available": "个应用有可用更新",
+        "upd_pkgs_available": "个软件包可升级",
+        "upd_no_updates_desc": "当前没有可用的新更新",
         "status_sys": "正在更新核心系统 (rpm-ostree)...",
         "status_flatpak": "正在更新应用商店软件 (Flatpak)...",
         "status_box": "正在更新 Sadeem Box 容器...",
@@ -1343,6 +1443,9 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         # State tracking
         self.is_updating = False
+        self.is_checking = False
+        self.current_update_stage = "idle"
+        self.reboot_ready = False
         self.reboot_required = False
         self._color_updating = False
         self._upd_pulse_timer = None
@@ -1354,7 +1457,30 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
     def check_initial_reboot_status(self):
         def _check():
             pending = has_pending_reboot()
-            self.update_action_button_state(pending)
+            if pending:
+                def _ui():
+                    self.reboot_ready = True
+                    self.btn_start_update.set_label(t("install_and_restart"))
+                    self.btn_start_update.set_sensitive(True)
+                    if not self.btn_start_update.has_css_class("suggested-action"):
+                        self.btn_start_update.add_css_class("suggested-action")
+                    if not self.btn_start_update.has_css_class("pill"):
+                        self.btn_start_update.add_css_class("pill")
+                    self.upd_status_label.set_text(t("status_reboot"))
+                    if hasattr(self, "upd_results_group"):
+                        for r in getattr(self, "upd_result_rows", []):
+                            self.upd_results_group.remove(r)
+                        self.upd_result_rows = []
+                        row = Adw.ActionRow()
+                        row.set_use_markup(False)
+                        row.set_title(t("install_and_restart"))
+                        row.set_subtitle(t("status_reboot"))
+                        row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-reboot-symbolic", "view-refresh-symbolic"])))
+                        self.upd_results_group.add(row)
+                        self.upd_result_rows.append(row)
+                        self.upd_results_group.set_visible(True)
+                    return False
+                GLib.idle_add(_ui)
         threading.Thread(target=_check, daemon=True).start()
 
     def update_action_button_state(self, pending=None):
@@ -1371,17 +1497,14 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 if not self.btn_start_update.has_css_class("pill"):
                     self.btn_start_update.add_css_class("pill")
                 self.upd_status_label.set_text(t("status_reboot"))
-                if hasattr(self, "btn_reboot_update"):
-                    self.btn_reboot_update.set_visible(False)
             else:
-                self.btn_start_update.set_label(t("btn_start_update"))
+                if getattr(self, "current_update_stage", "idle") == "idle":
+                    self.btn_start_update.set_label(t("btn_check_updates"))
                 self.btn_start_update.set_sensitive(True)
                 if not self.btn_start_update.has_css_class("suggested-action"):
                     self.btn_start_update.add_css_class("suggested-action")
                 if not self.btn_start_update.has_css_class("pill"):
                     self.btn_start_update.add_css_class("pill")
-                if hasattr(self, "btn_reboot_update"):
-                    self.btn_reboot_update.set_visible(False)
             return False
 
         GLib.idle_add(_apply)
@@ -1389,8 +1512,10 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
     def on_action_button_clicked(self, btn):
         if getattr(self, "reboot_ready", False):
             trigger_system_reboot()
+        elif getattr(self, "current_update_stage", "idle") == "results_has_updates":
+            self.start_installation()
         else:
-            self.on_start_updates_clicked(btn)
+            self.start_checking()
 
     def build_page_header(self, icon_names, title, subtitle):
         return build_page_header(icon_names, title, subtitle)
@@ -1516,25 +1641,40 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.box_row.set_active(True)
         pref_group.add(self.box_row)
 
-        # Progress Area
+        # Stage 3: Results Summary Card (PreferencesGroup under target switches)
+        self.upd_results_group = Adw.PreferencesGroup()
+        self.upd_results_group.set_title(t("upd_results_title"))
+        self.upd_results_group.set_visible(False)
+        self.upd_result_rows = []
+        content.append(self.upd_results_group)
+
+        # Progress / Status Area
         self.upd_progress_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+
+        status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        self.upd_spinner = Gtk.Spinner()
+        self.upd_spinner.set_visible(False)
+        status_box.append(self.upd_spinner)
+
         self.upd_status_label = Gtk.Label(label=t("status_ready"))
         self.upd_status_label.add_css_class("body")
         self.upd_status_label.set_halign(Gtk.Align.START)
-        self.upd_progress_box.append(self.upd_status_label)
+        status_box.append(self.upd_status_label)
+        self.upd_progress_box.append(status_box)
 
         self.upd_progress_bar = Gtk.ProgressBar()
         self.upd_progress_bar.set_show_text(True)
         self.upd_progress_bar.set_fraction(0.0)
         self.upd_progress_bar.set_text("0%")
+        self.upd_progress_bar.set_visible(False)
         self.upd_progress_box.append(self.upd_progress_bar)
         content.append(self.upd_progress_box)
 
-        # Action Buttons (Primary button transforms directly into Install & Restart when needed)
+        # Action Buttons (Primary button: "Check for Updates" by default)
         actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         actions_box.set_halign(Gtk.Align.FILL)
 
-        self.btn_start_update = Gtk.Button(label=t("btn_start_update"))
+        self.btn_start_update = Gtk.Button(label=t("btn_check_updates"))
         self.btn_start_update.add_css_class("suggested-action")
         self.btn_start_update.add_css_class("pill")
         self.btn_start_update.set_size_request(-1, 46)
@@ -1542,14 +1682,6 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.btn_start_update.connect("clicked", self.on_action_button_clicked)
         actions_box.append(self.btn_start_update)
 
-        self.btn_reboot_update = Gtk.Button(label=t("install_and_restart"))
-        self.btn_reboot_update.add_css_class("suggested-action")
-        self.btn_reboot_update.add_css_class("pill")
-        self.btn_reboot_update.set_size_request(-1, 46)
-        self.btn_reboot_update.set_hexpand(True)
-        self.btn_reboot_update.set_visible(False)
-        self.btn_reboot_update.connect("clicked", lambda b: trigger_system_reboot())
-        actions_box.append(self.btn_reboot_update)
         content.append(actions_box)
 
         # Details Expander
@@ -1620,8 +1752,188 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             return False
         GLib.idle_add(_append)
 
-    def on_start_updates_clicked(self, btn):
-        if self.is_updating:
+    def start_checking(self):
+        if getattr(self, "is_checking", False) or getattr(self, "is_updating", False):
+            return
+
+        run_sys = self.sys_row.get_active()
+        run_flatpak = self.flatpak_row.get_active()
+        run_box = self.box_row.get_active()
+
+        if not (run_sys or run_flatpak or run_box):
+            return
+
+        self.is_checking = True
+        self.btn_start_update.set_sensitive(False)
+        self.sys_row.set_sensitive(False)
+        self.flatpak_row.set_sensitive(False)
+        self.box_row.set_sensitive(False)
+
+        self.upd_progress_bar.set_visible(False)
+        self.upd_spinner.set_visible(True)
+        self.upd_spinner.start()
+        self.upd_status_label.set_text(t("status_checking"))
+
+        threading.Thread(
+            target=self.check_for_updates_thread,
+            args=(run_sys, run_flatpak, run_box),
+            daemon=True
+        ).start()
+
+    def check_for_updates_thread(self, do_sys, do_flatpak, do_box):
+        results = {
+            "sys": {"has_update": False, "version": "", "diff": ""},
+            "flatpak": {"has_update": False, "count": 0, "apps": []},
+            "box": {"has_update": False, "count": 0}
+        }
+
+        # 1. rpm-ostree upgrade --check
+        if do_sys:
+            try:
+                res = subprocess.run(["rpm-ostree", "upgrade", "--check"], capture_output=True, text=True, timeout=90, check=False)
+                if res.returncode == 0:
+                    out = res.stdout.strip()
+                    if "AvailableUpdate" in out and "AvailableUpdate: none" not in out:
+                        results["sys"]["has_update"] = True
+                        m_ver = re.search(r'Version:\s*([^\s\n]+)', out)
+                        if m_ver:
+                            results["sys"]["version"] = m_ver.group(1)
+                        m_diff = re.search(r'Diff:\s*([^\n]+)', out)
+                        if m_diff:
+                            results["sys"]["diff"] = m_diff.group(1)
+                        elif "Upgraded:" in out:
+                            upg = [l.strip() for l in out.splitlines() if l.strip().startswith("Upgraded:")]
+                            if upg:
+                                results["sys"]["diff"] = upg[0]
+            except Exception:
+                pass
+
+        # 2. flatpak remote-ls --updates --columns=application,name,version,download-size
+        if do_flatpak:
+            try:
+                res = subprocess.run(["flatpak", "remote-ls", "--updates", "--columns=application,name,version,download-size"], capture_output=True, text=True, timeout=60, check=False)
+                if res.returncode == 0 and res.stdout.strip():
+                    lines = [l.strip() for l in res.stdout.strip().splitlines() if l.strip()]
+                    apps = []
+                    for line in lines:
+                        if line.startswith("Application ID") or "Download size" in line:
+                            continue
+                        parts = re.split(r'\t+|\s{2,}', line)
+                        if len(parts) >= 2:
+                            app_id = parts[0]
+                            name = parts[1]
+                            ver = parts[2] if len(parts) > 2 else ""
+                            size = parts[3] if len(parts) > 3 else ""
+                            apps.append((app_id, name, ver, size))
+                    if apps:
+                        results["flatpak"]["has_update"] = True
+                        results["flatpak"]["count"] = len(apps)
+                        results["flatpak"]["apps"] = apps
+            except Exception:
+                pass
+
+        # 3. Sadeem Box check
+        if do_box:
+            try:
+                chk = subprocess.run(["distrobox", "list", "--no-color"], capture_output=True, text=True, timeout=5, check=False)
+                if chk.returncode == 0 and "sadeem-box" in chk.stdout:
+                    res = subprocess.run(["distrobox", "enter", "sadeem-box", "--", "dnf", "check-update"], capture_output=True, text=True, timeout=60, check=False)
+                    if res.returncode == 100:
+                        lines = [l.strip() for l in res.stdout.splitlines() if l.strip()]
+                        pkg_lines = []
+                        for l in lines:
+                            if "Obsoleting Packages" in l:
+                                break
+                            parts = l.split()
+                            if len(parts) >= 3 and not l.startswith("Last metadata") and not l.startswith("Security:"):
+                                pkg_lines.append(parts[0])
+                        count = len(pkg_lines) if pkg_lines else 1
+                        results["box"]["has_update"] = True
+                        results["box"]["count"] = count
+            except Exception:
+                pass
+
+        GLib.idle_add(self.on_check_finished, results)
+
+    def on_check_finished(self, results):
+        self.is_checking = False
+        self.upd_spinner.stop()
+        self.upd_spinner.set_visible(False)
+        self.sys_row.set_sensitive(True)
+        self.flatpak_row.set_sensitive(True)
+        self.box_row.set_sensitive(True)
+
+        for r in getattr(self, "upd_result_rows", []):
+            self.upd_results_group.remove(r)
+        self.upd_result_rows = []
+
+        has_any = results["sys"]["has_update"] or results["flatpak"]["has_update"] or results["box"]["has_update"]
+
+        if not has_any:
+            row = Adw.ActionRow()
+            row.set_use_markup(False)
+            row.set_title(t("status_all_updated"))
+            row.set_subtitle(t("upd_no_updates_desc"))
+            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"])))
+            self.upd_results_group.add(row)
+            self.upd_result_rows.append(row)
+            self.upd_results_group.set_visible(True)
+
+            self.upd_status_label.set_text(t("status_all_updated"))
+            self.btn_start_update.set_label(t("btn_check_again"))
+            self.btn_start_update.set_sensitive(True)
+            self.current_update_stage = "idle"
+        else:
+            if results["sys"]["has_update"]:
+                row = Adw.ActionRow()
+                row.set_use_markup(False)
+                row.set_title(t("upd_sys_title"))
+                ver = results["sys"]["version"]
+                diff = results["sys"]["diff"]
+                sub_parts = []
+                if ver:
+                    sub_parts.append(f"Sadeem {ver}")
+                if diff:
+                    sub_parts.append(diff)
+                row.set_subtitle(" • ".join(sub_parts) if sub_parts else t("status_updates_available"))
+                row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["software-update-available-symbolic", "system-software-update-symbolic"])))
+                self.upd_results_group.add(row)
+                self.upd_result_rows.append(row)
+
+            if results["flatpak"]["has_update"]:
+                row = Adw.ActionRow()
+                row.set_use_markup(False)
+                row.set_title(t("upd_flatpak_title"))
+                apps = results["flatpak"]["apps"]
+                app_names = [a[1] if a[1] else a[0] for a in apps]
+                preview = ", ".join(app_names[:3])
+                if len(app_names) > 3:
+                    preview += f" (+{len(app_names) - 3})"
+                sub = f"{results['flatpak']['count']} {t('upd_apps_available')}: {preview}"
+                row.set_subtitle(sub)
+                row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-software-install-symbolic", "application-x-executable-symbolic"])))
+                self.upd_results_group.add(row)
+                self.upd_result_rows.append(row)
+
+            if results["box"]["has_update"]:
+                row = Adw.ActionRow()
+                row.set_use_markup(False)
+                row.set_title(t("upd_box_title"))
+                row.set_subtitle(f"{results['box']['count']} {t('upd_pkgs_available')}")
+                row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["package-x-generic-symbolic", "utilities-terminal-symbolic"])))
+                self.upd_results_group.add(row)
+                self.upd_result_rows.append(row)
+
+            self.upd_results_group.set_visible(True)
+            self.upd_status_label.set_text(t("status_updates_available"))
+            self.btn_start_update.set_label(t("btn_install_updates"))
+            self.btn_start_update.set_sensitive(True)
+            self.current_update_stage = "results_has_updates"
+
+        return False
+
+    def start_installation(self):
+        if getattr(self, "is_updating", False):
             return
 
         run_sys = self.sys_row.get_active()
@@ -1632,16 +1944,20 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             return
 
         self.is_updating = True
+        self.current_update_stage = "installing"
         self.btn_start_update.set_sensitive(False)
         self.btn_start_update.set_label(t("btn_updating"))
         self.sys_row.set_sensitive(False)
         self.flatpak_row.set_sensitive(False)
         self.box_row.set_sensitive(False)
+
+        self.upd_progress_bar.set_visible(True)
+        self.upd_progress_bar.set_show_text(True)
         self.update_upd_progress(0.0)
 
         buf = self.upd_text_view.get_buffer()
         buf.set_text("")
-        self.upd_expander.set_expanded(True)
+        self.upd_expander.set_expanded(False)
 
         threading.Thread(target=self.run_updates_thread, args=(run_sys, run_flatpak, run_box), daemon=True).start()
 
@@ -1800,7 +2116,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
     def on_updates_finished(self, success):
         self.is_updating = False
         self.stop_upd_pulse()
-        self.update_upd_progress(1.0)
+        self.upd_progress_bar.set_visible(False)
         self.sys_row.set_sensitive(True)
         self.flatpak_row.set_sensitive(True)
         self.box_row.set_sensitive(True)
@@ -1810,12 +2126,47 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             pending = has_pending_reboot()
             def _ui():
                 if pending:
-                    self.update_action_button_state(True)
+                    self.reboot_ready = True
+                    self.btn_start_update.set_label(t("install_and_restart"))
+                    self.btn_start_update.set_sensitive(True)
+                    if not self.btn_start_update.has_css_class("suggested-action"):
+                        self.btn_start_update.add_css_class("suggested-action")
+                    if not self.btn_start_update.has_css_class("pill"):
+                        self.btn_start_update.add_css_class("pill")
+                    self.upd_status_label.set_text(t("status_reboot"))
+                    for r in getattr(self, "upd_result_rows", []):
+                        self.upd_results_group.remove(r)
+                    self.upd_result_rows = []
+                    row = Adw.ActionRow()
+                    row.set_use_markup(False)
+                    row.set_title(t("install_and_restart"))
+                    row.set_subtitle(t("status_reboot"))
+                    row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-reboot-symbolic", "view-refresh-symbolic"])))
+                    self.upd_results_group.add(row)
+                    self.upd_result_rows.append(row)
+                    self.upd_results_group.set_visible(True)
                 elif success:
-                    self.update_action_button_state(False)
+                    self.reboot_ready = False
+                    self.current_update_stage = "idle"
+                    self.btn_start_update.set_label(t("btn_check_again"))
+                    self.btn_start_update.set_sensitive(True)
                     self.upd_status_label.set_text(t("status_done"))
+                    for r in getattr(self, "upd_result_rows", []):
+                        self.upd_results_group.remove(r)
+                    self.upd_result_rows = []
+                    row = Adw.ActionRow()
+                    row.set_use_markup(False)
+                    row.set_title(t("status_all_updated"))
+                    row.set_subtitle(t("upd_no_updates_desc"))
+                    row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"])))
+                    self.upd_results_group.add(row)
+                    self.upd_result_rows.append(row)
+                    self.upd_results_group.set_visible(True)
                 else:
-                    self.update_action_button_state(False)
+                    self.reboot_ready = False
+                    self.current_update_stage = "idle"
+                    self.btn_start_update.set_label(t("btn_check_again"))
+                    self.btn_start_update.set_sensitive(True)
                     self.upd_status_label.set_text(t("status_error"))
                 return False
             GLib.idle_add(_ui)
@@ -1857,7 +2208,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         )
         self.restore_btn = Gtk.Button()
         restore_content = Adw.ButtonContent(
-            icon_name=safe_icon(["edit-undo-symbolic", "view-refresh-symbolic"]),
+            icon_name=safe_icon(["object-rotate-left-symbolic", "view-refresh-symbolic"]),
             label=t("colors_reset")
         )
         self.restore_btn.set_child(restore_content)
@@ -1870,8 +2221,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         preset_row.set_activatable(False)
         palette_box = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=12,
-            halign=Gtk.Align.CENTER,
+            spacing=8,
+            homogeneous=True,
             hexpand=True,
             margin_top=10,
             margin_bottom=10
@@ -1885,6 +2236,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             btn.add_css_class("color-circle")
             btn.add_css_class(f"preset-color-{i}")
             btn.set_size_request(42, 42)
+            btn.set_halign(Gtk.Align.CENTER)
 
             icon = Gtk.Image.new_from_icon_name(safe_icon(["object-select-symbolic", "emblem-ok-symbolic"]))
             icon.set_visible(False)
@@ -2194,9 +2546,11 @@ stage {{
         clamp = Adw.Clamp()
         clamp.set_maximum_size(640)
         clamp.set_tightening_threshold(480)
+        clamp.set_valign(Gtk.Align.CENTER)
         scrolled.set_child(clamp)
 
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        content.set_valign(Gtk.Align.CENTER)
         content.set_margin_top(20)
         content.set_margin_bottom(24)
         content.set_margin_start(20)
@@ -2524,7 +2878,7 @@ stage {{
             title=t("box_status_title"),
             subtitle=t("box_status_init")
         )
-        self.box_status_icon = Gtk.Image.new_from_icon_name(safe_icon(["content-loading-symbolic", "process-working-symbolic"]))
+        self.box_status_icon = Gtk.Image.new_from_icon_name(safe_icon(["utilities-terminal-symbolic", "drive-harddisk-symbolic"]))
         self.box_status_row.add_prefix(self.box_status_icon)
         status_group.add(self.box_status_row)
 
@@ -2574,6 +2928,11 @@ stage {{
         btn_pkg.connect("clicked", self.on_choose_package_clicked)
         row_pkg.add_suffix(btn_pkg)
         actions_group.add(row_pkg)
+
+        box_btn_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
+        box_btn_group.add_widget(btn_term)
+        box_btn_group.add_widget(btn_buddy)
+        box_btn_group.add_widget(btn_pkg)
 
         return scrolled
 
@@ -2643,7 +3002,7 @@ stage {{
                         self.box_status_icon.set_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"]))
                     else:
                         self.box_status_row.set_subtitle(t("box_status_init"))
-                        self.box_status_icon.set_from_icon_name(safe_icon(["content-loading-symbolic", "process-working-symbolic"]))
+                        self.box_status_icon.set_from_icon_name(safe_icon(["utilities-terminal-symbolic", "drive-harddisk-symbolic"]))
                 return False
 
             GLib.idle_add(_update)
