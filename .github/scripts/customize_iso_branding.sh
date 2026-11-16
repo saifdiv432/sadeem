@@ -1,34 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ISO_FILE="${1:-build-output/sadeem-45.iso}"
 BASE_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
+ISO_INPUT="${1:-}"
 
-if [ ! -f "$ISO_FILE" ]; then
-  if [ -f "$BASE_DIR/$ISO_FILE" ]; then
-    ISO_FILE="$BASE_DIR/$ISO_FILE"
-  else
-    CANDIDATE=$(ls -1 "$BASE_DIR"/build-output/*.iso 2>/dev/null | head -n 1 || true)
-    if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE" ]; then
-      ISO_FILE="$CANDIDATE"
-    fi
-  fi
+if [ -n "$ISO_INPUT" ] && [ -f "$ISO_INPUT" ]; then
+  ISO_FILE="$ISO_INPUT"
+elif [ -n "$ISO_INPUT" ] && [ -f "$BASE_DIR/$ISO_INPUT" ]; then
+  ISO_FILE="$BASE_DIR/$ISO_INPUT"
+else
+  # Dynamically locate the ISO file
+  ISO_FILE=$(find "$BASE_DIR" -maxdepth 3 -type f -name "*.iso" 2>/dev/null | head -n 1 || true)
 fi
 
-if [ ! -f "$ISO_FILE" ]; then
-  echo "Error: ISO file '$ISO_FILE' not found."
+if [ -z "$ISO_FILE" ] || [ ! -f "$ISO_FILE" ]; then
+  echo "Error: ISO file '$ISO_INPUT' not found in workspace."
   exit 1
 fi
 
+# Obtain absolute path BEFORE changing directories
+ISO_ABS=$(realpath "$ISO_FILE")
+
 echo "=================================================="
-echo "Customizing Anaconda WebUI & Branding in: $ISO_FILE"
+echo "Customizing Anaconda WebUI & Branding in: $ISO_ABS"
 echo "=================================================="
 
 WORK_DIR=$(mktemp -d)
 trap 'rm -rf "$WORK_DIR"' EXIT
 
 cd "$WORK_DIR"
-ISO_ABS=$(realpath "$ISO_FILE")
 
 TARGET_PATH=""
 IMG_NAME=""
@@ -89,6 +89,9 @@ if [ -n "$TARGET_PATH" ] && [ -f "$IMG_NAME" ]; then
   echo "Re-compressing $IMG_NAME with xz..."
   mksquashfs squashfs-root "$IMG_NAME" -comp xz -noappend
 
+  # Immediately delete uncompressed rootfs to conserve disk space
+  rm -rf squashfs-root
+
   # Inject back into ISO using xorriso preserving bootloader & partition configuration
   echo "Injecting updated $TARGET_PATH back into $ISO_ABS..."
   xorriso -indev "$ISO_ABS" \
@@ -96,8 +99,16 @@ if [ -n "$TARGET_PATH" ] && [ -f "$IMG_NAME" ]; then
           -boot_image any keep \
           -update "$IMG_NAME" "$TARGET_PATH"
 
+  # Immediately remove compressed image from temp directory
+  rm -f "$IMG_NAME"
+
   mv -f "${ISO_ABS}.tmp" "$ISO_ABS"
   echo "ISO installer branding customization completed successfully!"
 else
   echo "Notice: No installer squashfs image found in $ISO_FILE; leaving ISO as-is."
 fi
+
+# Explicitly cleanup WORK_DIR before exiting
+cd "$BASE_DIR"
+rm -rf "$WORK_DIR"
+trap - EXIT

@@ -68,7 +68,24 @@ jobs:
       - name: Customize Anaconda WebUI and Branding in Installer ISO
         run: |
           sudo apt-get update && sudo apt-get install -y xorriso squashfs-tools
-          sudo GITHUB_WORKSPACE="$GITHUB_WORKSPACE" bash .github/scripts/customize_iso_branding.sh build-output/sadeem-45.iso
+
+          ISO_SRC=$(find . -maxdepth 3 -type f -name "*.iso" | head -n 1)
+          if [ -z "$ISO_SRC" ]; then
+            echo "ERROR: No ISO file found in workspace!"
+            find . -maxdepth 3
+            exit 1
+          fi
+          echo "Found built ISO at: $ISO_SRC"
+
+          sudo GITHUB_WORKSPACE="$GITHUB_WORKSPACE" bash .github/scripts/customize_iso_branding.sh "$ISO_SRC"
+
+          mkdir -p build-output
+          ISO_ABS=$(realpath "$ISO_SRC")
+          DEST_ABS=$(realpath -m build-output/sadeem-45.iso)
+          if [ "$ISO_ABS" != "$DEST_ABS" ]; then
+            echo "Moving modified ISO from $ISO_SRC to build-output/sadeem-45.iso"
+            sudo mv -f "$ISO_SRC" build-output/sadeem-45.iso
+          fi
           sudo chmod -R 777 build-output
 
       - name: Calculate Checksum
