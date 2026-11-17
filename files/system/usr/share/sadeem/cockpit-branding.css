@@ -3,24 +3,11 @@
    Brand Color: #7a1c33 | Text: #ffffff
    ========================================================================== */
 
-#topnav,
-.cockpit-header,
-header#topnav,
-.pf-v5-c-page__header {
+#topnav {
   background-color: #7a1c33 !important;
-  background: #7a1c33 !important;
   color: #ffffff !important;
-  border-bottom: none !important;
-  margin: 0 !important;
-  height: auto !important;
-  min-height: auto !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
 }
 
-#topnav *,
-.cockpit-header *,
-header#topnav *,
-.pf-v5-c-page__header * {
+#topnav * {
   color: #ffffff !important;
 }

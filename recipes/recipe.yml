@@ -83,6 +83,7 @@ modules:
       - gnome-shell-extension-light-style
       - fastfetch
       - librsvg2-tools
+      - plymouth-theme-spinner
 
       # Hardware detection & Secure Boot management
       - pciutils
@@ -169,28 +170,37 @@ modules:
         done
         echo -e "[Product]\nproduct_name = Sadeem 45" > /etc/anaconda/product.d/sadeem.conf
 
-        # Apply Sadeem burgundy CSS to Cockpit Shell and Anaconda WebUI
+        # Apply Sadeem burgundy CSS to Cockpit Shell, Firefox kiosk theme, and Anaconda WebUI
         if [ -f /usr/share/sadeem/cockpit-branding.css ]; then
           for CSS_FILE in /usr/share/cockpit/branding/fedora/branding.css /usr/share/cockpit/branding/*/*.css /usr/share/cockpit/shell/shell.css /usr/share/cockpit/shell/*.css; do
             if [ -f "$CSS_FILE" ]; then
               echo -e "\n/* Sadeem Burgundy Cockpit Top Bar */\n" >> "$CSS_FILE"
               cat /usr/share/sadeem/cockpit-branding.css >> "$CSS_FILE"
+              gzip -kf "$CSS_FILE" 2>/dev/null || true
             fi
           done
         fi
         if [ -f /usr/share/sadeem/anaconda-burgundy.css ]; then
-          for CSS_FILE in /usr/share/cockpit/anaconda/*.css /usr/share/anaconda/*.css; do
+          for CSS_FILE in /usr/share/cockpit/anaconda/*.css /usr/share/cockpit/anaconda-webui/*.css /usr/share/anaconda/*.css; do
             if [ -f "$CSS_FILE" ]; then
               echo -e "\n/* Sadeem Burgundy Anaconda WebUI Theme */\n" >> "$CSS_FILE"
               cat /usr/share/sadeem/anaconda-burgundy.css >> "$CSS_FILE"
+              gzip -kf "$CSS_FILE" 2>/dev/null || true
             fi
           done
-          for HTML_FILE in /usr/share/cockpit/anaconda/*.html /usr/share/cockpit/anaconda/index.html /usr/share/anaconda/*.html; do
+          for HTML_FILE in /usr/share/cockpit/anaconda/*.html /usr/share/cockpit/anaconda-webui/*.html /usr/share/cockpit/anaconda/index.html /usr/share/anaconda/*.html; do
             if [ -f "$HTML_FILE" ] && ! grep -q "anaconda-burgundy.css" "$HTML_FILE"; then
               sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$HTML_FILE" 2>/dev/null || true
             fi
           done
         fi
+        # Firefox kiosk top bar styling for Anaconda WebUI
+        for UC in /usr/share/anaconda/firefox-theme/*/chrome/userChrome.css; do
+          if [ -f "$UC" ]; then
+            sed -i -E 's/#(294172|3c6eb4|0066cc|0055aa|51a2da|0088ce|06c)/#7a1c33/gI' "$UC" || true
+            echo -e "\n:root, #navigator-toolbox, #titlebar, #TabsToolbar, #nav-bar, .titlebar-color { background-color: #7a1c33 !important; background-image: none !important; color: #ffffff !important; }\n" >> "$UC" || true
+          fi
+        done
 
         # Remove restricted Fedora flatpak remotes and ensure Flathub is configured system-wide
         flatpak remote-delete --system --force fedora 2>/dev/null || true

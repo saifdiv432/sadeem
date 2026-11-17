@@ -3,56 +3,33 @@
    Brand Color: #7a1c33 | Hover: #5c1426 | Accent: #7a1c33
    ========================================================================== */
 
-:root, body, .pf-v5-theme-dark, .pf-v6-theme-dark {
+:root, .pf-v6-theme-dark, .pf-v5-theme-dark, .pf-v6-theme-light, .pf-v5-theme-light {
+  --pf-t--global--color--brand--default: #7a1c33 !important;
+  --pf-t--global--color--brand--hover: #5c1426 !important;
+  --pf-t--global--color--brand--clicked: #4a0f1e !important;
   --pf-v5-global--primary-color--100: #7a1c33 !important;
   --pf-v5-global--primary-color--200: #5c1426 !important;
   --pf-v5-global--link--Color: #7a1c33 !important;
-  --pf-v5-global--link--Color--hover: #5c1426 !important;
-  --pf-v5-global--active-color--100: #7a1c33 !important;
-  --pf-v5-global--active-color--200: #5c1426 !important;
-  --pf-t--global--color--brand--default: #7a1c33 !important;
-  --pf-t--global--color--brand--hover: #5c1426 !important;
-  --pf-t--global--background--color--brand--default: #7a1c33 !important;
-  --pf-v5-c-button--m-primary--BackgroundColor: #7a1c33 !important;
-  --pf-v5-c-button--m-primary--hover--BackgroundColor: #5c1426 !important;
-  --pf-v5-c-button--m-primary--focus--BackgroundColor: #5c1426 !important;
-  --pf-v5-c-button--m-primary--active--BackgroundColor: #4a0f1d !important;
-  --pf-v5-c-progress__bar--BackgroundColor: #7a1c33 !important;
-  --pf-v6-c-progress__bar--BackgroundColor: #7a1c33 !important;
 }
 
-/* Ensure installer wizard content header/masthead is transparent without overlapping banner */
-.pf-v5-c-page__header,
-.pf-v5-c-masthead,
-.pf-v6-c-masthead,
-header.pf-v5-c-page__header,
-header.pf-v5-c-masthead,
-header,
-[class*="wizard__header"] {
-  background-color: transparent !important;
-  background: transparent !important;
-}
-
-/* Primary buttons */
-.pf-v5-c-button.pf-m-primary, .pf-v6-c-button.pf-m-primary, button.pf-m-primary {
+.pf-v6-c-button.pf-m-primary, .pf-v5-c-button.pf-m-primary {
   background-color: #7a1c33 !important;
   border-color: #7a1c33 !important;
   color: #ffffff !important;
 }
 
-.pf-v5-c-button.pf-m-primary:hover, .pf-v6-c-button.pf-m-primary:hover, button.pf-m-primary:hover {
+.pf-v6-c-button.pf-m-primary:hover, .pf-v5-c-button.pf-m-primary:hover {
   background-color: #5c1426 !important;
   border-color: #5c1426 !important;
   color: #ffffff !important;
 }
 
-.pf-v5-c-button.pf-m-primary:active, .pf-v6-c-button.pf-m-primary:active, button.pf-m-primary:active {
-  background-color: #4a0f1d !important;
-  border-color: #4a0f1d !important;
+.pf-v6-c-button.pf-m-primary:active, .pf-v5-c-button.pf-m-primary:active {
+  background-color: #4a0f1e !important;
+  border-color: #4a0f1e !important;
   color: #ffffff !important;
 }
 
-/* Progress bars and indicators */
 .pf-v5-c-progress__bar, .pf-v6-c-progress__bar, [class*="progress__bar"] {
   background-color: #7a1c33 !important;
 }
@@ -61,7 +38,6 @@ header,
   stroke: #7a1c33 !important;
 }
 
-/* Navigation items / wizard step indicators */
 .pf-v5-c-nav__link.pf-m-current,
 .pf-v6-c-nav__link.pf-m-current,
 [class*="nav__link"][class*="current"],
@@ -72,7 +48,6 @@ header,
   color: #7a1c33 !important;
 }
 
-/* Radio & Checkbox active highlights */
 .pf-v5-c-radio__input:checked, .pf-v6-c-radio__input:checked,
 .pf-v5-c-check__input:checked, .pf-v6-c-check__input:checked {
   border-color: #7a1c33 !important;
