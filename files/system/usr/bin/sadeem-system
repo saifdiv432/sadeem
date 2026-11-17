@@ -3787,7 +3787,7 @@ echo '=================================================='
 class SadeemSystemApp(Adw.Application):
     def __init__(self):
         super().__init__(
-            application_id="org.sadeem.system",
+            application_id="org.sadeem.System",
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE
         )
         self.window = None
@@ -3830,6 +3830,7 @@ class SadeemSystemApp(Adw.Application):
 
 
 def main():
+    GLib.set_prgname("org.sadeem.System")
     app = SadeemSystemApp()
     return app.run(sys.argv)
 

@@ -82,7 +82,7 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Workspaces are created automatically as you open windows to keep your desktop organized.",
     },
     "ar": {
-        "window_title": "مرحباً بك في سديم",
+        "window_title": "ترحيب سديم",
         "banner_title": "تم اكتشاف بطاقة رسوميات NVIDIA! التعريفات الرسمية غير مثبتة.",
         "banner_btn": "تثبيت تعريف NVIDIA و CUDA",
         "btn_prev": "السابق",
@@ -885,7 +885,7 @@ def create_app_icon(icon_names, size=40, fallback="application-x-executable-symb
 
 
 # --- Configuration & Paths ---
-APP_ID = "org.sadeem.welcome"
+APP_ID = "org.sadeem.Welcome"
 CONFIG_DIR = os.path.expanduser("~/.config/sadeem")
 SEEN_FILE = os.path.join(CONFIG_DIR, "welcome-seen")
 LEGACY_SEEN_FILE = os.path.expanduser("~/.config/saifdora/welcome-seen")
@@ -1549,6 +1549,7 @@ def main():
     if is_autostart and is_seen():
         sys.exit(0)
 
+    GLib.set_prgname("org.sadeem.Welcome")
     app = WelcomeApplication()
     return app.run(sys.argv)
 

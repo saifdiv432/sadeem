@@ -33,6 +33,7 @@ Exec=/usr/bin/sadeem-system
 Icon=sadeem-system
 Terminal=false
 Type=Application
+StartupWMClass=org.sadeem.System
 Categories=Settings;System;HardwareSettings;DesktopSettings;GTK;
 Keywords=system;settings;control;update;color;theme;nvidia;cuda;driver;container;sadeem;نظام;إعدادات;تحديث;ألوان;تعريفات;حاوية;سديم;
 StartupNotify=true

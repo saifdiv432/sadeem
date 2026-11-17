@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Welcome to Sadeem
-Name[ar]=مرحباً بك في سديم
+Name[ar]=ترحيب سديم
 Name[fr]=Bienvenue dans Sadeem
 Name[es]=Bienvenido a Sadeem
 Name[de]=Willkommen bei Sadeem
@@ -23,5 +23,6 @@ Exec=/usr/bin/sadeem-welcome
 Icon=sadeem-welcome
 Terminal=false
 Type=Application
+StartupWMClass=org.sadeem.Welcome
 Categories=System;Documentation;GTK;
 Keywords=welcome;tour;guide;sadeem;ترحيب;جولة;سديم;
