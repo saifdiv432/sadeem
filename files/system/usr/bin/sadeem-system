@@ -1353,6 +1353,39 @@ def has_pending_reboot():
     return False
 
 
+def get_current_booted_digest():
+    """Extract current active (booted) image digest from rpm-ostree status."""
+    try:
+        res = subprocess.run(["rpm-ostree", "status", "--json"], capture_output=True, text=True, timeout=15, check=False)
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            for d in data.get("deployments", []):
+                if d.get("booted"):
+                    digest = d.get("container-image-reference-digest") or d.get("base-commit-meta", {}).get("ostree.manifest-digest")
+                    if digest:
+                        return digest.strip()
+    except Exception:
+        pass
+
+    # Fallback to parsing text output under the booted bullet (●)
+    try:
+        res = subprocess.run(["rpm-ostree", "status"], capture_output=True, text=True, timeout=15, check=False)
+        if res.returncode == 0 and res.stdout.strip():
+            in_booted = False
+            for line in res.stdout.splitlines():
+                if line.startswith("●"):
+                    in_booted = True
+                elif in_booted:
+                    if line and not line.startswith(" ") and not line.startswith("\t"):
+                        break
+                    m = re.search(r"Digest:\s*(sha256:[a-f0-9]+)", line, re.IGNORECASE)
+                    if m:
+                        return m.group(1).strip()
+    except Exception:
+        pass
+    return ""
+
+
 def trigger_system_reboot():
     """Trigger a safe, graceful GNOME session reboot with systemctl fallback."""
     try:
@@ -2059,7 +2092,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
     def check_for_updates_thread(self, do_sys, do_flatpak, do_box):
         results = {
-            "sys": {"has_update": False, "version": "", "diff": ""},
+            "sys": {"has_update": False, "version": "", "diff": "", "digest": ""},
             "flatpak": {"has_update": False, "count": 0, "apps": []},
             "box": {"has_update": False, "count": 0}
         }
@@ -2067,21 +2100,51 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         # 1. rpm-ostree upgrade --check
         if do_sys:
             try:
+                # 1. Clean locally cached metadata to guarantee pulling the latest digest from remote registry
+                subprocess.run(["rpm-ostree", "cleanup", "-m"], capture_output=True, text=True, timeout=30, check=False)
+
+                # Get currently booted image digest
+                current_digest = get_current_booted_digest()
+
+                # Run update check (exit code 0 indicates update available; exit code 77 indicates unchanged / no update)
                 res = subprocess.run(["rpm-ostree", "upgrade", "--check"], capture_output=True, text=True, timeout=90, check=False)
                 if res.returncode == 0:
                     out = res.stdout.strip()
-                    if "AvailableUpdate" in out and "AvailableUpdate: none" not in out:
-                        results["sys"]["has_update"] = True
-                        m_ver = re.search(r'Version:\s*([^\s\n]+)', out)
-                        if m_ver:
-                            results["sys"]["version"] = m_ver.group(1)
-                        m_diff = re.search(r'Diff:\s*([^\n]+)', out)
-                        if m_diff:
-                            results["sys"]["diff"] = m_diff.group(1)
-                        elif "Upgraded:" in out:
-                            upg = [l.strip() for l in out.splitlines() if l.strip().startswith("Upgraded:")]
-                            if upg:
-                                results["sys"]["diff"] = upg[0]
+                    has_available_section = ("AvailableUpdate" in out and "AvailableUpdate: none" not in out) or "Diff:" in out
+
+                    if has_available_section:
+                        # Extract incoming image digest from AvailableUpdate section
+                        m_digest = re.search(r'Digest:\s*(sha256:[a-f0-9]+)', out, re.IGNORECASE)
+                        if not m_digest:
+                            m_digest = re.search(r'sha256:[a-f0-9]{64}', out)
+
+                        new_digest = m_digest.group(1).strip() if (m_digest and m_digest.lastindex) else (m_digest.group(0).strip() if m_digest else "")
+
+                        # Compare digests: same-day builds share identical Version (e.g. 45.20261117.0)
+                        # but differ in sha256 digest
+                        if new_digest and current_digest:
+                            has_update = (new_digest != current_digest)
+                        else:
+                            # If digest couldn't be extracted, rely on returncode == 0 and AvailableUpdate/Diff section
+                            has_update = True
+
+                        if has_update:
+                            results["sys"]["has_update"] = True
+                            if new_digest:
+                                results["sys"]["digest"] = new_digest
+                            m_ver = re.search(r'Version:\s*([^\s\n]+)', out)
+                            if m_ver:
+                                results["sys"]["version"] = m_ver.group(1)
+                            m_diff = re.search(r'Diff:\s*([^\n]+)', out)
+                            if m_diff:
+                                results["sys"]["diff"] = m_diff.group(1)
+                            elif "Upgraded:" in out:
+                                upg = [l.strip() for l in out.splitlines() if l.strip().startswith("Upgraded:")]
+                                if upg:
+                                    results["sys"]["diff"] = upg[0]
+                            elif new_digest:
+                                short_digest = new_digest.replace("sha256:", "")[:12]
+                                results["sys"]["diff"] = f"Digest: {short_digest}..."
             except Exception:
                 pass
 
