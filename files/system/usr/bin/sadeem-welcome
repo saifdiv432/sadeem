@@ -910,20 +910,21 @@ def check_nvidia_status():
 
     if has_nvidia:
         try:
-            res_rpm = subprocess.run(["rpm", "-q", "akmod-nvidia", "akmod-nvidia-580xx"],
-                                     capture_output=True, text=True, check=False)
-            if "akmod-nvidia" in res_rpm.stdout and "not installed" not in res_rpm.stdout:
+            res_smi = subprocess.run(["nvidia-smi"], capture_output=True, text=True, check=False)
+            if res_smi.returncode == 0:
                 driver_installed = True
         except Exception:
             pass
 
-        try:
-            if os.path.exists("/proc/modules"):
-                with open("/proc/modules", "r") as f:
-                    if "nvidia " in f.read():
-                        driver_installed = True
-        except Exception:
-            pass
+        if not driver_installed:
+            try:
+                if os.path.exists("/proc/modules"):
+                    with open("/proc/modules", "r") as f:
+                        mods = f.read()
+                        if "nvidia " in mods and "nouveau " not in mods:
+                            driver_installed = True
+            except Exception:
+                pass
 
     return has_nvidia, driver_installed
 

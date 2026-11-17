@@ -107,6 +107,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Authentication cancelled",
         "drv_compile_notice": "Note: Downloading packages and compiling the kernel module (akmod) takes several minutes. Please wait...",
         "drv_log_expander": "Live Installation Log",
+        "drv_inactive_title": "Driver Packages Installed but Inactive",
+        "drv_inactive_desc": "NVIDIA driver packages are layered, but currently inactive because the open-source nouveau driver is loaded or kernel arguments need updating.",
+        "btn_fix_kargs": "Enable Driver & Fix Boot Arguments",
+        "btn_uninstall_driver": "Uninstall NVIDIA Driver",
+        "drv_fixing_kargs": "Blacklisting nouveau and updating kernel boot arguments...",
+        "drv_uninstalling": "Uninstalling NVIDIA driver packages and restoring defaults...",
+        "drv_uninstalled_done": "Driver uninstalled successfully! Please restart to apply changes.",
         "drv_done": "Driver installation completed successfully! Please restart to activate.",
         "drv_error": "Installation encountered errors or was cancelled.",
         "box_header_title": "Sadeem Box Container Runtime",
@@ -213,6 +220,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "تم إلغاء المصادقة",
         "drv_compile_notice": "ملاحظة: تنزيل الحزم وبناء وحدة النواة (Kernel Module) يستغرق عدة دقائق، يرجى الانتظار دون إغلاق النافذة...",
         "drv_log_expander": "سجل التثبيت المباشر",
+        "drv_inactive_title": "حزم التعريف مثبتة لكنها معطلة",
+        "drv_inactive_desc": "حزم تعريف NVIDIA مثبتة على النظام، لكنها معطلة حالياً بسبب تشغيل تعريف nouveau مفتوح المصدر أو نقص معاملات إقلاع النواة.",
+        "btn_fix_kargs": "تفعيل التعريف وإصلاح معاملات الإقلاع",
+        "btn_uninstall_driver": "إزالة تعريف NVIDIA",
+        "drv_fixing_kargs": "جاري حظر nouveau وإصلاح معاملات النواة (kargs)...",
+        "drv_uninstalling": "جاري إزالة حزم تعريف NVIDIA واستعادة الإعدادات الافتراضية...",
+        "drv_uninstalled_done": "تمت إزالة التعريف بنجاح! يرجى إعادة التشغيل لتفعيل التغييرات.",
         "drv_done": "اكتمل تثبيت التعريف بنجاح! يرجى إعادة تشغيل الجهاز لتفعيله.",
         "drv_error": "حدث خطأ أثناء التثبيت أو تم إلغاؤه من المستخدم.",
         "box_header_title": "بيئة تشغيل وحاويات سديم بوكس (Sadeem Box)",
@@ -319,6 +333,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Authentification annulée",
         "drv_compile_notice": "Remarque: Le téléchargement et la compilation du module noyau (akmod) prennent plusieurs minutes. Veuillez patienter...",
         "drv_log_expander": "Journal d'installation en direct",
+        "drv_inactive_title": "Paquets du pilote installés mais inactifs",
+        "drv_inactive_desc": "Les paquets du pilote NVIDIA sont installés mais inactifs car le pilote nouveau est chargé ou les arguments du noyau doivent être mis à jour.",
+        "btn_fix_kargs": "Activer le pilote et corriger les arguments de démarrage",
+        "btn_uninstall_driver": "Désinstaller le pilote NVIDIA",
+        "drv_fixing_kargs": "Blacklist de nouveau et mise à jour des arguments du noyau...",
+        "drv_uninstalling": "Désinstallation des paquets du pilote NVIDIA...",
+        "drv_uninstalled_done": "Pilote désinstallé avec succès ! Veuillez redémarrer.",
         "drv_done": "Installation du pilote terminée avec succès ! Veuillez redémarrer.",
         "drv_error": "L'installation a rencontré des erreurs ou a été annulée.",
         "box_header_title": "Environnement conteneurisé Sadeem Box",
@@ -425,6 +446,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Autenticación cancelada",
         "drv_compile_notice": "Nota: La descarga de paquetes y la compilación del módulo del kernel (akmod) tardan varios minutos. Por favor espere...",
         "drv_log_expander": "Registro de instalación en vivo",
+        "drv_inactive_title": "Paquetes del controlador instalados pero inactivos",
+        "drv_inactive_desc": "Los paquetes del controlador NVIDIA están instalados pero inactivos porque el controlador nouveau está cargado o faltan argumentos del kernel.",
+        "btn_fix_kargs": "Activar controlador y corregir argumentos de arranque",
+        "btn_uninstall_driver": "Desinstalar controlador NVIDIA",
+        "drv_fixing_kargs": "Bloqueando nouveau y actualizando argumentos del kernel...",
+        "drv_uninstalling": "Desinstalando paquetes del controlador NVIDIA...",
+        "drv_uninstalled_done": "¡Controlador desinstalado con éxito! Reinicie el equipo.",
         "drv_done": "¡Instalación completada con éxito! Reinicie el equipo.",
         "drv_error": "La instalación falló o fue cancelada.",
         "box_header_title": "Entorno de contenedores Sadeem Box",
@@ -531,6 +559,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Authentifizierung abgebrochen",
         "drv_compile_notice": "Hinweis: Das Herunterladen und Kompilieren des Kernel-Moduls (akmod) dauert einige Minuten. Bitte warten...",
         "drv_log_expander": "Live-Installationsprotokoll",
+        "drv_inactive_title": "Treiberpakete installiert, aber inaktiv",
+        "drv_inactive_desc": "NVIDIA-Treiberpakete sind installiert, aber inaktiv, da der Open-Source-Treiber nouveau geladen ist oder Boot-Argumente fehlen.",
+        "btn_fix_kargs": "Treiber aktivieren & Boot-Argumente reparieren",
+        "btn_uninstall_driver": "NVIDIA-Treiber deinstallieren",
+        "drv_fixing_kargs": "Nouveau wird blockiert und Kernel-Boot-Argumente aktualisiert...",
+        "drv_uninstalling": "NVIDIA-Treiberpakete werden deinstalliert...",
+        "drv_uninstalled_done": "Treiber erfolgreich deinstalliert! Bitte neu starten.",
         "drv_done": "Installation erfolgreich abgeschlossen! Bitte neu starten.",
         "drv_error": "Installation fehlgeschlagen oder abgebrochen.",
         "box_header_title": "Sadeem Box Container-Laufzeitumgebung",
@@ -637,6 +672,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Kimlik doğrulama iptal edildi",
         "drv_compile_notice": "Not: Paketlerin indirilmesi ve çekirdek modülünün (akmod) derlenmesi birkaç dakika sürer. Lütfen bekleyin...",
         "drv_log_expander": "Canlı Kurulum Günlüğü",
+        "drv_inactive_title": "Sürücü Paketleri Yüklü Ancak Devre Dışı",
+        "drv_inactive_desc": "NVIDIA sürücü paketleri kurulu ancak açık kaynaklı nouveau sürücüsü etkin olduğu için devre dışı.",
+        "btn_fix_kargs": "Sürücüyü Etkinleştir ve Başlatma Parametrelerini Onar",
+        "btn_uninstall_driver": "NVIDIA Sürücüsünü Kaldır",
+        "drv_fixing_kargs": "Nouveau engelleniyor ve çekirdek başlatma parametreleri güncelleniyor...",
+        "drv_uninstalling": "NVIDIA sürücü paketleri kaldırılıyor...",
+        "drv_uninstalled_done": "Sürücü başarıyla kaldırıldı! Lütfen yeniden başlatın.",
         "drv_done": "Sürücü kurulumu başarıyla tamamlandı! Yeniden başlatın.",
         "drv_error": "Kurulum sırasında hata oluştu veya iptal edildi.",
         "box_header_title": "Sadeem Box Kapsayıcı Çalışma Ortamı",
@@ -743,6 +785,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Аутентификация отменена",
         "drv_compile_notice": "Примечание: Загрузка пакетов и сборка модуля ядра (akmod) занимает несколько минут. Пожалуйста, подождите...",
         "drv_log_expander": "Журнал установки в реальном времени",
+        "drv_inactive_title": "Пакеты драйвера установлены, но неактивны",
+        "drv_inactive_desc": "Пакеты драйверов NVIDIA установлены, но неактивны, так как загружен открытый драйвер nouveau или требуются параметры ядра.",
+        "btn_fix_kargs": "Включить драйвер и исправить параметры загрузки",
+        "btn_uninstall_driver": "Удалить драйвер NVIDIA",
+        "drv_fixing_kargs": "Блокировка nouveau и обновление параметров загрузки ядра...",
+        "drv_uninstalling": "Удаление пакетов драйвера NVIDIA...",
+        "drv_uninstalled_done": "Драйвер успешно удален! Пожалуйста, перезагрузите систему.",
         "drv_done": "Установка драйвера успешно завершена! Перезагрузите ПК.",
         "drv_error": "Ошибка при установке или отменено пользователем.",
         "box_header_title": "Среда контейнеров Sadeem Box",
@@ -849,6 +898,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Autenticação cancelada",
         "drv_compile_notice": "Nota: O download de pacotes e a compilação do módulo do kernel (akmod) leva vários minutos. Por favor, aguarde...",
         "drv_log_expander": "Registro de instalação em tempo real",
+        "drv_inactive_title": "Pacotes do driver instalados, mas inativos",
+        "drv_inactive_desc": "Os pacotes do driver NVIDIA estão instalados, mas inativos porque o driver nouveau está carregado ou faltam argumentos do kernel.",
+        "btn_fix_kargs": "Ativar driver e corrigir argumentos de inicialização",
+        "btn_uninstall_driver": "Desinstalar driver NVIDIA",
+        "drv_fixing_kargs": "A bloquear o nouveau e a atualizar os argumentos do kernel...",
+        "drv_uninstalling": "A desinstalar pacotes do driver NVIDIA...",
+        "drv_uninstalled_done": "Driver desinstalado com sucesso! Reinicie para aplicar.",
         "drv_done": "Instalação concluída com sucesso! Reinicie o computador.",
         "drv_error": "A instalação falhou ou foi cancelada.",
         "box_header_title": "Ambiente de Contentores Sadeem Box",
@@ -955,6 +1011,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "Autenticazione annullata",
         "drv_compile_notice": "Nota: Il download dei pacchetti e la compilazione del modulo del kernel (akmod) richiedono diversi minuti. Attendere...",
         "drv_log_expander": "Registro di installazione in tempo reale",
+        "drv_inactive_title": "Pacchetti del driver installati ma inattivi",
+        "drv_inactive_desc": "I pacchetti del driver NVIDIA sono installati ma inattivi perché è caricato il driver nouveau o mancano i parametri del kernel.",
+        "btn_fix_kargs": "Abilita driver e correggi parametri di avvio",
+        "btn_uninstall_driver": "Disinstalla driver NVIDIA",
+        "drv_fixing_kargs": "Blocco di nouveau e aggiornamento dei parametri del kernel in corso...",
+        "drv_uninstalling": "Disinstallazione dei pacchetti del driver NVIDIA in corso...",
+        "drv_uninstalled_done": "Driver disinstallato con successo! Riavvia per applicare.",
         "drv_done": "Installazione completata con successo! Riavvia il computer.",
         "drv_error": "Installazione non riuscita o annullata.",
         "box_header_title": "Ambiente runtime Sadeem Box",
@@ -1061,6 +1124,13 @@ TRANSLATIONS = {
         "drv_auth_cancelled": "身份验证已取消",
         "drv_compile_notice": "注意：下载软件包并编译内核模块 (akmod) 需要几分钟时间，请稍候...",
         "drv_log_expander": "实时安装日志",
+        "drv_inactive_title": "驱动程序包已安装但未激活",
+        "drv_inactive_desc": "NVIDIA 驱动程序包已安装，但由于加载了开源 nouveau 驱动程序或内核启动参数未配置，当前处于未激活状态。",
+        "btn_fix_kargs": "启用驱动程序并修复启动参数",
+        "btn_uninstall_driver": "卸载 NVIDIA 驱动程序",
+        "drv_fixing_kargs": "正在禁用 nouveau 并更新内核启动参数...",
+        "drv_uninstalling": "正在卸载 NVIDIA 驱动程序包...",
+        "drv_uninstalled_done": "驱动程序卸载成功！请重启电脑以应用更改。",
         "drv_done": "驱动程序安装成功！请重启电脑以生效。",
         "drv_error": "安装过程中出错或已被用户取消。",
         "box_header_title": "Sadeem Box 容器运行环境",
@@ -1363,20 +1433,61 @@ def detect_nvidia_gpus():
     return gpus
 
 
-def is_driver_installed():
-    for pkg in ["akmod-nvidia", "akmod-nvidia-580xx"]:
-        try:
-            res = subprocess.run(
-                ["rpm", "-q", pkg],
-                capture_output=True,
-                text=True,
-                check=False
-            )
-            if res.returncode == 0:
-                return True
-        except Exception:
-            pass
+def get_layered_nvidia_packages():
+    layered = []
+    try:
+        res = subprocess.run(
+            ["rpm-ostree", "status", "--json"],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if res.returncode == 0:
+            import json
+            data = json.loads(res.stdout)
+            for dep in data.get("deployments", []):
+                for pkg in dep.get("requested-packages", []) + dep.get("packages", []):
+                    if ("akmod-nvidia" in pkg or "xorg-x11-drv-nvidia" in pkg) and pkg not in layered:
+                        layered.append(pkg)
+    except Exception:
+        pass
+
+    if not layered:
+        for pkg in ["akmod-nvidia", "akmod-nvidia-580xx", "akmod-nvidia-470xx"]:
+            try:
+                res = subprocess.run(["rpm", "-q", pkg], capture_output=True, text=True, check=False)
+                if res.returncode == 0 and "not installed" not in res.stdout:
+                    layered.append(pkg)
+            except Exception:
+                pass
+    return layered
+
+
+def is_nouveau_loaded():
+    if os.path.exists("/sys/module/nouveau"):
+        return True
+    try:
+        res = subprocess.run(["lsmod"], capture_output=True, text=True, check=False)
+        return "nouveau" in res.stdout
+    except Exception:
+        return False
+
+
+def is_nvidia_driver_active():
+    try:
+        res = subprocess.run(["nvidia-smi"], capture_output=True, text=True, check=False)
+        if res.returncode == 0:
+            return True
+    except Exception:
+        pass
+    if os.path.exists("/sys/module/nvidia") and not is_nouveau_loaded():
+        return True
     return False
+
+
+def is_driver_installed():
+    layered = get_layered_nvidia_packages()
+    return len(layered) > 0 and is_nvidia_driver_active() and not is_nouveau_loaded()
 
 
 def get_secure_boot_state():
@@ -2709,10 +2820,66 @@ stage {{
     # =========================================================================
     # TAB 3: DRIVERS & GPU
     # =========================================================================
+    def _create_drv_progress_widgets(self, action_group):
+        self.drv_progress_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.drv_progress_box.set_margin_top(15)
+        self.drv_progress_box.set_visible(False)
+        action_group.add(self.drv_progress_box)
+
+        self.drv_progress_bar = Gtk.ProgressBar()
+        self.drv_progress_bar.set_pulse_step(0.1)
+        self.drv_progress_box.append(self.drv_progress_bar)
+
+        self.lbl_drv_status = Gtk.Label(label=t("drv_preparing"))
+        self.lbl_drv_status.set_halign(Gtk.Align.START)
+        self.lbl_drv_status.add_css_class("dim-label")
+        self.drv_progress_box.append(self.lbl_drv_status)
+
+        self.lbl_drv_note = Gtk.Label(label=t("drv_compile_notice"))
+        self.lbl_drv_note.set_wrap(True)
+        self.lbl_drv_note.set_halign(Gtk.Align.START)
+        self.lbl_drv_note.add_css_class("dim-label")
+        self.lbl_drv_note.add_css_class("caption")
+        self.drv_progress_box.append(self.lbl_drv_note)
+
+        self.drv_expander = Gtk.Expander.new(t("drv_log_expander"))
+        self.drv_expander.set_expanded(True)
+        self.drv_progress_box.append(self.drv_expander)
+
+        log_scrolled = Gtk.ScrolledWindow()
+        log_scrolled.set_min_content_height(180)
+        log_scrolled.set_max_content_height(260)
+        log_scrolled.set_propagate_natural_height(False)
+        log_scrolled.add_css_class("card")
+        self.drv_expander.set_child(log_scrolled)
+
+        self.drv_text_buffer = Gtk.TextBuffer()
+        self.drv_text_view = Gtk.TextView.new_with_buffer(self.drv_text_buffer)
+        self.drv_text_view.set_editable(False)
+        self.drv_text_view.set_cursor_visible(False)
+        self.drv_text_view.set_monospace(True)
+        self.drv_text_view.set_left_margin(12)
+        self.drv_text_view.set_right_margin(12)
+        self.drv_text_view.set_top_margin(10)
+        self.drv_text_view.set_bottom_margin(10)
+        log_scrolled.set_child(self.drv_text_view)
+
+        # Reboot Button
+        self.btn_reboot_drivers = Gtk.Button(label=t("btn_reboot_drivers"))
+        self.btn_reboot_drivers.add_css_class("suggested-action")
+        self.btn_reboot_drivers.add_css_class("pill")
+        self.btn_reboot_drivers.set_size_request(-1, 50)
+        self.btn_reboot_drivers.set_visible(False)
+        self.btn_reboot_drivers.connect("clicked", lambda b: subprocess.run(["systemctl", "reboot"]))
+        action_group.add(self.btn_reboot_drivers)
+
     def build_drivers_page(self):
         gpus = detect_nvidia_gpus()
         db = load_database()
         sb_enabled, needs_mok = get_secure_boot_state()
+        layered_pkgs = get_layered_nvidia_packages()
+        nouveau_loaded = is_nouveau_loaded()
+        nvidia_active = is_nvidia_driver_active()
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
@@ -2753,8 +2920,12 @@ stage {{
             card_group.add(row)
             return scrolled
 
-        # Case 2: Driver already active
-        if is_driver_installed():
+        primary_gpu = gpus[0]
+        category, card_name, cat_info = classify_gpu(primary_gpu, db)
+        detected_names = ", ".join([g["raw_name"] for g in gpus])
+
+        # Case 2: Driver layered AND active
+        if layered_pkgs and nvidia_active and not nouveau_loaded:
             header = self.build_page_header(
                 ["video-display-symbolic", "emblem-ok-symbolic"],
                 t("drv_banner_title"),
@@ -2762,23 +2933,100 @@ stage {{
             )
             content.append(header)
 
-            card_group = Adw.PreferencesGroup()
+            card_group = Adw.PreferencesGroup(title=t("drv_hw_title"))
             content.append(card_group)
 
-            detected_names = ", ".join([g["raw_name"] for g in gpus])
-            row = Adw.ActionRow(
-                title=t("drv_installed_title"),
-                subtitle=t("drv_installed_desc", card_names=detected_names)
+            row_card = Adw.ActionRow(
+                title=t("drv_card_title"),
+                subtitle=f"{card_name} ({detected_names})"
             )
-            row.set_subtitle_lines(3)
-            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"])))
-            card_group.add(row)
+            row_card.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic"])))
+            card_group.add(row_card)
+
+            row_driver = Adw.ActionRow(
+                title=t("drv_installed_title"),
+                subtitle=", ".join(layered_pkgs)
+            )
+            row_driver.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"])))
+            card_group.add(row_driver)
+
+            action_group = Adw.PreferencesGroup()
+            content.append(action_group)
+
+            self.btn_uninstall_driver = Gtk.Button(label=t("btn_uninstall_driver"))
+            self.btn_uninstall_driver.add_css_class("destructive-action")
+            self.btn_uninstall_driver.add_css_class("pill")
+            self.btn_uninstall_driver.set_size_request(-1, 50)
+            self.btn_uninstall_driver.connect(
+                "clicked",
+                lambda b: self.on_uninstall_drivers_clicked(layered_pkgs)
+            )
+            action_group.add(self.btn_uninstall_driver)
+
+            self._create_drv_progress_widgets(action_group)
             return scrolled
 
-        # Case 3: Unsupported legacy card
-        primary_gpu = gpus[0]
-        category, card_name, cat_info = classify_gpu(primary_gpu, db)
+        # Case 3: Driver layered but INACTIVE (nouveau loaded or kargs missing)
+        if layered_pkgs and (nouveau_loaded or not nvidia_active):
+            header = self.build_page_header(
+                ["video-display-symbolic", "dialog-warning-symbolic"],
+                t("drv_inactive_title"),
+                t("drv_inactive_desc")
+            )
+            content.append(header)
 
+            card_group = Adw.PreferencesGroup(title=t("drv_hw_title"))
+            content.append(card_group)
+
+            row_card = Adw.ActionRow(
+                title=t("drv_card_title"),
+                subtitle=f"{card_name} [PCI: {primary_gpu['device_id']}]"
+            )
+            row_card.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic"])))
+            card_group.add(row_card)
+
+            row_pkgs = Adw.ActionRow(
+                title=t("drv_recommended_title"),
+                subtitle=", ".join(layered_pkgs)
+            )
+            row_pkgs.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["package-x-generic-symbolic"])))
+            card_group.add(row_pkgs)
+
+            status_subtitle = "nouveau (Open-Source / Active)" if nouveau_loaded else "Inactive / Module not loaded"
+            row_state = Adw.ActionRow(
+                title=t("drv_inactive_title"),
+                subtitle=status_subtitle
+            )
+            row_state.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic"])))
+            card_group.add(row_state)
+
+            action_group = Adw.PreferencesGroup()
+            content.append(action_group)
+
+            self.btn_fix_kargs = Gtk.Button(label=t("btn_fix_kargs"))
+            self.btn_fix_kargs.add_css_class("suggested-action")
+            self.btn_fix_kargs.add_css_class("pill")
+            self.btn_fix_kargs.set_size_request(-1, 50)
+            self.btn_fix_kargs.connect(
+                "clicked",
+                lambda b: self.on_fix_kargs_clicked()
+            )
+            action_group.add(self.btn_fix_kargs)
+
+            self.btn_uninstall_driver = Gtk.Button(label=t("btn_uninstall_driver"))
+            self.btn_uninstall_driver.add_css_class("destructive-action")
+            self.btn_uninstall_driver.add_css_class("pill")
+            self.btn_uninstall_driver.set_margin_top(10)
+            self.btn_uninstall_driver.connect(
+                "clicked",
+                lambda b: self.on_uninstall_drivers_clicked(layered_pkgs)
+            )
+            action_group.add(self.btn_uninstall_driver)
+
+            self._create_drv_progress_widgets(action_group)
+            return scrolled
+
+        # Case 4: Unsupported legacy card
         if category == "unsupported":
             header = self.build_page_header(
                 ["video-display-symbolic", "dialog-warning-symbolic"],
@@ -2799,7 +3047,7 @@ stage {{
             card_group.add(row)
             return scrolled
 
-        # Case 4: Supported GPU ready for installation
+        # Case 5: Supported GPU ready for installation
         header = self.build_page_header(
             ["video-display-symbolic", "system-software-install-symbolic"],
             t("drv_banner_title"),
@@ -2868,59 +3116,7 @@ stage {{
         )
         action_group.add(self.btn_install_drivers)
 
-        # Progress / Log Box
-        self.drv_progress_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        self.drv_progress_box.set_margin_top(15)
-        self.drv_progress_box.set_visible(False)
-        action_group.add(self.drv_progress_box)
-
-        self.drv_progress_bar = Gtk.ProgressBar()
-        self.drv_progress_bar.set_pulse_step(0.1)
-        self.drv_progress_box.append(self.drv_progress_bar)
-
-        self.lbl_drv_status = Gtk.Label(label=t("drv_preparing"))
-        self.lbl_drv_status.set_halign(Gtk.Align.START)
-        self.lbl_drv_status.add_css_class("dim-label")
-        self.drv_progress_box.append(self.lbl_drv_status)
-
-        self.lbl_drv_note = Gtk.Label(label=t("drv_compile_notice"))
-        self.lbl_drv_note.set_wrap(True)
-        self.lbl_drv_note.set_halign(Gtk.Align.START)
-        self.lbl_drv_note.add_css_class("dim-label")
-        self.lbl_drv_note.add_css_class("caption")
-        self.drv_progress_box.append(self.lbl_drv_note)
-
-        self.drv_expander = Gtk.Expander.new(t("drv_log_expander"))
-        self.drv_expander.set_expanded(True)
-        self.drv_progress_box.append(self.drv_expander)
-
-        log_scrolled = Gtk.ScrolledWindow()
-        log_scrolled.set_min_content_height(180)
-        log_scrolled.set_max_content_height(260)
-        log_scrolled.set_propagate_natural_height(False)
-        log_scrolled.add_css_class("card")
-        self.drv_expander.set_child(log_scrolled)
-
-        self.drv_text_buffer = Gtk.TextBuffer()
-        self.drv_text_view = Gtk.TextView.new_with_buffer(self.drv_text_buffer)
-        self.drv_text_view.set_editable(False)
-        self.drv_text_view.set_cursor_visible(False)
-        self.drv_text_view.set_monospace(True)
-        self.drv_text_view.set_left_margin(12)
-        self.drv_text_view.set_right_margin(12)
-        self.drv_text_view.set_top_margin(10)
-        self.drv_text_view.set_bottom_margin(10)
-        log_scrolled.set_child(self.drv_text_view)
-
-        # Reboot Button
-        self.btn_reboot_drivers = Gtk.Button(label=t("btn_reboot_drivers"))
-        self.btn_reboot_drivers.add_css_class("suggested-action")
-        self.btn_reboot_drivers.add_css_class("pill")
-        self.btn_reboot_drivers.set_size_request(-1, 50)
-        self.btn_reboot_drivers.set_visible(False)
-        self.btn_reboot_drivers.connect("clicked", lambda b: subprocess.run(["systemctl", "reboot"]))
-        action_group.add(self.btn_reboot_drivers)
-
+        self._create_drv_progress_widgets(action_group)
         return scrolled
 
     def append_drv_log(self, text):
@@ -2969,7 +3165,7 @@ stage {{
 
         if sb_enabled:
             script_commands.extend([
-                "echo '[1/3] Checking and preparing Secure Boot signing key...'",
+                "echo '[1/4] Checking and preparing Secure Boot signing key...'",
                 "if [ ! -f /etc/pki/akmods/certs/public_key.der ]; then",
                 "    kmodgenca -a || true",
                 "fi",
@@ -2977,14 +3173,20 @@ stage {{
                 f"    printf '%s\n%s\n' '{mok_pass}' '{mok_pass}' | mokutil --import /etc/pki/akmods/certs/public_key.der || true",
                 "    echo '--> MOK enrollment request prepared successfully.'",
                 "fi",
-                "echo '[2/3] Downloading and layering driver packages via rpm-ostree...'"
+                "echo '[2/4] Downloading and layering driver packages via rpm-ostree...'"
             ])
         else:
-            script_commands.append("echo '[1/2] Downloading and layering driver packages via rpm-ostree...'")
+            script_commands.append("echo '[1/3] Downloading and layering driver packages via rpm-ostree...'")
 
         script_commands.extend([
             f"echo 'Target packages: {pkg_str}'",
             f"rpm-ostree install -y --idempotent {pkg_str}",
+            "echo ''",
+            "echo '=================================================='",
+            "echo ' Configuring kernel boot arguments (kargs)...     '",
+            "echo ' Blacklisting nouveau and enabling modesetting... '",
+            "echo '=================================================='",
+            'rpm-ostree kargs --append-if-missing="rd.driver.blacklist=nouveau" --append-if-missing="modprobe.blacklist=nouveau" --append-if-missing="nvidia-drm.modeset=1"',
             "echo ''",
             "echo '=================================================='",
             "echo ' Building NVIDIA kernel modules (akmods)...       '",
@@ -3016,6 +3218,179 @@ stage {{
             GLib.idle_add(self.append_drv_log, "\n[Error]: " + str(e) + "\n")
             GLib.idle_add(self.on_drv_finished, 1)
 
+    def on_fix_kargs_clicked(self):
+        if hasattr(self, "btn_fix_kargs"):
+            self.btn_fix_kargs.set_sensitive(False)
+        if hasattr(self, "btn_uninstall_driver"):
+            self.btn_uninstall_driver.set_sensitive(False)
+
+        self.drv_progress_box.set_visible(True)
+        self.drv_text_buffer.set_text("")
+        self.lbl_drv_status.set_text(t("drv_fixing_kargs"))
+
+        self.drv_pulse_timer = GLib.timeout_add(100, self._pulse_drv_progress)
+        threading.Thread(
+            target=self.run_fix_kargs_thread,
+            daemon=True
+        ).start()
+
+    def run_fix_kargs_thread(self):
+        script = """set -e
+echo '=================================================='
+echo ' [1/2] Blacklisting nouveau & enabling modeset... '
+echo '=================================================='
+rpm-ostree kargs --append-if-missing="rd.driver.blacklist=nouveau" --append-if-missing="modprobe.blacklist=nouveau" --append-if-missing="nvidia-drm.modeset=1"
+echo ''
+echo '--> Active kernel arguments after update:'
+rpm-ostree kargs
+echo ''
+echo '=================================================='
+echo ' [2/2] Ensuring NVIDIA kernel modules (akmods)...  '
+echo '=================================================='
+akmods --force 2>&1 || true
+echo '=================================================='
+echo ' Kernel arguments updated successfully! Please reboot. '
+echo '=================================================='
+"""
+        try:
+            GLib.idle_add(self.lbl_drv_status.set_text, t("drv_auth"))
+            proc = subprocess.Popen(
+                ["pkexec", "/usr/bin/bash", "-c", script],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1
+            )
+            for line in proc.stdout:
+                GLib.idle_add(self.append_drv_log, line)
+            rc = proc.wait()
+            GLib.idle_add(self.on_fix_kargs_finished, rc)
+        except Exception as e:
+            GLib.idle_add(self.append_drv_log, "\n[Error]: " + str(e) + "\n")
+            GLib.idle_add(self.on_fix_kargs_finished, 1)
+
+    def on_fix_kargs_finished(self, rc):
+        if hasattr(self, "drv_pulse_timer") and self.drv_pulse_timer:
+            GLib.source_remove(self.drv_pulse_timer)
+            self.drv_pulse_timer = None
+
+        if rc == 0:
+            self.drv_progress_bar.set_fraction(1.0)
+            self.lbl_drv_status.set_text(t("drv_done"))
+            if hasattr(self, "btn_fix_kargs"):
+                self.btn_fix_kargs.set_visible(False)
+            if hasattr(self, "btn_uninstall_driver"):
+                self.btn_uninstall_driver.set_visible(False)
+            self.btn_reboot_drivers.set_visible(True)
+            toast = Adw.Toast.new(t("drv_done"))
+            self.toast_overlay.add_toast(toast)
+        elif rc in (126, 127):
+            self.drv_progress_bar.set_fraction(0.0)
+            self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
+            self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
+            if hasattr(self, "btn_fix_kargs"):
+                self.btn_fix_kargs.set_sensitive(True)
+            if hasattr(self, "btn_uninstall_driver"):
+                self.btn_uninstall_driver.set_sensitive(True)
+            toast = Adw.Toast.new(t("drv_auth_cancelled"))
+            self.toast_overlay.add_toast(toast)
+        else:
+            self.drv_progress_bar.set_fraction(0.0)
+            self.lbl_drv_status.set_text(t("drv_error"))
+            if hasattr(self, "btn_fix_kargs"):
+                self.btn_fix_kargs.set_sensitive(True)
+            if hasattr(self, "btn_uninstall_driver"):
+                self.btn_uninstall_driver.set_sensitive(True)
+            toast = Adw.Toast.new(t("drv_error"))
+            self.toast_overlay.add_toast(toast)
+
+    def on_uninstall_drivers_clicked(self, pkgs):
+        if hasattr(self, "btn_fix_kargs"):
+            self.btn_fix_kargs.set_sensitive(False)
+        if hasattr(self, "btn_uninstall_driver"):
+            self.btn_uninstall_driver.set_sensitive(False)
+
+        self.drv_progress_box.set_visible(True)
+        self.drv_text_buffer.set_text("")
+        self.lbl_drv_status.set_text(t("drv_uninstalling"))
+
+        self.drv_pulse_timer = GLib.timeout_add(100, self._pulse_drv_progress)
+        threading.Thread(
+            target=self.run_uninstall_thread,
+            args=(pkgs,),
+            daemon=True
+        ).start()
+
+    def run_uninstall_thread(self, pkgs):
+        pkg_str = " ".join(pkgs)
+        script = f"""set -e
+echo '=================================================='
+echo ' [1/2] Uninstalling NVIDIA driver packages...     '
+echo ' Target packages: {pkg_str}'
+echo '=================================================='
+rpm-ostree uninstall {pkg_str} || true
+echo ''
+echo '=================================================='
+echo ' [2/2] Removing nouveau blacklist from kargs...   '
+echo '=================================================='
+rpm-ostree kargs --delete-if-present="rd.driver.blacklist=nouveau" --delete-if-present="modprobe.blacklist=nouveau" --delete-if-present="nvidia-drm.modeset=1" || true
+echo ''
+echo '=================================================='
+echo ' NVIDIA driver uninstalled! Please restart.       '
+echo '=================================================='
+"""
+        try:
+            GLib.idle_add(self.lbl_drv_status.set_text, t("drv_auth"))
+            proc = subprocess.Popen(
+                ["pkexec", "/usr/bin/bash", "-c", script],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1
+            )
+            for line in proc.stdout:
+                GLib.idle_add(self.append_drv_log, line)
+            rc = proc.wait()
+            GLib.idle_add(self.on_uninstall_finished, rc)
+        except Exception as e:
+            GLib.idle_add(self.append_drv_log, "\n[Error]: " + str(e) + "\n")
+            GLib.idle_add(self.on_uninstall_finished, 1)
+
+    def on_uninstall_finished(self, rc):
+        if hasattr(self, "drv_pulse_timer") and self.drv_pulse_timer:
+            GLib.source_remove(self.drv_pulse_timer)
+            self.drv_pulse_timer = None
+
+        if rc == 0:
+            self.drv_progress_bar.set_fraction(1.0)
+            self.lbl_drv_status.set_text(t("drv_uninstalled_done"))
+            if hasattr(self, "btn_fix_kargs"):
+                self.btn_fix_kargs.set_visible(False)
+            if hasattr(self, "btn_uninstall_driver"):
+                self.btn_uninstall_driver.set_visible(False)
+            self.btn_reboot_drivers.set_visible(True)
+            toast = Adw.Toast.new(t("drv_uninstalled_done"))
+            self.toast_overlay.add_toast(toast)
+        elif rc in (126, 127):
+            self.drv_progress_bar.set_fraction(0.0)
+            self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
+            self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
+            if hasattr(self, "btn_fix_kargs"):
+                self.btn_fix_kargs.set_sensitive(True)
+            if hasattr(self, "btn_uninstall_driver"):
+                self.btn_uninstall_driver.set_sensitive(True)
+            toast = Adw.Toast.new(t("drv_auth_cancelled"))
+            self.toast_overlay.add_toast(toast)
+        else:
+            self.drv_progress_bar.set_fraction(0.0)
+            self.lbl_drv_status.set_text(t("drv_error"))
+            if hasattr(self, "btn_fix_kargs"):
+                self.btn_fix_kargs.set_sensitive(True)
+            if hasattr(self, "btn_uninstall_driver"):
+                self.btn_uninstall_driver.set_sensitive(True)
+            toast = Adw.Toast.new(t("drv_error"))
+            self.toast_overlay.add_toast(toast)
+
     def on_drv_finished(self, rc):
         if hasattr(self, "drv_pulse_timer") and self.drv_pulse_timer:
             GLib.source_remove(self.drv_pulse_timer)
@@ -3024,7 +3399,8 @@ stage {{
         if rc == 0:
             self.drv_progress_bar.set_fraction(1.0)
             self.lbl_drv_status.set_text(t("drv_done"))
-            self.btn_install_drivers.set_visible(False)
+            if hasattr(self, "btn_install_drivers"):
+                self.btn_install_drivers.set_visible(False)
             self.btn_reboot_drivers.set_visible(True)
             toast = Adw.Toast.new(t("drv_done"))
             self.toast_overlay.add_toast(toast)
@@ -3032,18 +3408,22 @@ stage {{
             self.drv_progress_bar.set_fraction(0.0)
             self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
             self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
-            self.btn_install_drivers.set_sensitive(True)
-            self.cuda_switch.set_sensitive(True)
-            if self.mok_password_row:
+            if hasattr(self, "btn_install_drivers"):
+                self.btn_install_drivers.set_sensitive(True)
+            if hasattr(self, "cuda_switch"):
+                self.cuda_switch.set_sensitive(True)
+            if getattr(self, "mok_password_row", None):
                 self.mok_password_row.set_sensitive(True)
             toast = Adw.Toast.new(t("drv_auth_cancelled"))
             self.toast_overlay.add_toast(toast)
         else:
             self.drv_progress_bar.set_fraction(0.0)
             self.lbl_drv_status.set_text(t("drv_error"))
-            self.btn_install_drivers.set_sensitive(True)
-            self.cuda_switch.set_sensitive(True)
-            if self.mok_password_row:
+            if hasattr(self, "btn_install_drivers"):
+                self.btn_install_drivers.set_sensitive(True)
+            if hasattr(self, "cuda_switch"):
+                self.cuda_switch.set_sensitive(True)
+            if getattr(self, "mok_password_row", None):
                 self.mok_password_row.set_sensitive(True)
             toast = Adw.Toast.new(t("drv_error"))
             self.toast_overlay.add_toast(toast)
