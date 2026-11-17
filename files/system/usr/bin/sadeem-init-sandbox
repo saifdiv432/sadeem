@@ -2,6 +2,42 @@
 set -e
 DESKTOP_FILE="$HOME/.local/share/applications/sadeem-box.desktop"
 
+init_firefox_native_messaging() {
+    local FF_NM_DIR="$HOME/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts"
+    local FF_EXT_DIR="$HOME/.var/app/org.mozilla.firefox/.mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+    mkdir -p "$FF_NM_DIR" "$FF_EXT_DIR" "$HOME/.mozilla/native-messaging-hosts"
+
+    cat << 'EOF' > "$FF_NM_DIR/misterdownloadmanager-flatpak-bridge"
+#!/usr/bin/env bash
+exec flatpak-spawn --host /usr/bin/misterdownloadmanager-nmhost "$@"
+EOF
+    chmod +x "$FF_NM_DIR/misterdownloadmanager-flatpak-bridge"
+
+    cat << EOF > "$FF_NM_DIR/com.misterdownloadmanager.host.json"
+{
+  "allowed_extensions": [
+    "integration@misterdownloadmanager.com"
+  ],
+  "description": "Mister Download Manager",
+  "name": "com.misterdownloadmanager.host",
+  "path": "$FF_NM_DIR/misterdownloadmanager-flatpak-bridge",
+  "type": "stdio"
+}
+EOF
+
+    # Also keep standard host path updated
+    cp -f "$FF_NM_DIR/com.misterdownloadmanager.host.json" "$HOME/.mozilla/native-messaging-hosts/" 2>/dev/null || true
+    cp -f "$FF_NM_DIR/misterdownloadmanager-flatpak-bridge" "$HOME/.mozilla/native-messaging-hosts/" 2>/dev/null || true
+
+    # Preinstall browser extension if available
+    local XPI_SRC="/usr/lib64/firefox/browser/extensions/integration@misterdownloadmanager.com.xpi"
+    if [ -f "$XPI_SRC" ]; then
+        cp -f "$XPI_SRC" "$FF_EXT_DIR/integration@misterdownloadmanager.com.xpi" 2>/dev/null || true
+    fi
+}
+
+init_firefox_native_messaging || true
+
 patch_desktop() {
     if [ -f "$DESKTOP_FILE" ]; then
         sed -i 's|^Icon=.*|Icon=sadeem-box|' "$DESKTOP_FILE"

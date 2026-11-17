@@ -1,0 +1,9 @@
+{
+  "allowed_extensions": [
+    "integration@misterdownloadmanager.com"
+  ],
+  "description": "Mister Download Manager",
+  "name": "com.misterdownloadmanager.host",
+  "path": "/etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge",
+  "type": "stdio"
+}

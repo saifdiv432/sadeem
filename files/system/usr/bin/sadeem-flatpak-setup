@@ -19,6 +19,7 @@ flatpak config --system --set languages "ar;en;fr;es;de;tr;ru;pt;it;zh_CN;ur;hi"
 flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
 flatpak override --system com.usebottles.bottles --filesystem=xdg-data/applications 2>/dev/null || true
+flatpak override --system --talk-name=org.freedesktop.portal.WebExtensions --talk-name=org.freedesktop.Flatpak org.mozilla.firefox 2>/dev/null || true
 
 # If already installed, setup is complete
 if [ -f "$MARKER" ]; then
@@ -35,6 +36,9 @@ fi
 
 echo "[sadeem-flatpak] Network ready. Installing default Flatpaks..."
 APPS=(
+  org.mozilla.firefox
+  org.gnome.TextEditor
+  org.libreoffice.LibreOffice
   com.mattjakeman.ExtensionManager
   com.github.tchx84.Flatseal
   org.videolan.VLC
@@ -51,6 +55,18 @@ for app in "${APPS[@]}"; do
   if ! flatpak install --system -y --noninteractive flathub "$app"; then
     echo "[sadeem-flatpak] Installation of $app failed; will verify network."
     FAILED=$((FAILED + 1))
+  fi
+done
+
+# Configure system-wide native messaging host inside Firefox Flatpak app files
+for NM_SYS in \
+  /var/lib/flatpak/app/org.mozilla.firefox/current/active/files/lib/firefox/native-messaging-hosts \
+  /var/lib/flatpak/app/org.mozilla.firefox/current/active/files/lib64/firefox/native-messaging-hosts \
+  /var/lib/flatpak/app/org.mozilla.firefox/current/active/files/etc/firefox/native-messaging-hosts; do
+  if [ -d "$(dirname "$NM_SYS")" ]; then
+    mkdir -p "$NM_SYS" 2>/dev/null || true
+    cp -f /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/com.misterdownloadmanager.host.json "$NM_SYS/" 2>/dev/null || true
+    cp -f /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge "$NM_SYS/" 2>/dev/null || true
   fi
 done
 

@@ -26,6 +26,8 @@ modules:
       - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-%OS_VERSION%.noarch.rpm
     remove:
       - gnome-tour
+      - firefox
+      - firefox-langpacks
     install:
       # RPM Fusion release packages
       - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-%OS_VERSION%.noarch.rpm
@@ -106,6 +108,9 @@ modules:
           title: Flathub
           url: https://dl.flathub.org/repo/flathub.flatpakrepo
         install:
+          - org.mozilla.firefox
+          - org.gnome.TextEditor
+          - org.libreoffice.LibreOffice
           - com.mattjakeman.ExtensionManager
           - com.github.tchx84.Flatseal
           - org.videolan.VLC
@@ -184,6 +189,8 @@ modules:
         flatpak remote-delete --system --force fedora-testing 2>/dev/null || true
         rm -f /etc/flatpak/remotes.d/fedora*.flatpakrepo 2>/dev/null || true
         flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
+        flatpak override --system --talk-name=org.freedesktop.portal.WebExtensions --talk-name=org.freedesktop.Flatpak org.mozilla.firefox 2>/dev/null || true
+        chmod +x /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge 2>/dev/null || true
 
         mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true
