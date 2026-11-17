@@ -52,9 +52,9 @@ if [ -n "$TARGET_PATH" ] && [ -f "$IMG_NAME" ]; then
 
   if [ -f "$CSS_ANACONDA" ]; then
     echo "Applying Sadeem burgundy CSS theme..."
-    mkdir -p squashfs-root/usr/share/sadeem
-    cp -f "$CSS_ANACONDA" squashfs-root/usr/share/sadeem/anaconda-burgundy.css
-    [ -f "$CSS_COCKPIT" ] && cp -f "$CSS_COCKPIT" squashfs-root/usr/share/sadeem/cockpit-branding.css
+    mkdir -p squashfs-root/usr/share/sadeem 2>/dev/null || true
+    cp -f "$CSS_ANACONDA" squashfs-root/usr/share/sadeem/anaconda-burgundy.css || true
+    [ -f "$CSS_COCKPIT" ] && cp -f "$CSS_COCKPIT" squashfs-root/usr/share/sadeem/cockpit-branding.css || true
 
     # 1. Target Cockpit Shell branding stylesheets (top navigation bar: #topnav, .cockpit-header, .pf-v5-c-page__header)
     for f in squashfs-root/usr/share/cockpit/branding/fedora/branding.css \
@@ -63,9 +63,9 @@ if [ -n "$TARGET_PATH" ] && [ -f "$IMG_NAME" ]; then
              squashfs-root/usr/share/cockpit/shell/*.css; do
       if [ -f "$f" ]; then
         echo "Patching Cockpit shell stylesheet: $f"
-        echo -e "\n/* Sadeem Burgundy Cockpit Top Bar */\n" >> "$f"
+        echo -e "\n/* Sadeem Burgundy Cockpit Top Bar */\n" >> "$f" || true
         if [ -f "$CSS_COCKPIT" ]; then
-          cat "$CSS_COCKPIT" >> "$f"
+          cat "$CSS_COCKPIT" >> "$f" || true
         else
           cat << 'EOF' >> "$f"
 #topnav, .cockpit-header, .pf-v5-c-page__header {
@@ -85,23 +85,32 @@ EOF
     done
 
     # 2. Target Anaconda WebUI stylesheets (PatternFly variables, buttons, progress bar - without overlapping header)
-    find squashfs-root/usr/share/cockpit/anaconda squashfs-root/usr/share/anaconda -type f -name "*.css" 2>/dev/null | while read -r f; do
-      echo "Patching Anaconda WebUI stylesheet: $f"
-      echo -e "\n/* Sadeem Burgundy Theme */\n" >> "$f"
-      cat "$CSS_ANACONDA" >> "$f"
-    done
+    ANACONDA_DIRS=()
+    [ -d squashfs-root/usr/share/cockpit/anaconda ] && ANACONDA_DIRS+=(squashfs-root/usr/share/cockpit/anaconda)
+    [ -d squashfs-root/usr/share/anaconda ] && ANACONDA_DIRS+=(squashfs-root/usr/share/anaconda)
 
-    # Inject link into Anaconda WebUI HTML files
-    find squashfs-root/usr/share/cockpit/anaconda squashfs-root/usr/share/anaconda -type f -name "*.html" 2>/dev/null | while read -r h; do
-      if ! grep -q "anaconda-burgundy.css" "$h"; then
-        sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$h" || true
-      fi
-    done
+    if [ ${#ANACONDA_DIRS[@]} -gt 0 ]; then
+      find "${ANACONDA_DIRS[@]}" -type f -name "*.css" 2>/dev/null | while read -r f; do
+        if [ -f "$f" ]; then
+          echo "Patching Anaconda WebUI stylesheet: $f"
+          echo -e "\n/* Sadeem Burgundy Theme */\n" >> "$f" || true
+          cat "$CSS_ANACONDA" >> "$f" || true
+        fi
+      done || true
+
+      find "${ANACONDA_DIRS[@]}" -type f -name "*.html" 2>/dev/null | while read -r h; do
+        if [ -f "$h" ]; then
+          if ! grep -q "anaconda-burgundy.css" "$h" 2>/dev/null; then
+            sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$h" || true
+          fi
+        fi
+      done || true
+    fi
   fi
 
-  # Configure Plymouth theme in installer rootfs: default to spinner, dark background #111111, disable tribar progress bar
+  # Configure Plymouth theme safely via config files without running dracut or plymouth-set-default-theme inside rootfs
   echo "Configuring Plymouth theme in installer rootfs..."
-  mkdir -p squashfs-root/etc/plymouth squashfs-root/usr/share/plymouth/themes/spinner
+  mkdir -p squashfs-root/etc/plymouth squashfs-root/usr/share/plymouth/themes/spinner 2>/dev/null || true
   cat << 'EOF' > squashfs-root/etc/plymouth/plymouthd.conf
 [Daemon]
 Theme=spinner
@@ -119,9 +128,9 @@ EOF
   for theme_file in squashfs-root/usr/share/plymouth/themes/spinner/spinner.plymouth \
                     squashfs-root/usr/share/plymouth/themes/bgrt/bgrt.plymouth; do
     if [ -f "$theme_file" ]; then
-      sed -i 's/BackgroundStartColor=.*/BackgroundStartColor=0x111111/' "$theme_file"
-      sed -i 's/BackgroundEndColor=.*/BackgroundEndColor=0x111111/' "$theme_file"
-      sed -i 's/UseProgressBar=true/UseProgressBar=false/' "$theme_file"
+      sed -i 's/BackgroundStartColor=.*/BackgroundStartColor=0x111111/' "$theme_file" || true
+      sed -i 's/BackgroundEndColor=.*/BackgroundEndColor=0x111111/' "$theme_file" || true
+      sed -i 's/UseProgressBar=true/UseProgressBar=false/' "$theme_file" || true
     fi
   done
 
@@ -132,24 +141,24 @@ EOF
 
   # Copy watermark to installer rootfs if available
   if [ -f "$BASE_DIR/files/system/usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg" ] && command -v rsvg-convert >/dev/null 2>&1; then
-    rsvg-convert -w 128 -h 128 "$BASE_DIR/files/system/usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg" -o squashfs-root/usr/share/plymouth/themes/spinner/watermark.png || true
+    rsvg-convert -w 128 -h 128 "$BASE_DIR/files/system/usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg" -o squashfs-root/usr/share/plymouth/themes/spinner/watermark.png 2>/dev/null || true
   fi
 
   # Update product configuration
   echo "Updating product configuration to Sadeem 45..."
-  mkdir -p squashfs-root/etc/anaconda/product.d
+  mkdir -p squashfs-root/etc/anaconda/product.d 2>/dev/null || true
   for conf in squashfs-root/etc/anaconda/product.d/*.conf squashfs-root/etc/anaconda/product.conf squashfs-root/usr/share/anaconda/product.d/*.conf; do
     if [ -f "$conf" ]; then
-      sed -i 's|product_name = .*|product_name = Sadeem 45|g' "$conf"
+      sed -i 's|product_name = .*|product_name = Sadeem 45|g' "$conf" || true
     fi
   done
-  echo -e "[Product]\nproduct_name = Sadeem 45" > squashfs-root/etc/anaconda/product.d/sadeem.conf
+  echo -e "[Product]\nproduct_name = Sadeem 45" > squashfs-root/etc/anaconda/product.d/sadeem.conf || true
 
   # Update os-release inside installer rootfs
   for osrel in squashfs-root/usr/lib/os-release squashfs-root/etc/os-release; do
     if [ -f "$osrel" ]; then
-      sed -i 's|^NAME=.*|NAME="Sadeem"|' "$osrel"
-      sed -i 's|^PRETTY_NAME=.*|PRETTY_NAME="Sadeem 45"|' "$osrel"
+      sed -i 's|^NAME=.*|NAME="Sadeem"|' "$osrel" || true
+      sed -i 's|^PRETTY_NAME=.*|PRETTY_NAME="Sadeem 45"|' "$osrel" || true
     fi
   done
 
@@ -161,13 +170,23 @@ EOF
   # Immediately delete uncompressed rootfs to conserve disk space
   rm -rf squashfs-root
 
-  # Check if EFI/BOOT/grub.cfg exists in ISO and ensure plymouth.theme=spinner
+  # Check if EFI/BOOT/grub.cfg exists in ISO and ensure quiet and disable plymouth flicker during boot
   GRUB_UPDATED=false
   if xorriso -osirrox on -indev "$ISO_ABS" -extract /EFI/BOOT/grub.cfg ./grub.cfg 2>/dev/null && [ -f ./grub.cfg ]; then
-    echo "Found EFI/BOOT/grub.cfg in ISO, ensuring plymouth.theme=spinner..."
-    if ! grep -q "plymouth.theme=" ./grub.cfg; then
-      sed -i 's|inst.stage2=[^ ]*|& plymouth.theme=spinner|g' ./grub.cfg
+    echo "Found EFI/BOOT/grub.cfg in ISO, configuring boot options..."
+    if ! grep -q "plymouth.enable=0" ./grub.cfg 2>/dev/null; then
+      sed -i 's|inst.stage2=[^ ]*|& rd.plymouth=0 plymouth.enable=0|g' ./grub.cfg || true
       GRUB_UPDATED=true
+    fi
+  fi
+
+  # Check if isolinux/isolinux.cfg exists in ISO
+  ISOLINUX_UPDATED=false
+  if xorriso -osirrox on -indev "$ISO_ABS" -extract /isolinux/isolinux.cfg ./isolinux.cfg 2>/dev/null && [ -f ./isolinux.cfg ]; then
+    echo "Found isolinux/isolinux.cfg in ISO, configuring boot options..."
+    if ! grep -q "plymouth.enable=0" ./isolinux.cfg 2>/dev/null; then
+      sed -i 's|inst.stage2=[^ ]*|& rd.plymouth=0 plymouth.enable=0|g' ./isolinux.cfg || true
+      ISOLINUX_UPDATED=true
     fi
   fi
 
@@ -177,6 +196,9 @@ EOF
   if [ "$GRUB_UPDATED" = "true" ] && [ -f "./grub.cfg" ]; then
     UPDATE_ARGS+=("-update" "./grub.cfg" "/EFI/BOOT/grub.cfg")
   fi
+  if [ "$ISOLINUX_UPDATED" = "true" ] && [ -f "./isolinux.cfg" ]; then
+    UPDATE_ARGS+=("-update" "./isolinux.cfg" "/isolinux/isolinux.cfg")
+  fi
 
   xorriso -indev "$ISO_ABS" \
           -outdev "${ISO_ABS}.tmp" \
@@ -184,7 +206,7 @@ EOF
           "${UPDATE_ARGS[@]}"
 
   # Immediately remove temporary files
-  rm -f "$IMG_NAME" ./grub.cfg 2>/dev/null || true
+  rm -f "$IMG_NAME" ./grub.cfg ./isolinux.cfg 2>/dev/null || true
 
   mv -f "${ISO_ABS}.tmp" "$ISO_ABS"
   echo "ISO installer branding customization completed successfully!"
