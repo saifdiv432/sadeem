@@ -83,7 +83,6 @@ modules:
       - gnome-shell-extension-light-style
       - fastfetch
       - librsvg2-tools
-      - plymouth-theme-spinner
 
       # Hardware detection & Secure Boot management
       - pciutils

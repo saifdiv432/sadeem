@@ -229,37 +229,86 @@ EOF
   # 5. Firefox Kiosk userChrome.css and user.js
   # --------------------------------------------------------------------------
   echo "--- 4. Styling Firefox Kiosk theme for Anaconda WebUI ---"
-  mkdir -p squashfs-root/usr/share/anaconda/firefox-theme/live/chrome 2>/dev/null || true
-  mkdir -p squashfs-root/usr/share/anaconda/firefox-theme/default/chrome 2>/dev/null || true
 
-  # Ensure userChrome.css exists in live/chrome
-  if [ ! -f "squashfs-root/usr/share/anaconda/firefox-theme/live/chrome/userChrome.css" ]; then
-    touch "squashfs-root/usr/share/anaconda/firefox-theme/live/chrome/userChrome.css"
-  fi
+  materialize_if_symlink() {
+    local f="$1"
+    local parent_dir
+    parent_dir=$(dirname "$f")
+    if [ -L "$parent_dir" ] && [ ! -d "$parent_dir" ]; then
+      local ptarget
+      ptarget=$(readlink "$parent_dir" || true)
+      rm -f "$parent_dir"
+      mkdir -p "$parent_dir"
+      if [[ "$ptarget" == /* ]] && [ -d "squashfs-root${ptarget}" ]; then
+        cp -a "squashfs-root${ptarget}/." "$parent_dir/" 2>/dev/null || true
+      fi
+    else
+      mkdir -p "$parent_dir" 2>/dev/null || true
+    fi
+
+    if [ -L "$f" ]; then
+      local target
+      target=$(readlink "$f" || true)
+      local resolved=""
+      if [[ "$target" == /* ]]; then
+        resolved="squashfs-root${target}"
+      elif [ -n "$target" ]; then
+        resolved="${parent_dir}/${target}"
+      fi
+      echo "Materializing symlink $f -> $target (resolved: $resolved)"
+      local tmp_copy=""
+      if [ -n "$resolved" ] && [ -f "$resolved" ]; then
+        tmp_copy=$(mktemp)
+        cp -L "$resolved" "$tmp_copy" 2>/dev/null || cp "$resolved" "$tmp_copy" 2>/dev/null || true
+      fi
+      rm -f "$f"
+      if [ -n "$tmp_copy" ] && [ -f "$tmp_copy" ]; then
+        mv -f "$tmp_copy" "$f"
+      else
+        touch "$f"
+      fi
+    elif [ ! -f "$f" ]; then
+      touch "$f"
+    fi
+    chmod 0644 "$f" 2>/dev/null || true
+  }
 
   FIREFOX_TOPBAR_CSS='
 /* Sadeem Firefox Top Bar */
-:root, #navigator-toolbox, #titlebar, #TabsToolbar, #nav-bar, .titlebar-color {
+:root, #navigator-toolbox, #titlebar, #TabsToolbar, #nav-bar, .titlebar-color, toolbar {
   background-color: #7a1c33 !important;
   background-image: none !important;
   color: #ffffff !important;
 }
 '
 
-  while IFS= read -r uc_file; do
+  # Explicitly materialize and patch live and default userChrome.css
+  UC_TARGETS=(
+    "squashfs-root/usr/share/anaconda/firefox-theme/live/chrome/userChrome.css"
+    "squashfs-root/usr/share/anaconda/firefox-theme/default/chrome/userChrome.css"
+  )
+  while IFS= read -r extra_uc; do
+    if [ -n "$extra_uc" ]; then
+      UC_TARGETS+=("$extra_uc")
+    fi
+  done < <(find squashfs-root/usr/share/anaconda \( -type f -o -type l \) -name "userChrome.css" 2>/dev/null || true)
+
+  for uc_file in "${UC_TARGETS[@]}"; do
+    materialize_if_symlink "$uc_file"
     if [ -f "$uc_file" ]; then
       echo "Patching Firefox userChrome.css: $uc_file"
       sed -i -E 's/#(294172|3c6eb4|0066cc|0055aa|51a2da|0088ce|06c)/#7a1c33/gI' "$uc_file" || true
       sed -i -E 's/rgb\(\s*(41\s*,\s*65\s*,\s*114|60\s*,\s*110\s*,\s*180|0\s*,\s*102\s*,\s*204)\s*\)/#7a1c33/gI' "$uc_file" || true
-      if ! grep -q "#navigator-toolbox" "$uc_file" 2>/dev/null; then
+      if ! grep -q "Sadeem Firefox Top Bar" "$uc_file" 2>/dev/null; then
         echo "$FIREFOX_TOPBAR_CSS" >> "$uc_file"
       fi
     fi
-  done < <(find squashfs-root/usr/share/anaconda -type f -name "userChrome.css" 2>/dev/null || true)
+  done
 
   # Enable userChrome.css in Firefox preferences
   echo "Enabling toolkit.legacyUserProfileCustomizations.stylesheets..."
   while IFS= read -r pref_file; do
+    materialize_if_symlink "$pref_file"
     if [ -f "$pref_file" ]; then
       if grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$pref_file"; then
         sed -i 's/user_pref("toolkit.legacyUserProfileCustomizations.stylesheets",.*/user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);/' "$pref_file" || true
@@ -267,16 +316,13 @@ EOF
         echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$pref_file"
       fi
     fi
-  done < <(find squashfs-root/usr/share/anaconda squashfs-root/etc -type f \( -name "user.js" -o -name "prefs.js" \) 2>/dev/null || true)
+  done < <(find squashfs-root/usr/share/anaconda squashfs-root/etc \( -type f -o -type l \) \( -name "user.js" -o -name "prefs.js" \) 2>/dev/null || true)
 
   for pdir in squashfs-root/usr/share/anaconda/firefox-theme/live squashfs-root/usr/share/anaconda/firefox-theme/default; do
     if [ -d "$pdir" ]; then
-      if [ -f "$pdir/user.js" ]; then
-        if ! grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$pdir/user.js"; then
-          echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$pdir/user.js"
-        fi
-      else
-        echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' > "$pdir/user.js"
+      materialize_if_symlink "$pdir/user.js"
+      if ! grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$pdir/user.js"; then
+        echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$pdir/user.js"
       fi
     fi
   done
