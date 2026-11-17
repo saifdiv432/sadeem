@@ -67,7 +67,7 @@ jobs:
 
       - name: Customize Anaconda WebUI and Branding in Installer ISO
         run: |
-          sudo apt-get update && sudo apt-get install -y xorriso squashfs-tools
+          sudo apt-get update && sudo apt-get install -y xorriso squashfs-tools librsvg2-bin
 
           ISO_SRC=$(find . -maxdepth 3 -type f -name "*.iso" | head -n 1)
           if [ -z "$ISO_SRC" ]; then

@@ -22,7 +22,7 @@ fi
 ISO_ABS=$(realpath "$ISO_FILE")
 
 echo "=================================================="
-echo "Customizing Anaconda WebUI & Branding in: $ISO_ABS"
+echo "Customizing Anaconda WebUI, Cockpit & Plymouth in: $ISO_ABS"
 echo "=================================================="
 
 WORK_DIR=$(mktemp -d)
@@ -47,23 +47,92 @@ if [ -n "$TARGET_PATH" ] && [ -f "$IMG_NAME" ]; then
   unsquashfs -d squashfs-root "$IMG_NAME"
   chmod -R u+w squashfs-root
 
-  CSS_FILE="$BASE_DIR/files/system/usr/share/sadeem/anaconda-burgundy.css"
-  if [ -f "$CSS_FILE" ]; then
-    echo "Applying Sadeem burgundy CSS theme to installer WebUI..."
-    mkdir -p squashfs-root/usr/share/sadeem
-    cp -f "$CSS_FILE" squashfs-root/usr/share/sadeem/anaconda-burgundy.css
+  CSS_ANACONDA="$BASE_DIR/files/system/usr/share/sadeem/anaconda-burgundy.css"
+  CSS_COCKPIT="$BASE_DIR/files/system/usr/share/sadeem/cockpit-branding.css"
 
-    find squashfs-root/usr/share/cockpit squashfs-root/usr/share/anaconda -type f -name "*.css" 2>/dev/null | while read -r f; do
-      echo "Patching stylesheet: $f"
-      echo -e "\n/* Sadeem Burgundy Theme */\n" >> "$f"
-      cat "$CSS_FILE" >> "$f"
+  if [ -f "$CSS_ANACONDA" ]; then
+    echo "Applying Sadeem burgundy CSS theme..."
+    mkdir -p squashfs-root/usr/share/sadeem
+    cp -f "$CSS_ANACONDA" squashfs-root/usr/share/sadeem/anaconda-burgundy.css
+    [ -f "$CSS_COCKPIT" ] && cp -f "$CSS_COCKPIT" squashfs-root/usr/share/sadeem/cockpit-branding.css
+
+    # 1. Target Cockpit Shell branding stylesheets (top navigation bar: #topnav, .cockpit-header, .pf-v5-c-page__header)
+    for f in squashfs-root/usr/share/cockpit/branding/fedora/branding.css \
+             squashfs-root/usr/share/cockpit/branding/*/*.css \
+             squashfs-root/usr/share/cockpit/shell/shell.css \
+             squashfs-root/usr/share/cockpit/shell/*.css; do
+      if [ -f "$f" ]; then
+        echo "Patching Cockpit shell stylesheet: $f"
+        echo -e "\n/* Sadeem Burgundy Cockpit Top Bar */\n" >> "$f"
+        if [ -f "$CSS_COCKPIT" ]; then
+          cat "$CSS_COCKPIT" >> "$f"
+        else
+          cat << 'EOF' >> "$f"
+#topnav, .cockpit-header, .pf-v5-c-page__header {
+  background-color: #7a1c33 !important;
+  background: #7a1c33 !important;
+  color: #ffffff !important;
+  border-bottom: none !important;
+  margin: 0 !important;
+  height: auto !important;
+}
+#topnav *, .cockpit-header *, .pf-v5-c-page__header * {
+  color: #ffffff !important;
+}
+EOF
+        fi
+      fi
     done
 
-    find squashfs-root/usr/share/cockpit squashfs-root/usr/share/anaconda -type f -name "*.html" 2>/dev/null | while read -r h; do
+    # 2. Target Anaconda WebUI stylesheets (PatternFly variables, buttons, progress bar - without overlapping header)
+    find squashfs-root/usr/share/cockpit/anaconda squashfs-root/usr/share/anaconda -type f -name "*.css" 2>/dev/null | while read -r f; do
+      echo "Patching Anaconda WebUI stylesheet: $f"
+      echo -e "\n/* Sadeem Burgundy Theme */\n" >> "$f"
+      cat "$CSS_ANACONDA" >> "$f"
+    done
+
+    # Inject link into Anaconda WebUI HTML files
+    find squashfs-root/usr/share/cockpit/anaconda squashfs-root/usr/share/anaconda -type f -name "*.html" 2>/dev/null | while read -r h; do
       if ! grep -q "anaconda-burgundy.css" "$h"; then
         sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$h" || true
       fi
     done
+  fi
+
+  # Configure Plymouth theme in installer rootfs: default to spinner, dark background #111111, disable tribar progress bar
+  echo "Configuring Plymouth theme in installer rootfs..."
+  mkdir -p squashfs-root/etc/plymouth squashfs-root/usr/share/plymouth/themes/spinner
+  cat << 'EOF' > squashfs-root/etc/plymouth/plymouthd.conf
+[Daemon]
+Theme=spinner
+ShowDelay=0
+DeviceTimeout=8
+EOF
+  cat << 'EOF' > squashfs-root/usr/share/plymouth/plymouthd.defaults
+[Daemon]
+Theme=spinner
+ShowDelay=0
+DeviceTimeout=8
+UseSimpledrmNoLuks=1
+EOF
+
+  for theme_file in squashfs-root/usr/share/plymouth/themes/spinner/spinner.plymouth \
+                    squashfs-root/usr/share/plymouth/themes/bgrt/bgrt.plymouth; do
+    if [ -f "$theme_file" ]; then
+      sed -i 's/BackgroundStartColor=.*/BackgroundStartColor=0x111111/' "$theme_file"
+      sed -i 's/BackgroundEndColor=.*/BackgroundEndColor=0x111111/' "$theme_file"
+      sed -i 's/UseProgressBar=true/UseProgressBar=false/' "$theme_file"
+    fi
+  done
+
+  # Neutralize tribar fallback in installer rootfs to eliminate horizontal bar
+  if [ -f squashfs-root/usr/share/plymouth/themes/tribar/tribar.plymouth ]; then
+    sed -i 's/ModuleName=tribar/ModuleName=text/' squashfs-root/usr/share/plymouth/themes/tribar/tribar.plymouth || true
+  fi
+
+  # Copy watermark to installer rootfs if available
+  if [ -f "$BASE_DIR/files/system/usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg" ] && command -v rsvg-convert >/dev/null 2>&1; then
+    rsvg-convert -w 128 -h 128 "$BASE_DIR/files/system/usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg" -o squashfs-root/usr/share/plymouth/themes/spinner/watermark.png || true
   fi
 
   # Update product configuration
@@ -92,15 +161,30 @@ if [ -n "$TARGET_PATH" ] && [ -f "$IMG_NAME" ]; then
   # Immediately delete uncompressed rootfs to conserve disk space
   rm -rf squashfs-root
 
+  # Check if EFI/BOOT/grub.cfg exists in ISO and ensure plymouth.theme=spinner
+  GRUB_UPDATED=false
+  if xorriso -osirrox on -indev "$ISO_ABS" -extract /EFI/BOOT/grub.cfg ./grub.cfg 2>/dev/null && [ -f ./grub.cfg ]; then
+    echo "Found EFI/BOOT/grub.cfg in ISO, ensuring plymouth.theme=spinner..."
+    if ! grep -q "plymouth.theme=" ./grub.cfg; then
+      sed -i 's|inst.stage2=[^ ]*|& plymouth.theme=spinner|g' ./grub.cfg
+      GRUB_UPDATED=true
+    fi
+  fi
+
   # Inject back into ISO using xorriso preserving bootloader & partition configuration
   echo "Injecting updated $TARGET_PATH back into $ISO_ABS..."
+  UPDATE_ARGS=("-update" "$IMG_NAME" "$TARGET_PATH")
+  if [ "$GRUB_UPDATED" = "true" ] && [ -f "./grub.cfg" ]; then
+    UPDATE_ARGS+=("-update" "./grub.cfg" "/EFI/BOOT/grub.cfg")
+  fi
+
   xorriso -indev "$ISO_ABS" \
           -outdev "${ISO_ABS}.tmp" \
           -boot_image any keep \
-          -update "$IMG_NAME" "$TARGET_PATH"
+          "${UPDATE_ARGS[@]}"
 
-  # Immediately remove compressed image from temp directory
-  rm -f "$IMG_NAME"
+  # Immediately remove temporary files
+  rm -f "$IMG_NAME" ./grub.cfg 2>/dev/null || true
 
   mv -f "${ISO_ABS}.tmp" "$ISO_ABS"
   echo "ISO installer branding customization completed successfully!"

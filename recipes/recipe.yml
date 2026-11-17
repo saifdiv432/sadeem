@@ -169,15 +169,23 @@ modules:
         done
         echo -e "[Product]\nproduct_name = Sadeem 45" > /etc/anaconda/product.d/sadeem.conf
 
-        # Apply Sadeem burgundy CSS to Cockpit and Anaconda WebUI
-        if [ -f /usr/share/sadeem/anaconda-burgundy.css ]; then
-          for CSS_FILE in /usr/share/cockpit/branding/fedora/branding.css /usr/share/cockpit/branding/*/*.css /usr/share/cockpit/anaconda/*.css; do
+        # Apply Sadeem burgundy CSS to Cockpit Shell and Anaconda WebUI
+        if [ -f /usr/share/sadeem/cockpit-branding.css ]; then
+          for CSS_FILE in /usr/share/cockpit/branding/fedora/branding.css /usr/share/cockpit/branding/*/*.css /usr/share/cockpit/shell/shell.css /usr/share/cockpit/shell/*.css; do
             if [ -f "$CSS_FILE" ]; then
-              echo -e "\n/* Sadeem Burgundy Theme */\n" >> "$CSS_FILE"
+              echo -e "\n/* Sadeem Burgundy Cockpit Top Bar */\n" >> "$CSS_FILE"
+              cat /usr/share/sadeem/cockpit-branding.css >> "$CSS_FILE"
+            fi
+          done
+        fi
+        if [ -f /usr/share/sadeem/anaconda-burgundy.css ]; then
+          for CSS_FILE in /usr/share/cockpit/anaconda/*.css /usr/share/anaconda/*.css; do
+            if [ -f "$CSS_FILE" ]; then
+              echo -e "\n/* Sadeem Burgundy Anaconda WebUI Theme */\n" >> "$CSS_FILE"
               cat /usr/share/sadeem/anaconda-burgundy.css >> "$CSS_FILE"
             fi
           done
-          for HTML_FILE in /usr/share/cockpit/anaconda/*.html /usr/share/cockpit/anaconda/index.html; do
+          for HTML_FILE in /usr/share/cockpit/anaconda/*.html /usr/share/cockpit/anaconda/index.html /usr/share/anaconda/*.html; do
             if [ -f "$HTML_FILE" ] && ! grep -q "anaconda-burgundy.css" "$HTML_FILE"; then
               sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$HTML_FILE" 2>/dev/null || true
             fi
@@ -192,7 +200,20 @@ modules:
         flatpak override --system --talk-name=org.freedesktop.portal.WebExtensions --talk-name=org.freedesktop.Flatpak org.mozilla.firefox 2>/dev/null || true
         chmod +x /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge 2>/dev/null || true
 
-        mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
+        mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps /etc/plymouth
+        echo -e "[Daemon]\nTheme=spinner\nShowDelay=0\nDeviceTimeout=8" > /etc/plymouth/plymouthd.conf
+        echo -e "[Daemon]\nTheme=spinner\nShowDelay=0\nDeviceTimeout=8\nUseSimpledrmNoLuks=1" > /usr/share/plymouth/plymouthd.defaults
+        for THEME_FILE in /usr/share/plymouth/themes/spinner/spinner.plymouth /usr/share/plymouth/themes/bgrt/bgrt.plymouth; do
+          if [ -f "$THEME_FILE" ]; then
+            sed -i 's/BackgroundStartColor=.*/BackgroundStartColor=0x111111/' "$THEME_FILE"
+            sed -i 's/BackgroundEndColor=.*/BackgroundEndColor=0x111111/' "$THEME_FILE"
+            sed -i 's/UseProgressBar=true/UseProgressBar=false/' "$THEME_FILE"
+          fi
+        done
+        if [ -f /usr/share/plymouth/themes/tribar/tribar.plymouth ]; then
+          sed -i 's/ModuleName=tribar/ModuleName=text/' /usr/share/plymouth/themes/tribar/tribar.plymouth || true
+        fi
+        plymouth-set-default-theme spinner || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg || true
