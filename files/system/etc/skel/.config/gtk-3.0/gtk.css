@@ -1,3 +1,27 @@
 @define-color accent_bg_color #7a1c33;
 @define-color accent_fg_color #ffffff;
-@define-color accent_color #e06c88;
+@define-color accent_color #c44564;
+
+switch:checked {
+  background-color: #7a1c33;
+  border-color: #7a1c33;
+  color: #ffffff;
+}
+
+switch:checked > slider,
+switch:checked slider {
+  background-color: #ffffff;
+  color: #7a1c33;
+}
+
+check:checked,
+radio:checked {
+  background-color: #7a1c33;
+  border-color: #7a1c33;
+  color: #ffffff;
+}
+
+button.suggested-action {
+  background-color: #7a1c33;
+  color: #ffffff;
+}

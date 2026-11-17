@@ -1,19 +1,46 @@
 @define-color accent_bg_color #7a1c33;
 @define-color accent_fg_color #ffffff;
-@define-color accent_color #e06c88;
+@define-color accent_color #c44564;
 
-:root:root {
-  --accent-bg-color: #7a1c33 !important;
-  --accent-fg-color: #ffffff !important;
-  --accent-color: #e06c88 !important;
+switch:checked {
+  background-color: #7a1c33;
+  border-color: #7a1c33;
+  color: #ffffff;
 }
 
-switch:checked,
+switch:checked > slider,
+switch:checked slider {
+  background-color: #ffffff;
+  color: #7a1c33;
+}
+
+checkbutton.radio radio:checked,
+checkbutton.radio:checked radio,
+checkbutton radio:checked,
+checkbutton:checked radio,
+radio:checked {
+  background-color: #7a1c33;
+  border-color: #7a1c33;
+  color: #ffffff;
+}
+
+checkbutton check:checked,
 checkbutton:checked check,
-radiobutton:checked radio,
-scale highlight,
-progressbar progress,
+check:checked {
+  background-color: #7a1c33;
+  border-color: #7a1c33;
+  color: #ffffff;
+}
+
 button.suggested-action {
-  background-color: #7a1c33 !important;
-  color: #ffffff !important;
+  background-color: #7a1c33;
+  color: #ffffff;
+}
+
+progressbar progress {
+  background-color: #7a1c33;
+}
+
+scale highlight {
+  background-color: #7a1c33;
 }

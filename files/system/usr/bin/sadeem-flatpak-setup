@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MARKER="/var/lib/sadeem/default-flatpaks-installed"
+
+echo "[sadeem-flatpak] Ensuring Flathub remote and removing restricted remotes..."
+# Remove restricted fedora flatpak remotes system-wide
+flatpak remote-delete --system --force fedora 2>/dev/null || true
+flatpak remote-delete --system --force fedora-testing 2>/dev/null || true
+rm -f /etc/flatpak/remotes.d/fedora*.flatpakrepo 2>/dev/null || true
+
+# Add Flathub remote system-wide
+flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# Configure system languages for multi-language application support
+flatpak config --system --set languages "ar;en;fr;es;de;tr;ru;pt;it;zh_CN;ur;hi" 2>/dev/null || true
+
+# Apply necessary theme and desktop filesystem overrides
+flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
+flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
+flatpak override --system com.usebottles.bottles --filesystem=xdg-data/applications 2>/dev/null || true
+
+# If already installed, setup is complete
+if [ -f "$MARKER" ]; then
+  echo "[sadeem-flatpak] Default Flatpaks already installed. Setup completed."
+  exit 0
+fi
+
+# Verify internet connectivity to flathub before attempting downloads
+echo "[sadeem-flatpak] Checking internet connection to flathub.org..."
+if ! curl -s --head --connect-timeout 6 https://dl.flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1; then
+  echo "[sadeem-flatpak] Flathub not reachable yet. Exiting to trigger retry in 15 seconds..."
+  exit 1
+fi
+
+echo "[sadeem-flatpak] Network ready. Installing default Flatpaks..."
+APPS=(
+  com.mattjakeman.ExtensionManager
+  com.github.tchx84.Flatseal
+  org.videolan.VLC
+  page.tesk.Refine
+  com.usebottles.bottles
+  net.davidotek.pupgui2
+  io.github.dvlv.boxbuddyrs
+  it.mijorus.gearlever
+)
+
+FAILED=0
+for app in "${APPS[@]}"; do
+  echo "[sadeem-flatpak] Installing $app..."
+  if ! flatpak install --system -y --noninteractive flathub "$app"; then
+    echo "[sadeem-flatpak] Installation of $app failed; will verify network."
+    FAILED=$((FAILED + 1))
+  fi
+done
+
+if [ "$FAILED" -gt 0 ]; then
+  if ! curl -s --head --connect-timeout 6 https://dl.flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1; then
+    echo "[sadeem-flatpak] Network connection dropped during installation. Retrying in 15 seconds..."
+    exit 1
+  fi
+fi
+
+mkdir -p /var/lib/sadeem
+touch "$MARKER"
+echo "[sadeem-flatpak] All default Flatpak applications installed successfully!"
+exit 0

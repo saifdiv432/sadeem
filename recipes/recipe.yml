@@ -121,6 +121,7 @@ modules:
       enabled:
         - flatpak-configure-languages.service
         - saifdora-theme-overrides.service
+        - sadeem-flatpak-setup.service
     user:
       enabled:
         - saifdora-flatpak-dbus-reload.path
@@ -177,6 +178,12 @@ modules:
             fi
           done
         fi
+
+        # Remove restricted Fedora flatpak remotes and ensure Flathub is configured system-wide
+        flatpak remote-delete --system --force fedora 2>/dev/null || true
+        flatpak remote-delete --system --force fedora-testing 2>/dev/null || true
+        rm -f /etc/flatpak/remotes.d/fedora*.flatpakrepo 2>/dev/null || true
+        flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
 
         mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true

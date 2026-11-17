@@ -104,6 +104,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Restart Now to Apply Drivers",
         "drv_preparing": "Preparing installation environment...",
         "drv_auth": "Requesting administrator privileges and connecting to repositories...",
+        "drv_auth_cancelled": "Authentication cancelled",
+        "drv_compile_notice": "Note: Downloading packages and compiling the kernel module (akmod) takes several minutes. Please wait...",
+        "drv_log_expander": "Live Installation Log",
         "drv_done": "Driver installation completed successfully! Please restart to activate.",
         "drv_error": "Installation encountered errors or was cancelled.",
         "box_header_title": "Sadeem Box Container Runtime",
@@ -207,6 +210,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "إعادة التشغيل الآن لتفعيل التعريف",
         "drv_preparing": "جاري تحضير بيئة التثبيت...",
         "drv_auth": "جاري طلب الصلاحيات والاتصال بالمستودعات...",
+        "drv_auth_cancelled": "تم إلغاء المصادقة",
+        "drv_compile_notice": "ملاحظة: تنزيل الحزم وبناء وحدة النواة (Kernel Module) يستغرق عدة دقائق، يرجى الانتظار دون إغلاق النافذة...",
+        "drv_log_expander": "سجل التثبيت المباشر",
         "drv_done": "اكتمل تثبيت التعريف بنجاح! يرجى إعادة تشغيل الجهاز لتفعيله.",
         "drv_error": "حدث خطأ أثناء التثبيت أو تم إلغاؤه من المستخدم.",
         "box_header_title": "بيئة تشغيل وحاويات سديم بوكس (Sadeem Box)",
@@ -310,6 +316,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Redémarrer pour appliquer les pilotes",
         "drv_preparing": "Préparation de l'environnement d'installation...",
         "drv_auth": "Demande des privilèges administrateur...",
+        "drv_auth_cancelled": "Authentification annulée",
+        "drv_compile_notice": "Remarque: Le téléchargement et la compilation du module noyau (akmod) prennent plusieurs minutes. Veuillez patienter...",
+        "drv_log_expander": "Journal d'installation en direct",
         "drv_done": "Installation du pilote terminée avec succès ! Veuillez redémarrer.",
         "drv_error": "L'installation a rencontré des erreurs ou a été annulée.",
         "box_header_title": "Environnement conteneurisé Sadeem Box",
@@ -413,6 +422,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Reiniciar ahora para aplicar controladores",
         "drv_preparing": "Preparando entorno de instalación...",
         "drv_auth": "Solicitando privilegios de administrador...",
+        "drv_auth_cancelled": "Autenticación cancelada",
+        "drv_compile_notice": "Nota: La descarga de paquetes y la compilación del módulo del kernel (akmod) tardan varios minutos. Por favor espere...",
+        "drv_log_expander": "Registro de instalación en vivo",
         "drv_done": "¡Instalación completada con éxito! Reinicie el equipo.",
         "drv_error": "La instalación falló o fue cancelada.",
         "box_header_title": "Entorno de contenedores Sadeem Box",
@@ -516,6 +528,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Jetzt neu starten für Treiberaktivierung",
         "drv_preparing": "Installationsumgebung vorbereiten...",
         "drv_auth": "Administratorrechte anfordern...",
+        "drv_auth_cancelled": "Authentifizierung abgebrochen",
+        "drv_compile_notice": "Hinweis: Das Herunterladen und Kompilieren des Kernel-Moduls (akmod) dauert einige Minuten. Bitte warten...",
+        "drv_log_expander": "Live-Installationsprotokoll",
         "drv_done": "Installation erfolgreich abgeschlossen! Bitte neu starten.",
         "drv_error": "Installation fehlgeschlagen oder abgebrochen.",
         "box_header_title": "Sadeem Box Container-Laufzeitumgebung",
@@ -619,6 +634,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Sürücüleri Etkinleştirmek İçin Yeniden Başlat",
         "drv_preparing": "Kurulum ortamı hazırlanıyor...",
         "drv_auth": "Yönetici yetkileri isteniyor...",
+        "drv_auth_cancelled": "Kimlik doğrulama iptal edildi",
+        "drv_compile_notice": "Not: Paketlerin indirilmesi ve çekirdek modülünün (akmod) derlenmesi birkaç dakika sürer. Lütfen bekleyin...",
+        "drv_log_expander": "Canlı Kurulum Günlüğü",
         "drv_done": "Sürücü kurulumu başarıyla tamamlandı! Yeniden başlatın.",
         "drv_error": "Kurulum sırasında hata oluştu veya iptal edildi.",
         "box_header_title": "Sadeem Box Kapsayıcı Çalışma Ortamı",
@@ -722,6 +740,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Перезагрузить для применения драйверов",
         "drv_preparing": "Подготовка среды установки...",
         "drv_auth": "Запрос прав администратора...",
+        "drv_auth_cancelled": "Аутентификация отменена",
+        "drv_compile_notice": "Примечание: Загрузка пакетов и сборка модуля ядра (akmod) занимает несколько минут. Пожалуйста, подождите...",
+        "drv_log_expander": "Журнал установки в реальном времени",
         "drv_done": "Установка драйвера успешно завершена! Перезагрузите ПК.",
         "drv_error": "Ошибка при установке или отменено пользователем.",
         "box_header_title": "Среда контейнеров Sadeem Box",
@@ -825,6 +846,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Reiniciar para Ativar Controladores",
         "drv_preparing": "A preparar ambiente de instalação...",
         "drv_auth": "A solicitar privilégios de administrador...",
+        "drv_auth_cancelled": "Autenticação cancelada",
+        "drv_compile_notice": "Nota: O download de pacotes e a compilação do módulo do kernel (akmod) leva vários minutos. Por favor, aguarde...",
+        "drv_log_expander": "Registro de instalação em tempo real",
         "drv_done": "Instalação concluída com sucesso! Reinicie o computador.",
         "drv_error": "A instalação falhou ou foi cancelada.",
         "box_header_title": "Ambiente de Contentores Sadeem Box",
@@ -928,6 +952,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "Riavvia per applicare i driver",
         "drv_preparing": "Preparazione dell'ambiente di installazione...",
         "drv_auth": "Richiesta privilegi di amministratore...",
+        "drv_auth_cancelled": "Autenticazione annullata",
+        "drv_compile_notice": "Nota: Il download dei pacchetti e la compilazione del modulo del kernel (akmod) richiedono diversi minuti. Attendere...",
+        "drv_log_expander": "Registro di installazione in tempo reale",
         "drv_done": "Installazione completata con successo! Riavvia il computer.",
         "drv_error": "Installazione non riuscita o annullata.",
         "box_header_title": "Ambiente runtime Sadeem Box",
@@ -1031,6 +1058,9 @@ TRANSLATIONS = {
         "btn_reboot_drivers": "立即重启以激活驱动",
         "drv_preparing": "正在准备安装环境...",
         "drv_auth": "正在请求管理员权限并连接软件源...",
+        "drv_auth_cancelled": "身份验证已取消",
+        "drv_compile_notice": "注意：下载软件包并编译内核模块 (akmod) 需要几分钟时间，请稍候...",
+        "drv_log_expander": "实时安装日志",
         "drv_done": "驱动程序安装成功！请重启电脑以生效。",
         "drv_error": "安装过程中出错或已被用户取消。",
         "box_header_title": "Sadeem Box 容器运行环境",
@@ -1266,6 +1296,14 @@ def rgb_to_hex(r, g, b):
 
 
 def compute_color_palette(hex_str):
+    if hex_str.lower() == "#7a1c33":
+        return {
+            "hex": "#7a1c33",
+            "accent_fg": "#ffffff",
+            "accent_color": "#c44564",
+            "hover": "#5e1426",
+            "arrow": "#4a0f1d",
+        }
     r, g, b = hex_to_rgb(hex_str)
     h, l, s = colorsys.rgb_to_hls(r, g, b)
 
@@ -2451,19 +2489,44 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 icon.set_visible(False)
 
         live_css = f"""
-        :root:root {{
-          --accent-bg-color: {hex_norm};
-          --accent-fg-color: {pal['accent_fg']};
-          --accent-color: {pal['accent_color']};
+        @define-color accent_bg_color {hex_norm};
+        @define-color accent_fg_color {pal['accent_fg']};
+        @define-color accent_color {pal['accent_color']};
+
+        switch:checked {{
+          background-color: {hex_norm};
+          border-color: {hex_norm};
+          color: #ffffff;
+        }}
+        switch:checked > slider,
+        switch:checked slider {{
+          background-color: #ffffff;
+          color: {hex_norm};
+        }}
+        checkbutton.radio radio:checked,
+        checkbutton.radio:checked radio,
+        checkbutton radio:checked,
+        checkbutton:checked radio,
+        radio:checked {{
+          background-color: {hex_norm};
+          border-color: {hex_norm};
+          color: #ffffff;
+        }}
+        checkbutton check:checked,
+        checkbutton:checked check,
+        check:checked {{
+          background-color: {hex_norm};
+          border-color: {hex_norm};
+          color: #ffffff;
         }}
         button.suggested-action {{
           background-color: {hex_norm};
           color: {pal['accent_fg']};
         }}
-        switch:checked {{
+        progressbar progress {{
           background-color: {hex_norm};
         }}
-        progressbar > trough > progress {{
+        scale highlight {{
           background-color: {hex_norm};
         }}
         """
@@ -2487,10 +2550,47 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 @define-color accent_fg_color {fg_val};
 @define-color accent_color {acc_val};
 
-:root:root {{
-  --accent-bg-color: {hex_val};
-  --accent-fg-color: {fg_val};
-  --accent-color: {acc_val};
+switch:checked {{
+  background-color: {hex_val};
+  border-color: {hex_val};
+  color: #ffffff;
+}}
+
+switch:checked > slider,
+switch:checked slider {{
+  background-color: #ffffff;
+  color: {hex_val};
+}}
+
+checkbutton.radio radio:checked,
+checkbutton.radio:checked radio,
+checkbutton radio:checked,
+checkbutton:checked radio,
+radio:checked {{
+  background-color: {hex_val};
+  border-color: {hex_val};
+  color: #ffffff;
+}}
+
+checkbutton check:checked,
+checkbutton:checked check,
+check:checked {{
+  background-color: {hex_val};
+  border-color: {hex_val};
+  color: #ffffff;
+}}
+
+button.suggested-action {{
+  background-color: {hex_val};
+  color: {fg_val};
+}}
+
+progressbar progress {{
+  background-color: {hex_val};
+}}
+
+scale highlight {{
+  background-color: {hex_val};
 }}
 """
         with open(os.path.join(gtk4_dir, "gtk.css"), "w") as f:
@@ -2502,6 +2602,30 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         gtk3_content = f"""@define-color accent_bg_color {hex_val};
 @define-color accent_fg_color {fg_val};
 @define-color accent_color {acc_val};
+
+switch:checked {{
+  background-color: {hex_val};
+  border-color: {hex_val};
+  color: #ffffff;
+}}
+
+switch:checked > slider,
+switch:checked slider {{
+  background-color: #ffffff;
+  color: {hex_val};
+}}
+
+check:checked,
+radio:checked {{
+  background-color: {hex_val};
+  border-color: {hex_val};
+  color: #ffffff;
+}}
+
+button.suggested-action {{
+  background-color: {hex_val};
+  color: {fg_val};
+}}
 """
         with open(os.path.join(gtk3_dir, "gtk.css"), "w") as f:
             f.write(gtk3_content)
@@ -2558,10 +2682,25 @@ stage {{
         with open(os.path.join(shell_theme_dir, "gnome-shell.css"), "w") as f:
             f.write(shell_css)
 
-        # Dual sync
+        # Official GNOME accent-color synchronization
+        gnome_accent_map = {
+            "#7a1c33": "red",
+            "#1c71d8": "blue",
+            "#2ec27e": "green",
+            "#e5a50a": "yellow",
+            "#e66100": "orange",
+            "#c01c28": "red",
+            "#f66151": "pink",
+            "#9141ac": "purple",
+            "#5e5c64": "slate",
+            "#008080": "teal",
+        }
+        accent_color_name = gnome_accent_map.get(hex_val.lower(), "red")
+        subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", "accent-color", accent_color_name], check=False)
+
+        # Dual sync for Shell theme
         if hex_val.lower() == "#7a1c33":
             subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Saifdora-Burgundy"], check=False)
-            subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", "accent-color", "red"], check=False)
         else:
             subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Default"], check=False)
             time.sleep(0.05)
@@ -2744,12 +2883,23 @@ stage {{
         self.lbl_drv_status.add_css_class("dim-label")
         self.drv_progress_box.append(self.lbl_drv_status)
 
+        self.lbl_drv_note = Gtk.Label(label=t("drv_compile_notice"))
+        self.lbl_drv_note.set_wrap(True)
+        self.lbl_drv_note.set_halign(Gtk.Align.START)
+        self.lbl_drv_note.add_css_class("dim-label")
+        self.lbl_drv_note.add_css_class("caption")
+        self.drv_progress_box.append(self.lbl_drv_note)
+
+        self.drv_expander = Gtk.Expander.new(t("drv_log_expander"))
+        self.drv_expander.set_expanded(True)
+        self.drv_progress_box.append(self.drv_expander)
+
         log_scrolled = Gtk.ScrolledWindow()
         log_scrolled.set_min_content_height(180)
         log_scrolled.set_max_content_height(260)
         log_scrolled.set_propagate_natural_height(False)
         log_scrolled.add_css_class("card")
-        self.drv_progress_box.append(log_scrolled)
+        self.drv_expander.set_child(log_scrolled)
 
         self.drv_text_buffer = Gtk.TextBuffer()
         self.drv_text_view = Gtk.TextView.new_with_buffer(self.drv_text_buffer)
@@ -2834,7 +2984,14 @@ stage {{
 
         script_commands.extend([
             f"echo 'Target packages: {pkg_str}'",
-            f"rpm-ostree install -y {pkg_str}",
+            f"rpm-ostree install -y --idempotent {pkg_str}",
+            "echo ''",
+            "echo '=================================================='",
+            "echo ' Building NVIDIA kernel modules (akmods)...       '",
+            "echo ' This process compiles the driver for your kernel '",
+            "echo ' and may take several minutes. Please wait...     '",
+            "echo '=================================================='",
+            "akmods --force 2>&1 || true",
             "echo '=================================================='",
             "echo ' Driver installation and system layering completed! '",
             "echo '=================================================='"
@@ -2871,6 +3028,16 @@ stage {{
             self.btn_reboot_drivers.set_visible(True)
             toast = Adw.Toast.new(t("drv_done"))
             self.toast_overlay.add_toast(toast)
+        elif rc in (126, 127):
+            self.drv_progress_bar.set_fraction(0.0)
+            self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
+            self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
+            self.btn_install_drivers.set_sensitive(True)
+            self.cuda_switch.set_sensitive(True)
+            if self.mok_password_row:
+                self.mok_password_row.set_sensitive(True)
+            toast = Adw.Toast.new(t("drv_auth_cancelled"))
+            self.toast_overlay.add_toast(toast)
         else:
             self.drv_progress_bar.set_fraction(0.0)
             self.lbl_drv_status.set_text(t("drv_error"))
@@ -2878,6 +3045,8 @@ stage {{
             self.cuda_switch.set_sensitive(True)
             if self.mok_password_row:
                 self.mok_password_row.set_sensitive(True)
+            toast = Adw.Toast.new(t("drv_error"))
+            self.toast_overlay.add_toast(toast)
 
     # =========================================================================
     # TAB 4: CONTAINERS & PACKAGES
