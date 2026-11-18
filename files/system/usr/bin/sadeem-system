@@ -2980,23 +2980,34 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             return False
         GLib.idle_add(_start)
 
-    def start_upd_download_creep(self, status_text=None):
+    def start_upd_download_creep(self, status_text=None, min_pct=5.0, max_pct=60.0):
         def _start():
             if status_text:
                 self.upd_status_label.set_text(status_text)
+
+            min_frac = min_pct / 100.0
+            max_frac = max_pct / 100.0
+            self._upd_creep_min_frac = min_frac
+            self._upd_creep_max_frac = max_frac
+
+            cur = getattr(self, "_upd_current_frac", 0.05)
+            if cur < min_frac:
+                self.update_upd_progress(min_frac)
+
             if getattr(self, "_upd_download_timer", None) is not None:
                 return False
+
             self._stop_upd_timers_sync()
-            cur = getattr(self, "_upd_current_frac", 0.05)
-            if cur < 0.10:
-                self.update_upd_progress(0.10)
 
             def _step():
                 if getattr(self, "_upd_download_timer", None) is None:
                     return False
-                c = getattr(self, "_upd_current_frac", 0.10)
-                if c < 0.60:
-                    self.update_upd_progress(min(0.60, c + 0.005))
+                target_max = getattr(self, "_upd_creep_max_frac", 0.65)
+                c = getattr(self, "_upd_current_frac", 0.05)
+                if c < target_max:
+                    step_val = max(0.0005, (target_max - getattr(self, "_upd_creep_min_frac", 0.05)) * 0.02)
+                    new_c = min(target_max, c + step_val)
+                    self.update_upd_progress(max(c, new_c))
                     return True
                 self._upd_download_timer = None
                 return False
@@ -3038,14 +3049,41 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             return False
         GLib.idle_add(_start)
 
-    def append_upd_log(self, text):
-        clean = re.sub(r'\x1b\[[0-9;?]*[a-zA-Z]', '', text).replace('\r', '').strip()
+    def append_upd_log(self, text, is_cr=False):
+        clean = re.sub(r'\x1b\[[0-9;?]*[A-Za-z]', '', text).replace('\r', '').strip()
         if not clean:
+            if not is_cr and getattr(self, "_upd_last_was_cr", False):
+                def _commit():
+                    buf = self.upd_text_view.get_buffer()
+                    buf.insert(buf.get_end_iter(), "\n")
+                    self._upd_last_was_cr = False
+                    return False
+                GLib.idle_add(_commit)
             return
         def _append():
             buf = self.upd_text_view.get_buffer()
             end_iter = buf.get_end_iter()
-            buf.insert(end_iter, clean + "\n")
+            last_was_cr = getattr(self, "_upd_last_was_cr", False)
+
+            if last_was_cr:
+                start_iter = end_iter.copy()
+                start_iter.set_line_offset(0)
+                buf.delete(start_iter, end_iter)
+                end_iter = buf.get_end_iter()
+                if is_cr:
+                    buf.insert(end_iter, clean)
+                    self._upd_last_was_cr = True
+                else:
+                    buf.insert(end_iter, clean + "\n")
+                    self._upd_last_was_cr = False
+            else:
+                if is_cr:
+                    buf.insert(end_iter, clean)
+                    self._upd_last_was_cr = True
+                else:
+                    buf.insert(end_iter, clean + "\n")
+                    self._upd_last_was_cr = False
+
             mark = buf.create_mark(None, buf.get_end_iter(), False)
             self.upd_text_view.scroll_to_mark(mark, 0.05, False, 0.0, 1.0)
             return False
@@ -3311,6 +3349,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         buf = self.upd_text_view.get_buffer()
         buf.set_text("")
+        self._upd_last_was_cr = False
         self.upd_expander.set_expanded(False)
 
         threading.Thread(target=self.run_updates_thread, args=(run_sys, run_flatpak, run_box), daemon=True).start()
@@ -3321,7 +3360,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         is_rpm_ostree = any("rpm-ostree" in str(c) for c in cmd) and any("upgrade" in str(c) for c in cmd)
         ostree_stage = ["connecting"]
-        chunk_state = {"total": 0, "done": 0}
+        chunk_state = {"total": 0, "current": 0, "size_str": ""}
         last_logged = [""]
 
         if is_rpm_ostree:
@@ -3353,14 +3392,18 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         try:
             output_lines = []
 
-            def _process_line(raw_line, log_line=True):
-                clean = re.sub(r'\x1b\[[0-9;?]*[a-zA-Z]', '', raw_line).replace('\r', '').strip()
+            def _process_line(raw_line, log_line=True, is_cr=False):
+                clean = re.sub(r'\x1b\[[0-9;?]*[A-Za-z]', '', raw_line).replace('\r', '').strip()
                 if not clean:
                     return
-                if log_line and clean != last_logged[0]:
-                    last_logged[0] = clean
-                    output_lines.append(clean)
-                    self.append_upd_log(clean)
+                if log_line:
+                    if is_cr:
+                        self.append_upd_log(clean, is_cr=True)
+                    else:
+                        if clean != last_logged[0]:
+                            last_logged[0] = clean
+                            output_lines.append(clean)
+                            self.append_upd_log(clean, is_cr=False)
                 clean_lower = clean.lower()
 
                 if is_rpm_ostree:
@@ -3435,65 +3478,104 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                             self.update_upd_progress(max(0.05, cur_frac))
                         return
 
-                    # Stage 2: Downloading / Pulling OCI layers -> 5%..65% (or smooth 10%..60% creep)
+                    # Stage 2: Downloading / Pulling OCI layers -> 5%..65% across total layers
+                    m_layer_full = re.search(r'\[(\d+)/(\d+)\]\s+Fetching layer\s+\S+\s+\(([^)]+)\)', clean)
+                    m_layer_simple = re.search(r'\[(\d+)/(\d+)\]\s+Fetching layer', clean)
                     m_need = re.search(r'layers needed:\s*(\d+)', clean_lower)
-                    if m_need:
+
+                    if m_layer_full:
+                        k = int(m_layer_full.group(1))
+                        N = int(m_layer_full.group(2))
+                        size_str = m_layer_full.group(3).strip()
+                        chunk_state["current"] = k
+                        chunk_state["total"] = N
+                        chunk_state["size_str"] = size_str
+                    elif m_layer_simple:
+                        k = int(m_layer_simple.group(1))
+                        N = int(m_layer_simple.group(2))
+                        chunk_state["current"] = k
+                        chunk_state["total"] = N
+                        size_str = chunk_state.get("size_str", "")
+                    elif m_need:
                         chunk_state["total"] = int(m_need.group(1))
-                        chunk_state["done"] = 0
+                        chunk_state["current"] = max(1, chunk_state.get("current", 1))
+                        size_str = chunk_state.get("size_str", "")
+                    else:
+                        size_str = chunk_state.get("size_str", "")
 
                     is_dl_line = (
-                        any(k in clean_lower for k in ("downloading", "pulling", "fetching", "receiving objects", "receiving delta", "ostree chunk", "layers needed"))
+                        m_layer_full is not None
+                        or m_layer_simple is not None
+                        or any(k in clean_lower for k in ("downloading", "pulling", "fetching", "receiving objects", "receiving delta", "ostree chunk", "layers needed"))
                         or (ostree_stage[0] == "downloading" and (
                             "%" in clean
                             or re.search(r'\d+(?:\.\d+)?\s*(?:kb|kib|mb|mib|gb|gib)', clean_lower)
                         ))
                     )
+
                     if is_dl_line and ostree_stage[0] in ("connecting", "downloading"):
                         ostree_stage[0] = "downloading"
 
-                        if "fetching ostree chunk" in clean_lower and "done" in clean_lower and chunk_state["total"] > 0:
-                            chunk_state["done"] = min(chunk_state["total"], chunk_state["done"] + 1)
+                        k = chunk_state.get("current", 1)
+                        N = chunk_state.get("total", 0)
 
-                        m_pct = re.search(r'(\d{1,3})(?:\.\d+)?%', clean)
-                        m_ratio = re.search(
-                            r'(\d+(?:\.\d+)?)\s*(kB|KB|KiB|MB|MiB|GB|GiB)\s*/\s*(\d+(?:\.\d+)?)\s*(kB|KB|KiB|MB|MiB|GB|GiB)',
-                            clean,
-                            re.IGNORECASE,
-                        )
-                        m_size = re.search(r'(\d+(?:\.\d+)?\s*(?:kB|KB|KiB|MB|MiB|GB|GiB))', clean, re.IGNORECASE)
+                        if N > 0:
+                            # Divide 5.0% to 65.0% (width of 60.0%) across N layers
+                            layer_start = 5.0 + ((k - 1) / N) * 60.0
+                            layer_end = 5.0 + (k / N) * 60.0
+                            creep_max = max(layer_start, layer_end - 0.5)
 
-                        if m_pct:
-                            val = max(0, min(100, int(m_pct.group(1))))
-                            mapped = 0.05 + (val / 100.0) * 0.60
-                            self.stop_upd_download_creep()
-                            self.update_upd_progress(mapped)
-                            if m_ratio:
-                                detail = f"{val}% — {m_ratio.group(1)} {m_ratio.group(2)} / {m_ratio.group(3)} {m_ratio.group(4)}"
+                            if size_str:
+                                status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N} (\u2066{size_str}\u2069)..."
                             else:
-                                detail = f"{val}%"
-                            self._set_upd_status_text(t("status_sys_downloading_detail", detail=detail))
-                        elif m_ratio:
-                            cur_b = _unit_to_bytes(m_ratio.group(1), m_ratio.group(2))
-                            tot_b = _unit_to_bytes(m_ratio.group(3), m_ratio.group(4))
-                            if tot_b > 0:
-                                val = max(0, min(100, int(round((cur_b / tot_b) * 100.0))))
-                                mapped = 0.05 + (val / 100.0) * 0.60
-                                self.stop_upd_download_creep()
-                                self.update_upd_progress(mapped)
-                                detail = f"{val}% — {m_ratio.group(1)} {m_ratio.group(2)} / {m_ratio.group(3)} {m_ratio.group(4)}"
-                                self._set_upd_status_text(t("status_sys_downloading_detail", detail=detail))
+                                status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N}..."
+
+                            # Check if current layer finished
+                            if "done" in clean_lower or "✔" in clean:
+                                layer_done_frac = layer_end / 100.0
+                                cur_f = getattr(self, "_upd_current_frac", 0.05)
+                                self.update_upd_progress(max(cur_f, layer_done_frac))
+                                self._set_upd_status_text(status_msg)
+                                return
+
+                            # Check for ratio or percentage within layer k
+                            m_ratio = re.search(
+                                r'(\d+(?:\.\d+)?)\s*(kB|KB|KiB|MB|MiB|GB|GiB)\s*/\s*(\d+(?:\.\d+)?)\s*(kB|KB|KiB|MB|MiB|GB|GiB)',
+                                clean,
+                                re.IGNORECASE,
+                            )
+                            m_pct = re.search(r'(\d{1,3})(?:\.\d+)?%', clean)
+
+                            computed_pct = None
+                            if m_ratio:
+                                cur_b = _unit_to_bytes(m_ratio.group(1), m_ratio.group(2))
+                                tot_b = _unit_to_bytes(m_ratio.group(3), m_ratio.group(4))
+                                if tot_b > 0:
+                                    ratio_pct = max(0.0, min(100.0, (cur_b / tot_b) * 100.0))
+                                    computed_pct = layer_start + (ratio_pct / 100.0) * (layer_end - layer_start)
+                            elif m_pct:
+                                val = max(0, min(100, int(m_pct.group(1))))
+                                computed_pct = layer_start + (val / 100.0) * (layer_end - layer_start)
+
+                            if computed_pct is not None:
+                                cur_f = getattr(self, "_upd_current_frac", 0.05)
+                                new_f = max(cur_f, computed_pct / 100.0)
+                                self.update_upd_progress(new_f)
+                                self._set_upd_status_text(status_msg)
+                            else:
+                                cur_f = getattr(self, "_upd_current_frac", 0.05)
+                                if cur_f < (layer_start / 100.0):
+                                    self.update_upd_progress(layer_start / 100.0)
+                                self.start_upd_download_creep(status_text=status_msg, min_pct=layer_start, max_pct=creep_max)
+                            return
                         else:
-                            if chunk_state["total"] > 0 and chunk_state["done"] > 0:
-                                chunk_pct = min(95, int(round((chunk_state["done"] / chunk_state["total"]) * 100.0)))
-                                mapped = 0.05 + (chunk_pct / 100.0) * 0.60
-                                if mapped > cur_frac:
-                                    self.update_upd_progress(mapped)
+                            m_size = re.search(r'(\d+(?:\.\d+)?\s*(?:kB|KB|KiB|MB|MiB|GB|GiB))', clean, re.IGNORECASE)
                             if m_size:
-                                status_msg = t("status_sys_downloading_detail", detail=m_size.group(1))
+                                status_msg = f"جاري تنزيل ملفات النظام (\u2066{m_size.group(1)}\u2069)..."
                             else:
                                 status_msg = t("status_sys_downloading")
-                            self.start_upd_download_creep(status_text=status_msg)
-                        return
+                            self.start_upd_download_creep(status_text=status_msg, min_pct=5.0, max_pct=10.0)
+                            return
 
                 else:
                     # Non-rpm-ostree commands (Flatpak, Distrobox)
@@ -3542,7 +3624,10 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 slave_fd = None
 
                 def _pty_reader():
-                    buf = bytearray()
+                    stream_buf = ""
+                    delim_pattern = re.compile(r'(\r\n|\n|\r)')
+                    ansi_pattern = re.compile(r'\x1b\[[0-9;?]*[A-Za-z]')
+
                     while True:
                         try:
                             chunk = os.read(master_fd, 4096)
@@ -3552,19 +3637,27 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                             break
                         if not chunk:
                             break
-                        buf.extend(chunk)
-                        # Split immediately on both \r and \n to capture live in-place progress updates
-                        parts = re.split(rb'[\r\n]+', bytes(buf))
-                        buf = bytearray(parts[-1])
-                        for seg in parts[:-1]:
-                            if seg:
-                                _process_line(seg.decode('utf-8', errors='replace'), log_line=True)
-                        # Also inspect un-terminated progress prompt (e.g. "Fetching ostree chunk ... (12.4 MB)...")
-                        if buf and b'...' in buf:
-                            _process_line(buf.decode('utf-8', errors='replace'), log_line=False)
 
-                    if buf:
-                        _process_line(buf.decode('utf-8', errors='replace'), log_line=True)
+                        raw_text = chunk.decode('utf-8', errors='replace')
+                        clean_text = ansi_pattern.sub('', raw_text)
+                        stream_buf += clean_text
+
+                        pos = 0
+                        for m in delim_pattern.finditer(stream_buf):
+                            seg = stream_buf[pos:m.start()]
+                            delim = m.group(1)
+                            pos = m.end()
+                            is_cr = (delim == '\r')
+                            if seg.strip():
+                                _process_line(seg, log_line=True, is_cr=is_cr)
+
+                        stream_buf = stream_buf[pos:]
+
+                        if stream_buf and any(s in stream_buf for s in ('Fetching layer', 'layers needed', '...')):
+                            _process_line(stream_buf, log_line=False, is_cr=True)
+
+                    if stream_buf.strip():
+                        _process_line(stream_buf, log_line=True, is_cr=False)
 
                 reader_thread = threading.Thread(target=_pty_reader, daemon=True)
                 reader_thread.start()
@@ -3590,12 +3683,13 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                             except Exception:
                                 raw_str = ""
                             buf.clear()
-                            _process_line(raw_str)
+                            is_cr = (b == b'\r')
+                            _process_line(raw_str, log_line=True, is_cr=is_cr)
                     else:
                         buf.extend(b)
                 if buf:
                     try:
-                        _process_line(buf.decode('utf-8', errors='replace'))
+                        _process_line(buf.decode('utf-8', errors='replace'), log_line=True, is_cr=False)
                     except Exception:
                         pass
                 proc.wait()
