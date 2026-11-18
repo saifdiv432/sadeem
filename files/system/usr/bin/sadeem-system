@@ -8,6 +8,8 @@ Built with Python 3, GTK 4, and Libadwaita.
 
 import sys
 import os
+import glob
+import shlex
 import colorsys
 import subprocess
 import time
@@ -29,12 +31,12 @@ TRANSLATIONS = {
         "colors_preview_title": "Live Accent Preview",
         "colors_preview_desc": "Sample controls showing the active accent color in real time",
         "colors_preview_btn": "Primary Action",
-        "drv_banner_title": "Hardware & GPU Drivers",
-        "drv_banner_desc": "Manage graphics drivers, CUDA compute libraries, and hardware acceleration.",
+        "drv_banner_title": "Sadeem Driver Manager",
+        "drv_banner_desc": "Scan hardware components, install missing drivers, and apply firmware updates automatically.",
         "app_title": "Sadeem System",
         "tab_updates": "Updates",
         "tab_colors": "Colors & Theme",
-        "tab_drivers": "Drivers & GPU",
+        "tab_drivers": "Drivers & Hardware",
         "tab_containers": "Containers & Packages",
         "upd_banner_title": "System & Software Updates",
         "upd_banner_desc": "Update system, apps, and containers on demand with zero background data usage.",
@@ -120,6 +122,69 @@ TRANSLATIONS = {
         "drv_uninstalled_done": "Driver uninstalled successfully! Please restart to apply changes.",
         "drv_done": "Driver installation completed successfully! Please restart to activate.",
         "drv_error": "Installation encountered errors or was cancelled.",
+        "cat_gpu": "Graphics Card",
+        "cat_network": "Network & Wi-Fi",
+        "cat_bluetooth": "Bluetooth",
+        "cat_audio": "Audio",
+        "cat_camera": "Camera",
+        "cat_fingerprint": "Fingerprint Reader",
+        "cat_sensors": "Sensors & Screen Rotation",
+        "cat_other": "Other Devices",
+        "drv_available_title": "Available Drivers & Updates",
+        "drv_available_desc": "Select the drivers to install, then click the install button below.",
+        "drv_install_selected": "Install Selected Drivers",
+        "drv_install_selected_count": "Install Selected Drivers ({count})",
+        "drv_rescan_btn": "Rescan Hardware",
+        "drv_scanning_title": "Scanning hardware components...",
+        "drv_scanning_desc": "Inspecting PCI, USB, kernel modules, repositories, and firmware updates",
+        "drv_all_ok_title": "All Drivers & Firmware Are Up to Date",
+        "drv_all_ok_desc": "No missing drivers or pending firmware updates were detected for your hardware.",
+        "drv_auto_hw_title": "Automatically Configured Hardware",
+        "drv_auto_hw_desc": "Hardware components detected on your device and their active kernel drivers.",
+        "drv_active_driver": "Active driver: {driver}",
+        "drv_no_driver": "No active kernel driver",
+        "drv_recommended_badge": "Recommended",
+        "drv_optional_badge": "Optional",
+        "drv_packages_label": "Packages: {pkgs}",
+        "drv_sb_enabled_title": "Secure Boot is Enabled",
+        "drv_sb_needs_mok_desc": "Kernel modules (such as NVIDIA, Broadcom, or IPU6) require enrolling the akmods signing key (MOK) in UEFI.",
+        "drv_sb_enrolled_desc": "Secure Boot is enabled and the local akmods signing key is already enrolled.",
+        "drv_mok_enroll_btn": "Enroll MOK Key",
+        "drv_mok_dialog_title": "Enroll Secure Boot MOK Key",
+        "drv_mok_dialog_body": "Enter a temporary password (at least 8 characters). You will enter this same password once on the blue MOK Manager screen after restarting.",
+        "drv_mok_enrolling": "Importing MOK signing key via mokutil...",
+        "drv_mok_done": "MOK key enrollment queued! Restart your device and choose 'Enroll MOK'.",
+        "drv_fw_group_title": "Firmware Updates (BIOS / UEFI / NVMe)",
+        "drv_fw_group_desc": "Official hardware firmware updates provided via LVFS / fwupd.",
+        "drv_fw_install_btn": "Install Firmware Updates",
+        "drv_fw_updating": "Installing hardware firmware updates via fwupdmgr...",
+        "drv_fw_done": "Firmware updates installed successfully! Restart may be required.",
+        "drv_stage_auth": "Requesting administrator permissions...",
+        "drv_stage_downloading": "Downloading driver packages...",
+        "drv_stage_layering": "Layering packages into system image (rpm-ostree)...",
+        "drv_stage_akmods": "Compiling kernel modules (akmods)...",
+        "drv_stage_complete": "100% — Completed successfully",
+        "drv_cat_summary": "{count} device(s) — working automatically",
+        "drv_cat_summary_missing": "{count} device(s) — {missing} without active driver",
+        "drv_cancel": "Cancel",
+        "drv_confirm": "Enroll Now",
+        "drv_rec_nvidia_title": "NVIDIA Graphics & CUDA Driver — {name}",
+        "drv_rec_nvidia_desc": "Official proprietary driver with Wayland, Vulkan, and CUDA acceleration.",
+        "drv_rec_intel_gpu_title": "Intel Hardware Video Acceleration — {name}",
+        "drv_rec_intel_gpu_desc": "Enables hardware VA-API video decoding and encoding for Intel graphics.",
+        "drv_rec_amd_gpu_title": "AMD Freeworld Video Codecs (Optional) — {name}",
+        "drv_rec_amd_gpu_desc": "Optional RPM Fusion VA-API codecs (H.264/HEVC) for AMD graphics.",
+        "drv_rec_broadcom_title": "Broadcom Wi-Fi Driver — {name}",
+        "drv_rec_broadcom_desc": "Proprietary Broadcom wireless kernel driver (akmod-wl).",
+        "drv_rec_ipu6_title": "Intel IPU6 / MIPI Camera Driver — {name}",
+        "drv_rec_ipu6_desc": "Enables built-in Intel IPU6 / MIPI laptop webcams.",
+        "drv_rec_audio_sof_title": "Sound Open Firmware (SOF) Audio — {name}",
+        "drv_rec_audio_sof_desc": "Required DSP firmware for modern Intel and AMD integrated audio.",
+        "drv_rec_fprint_title": "Fingerprint Reader Support — {name}",
+        "drv_rec_fprint_desc": "Installs fprintd and PAM integration for fingerprint login and authentication.",
+        "drv_rec_modalias_title": "Driver Package for {name}",
+        "drv_rec_modalias_desc": "Matched automatically via hardware modalias in system repositories.",
+        "drv_select_one_warn": "Please select at least one driver to install.",
         "box_header_title": "Sadeem Box Container Runtime",
         "box_header_desc": "Sadeem Box runs transparently in the background to install and execute external .rpm and .deb packages safely without modifying the immutable OS core.",
         "box_status_title": "Container Environment Status",
@@ -146,12 +211,12 @@ TRANSLATIONS = {
         "colors_preview_title": "معاينة فورية للون التمييز",
         "colors_preview_desc": "عناصر تفاعلية توضح مظهر لون التمييز المختار على عناصر الواجهة",
         "colors_preview_btn": "زر أساسي",
-        "drv_banner_title": "تعريفات العتاد والرسوميات",
-        "drv_banner_desc": "إدارة وتثبيت تعريفات بطاقات العرض ومكتبات الحوسبة المتسارعة CUDA.",
+        "drv_banner_title": "مدير سديم للتعريفات",
+        "drv_banner_desc": "فحص عتاد الجهاز وتثبيت التعريفات الناقصة وتحديثات الفيرموير تلقائياً.",
         "app_title": "نظام سديم",
         "tab_updates": "التحديثات",
         "tab_colors": "الألوان والمظهر",
-        "tab_drivers": "التعريفات والرسوميات",
+        "tab_drivers": "التعريفات والعتاد",
         "tab_containers": "الحاويات والحزم",
         "upd_banner_title": "تحديثات النظام والبرامج",
         "upd_banner_desc": "تحديث النظام والتطبيقات عند طلبك وبضغطة واحدة، دون أي استهلاك للبيانات في الخلفية.",
@@ -235,8 +300,71 @@ TRANSLATIONS = {
         "drv_fixing_kargs": "جاري حظر nouveau وإصلاح معاملات النواة (kargs)...",
         "drv_uninstalling": "جاري إزالة حزم تعريف NVIDIA واستعادة الإعدادات الافتراضية...",
         "drv_uninstalled_done": "تمت إزالة التعريف بنجاح! يرجى إعادة التشغيل لتفعيل التغييرات.",
-        "drv_done": "اكتمل تثبيت التعريف بنجاح! يرجى إعادة تشغيل الجهاز لتفعيله.",
+        "drv_done": "اكتمل تثبيت التعريفات بنجاح! يرجى إعادة تشغيل الجهاز لتفعيلها.",
         "drv_error": "حدث خطأ أثناء التثبيت أو تم إلغاؤه من المستخدم.",
+        "cat_gpu": "بطاقة الرسوميات",
+        "cat_network": "الشبكة والواي فاي",
+        "cat_bluetooth": "البلوتوث",
+        "cat_audio": "الصوت",
+        "cat_camera": "الكاميرا",
+        "cat_fingerprint": "قارئ البصمة",
+        "cat_sensors": "الحساسات وتدوير الشاشة",
+        "cat_other": "أجهزة أخرى",
+        "drv_available_title": "التعريفات والتحديثات المتاحة",
+        "drv_available_desc": "حدّد التعريفات المطلوب تثبيتها ثم اضغط على زر التثبيت أدناه.",
+        "drv_install_selected": "تثبيت التعريفات المحددة",
+        "drv_install_selected_count": "تثبيت التعريفات المحددة ({count})",
+        "drv_rescan_btn": "إعادة فحص العتاد",
+        "drv_scanning_title": "جارٍ فحص مكونات العتاد...",
+        "drv_scanning_desc": "فحص أجهزة PCI و USB ووحدات النواة والمستودعات وتحديثات الفيرموير",
+        "drv_all_ok_title": "جميع تعريفات جهازك مثبّتة وتعمل بكفاءة!",
+        "drv_all_ok_desc": "لم يتم العثور على تعريفات ناقصة أو تحديثات فيرموير معلّقة لعتاد جهازك.",
+        "drv_auto_hw_title": "العتاد المعرّف تلقائياً عبر النظام",
+        "drv_auto_hw_desc": "القطع المكتشفة في جهازك وتعريف النواة النشط لكل منها.",
+        "drv_active_driver": "التعريف النشط: {driver}",
+        "drv_no_driver": "بدون تعريف نواة نشط",
+        "drv_recommended_badge": "موصى به",
+        "drv_optional_badge": "اختياري",
+        "drv_packages_label": "الحزم: {pkgs}",
+        "drv_sb_enabled_title": "الإقلاع الآمن (Secure Boot) مفعّل",
+        "drv_sb_needs_mok_desc": "تثبيت وحدات النواة الخارجية (مثل NVIDIA أو Broadcom أو IPU6) يتطلب تسجيل مفتاح توقيع akmods في UEFI.",
+        "drv_sb_enrolled_desc": "الإقلاع الآمن مفعّل ومفتاح توقيع akmods مسجّل مسبقاً في النظام.",
+        "drv_mok_enroll_btn": "تسجيل مفتاح MOK",
+        "drv_mok_dialog_title": "تسجيل مفتاح التوقيع (MOK)",
+        "drv_mok_dialog_body": "أدخل كلمة مرور مؤقتة (8 أحرف على الأقل). ستُطلب منك نفس الكلمة مرة واحدة في شاشة MOK الزرقاء بعد إعادة التشغيل.",
+        "drv_mok_enrolling": "جاري استيراد مفتاح التوقيع عبر mokutil...",
+        "drv_mok_done": "تم تجهيز تسجيل مفتاح MOK بنجاح! أعد تشغيل الجهاز واختر Enroll MOK.",
+        "drv_fw_group_title": "تحديثات الفيرموير (BIOS / UEFI / NVMe)",
+        "drv_fw_group_desc": "تحديثات رسمية للعتاد متوفرة عبر خدمة fwupd / LVFS.",
+        "drv_fw_install_btn": "تثبيت تحديثات الفيرموير",
+        "drv_fw_updating": "جاري تثبيت تحديثات الفيرموير عبر fwupdmgr...",
+        "drv_fw_done": "تم تثبيت تحديثات الفيرموير بنجاح! قد يتطلب الأمر إعادة التشغيل.",
+        "drv_stage_auth": "جاري طلب صلاحيات المدير...",
+        "drv_stage_downloading": "جاري تنزيل حزم التعريفات...",
+        "drv_stage_layering": "جاري دمج الحزم في صورة النظام (rpm-ostree)...",
+        "drv_stage_akmods": "جاري بناء وحدات النواة (akmods)...",
+        "drv_stage_complete": "100% — اكتمل التثبيت بنجاح",
+        "drv_cat_summary": "{count} قطعة — تعمل تلقائياً عبر النواة",
+        "drv_cat_summary_missing": "{count} قطعة — {missing} بدون تعريف نشط",
+        "drv_cancel": "إلغاء",
+        "drv_confirm": "تسجيل المفتاح",
+        "drv_rec_nvidia_title": "تعريف بطاقة NVIDIA و CUDA — {name}",
+        "drv_rec_nvidia_desc": "التعريف الرسمي مع دعم Wayland و Vulkan وتسريع الحوسبة CUDA.",
+        "drv_rec_intel_gpu_title": "تسريع الفيديو العتادي لبطاقة Intel — {name}",
+        "drv_rec_intel_gpu_desc": "يفعّل فك وتشفير الفيديو عبر العتاد (VA-API) لبطاقات Intel.",
+        "drv_rec_amd_gpu_title": "ترميزات الفيديو الإضافية لبطاقة AMD (اختياري) — {name}",
+        "drv_rec_amd_gpu_desc": "حزمة اختيارية من RPM Fusion لتسريع ترميزات H.264/HEVC عبر VA-API.",
+        "drv_rec_broadcom_title": "تعريف واي فاي Broadcom — {name}",
+        "drv_rec_broadcom_desc": "تعريف النواة المخصص لشرائح الواي فاي Broadcom (akmod-wl).",
+        "drv_rec_ipu6_title": "تعريف كاميرا Intel IPU6 / MIPI — {name}",
+        "drv_rec_ipu6_desc": "يفعّل كاميرات الحواسيب المحمولة المدمجة من نوع Intel IPU6 / MIPI.",
+        "drv_rec_audio_sof_title": "تعريف الصوت الحديث (ALSA SOF) — {name}",
+        "drv_rec_audio_sof_desc": "ملفات البرمجيات الثابتة اللازمة لمتحكمات الصوت الحديثة من Intel و AMD.",
+        "drv_rec_fprint_title": "دعم قارئ البصمة — {name}",
+        "drv_rec_fprint_desc": "يثبّت ويفعّل fprintd و fprintd-pam لتسجيل الدخول والمصادقة بالبصمة.",
+        "drv_rec_modalias_title": "تعريف مقترح للجهاز — {name}",
+        "drv_rec_modalias_desc": "تم العثور عليه تلقائياً عبر معرّف العتاد (modalias) في مستودعات النظام.",
+        "drv_select_one_warn": "يرجى تحديد تعريف واحد على الأقل للتثبيت.",
         "box_header_title": "بيئة تشغيل وحاويات سديم بوكس (Sadeem Box)",
         "box_header_desc": "تعمل حاوية سديم في الخلفية بسلاسة لتثبيت وتشغيل الحزم الخارجية بصيغ .rpm و .deb دون المساس بالنظام الذري الأساسي.",
         "box_status_title": "حالة بيئة الحاويات",
@@ -1656,6 +1784,788 @@ def classify_gpu(gpu, db):
         return "unsupported", gpu["raw_name"], categories.get("unsupported", {})
 
 
+# =============================================================================
+# COMPREHENSIVE HARDWARE DETECTION & DRIVER RECOMMENDATION ENGINE
+# =============================================================================
+
+HARDWARE_CATEGORIES = [
+    ("gpu", "cat_gpu", ["video-display-symbolic", "computer-symbolic"]),
+    ("network", "cat_network", ["network-wireless-symbolic", "network-wired-symbolic"]),
+    ("bluetooth", "cat_bluetooth", ["bluetooth-active-symbolic", "bluetooth-symbolic"]),
+    ("audio", "cat_audio", ["audio-card-symbolic", "audio-speakers-symbolic"]),
+    ("camera", "cat_camera", ["camera-web-symbolic", "camera-photo-symbolic"]),
+    ("fingerprint", "cat_fingerprint", ["auth-fingerprint-symbolic", "security-high-symbolic"]),
+    ("sensors", "cat_sensors", ["orientation-landscape-symbolic", "input-tablet-symbolic", "preferences-system-symbolic"]),
+    ("other", "cat_other", ["drive-harddisk-symbolic", "computer-symbolic"]),
+]
+
+FINGERPRINT_VIDS = {"06cb", "27c6", "138a", "04f3", "1c7a", "2808"}
+DEDICATED_FINGERPRINT_VIDS = {"138a", "1c7a", "2808"}
+INTEL_IPU6_DEVICE_IDS = {"9a19", "465d", "a75d", "7d19", "4e19", "645d", "8a19", "1919"}
+
+
+def get_loaded_modules():
+    modules = set()
+    try:
+        with open("/proc/modules", "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                parts = line.split()
+                if parts:
+                    mod = parts[0].strip()
+                    modules.add(mod)
+                    modules.add(mod.replace("-", "_"))
+                    modules.add(mod.replace("_", "-"))
+    except Exception:
+        try:
+            res = subprocess.run(["lsmod"], capture_output=True, text=True, check=False, timeout=5)
+            for line in res.stdout.splitlines()[1:]:
+                parts = line.split()
+                if parts:
+                    mod = parts[0].strip()
+                    modules.add(mod)
+                    modules.add(mod.replace("-", "_"))
+                    modules.add(mod.replace("_", "-"))
+        except Exception:
+            pass
+    return modules
+
+
+def get_installed_and_staged_packages():
+    pkgs = set()
+    try:
+        res = subprocess.run(
+            ["rpm", "-qa", "--qf", "%{NAME}\n"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=10
+        )
+        if res.returncode == 0:
+            for line in res.stdout.splitlines():
+                name = line.strip()
+                if name:
+                    pkgs.add(name)
+    except Exception:
+        pass
+
+    try:
+        res = subprocess.run(
+            ["rpm-ostree", "status", "--json"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=10
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            for dep in data.get("deployments", []):
+                for p in dep.get("requested-packages", []) + dep.get("packages", []):
+                    pkgs.add(p.strip())
+    except Exception:
+        pass
+    return pkgs
+
+
+def _read_sysfs_text(path):
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            return f.read().strip()
+    except Exception:
+        return ""
+
+
+def _read_sysfs_driver(dev_path):
+    drv_link = os.path.join(dev_path, "driver")
+    try:
+        if os.path.islink(drv_link):
+            return os.path.basename(os.readlink(drv_link))
+    except Exception:
+        pass
+    return ""
+
+
+def is_standard_bridge_or_hub(dev):
+    bus = dev.get("bus", "")
+    if bus == "usb":
+        vid = dev.get("vendor_id", "").lower()
+        dclass = dev.get("device_class", "").lower()
+        iclasses = dev.get("interface_classes", set())
+        if vid == "1d6b" or dclass == "09" or (iclasses and iclasses == {"09"}):
+            return True
+        return False
+
+    if bus == "pci":
+        cid = dev.get("class_id", "").lower()
+        name_l = dev.get("name", "").lower()
+        # Keep Intel IPU6/MIPI cameras and ISH/SFH sensor hubs visible even if class is 0480/0880/1180/0780
+        if any(k in name_l for k in ("ipu", "imaging", "camera", "mipi", "sensor hub", "ish", "sfh")):
+            return False
+        if dev.get("vendor_id", "").lower() == "8086" and dev.get("device_id", "").lower() in INTEL_IPU6_DEVICE_IDS:
+            return False
+        # Standard bridges, RAM controllers, USB/SMBus host controllers, generic system peripherals
+        if cid.startswith(("05", "06")):
+            return True
+        if cid in ("0c03", "0c05", "0c80", "0800", "0801", "0802", "0803", "0804", "0880", "0780", "1180"):
+            return True
+        return False
+
+    return False
+
+
+def classify_hardware_device(dev):
+    bus = dev.get("bus", "")
+    cid = dev.get("class_id", "").lower()
+    vid = dev.get("vendor_id", "").lower()
+    did = dev.get("device_id", "").lower()
+    name_l = dev.get("name", "").lower()
+    drv_l = dev.get("driver", "").lower()
+    iclasses = dev.get("interface_classes", set())
+
+    if bus == "iio" or bus == "input":
+        return "sensors"
+
+    if bus == "spi":
+        if any(k in name_l for k in ("fp", "finger", "gxfp", "syna", "elan", "fpc", "goodix")):
+            return "fingerprint"
+        return "sensors"
+
+    if bus == "pci":
+        if cid.startswith("03"):
+            return "gpu"
+        if cid.startswith("02"):
+            return "network"
+        if (vid == "8086" and did in INTEL_IPU6_DEVICE_IDS) or any(k in name_l for k in ("ipu6", "ipu ", "imaging", "mipi", "camera")):
+            return "camera"
+        if cid in ("0403", "0401") or (cid == "0480" and any(k in name_l for k in ("audio", "sound", "sof", "dsp", "acp", "hda"))):
+            return "audio"
+        if drv_l in ("snd_hda_intel", "snd_sof_pci_intel_tgl", "snd_sof_pci_intel_cnl", "snd_sof_pci_intel_icl", "snd_sof_pci_intel_mtl", "snd_sof_pci_amd_acp") or drv_l.startswith("snd_"):
+            return "audio"
+        if drv_l in ("intel-ish-ipc", "ish_ipc", "amd_sfh", "hid_sensor_hub") or any(k in name_l for k in ("sensor hub", "integrated sensor", "ish", "sfh")):
+            return "sensors"
+        if "bluetooth" in name_l or drv_l in ("btusb", "hci_uart"):
+            return "bluetooth"
+        if "fingerprint" in name_l or "biometric" in name_l:
+            return "fingerprint"
+        return "other"
+
+    if bus == "usb":
+        is_pure_hid = bool(iclasses) and iclasses == {"03"}
+        is_touch_or_input = any(k in name_l for k in ("touchpad", "trackpad", "mouse", "keyboard", "touchscreen", "digitizer", "stylus", "pen", "tablet"))
+
+        # Fingerprint detection with guard against Synaptics/Elan/Goodix touchpads & touchscreens
+        if "fingerprint" in name_l or "biometric" in name_l or vid in DEDICATED_FINGERPRINT_VIDS:
+            return "fingerprint"
+        if vid in FINGERPRINT_VIDS:
+            if any(k in name_l for k in ("finger", "fp", "bio", "print")):
+                return "fingerprint"
+            if not is_pure_hid and not is_touch_or_input:
+                return "fingerprint"
+
+        # Bluetooth
+        if drv_l in ("btusb", "ath3k", "btrtl", "btintel", "btbcm") or "bluetooth" in name_l or "e0" in iclasses:
+            if "bluetooth" in name_l or drv_l.startswith("bt") or dev.get("is_bt_iface", False):
+                return "bluetooth"
+
+        # Camera
+        if "0e" in iclasses or drv_l == "uvcvideo" or any(k in name_l for k in ("webcam", "camera", "cam ", "uvc", "ir cam")):
+            return "camera"
+
+        # Audio
+        if "01" in iclasses or drv_l in ("snd-usb-audio", "snd_usb_audio") or any(k in name_l for k in ("audio", "headset", "microphone", "speaker", "dac")):
+            return "audio"
+
+        # Network / Wi-Fi
+        if "02" in iclasses or "0a" in iclasses or drv_l in ("r8152", "cdc_ether", "cdc_ncm", "ax88179_178a", "rtl8xxxu", "rtw88_8822bu", "mt76x2u", "ath9k_htc", "rndis_host") or any(k in name_l for k in ("wi-fi", "wifi", "wireless", "wlan", "ethernet", "802.11", "lan adapter")):
+            return "network"
+
+        # Touchscreen / Sensors
+        if any(k in name_l for k in ("touchscreen", "wacom", "digitizer", "sensor", "accelerometer", "gyro")):
+            return "sensors"
+
+        return "other"
+
+    return "other"
+
+
+def scan_pci_devices():
+    devices = []
+    seen_slots = set()
+    try:
+        res = subprocess.run(["lspci", "-nnk"], capture_output=True, text=True, check=False, timeout=8)
+        current = None
+        for raw_line in res.stdout.splitlines():
+            if not raw_line.strip():
+                continue
+            if not raw_line.startswith(("\t", " ")):
+                if current:
+                    devices.append(current)
+                m = re.match(
+                    r'^([0-9a-fA-F:.]+)\s+([^\[]+)\[([0-9a-fA-F]{4})\]:\s+(.+?)\s+\[([0-9a-fA-F]{4}):([0-9a-fA-F]{4})\]',
+                    raw_line.strip()
+                )
+                if m:
+                    slot = m.group(1).strip()
+                    class_name = m.group(2).strip()
+                    class_id = m.group(3).lower()
+                    dev_name = re.sub(r'\(rev\s+[0-9a-fA-F]+\)', '', m.group(4)).strip()
+                    vendor_id = m.group(5).lower()
+                    device_id = m.group(6).lower()
+                    sys_slot = slot if slot.count(":") >= 2 else f"0000:{slot}"
+                    sys_path = os.path.join("/sys/bus/pci/devices", sys_slot)
+                    modalias = _read_sysfs_text(os.path.join(sys_path, "modalias"))
+                    sys_drv = _read_sysfs_driver(sys_path)
+                    seen_slots.add(sys_slot)
+                    current = {
+                        "bus": "pci",
+                        "slot": slot,
+                        "sys_slot": sys_slot,
+                        "class_name": class_name,
+                        "class_id": class_id,
+                        "name": dev_name,
+                        "vendor_id": vendor_id,
+                        "device_id": device_id,
+                        "driver": sys_drv,
+                        "modules": [],
+                        "modalias": modalias,
+                        "modaliases": [modalias] if modalias else [],
+                    }
+                else:
+                    current = None
+            elif current:
+                line = raw_line.strip()
+                if line.startswith("Kernel driver in use:"):
+                    current["driver"] = line.split(":", 1)[1].strip()
+                elif line.startswith("Kernel modules:"):
+                    mods = [x.strip() for x in line.split(":", 1)[1].split(",") if x.strip()]
+                    current["modules"] = mods
+        if current:
+            devices.append(current)
+    except Exception:
+        pass
+
+    # Fallback / supplement from /sys/bus/pci/devices directly
+    for sys_path in sorted(glob.glob("/sys/bus/pci/devices/*")):
+        sys_slot = os.path.basename(sys_path)
+        if sys_slot in seen_slots:
+            continue
+        vid = _read_sysfs_text(os.path.join(sys_path, "vendor")).replace("0x", "").lower()
+        did = _read_sysfs_text(os.path.join(sys_path, "device")).replace("0x", "").lower()
+        cls_raw = _read_sysfs_text(os.path.join(sys_path, "class")).replace("0x", "").lower()
+        class_id = cls_raw[:4] if len(cls_raw) >= 4 else ""
+        modalias = _read_sysfs_text(os.path.join(sys_path, "modalias"))
+        if vid and did:
+            devices.append({
+                "bus": "pci",
+                "slot": sys_slot,
+                "sys_slot": sys_slot,
+                "class_name": "PCI Device",
+                "class_id": class_id,
+                "name": f"PCI Device [{vid}:{did}]",
+                "vendor_id": vid,
+                "device_id": did,
+                "driver": _read_sysfs_driver(sys_path),
+                "modules": [],
+                "modalias": modalias,
+                "modaliases": [modalias] if modalias else [],
+            })
+
+    for d in devices:
+        d["is_bridge_or_hub"] = is_standard_bridge_or_hub(d)
+        d["category"] = classify_hardware_device(d)
+    return devices
+
+
+def scan_usb_devices():
+    lsusb_by_busdev = {}
+    lsusb_by_vidpid = {}
+    try:
+        res = subprocess.run(["lsusb"], capture_output=True, text=True, check=False, timeout=8)
+        for line in res.stdout.splitlines():
+            m = re.match(r'^Bus\s+(\d+)\s+Device\s+(\d+):\s+ID\s+([0-9a-fA-F]{4}):([0-9a-fA-F]{4})\s*(.*)$', line.strip())
+            if m:
+                bus_num = int(m.group(1))
+                dev_num = int(m.group(2))
+                vid = m.group(3).lower()
+                pid = m.group(4).lower()
+                desc = m.group(5).strip()
+                if desc:
+                    lsusb_by_busdev[(bus_num, dev_num)] = desc
+                    lsusb_by_vidpid[f"{vid}:{pid}"] = desc
+    except Exception:
+        pass
+
+    devices = []
+    seen_busdev = set()
+    for dev_path in sorted(glob.glob("/sys/bus/usb/devices/*")):
+        vid_f = os.path.join(dev_path, "idVendor")
+        pid_f = os.path.join(dev_path, "idProduct")
+        if not (os.path.exists(vid_f) and os.path.exists(pid_f)):
+            continue
+        vid = _read_sysfs_text(vid_f).lower()
+        pid = _read_sysfs_text(pid_f).lower()
+        dclass = _read_sysfs_text(os.path.join(dev_path, "bDeviceClass")).lower()
+        if vid == "1d6b" or dclass == "09":
+            continue
+
+        busnum_s = _read_sysfs_text(os.path.join(dev_path, "busnum"))
+        devnum_s = _read_sysfs_text(os.path.join(dev_path, "devnum"))
+        bus_dev_key = None
+        if busnum_s.isdigit() and devnum_s.isdigit():
+            bus_dev_key = (int(busnum_s), int(devnum_s))
+            seen_busdev.add(bus_dev_key)
+
+        prod = _read_sysfs_text(os.path.join(dev_path, "product"))
+        mfr = _read_sysfs_text(os.path.join(dev_path, "manufacturer"))
+        name = ""
+        if bus_dev_key and bus_dev_key in lsusb_by_busdev:
+            name = lsusb_by_busdev[bus_dev_key]
+        elif f"{vid}:{pid}" in lsusb_by_vidpid:
+            name = lsusb_by_vidpid[f"{vid}:{pid}"]
+        elif mfr and prod:
+            name = f"{mfr} {prod}" if mfr.lower() not in prod.lower() else prod
+        elif prod:
+            name = prod
+        else:
+            name = f"USB Device [{vid}:{pid}]"
+
+        drivers = []
+        iclasses = set()
+        modaliases = []
+        is_bt_iface = False
+        for iface in sorted(glob.glob(dev_path + ":*")):
+            drv = _read_sysfs_driver(iface)
+            if drv and drv not in ("usbfs", "hub") and drv not in drivers:
+                drivers.append(drv)
+            ic = _read_sysfs_text(os.path.join(iface, "bInterfaceClass")).lower()
+            isc = _read_sysfs_text(os.path.join(iface, "bInterfaceSubClass")).lower()
+            ip = _read_sysfs_text(os.path.join(iface, "bInterfaceProtocol")).lower()
+            if ic:
+                iclasses.add(ic)
+            if ic == "e0" and isc == "01" and ip == "01":
+                is_bt_iface = True
+            ma = _read_sysfs_text(os.path.join(iface, "modalias"))
+            if ma and ma not in modaliases:
+                modaliases.append(ma)
+
+        dev_ma = _read_sysfs_text(os.path.join(dev_path, "modalias"))
+        if dev_ma and dev_ma not in modaliases:
+            modaliases.append(dev_ma)
+
+        dev_obj = {
+            "bus": "usb",
+            "slot": os.path.basename(dev_path),
+            "name": name,
+            "vendor_id": vid,
+            "device_id": pid,
+            "device_class": dclass,
+            "interface_classes": iclasses,
+            "is_bt_iface": is_bt_iface,
+            "driver": ", ".join(drivers),
+            "drivers": drivers,
+            "modalias": modaliases[0] if modaliases else "",
+            "modaliases": modaliases,
+        }
+        dev_obj["is_bridge_or_hub"] = is_standard_bridge_or_hub(dev_obj)
+        dev_obj["category"] = classify_hardware_device(dev_obj)
+        if not dev_obj["is_bridge_or_hub"]:
+            devices.append(dev_obj)
+
+    return devices
+
+
+def scan_sensors_and_misc():
+    devices = []
+    seen = set()
+
+    # IIO sensors (accelerometer, ambient light, gyroscope, screen rotation)
+    for iio_path in sorted(glob.glob("/sys/bus/iio/devices/iio:device*")):
+        sname = _read_sysfs_text(os.path.join(iio_path, "name"))
+        if not sname or sname in seen:
+            continue
+        seen.add(sname)
+        drv = _read_sysfs_driver(os.path.join(iio_path, "device")) or _read_sysfs_driver(iio_path) or "iio"
+        friendly_map = {
+            "accel_3d": "3D Accelerometer (Screen Rotation)",
+            "gyro_3d": "3D Gyroscope",
+            "als": "Ambient Light Sensor",
+            "incli_3d": "Inclinometer Sensor",
+            "magn_3d": "Magnetometer Sensor",
+        }
+        devices.append({
+            "bus": "iio",
+            "slot": os.path.basename(iio_path),
+            "name": friendly_map.get(sname, f"Sensor ({sname})"),
+            "vendor_id": "iio",
+            "device_id": sname,
+            "driver": drv,
+            "modalias": "",
+            "modaliases": [],
+            "is_bridge_or_hub": False,
+            "category": "sensors",
+        })
+
+    # Active touchscreens / styluses
+    for inp_path in sorted(glob.glob("/sys/class/input/input*")):
+        iname = _read_sysfs_text(os.path.join(inp_path, "name"))
+        il = iname.lower()
+        if not iname or iname in seen:
+            continue
+        if any(k in il for k in ("touchscreen", "wacom", "goodix capacitive", "elan touchscreen", "stylus")):
+            seen.add(iname)
+            drv = _read_sysfs_driver(os.path.join(inp_path, "device")) or "hid-multitouch"
+            devices.append({
+                "bus": "input",
+                "slot": os.path.basename(inp_path),
+                "name": iname,
+                "vendor_id": "input",
+                "device_id": "touch",
+                "driver": drv,
+                "modalias": "",
+                "modaliases": [],
+                "is_bridge_or_hub": False,
+                "category": "sensors",
+            })
+
+    # SPI fingerprint sensors if present
+    for spi_path in sorted(glob.glob("/sys/bus/spi/devices/*")):
+        modalias = _read_sysfs_text(os.path.join(spi_path, "modalias"))
+        ml = modalias.lower()
+        if any(k in ml for k in ("elan", "gxfp", "goodix", "syna", "fpc", "vfs", "fp")):
+            dev_name = os.path.basename(spi_path)
+            if dev_name in seen:
+                continue
+            seen.add(dev_name)
+            devices.append({
+                "bus": "spi",
+                "slot": dev_name,
+                "name": f"SPI Fingerprint Sensor ({dev_name})",
+                "vendor_id": "spi",
+                "device_id": dev_name,
+                "driver": _read_sysfs_driver(spi_path),
+                "modalias": modalias,
+                "modaliases": [modalias] if modalias else [],
+                "is_bridge_or_hub": False,
+                "category": "fingerprint",
+            })
+
+    return devices
+
+
+def _find_dnf_binary():
+    for candidate in ("dnf5", "dnf"):
+        if subprocess.run(["which", candidate], capture_output=True, check=False).returncode == 0:
+            return candidate
+    return None
+
+
+def query_dnf_modalias(modaliases):
+    dnf_bin = _find_dnf_binary()
+    if not dnf_bin or not modaliases:
+        return []
+
+    ignored_prefixes = (
+        "kernel",
+        "glibc",
+        "systemd",
+        "dracut",
+        "mesa-dri-drivers",
+        "linux-firmware",
+    )
+    found = []
+    for ma in modaliases[:3]:
+        if not ma:
+            continue
+        try:
+            res = subprocess.run(
+                [dnf_bin, "repoquery", "--quiet", "--qf", "%{name}\n", "--whatprovides", ma],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=12
+            )
+            if res.returncode == 0:
+                for line in res.stdout.splitlines():
+                    pkg = line.strip()
+                    if not pkg:
+                        continue
+                    if any(pkg == pref or pkg.startswith(pref + "-") for pref in ignored_prefixes):
+                        continue
+                    if pkg not in found:
+                        found.append(pkg)
+            if found:
+                break
+        except Exception:
+            continue
+    return found
+
+
+def check_fwupd_updates():
+    updates = []
+    try:
+        res = subprocess.run(
+            ["fwupdmgr", "get-updates", "--json"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=15
+        )
+        out = res.stdout.strip()
+        if not out:
+            return updates
+        json_start = out.find("{")
+        if json_start == -1:
+            return updates
+        data = json.loads(out[json_start:])
+        for dev in data.get("Devices", []):
+            releases = dev.get("Releases", [])
+            if not releases:
+                continue
+            rel = releases[0]
+            updates.append({
+                "device_id": dev.get("DeviceId", ""),
+                "name": dev.get("Name", "Hardware Device"),
+                "vendor": dev.get("Vendor", ""),
+                "current_version": dev.get("Version", ""),
+                "new_version": rel.get("Version", ""),
+                "summary": rel.get("Summary", ""),
+            })
+    except Exception:
+        pass
+    return updates
+
+
+def analyze_hardware_and_drivers():
+    pci_devices = scan_pci_devices()
+    usb_devices = scan_usb_devices()
+    misc_devices = scan_sensors_and_misc()
+    all_devices = pci_devices + usb_devices + misc_devices
+
+    loaded_modules = get_loaded_modules()
+    installed_pkgs = get_installed_and_staged_packages()
+    sb_enabled, needs_mok = get_secure_boot_state()
+    layered_nvidia = get_layered_nvidia_packages()
+    nouveau_loaded = is_nouveau_loaded()
+    nvidia_active = is_nvidia_driver_active() or ("nvidia" in loaded_modules and not nouveau_loaded)
+    db = load_database()
+    has_video0 = os.path.exists("/dev/video0") or bool(glob.glob("/dev/video*"))
+
+    recommendations = []
+    seen_rec_keys = set()
+    handled_unbound_slots = set()
+
+    def add_rec(key, title, desc, packages, category, optional=False, needs_nvidia_kargs=False, needs_akmods=False, needs_fprintd_enable=False):
+        if key in seen_rec_keys:
+            return
+        missing_pkgs = [p for p in packages if p not in installed_pkgs]
+        if not missing_pkgs:
+            return
+        seen_rec_keys.add(key)
+        recommendations.append({
+            "key": key,
+            "title": title,
+            "desc": desc,
+            "packages": missing_pkgs,
+            "all_packages": packages,
+            "category": category,
+            "optional": optional,
+            "default_selected": not optional,
+            "needs_nvidia_kargs": needs_nvidia_kargs,
+            "needs_akmods": needs_akmods or any(p.startswith("akmod-") for p in missing_pkgs),
+            "needs_fprintd_enable": needs_fprintd_enable,
+        })
+
+    nvidia_state = {
+        "has_gpu": False,
+        "active": False,
+        "layered_inactive": False,
+        "unsupported": False,
+        "layered_pkgs": layered_nvidia,
+        "gpu_names": [],
+    }
+
+    # --- Rule 1: NVIDIA GPU (10de:*) ---
+    nvidia_gpus = [d for d in pci_devices if d["vendor_id"] == "10de" and d["category"] == "gpu"]
+    if nvidia_gpus:
+        nvidia_state["has_gpu"] = True
+        nvidia_state["gpu_names"] = [g["name"] for g in nvidia_gpus]
+        primary = nvidia_gpus[0]
+        gpu_dict = {"slot": primary["slot"], "device_id": primary["device_id"], "raw_name": primary["name"]}
+        cat_key, card_name, cat_info = classify_gpu(gpu_dict, db)
+        handled_unbound_slots.add(primary["slot"])
+
+        if cat_key == "unsupported":
+            nvidia_state["unsupported"] = True
+        elif layered_nvidia and nvidia_active:
+            nvidia_state["active"] = True
+        elif layered_nvidia and not nvidia_active:
+            nvidia_state["layered_inactive"] = True
+        else:
+            drv_pkg = cat_info.get("driver_package", "akmod-nvidia")
+            cuda_pkg = cat_info.get("cuda_package", "xorg-x11-drv-nvidia-cuda")
+            pkgs = [drv_pkg]
+            if cuda_pkg:
+                pkgs.append(cuda_pkg)
+            if not ("nvidia" in loaded_modules and drv_pkg in installed_pkgs):
+                add_rec(
+                    key="nvidia",
+                    title=t("drv_rec_nvidia_title", name=card_name),
+                    desc=t("drv_rec_nvidia_desc"),
+                    packages=pkgs,
+                    category="gpu",
+                    optional=False,
+                    needs_nvidia_kargs=True,
+                    needs_akmods=True,
+                )
+
+    # --- Rule 2: Intel & AMD GPUs ---
+    for d in pci_devices:
+        if d["category"] != "gpu":
+            continue
+        if d["vendor_id"] == "8086":
+            if "intel-media-driver" not in installed_pkgs:
+                add_rec(
+                    key="intel-gpu",
+                    title=t("drv_rec_intel_gpu_title", name=d["name"]),
+                    desc=t("drv_rec_intel_gpu_desc"),
+                    packages=["intel-media-driver"],
+                    category="gpu",
+                    optional=False,
+                )
+        elif d["vendor_id"] == "1002":
+            if "mesa-va-drivers-freeworld" not in installed_pkgs:
+                add_rec(
+                    key="amd-gpu-freeworld",
+                    title=t("drv_rec_amd_gpu_title", name=d["name"]),
+                    desc=t("drv_rec_amd_gpu_desc"),
+                    packages=["mesa-va-drivers-freeworld"],
+                    category="gpu",
+                    optional=True,
+                )
+
+    # --- Rule 3: Broadcom Wi-Fi (14e4:*) & Unbound Wi-Fi / Bluetooth ---
+    for d in all_devices:
+        if d["category"] in ("network", "bluetooth"):
+            if d["vendor_id"] == "14e4" and d["category"] == "network":
+                # Broadcom Wi-Fi without active kernel driver (or not using brcmfmac/wl)
+                if not d.get("driver") and "akmod-wl" not in installed_pkgs:
+                    handled_unbound_slots.add(d["slot"])
+                    add_rec(
+                        key="broadcom-wl",
+                        title=t("drv_rec_broadcom_title", name=d["name"]),
+                        desc=t("drv_rec_broadcom_desc"),
+                        packages=["akmod-wl"],
+                        category="network",
+                        optional=False,
+                        needs_akmods=True,
+                    )
+
+    # --- Rule 4: Intel IPU6 / MIPI Cameras ---
+    for d in pci_devices:
+        name_l = d["name"].lower()
+        is_intel_ipu6 = (
+            d["vendor_id"] == "8086"
+            and (
+                d["device_id"] in INTEL_IPU6_DEVICE_IDS
+                or any(k in name_l for k in ("ipu6", "ipu ", "mipi", "imaging"))
+            )
+        )
+        is_cam_ctrl = d["category"] == "camera"
+        if (is_intel_ipu6 and not d.get("driver")) or (is_cam_ctrl and not has_video0):
+            handled_unbound_slots.add(d["slot"])
+            if "akmod-intel-ipu6" not in installed_pkgs:
+                add_rec(
+                    key="intel-ipu6",
+                    title=t("drv_rec_ipu6_title", name=d["name"]),
+                    desc=t("drv_rec_ipu6_desc"),
+                    packages=["akmod-intel-ipu6"],
+                    category="camera",
+                    optional=False,
+                    needs_akmods=True,
+                )
+
+    # --- Rule 5: Audio (Intel / AMD modern audio without active driver) ---
+    for d in pci_devices:
+        if d["category"] == "audio" and d["vendor_id"] in ("8086", "1022") and not d.get("driver"):
+            handled_unbound_slots.add(d["slot"])
+            if "alsa-sof-firmware" not in installed_pkgs:
+                add_rec(
+                    key="audio-sof",
+                    title=t("drv_rec_audio_sof_title", name=d["name"]),
+                    desc=t("drv_rec_audio_sof_desc"),
+                    packages=["alsa-sof-firmware"],
+                    category="audio",
+                    optional=False,
+                )
+
+    # --- Rule 6: Fingerprint Reader ---
+    fp_devices = [d for d in all_devices if d["category"] == "fingerprint"]
+    if fp_devices:
+        for d in fp_devices:
+            handled_unbound_slots.add(d["slot"])
+        missing_fp = [p for p in ("fprintd", "fprintd-pam") if p not in installed_pkgs]
+        if missing_fp:
+            add_rec(
+                key="fingerprint",
+                title=t("drv_rec_fprint_title", name=fp_devices[0]["name"]),
+                desc=t("drv_rec_fprint_desc"),
+                packages=["fprintd", "fprintd-pam"],
+                category="fingerprint",
+                optional=False,
+                needs_fprintd_enable=True,
+            )
+
+    # --- Rule 7: General Dynamic Fallback via modalias ---
+    fallback_queries = 0
+    for d in all_devices:
+        if fallback_queries >= 5:
+            break
+        if d.get("bus") not in ("pci", "usb"):
+            continue
+        if d.get("is_bridge_or_hub"):
+            continue
+        if d.get("driver"):
+            continue
+        if d.get("slot") in handled_unbound_slots:
+            continue
+        modaliases = d.get("modaliases", [])
+        if not modaliases:
+            continue
+        fallback_queries += 1
+        matched_pkgs = query_dnf_modalias(modaliases)
+        if matched_pkgs:
+            add_rec(
+                key=f"modalias-{d['bus']}-{d['vendor_id']}-{d['device_id']}",
+                title=t("drv_rec_modalias_title", name=d["name"]),
+                desc=t("drv_rec_modalias_desc"),
+                packages=matched_pkgs[:2],
+                category=d["category"],
+                optional=False,
+                needs_akmods=any(p.startswith("akmod-") for p in matched_pkgs[:2]),
+            )
+
+    # --- Rule 8: Firmware Updates (fwupd) ---
+    firmware_updates = check_fwupd_updates()
+
+    # Group visible hardware devices by category (exclude boring bridges/hubs)
+    devices_by_category = {cat_key: [] for cat_key, _, _ in HARDWARE_CATEGORIES}
+    for d in all_devices:
+        if d.get("is_bridge_or_hub"):
+            continue
+        cat = d.get("category", "other")
+        if cat not in devices_by_category:
+            cat = "other"
+        devices_by_category[cat].append(d)
+
+    return {
+        "recommendations": recommendations,
+        "firmware_updates": firmware_updates,
+        "devices_by_category": devices_by_category,
+        "sb_enabled": sb_enabled,
+        "needs_mok": needs_mok,
+        "nvidia_state": nvidia_state,
+    }
+
+
 def launch_container_terminal():
     for term in ["ptyxis", "gnome-terminal", "kgx", "x-terminal-emulator"]:
         try:
@@ -2778,6 +3688,28 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         .check-icon {
             color: #ffffff;
         }
+        .drv-badge-rec {
+            background-color: rgba(122, 28, 51, 0.16);
+            color: #7a1c33;
+            border: 1px solid rgba(122, 28, 51, 0.35);
+            border-radius: 9999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .drv-badge-opt {
+            background-color: rgba(128, 128, 128, 0.15);
+            border-radius: 9999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .drv-status-ok {
+            color: #26a269;
+        }
+        .drv-status-warn {
+            color: #e5a50a;
+        }
         """
         for i, hex_code in enumerate(PRESET_HEXES):
             palette_css += f"""
@@ -3070,20 +4002,26 @@ stage {{
             subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Saifdora-Custom"], check=False)
 
     # =========================================================================
-    # TAB 3: DRIVERS & GPU
+    # TAB 3: SADEEM DRIVER & HARDWARE MANAGER
     # =========================================================================
-    def _create_drv_progress_widgets(self, action_group):
+    def _create_drv_progress_widgets(self, parent_box):
+        self.drv_progress_group = Adw.PreferencesGroup()
+        self.drv_progress_group.set_visible(False)
+        parent_box.append(self.drv_progress_group)
+
         self.drv_progress_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        self.drv_progress_box.set_margin_top(15)
-        self.drv_progress_box.set_visible(False)
-        action_group.add(self.drv_progress_box)
+        self.drv_progress_box.set_margin_top(6)
+        self.drv_progress_box.set_margin_bottom(6)
+        self.drv_progress_group.add(self.drv_progress_box)
 
         self.drv_progress_bar = Gtk.ProgressBar()
-        self.drv_progress_bar.set_pulse_step(0.1)
+        self.drv_progress_bar.set_show_text(True)
+        self.drv_progress_bar.set_pulse_step(0.08)
         self.drv_progress_box.append(self.drv_progress_bar)
 
         self.lbl_drv_status = Gtk.Label(label=t("drv_preparing"))
         self.lbl_drv_status.set_halign(Gtk.Align.START)
+        self.lbl_drv_status.set_wrap(True)
         self.lbl_drv_status.add_css_class("dim-label")
         self.drv_progress_box.append(self.lbl_drv_status)
 
@@ -3099,7 +4037,7 @@ stage {{
         self.drv_progress_box.append(self.drv_expander)
 
         log_scrolled = Gtk.ScrolledWindow()
-        log_scrolled.set_min_content_height(180)
+        log_scrolled.set_min_content_height(170)
         log_scrolled.set_max_content_height(260)
         log_scrolled.set_propagate_natural_height(False)
         log_scrolled.add_css_class("card")
@@ -3116,345 +4054,509 @@ stage {{
         self.drv_text_view.set_bottom_margin(10)
         log_scrolled.set_child(self.drv_text_view)
 
-        # Reboot Button
         self.btn_reboot_drivers = Gtk.Button(label=t("btn_reboot_drivers"))
         self.btn_reboot_drivers.add_css_class("suggested-action")
         self.btn_reboot_drivers.add_css_class("pill")
-        self.btn_reboot_drivers.set_size_request(-1, 50)
+        self.btn_reboot_drivers.set_size_request(-1, 48)
         self.btn_reboot_drivers.set_visible(False)
-        self.btn_reboot_drivers.connect("clicked", lambda b: subprocess.run(["systemctl", "reboot"]))
-        action_group.add(self.btn_reboot_drivers)
+        self.btn_reboot_drivers.connect("clicked", lambda b: trigger_system_reboot())
+        self.drv_progress_box.append(self.btn_reboot_drivers)
 
     def build_drivers_page(self):
-        gpus = detect_nvidia_gpus()
-        db = load_database()
-        sb_enabled, needs_mok = get_secure_boot_state()
-        layered_pkgs = get_layered_nvidia_packages()
-        nouveau_loaded = is_nouveau_loaded()
-        nvidia_active = is_nvidia_driver_active()
+        self.drv_checkboxes = []
+        self.drv_busy = False
+        self.drv_pulse_timer = None
+        self.drv_last_scan = None
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
         scrolled.set_propagate_natural_height(False)
 
         clamp = Adw.Clamp()
-        clamp.set_maximum_size(640)
-        clamp.set_tightening_threshold(480)
-        clamp.set_valign(Gtk.Align.CENTER)
+        clamp.set_maximum_size(720)
+        clamp.set_tightening_threshold(520)
         scrolled.set_child(clamp)
 
-        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        content.set_valign(Gtk.Align.CENTER)
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
         content.set_margin_top(20)
-        content.set_margin_bottom(24)
+        content.set_margin_bottom(28)
         content.set_margin_start(20)
         content.set_margin_end(20)
         clamp.set_child(content)
 
-        # Case 1: No NVIDIA GPU
-        if not gpus:
-            header = self.build_page_header(
-                ["video-display-symbolic", "computer-symbolic"],
-                t("drv_banner_title"),
-                t("drv_banner_desc")
-            )
-            content.append(header)
-
-            card_group = Adw.PreferencesGroup()
-            content.append(card_group)
-
-            row = Adw.ActionRow(
-                title=t("drv_no_gpu_title"),
-                subtitle=t("drv_no_gpu_desc")
-            )
-            row.set_subtitle_lines(4)
-            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic", "computer-symbolic"])))
-            card_group.add(row)
-            return scrolled
-
-        primary_gpu = gpus[0]
-        category, card_name, cat_info = classify_gpu(primary_gpu, db)
-        detected_names = ", ".join([g["raw_name"] for g in gpus])
-
-        # Case 2: Driver layered AND active
-        if layered_pkgs and nvidia_active and not nouveau_loaded:
-            header = self.build_page_header(
-                ["video-display-symbolic", "emblem-ok-symbolic"],
-                t("drv_banner_title"),
-                t("drv_banner_desc")
-            )
-            content.append(header)
-
-            card_group = Adw.PreferencesGroup(title=t("drv_hw_title"))
-            content.append(card_group)
-
-            row_card = Adw.ActionRow(
-                title=t("drv_card_title"),
-                subtitle=f"{card_name} ({detected_names})"
-            )
-            row_card.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic"])))
-            card_group.add(row_card)
-
-            row_driver = Adw.ActionRow(
-                title=t("drv_installed_title"),
-                subtitle=", ".join(layered_pkgs)
-            )
-            row_driver.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"])))
-            card_group.add(row_driver)
-
-            action_group = Adw.PreferencesGroup()
-            content.append(action_group)
-
-            self.btn_uninstall_driver = Gtk.Button(label=t("btn_uninstall_driver"))
-            self.btn_uninstall_driver.add_css_class("destructive-action")
-            self.btn_uninstall_driver.add_css_class("pill")
-            self.btn_uninstall_driver.set_size_request(-1, 50)
-            self.btn_uninstall_driver.connect(
-                "clicked",
-                lambda b: self.on_uninstall_drivers_clicked(layered_pkgs)
-            )
-            action_group.add(self.btn_uninstall_driver)
-
-            self._create_drv_progress_widgets(action_group)
-            return scrolled
-
-        # Case 3: Driver layered but INACTIVE (nouveau loaded or kargs missing)
-        if layered_pkgs and (nouveau_loaded or not nvidia_active):
-            header = self.build_page_header(
-                ["video-display-symbolic", "dialog-warning-symbolic"],
-                t("drv_inactive_title"),
-                t("drv_inactive_desc")
-            )
-            content.append(header)
-
-            card_group = Adw.PreferencesGroup(title=t("drv_hw_title"))
-            content.append(card_group)
-
-            row_card = Adw.ActionRow(
-                title=t("drv_card_title"),
-                subtitle=f"{card_name} [PCI: {primary_gpu['device_id']}]"
-            )
-            row_card.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic"])))
-            card_group.add(row_card)
-
-            row_pkgs = Adw.ActionRow(
-                title=t("drv_recommended_title"),
-                subtitle=", ".join(layered_pkgs)
-            )
-            row_pkgs.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["package-x-generic-symbolic"])))
-            card_group.add(row_pkgs)
-
-            status_subtitle = "nouveau (Open-Source / Active)" if nouveau_loaded else "Inactive / Module not loaded"
-            row_state = Adw.ActionRow(
-                title=t("drv_inactive_title"),
-                subtitle=status_subtitle
-            )
-            row_state.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic"])))
-            card_group.add(row_state)
-
-            action_group = Adw.PreferencesGroup()
-            content.append(action_group)
-
-            self.btn_fix_kargs = Gtk.Button(label=t("btn_fix_kargs"))
-            self.btn_fix_kargs.add_css_class("suggested-action")
-            self.btn_fix_kargs.add_css_class("pill")
-            self.btn_fix_kargs.set_size_request(-1, 50)
-            self.btn_fix_kargs.connect(
-                "clicked",
-                lambda b: self.on_fix_kargs_clicked()
-            )
-            action_group.add(self.btn_fix_kargs)
-
-            self.btn_uninstall_driver = Gtk.Button(label=t("btn_uninstall_driver"))
-            self.btn_uninstall_driver.add_css_class("destructive-action")
-            self.btn_uninstall_driver.add_css_class("pill")
-            self.btn_uninstall_driver.set_margin_top(10)
-            self.btn_uninstall_driver.connect(
-                "clicked",
-                lambda b: self.on_uninstall_drivers_clicked(layered_pkgs)
-            )
-            action_group.add(self.btn_uninstall_driver)
-
-            self._create_drv_progress_widgets(action_group)
-            return scrolled
-
-        # Case 4: Unsupported legacy card
-        if category == "unsupported":
-            header = self.build_page_header(
-                ["video-display-symbolic", "dialog-warning-symbolic"],
-                t("drv_banner_title"),
-                t("drv_banner_desc")
-            )
-            content.append(header)
-
-            card_group = Adw.PreferencesGroup()
-            content.append(card_group)
-
-            row = Adw.ActionRow(
-                title=t("drv_unsupported_title"),
-                subtitle=t("drv_unsupported_desc")
-            )
-            row.set_subtitle_lines(4)
-            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic"])))
-            card_group.add(row)
-            return scrolled
-
-        # Case 5: Supported GPU ready for installation
         header = self.build_page_header(
-            ["video-display-symbolic", "system-software-install-symbolic"],
+            ["video-display-symbolic", "applications-system-symbolic", "computer-symbolic"],
             t("drv_banner_title"),
             t("drv_banner_desc")
         )
         content.append(header)
 
-        # Hardware info group
-        hw_group = Adw.PreferencesGroup(title=t("drv_hw_title"))
-        content.append(hw_group)
+        # Top rescan button bar
+        top_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        top_btn_box.set_halign(Gtk.Align.CENTER)
+        content.append(top_btn_box)
 
-        row_card = Adw.ActionRow(
-            title=t("drv_card_title"),
-            subtitle=f"{card_name} [PCI: {primary_gpu['device_id']}]"
+        self.btn_drv_rescan = Gtk.Button()
+        rescan_inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        rescan_inner.append(Gtk.Image.new_from_icon_name(safe_icon(["view-refresh-symbolic"])))
+        rescan_inner.append(Gtk.Label(label=t("drv_rescan_btn")))
+        self.btn_drv_rescan.set_child(rescan_inner)
+        self.btn_drv_rescan.add_css_class("pill")
+        self.btn_drv_rescan.connect("clicked", lambda b: self.start_hardware_scan())
+        top_btn_box.append(self.btn_drv_rescan)
+
+        # Scanning spinner state
+        self.drv_loading_group = Adw.PreferencesGroup()
+        content.append(self.drv_loading_group)
+
+        loading_row = Adw.ActionRow(
+            title=t("drv_scanning_title"),
+            subtitle=t("drv_scanning_desc")
         )
-        row_card.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["video-display-symbolic"])))
-        hw_group.add(row_card)
+        loading_row.set_use_markup(False)
+        self.drv_spinner = Gtk.Spinner()
+        self.drv_spinner.set_spinning(True)
+        self.drv_spinner.set_size_request(24, 24)
+        loading_row.add_prefix(self.drv_spinner)
+        self.drv_loading_group.add(loading_row)
 
-        row_driver = Adw.ActionRow(
-            title=t("drv_recommended_title"),
-            subtitle=cat_info.get("driver_package", "akmod-nvidia")
-        )
-        row_driver.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["package-x-generic-symbolic"])))
-        hw_group.add(row_driver)
+        # Dynamic hardware & driver groups container
+        self.drv_dynamic_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        content.append(self.drv_dynamic_box)
 
-        # Options group
-        opt_group = Adw.PreferencesGroup()
-        content.append(opt_group)
+        # Persistent progress & live log container
+        self._create_drv_progress_widgets(content)
 
-        self.cuda_switch = Adw.SwitchRow()
-        self.cuda_switch.set_use_markup(False)
-        self.cuda_switch.set_title(t("drv_cuda_title"))
-        self.cuda_switch.set_subtitle(t("drv_cuda_desc"))
-        self.cuda_switch.set_active(True)
-        opt_group.add(self.cuda_switch)
+        # Launch non-blocking initial hardware scan
+        self.start_hardware_scan()
+        return scrolled
 
-        # Secure boot group
+    def start_hardware_scan(self):
+        if self.drv_busy:
+            return
+        self.btn_drv_rescan.set_sensitive(False)
+        self.drv_loading_group.set_visible(True)
+        self.drv_spinner.set_spinning(True)
+
+        def _worker():
+            try:
+                data = analyze_hardware_and_drivers()
+            except Exception as exc:
+                data = {
+                    "recommendations": [],
+                    "firmware_updates": [],
+                    "devices_by_category": {k: [] for k, _, _ in HARDWARE_CATEGORIES},
+                    "sb_enabled": False,
+                    "needs_mok": False,
+                    "nvidia_state": {"has_gpu": False, "active": False, "layered_inactive": False, "unsupported": False, "layered_pkgs": [], "gpu_names": []},
+                    "error": str(exc),
+                }
+            GLib.idle_add(self._populate_drivers_ui, data)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _clear_box(self, box):
+        child = box.get_first_child()
+        while child is not None:
+            nxt = child.get_next_sibling()
+            box.remove(child)
+            child = nxt
+
+    def _populate_drivers_ui(self, scan_data):
+        self.drv_last_scan = scan_data
+        self.drv_loading_group.set_visible(False)
+        self.drv_spinner.set_spinning(False)
+        self.btn_drv_rescan.set_sensitive(True)
+
+        self._clear_box(self.drv_dynamic_box)
+        self.drv_checkboxes = []
+        self.btn_install_selected = None
+        self.btn_install_fw = None
+        self.btn_enroll_mok = None
+        self.btn_fix_kargs = None
+        self.btn_uninstall_driver = None
+
+        recs = scan_data.get("recommendations", [])
+        fw_updates = scan_data.get("firmware_updates", [])
+        devices_by_cat = scan_data.get("devices_by_category", {})
+        sb_enabled = scan_data.get("sb_enabled", False)
+        needs_mok = scan_data.get("needs_mok", False)
+        nv_state = scan_data.get("nvidia_state", {})
+
+        cat_icon_map = {k: icons for k, _, icons in HARDWARE_CATEGORIES}
+
+        # 1. Secure Boot Alert Banner (when enabled)
         if sb_enabled:
             sb_group = Adw.PreferencesGroup(title=t("drv_sb_title"))
-            content.append(sb_group)
+            self.drv_dynamic_box.append(sb_group)
 
-            sb_row = Adw.ActionRow(
-                title=t("drv_sb_title"),
-                subtitle=t("drv_sb_desc")
+            sb_row = Adw.ActionRow()
+            sb_row.set_use_markup(False)
+            sb_row.set_title(t("drv_sb_enabled_title"))
+            sb_row.set_subtitle(t("drv_sb_needs_mok_desc") if needs_mok else t("drv_sb_enrolled_desc"))
+            sb_row.set_subtitle_lines(3)
+            sb_icon = Gtk.Image.new_from_icon_name(
+                safe_icon(["dialog-warning-symbolic", "channel-secure-symbolic"] if needs_mok else ["channel-secure-symbolic", "security-high-symbolic"])
             )
-            sb_row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["channel-secure-symbolic", "security-high-symbolic"])))
+            if needs_mok:
+                sb_icon.add_css_class("drv-status-warn")
+            else:
+                sb_icon.add_css_class("drv-status-ok")
+            sb_row.add_prefix(sb_icon)
+
+            self.btn_enroll_mok = Gtk.Button(label=t("drv_mok_enroll_btn"))
+            self.btn_enroll_mok.set_valign(Gtk.Align.CENTER)
+            if needs_mok:
+                self.btn_enroll_mok.add_css_class("suggested-action")
+            self.btn_enroll_mok.add_css_class("pill")
+            self.btn_enroll_mok.connect("clicked", self.on_enroll_mok_clicked)
+            sb_row.add_suffix(self.btn_enroll_mok)
             sb_group.add(sb_row)
 
-            self.mok_password_row = Adw.PasswordEntryRow()
-            self.mok_password_row.set_title(t("drv_mok_pass"))
-            sb_group.add(self.mok_password_row)
-        else:
-            self.mok_password_row = None
-
-        # Action group
-        action_group = Adw.PreferencesGroup()
-        content.append(action_group)
-
-        self.btn_install_drivers = Gtk.Button(label=t("btn_install_drivers"))
-        self.btn_install_drivers.add_css_class("suggested-action")
-        self.btn_install_drivers.add_css_class("pill")
-        self.btn_install_drivers.set_size_request(-1, 50)
-        self.btn_install_drivers.connect(
-            "clicked",
-            lambda b: self.on_install_drivers_clicked(cat_info, sb_enabled)
+        # 2. Prominent Top Section: Available Drivers & Updates
+        avail_group = Adw.PreferencesGroup(
+            title=t("drv_available_title"),
+            description=t("drv_available_desc") if recs else ""
         )
-        action_group.add(self.btn_install_drivers)
+        self.drv_dynamic_box.append(avail_group)
 
-        self._create_drv_progress_widgets(action_group)
-        return scrolled
+        if recs:
+            for rec in recs:
+                row = Adw.ActionRow()
+                row.set_use_markup(False)
+                row.set_title(rec["title"])
+                pkg_line = t("drv_packages_label", pkgs=", ".join(rec["packages"]))
+                row.set_subtitle(f"{rec['desc']}\n{pkg_line}")
+                row.set_subtitle_lines(4)
+
+                cb = Gtk.CheckButton()
+                cb.set_active(rec.get("default_selected", True))
+                cb.set_valign(Gtk.Align.CENTER)
+                cb.connect("toggled", self._update_install_selected_btn)
+                row.add_prefix(cb)
+
+                cat_ico = Gtk.Image.new_from_icon_name(safe_icon(cat_icon_map.get(rec.get("category", "other"), ["package-x-generic-symbolic"])))
+                cat_ico.set_valign(Gtk.Align.CENTER)
+                row.add_prefix(cat_ico)
+
+                badge = Gtk.Label(label=t("drv_optional_badge") if rec.get("optional") else t("drv_recommended_badge"))
+                badge.set_valign(Gtk.Align.CENTER)
+                badge.add_css_class("drv-badge-opt" if rec.get("optional") else "drv-badge-rec")
+                row.add_suffix(badge)
+
+                row.set_activatable_widget(cb)
+                avail_group.add(row)
+                self.drv_checkboxes.append((cb, rec))
+
+            install_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+            install_box.set_margin_top(12)
+            self.btn_install_selected = Gtk.Button(label=t("drv_install_selected"))
+            self.btn_install_selected.add_css_class("suggested-action")
+            self.btn_install_selected.add_css_class("pill")
+            self.btn_install_selected.set_size_request(-1, 50)
+            self.btn_install_selected.connect("clicked", self.on_install_selected_clicked)
+            install_box.append(self.btn_install_selected)
+            avail_group.add(install_box)
+            self._update_install_selected_btn()
+        elif not fw_updates and not nv_state.get("layered_inactive"):
+            ok_row = Adw.ActionRow()
+            ok_row.set_use_markup(False)
+            ok_row.set_title(t("drv_all_ok_title"))
+            ok_row.set_subtitle(t("drv_all_ok_desc"))
+            ok_row.set_subtitle_lines(3)
+            ok_ico = Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic", "object-select-symbolic"]))
+            ok_ico.add_css_class("drv-status-ok")
+            ok_row.add_prefix(ok_ico)
+            avail_group.add(ok_row)
+
+        # 2b. NVIDIA Layered Status / Quick Maintenance Actions (active, inactive, or legacy)
+        if nv_state.get("layered_inactive"):
+            nv_group = Adw.PreferencesGroup(title=t("drv_inactive_title"))
+            self.drv_dynamic_box.append(nv_group)
+
+            warn_row = Adw.ActionRow()
+            warn_row.set_use_markup(False)
+            warn_row.set_title(", ".join(nv_state.get("layered_pkgs", [])))
+            warn_row.set_subtitle(t("drv_inactive_desc"))
+            warn_row.set_subtitle_lines(4)
+            w_ico = Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic"]))
+            w_ico.add_css_class("drv-status-warn")
+            warn_row.add_prefix(w_ico)
+            nv_group.add(warn_row)
+
+            btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+            btn_box.set_margin_top(10)
+            btn_box.set_homogeneous(True)
+
+            self.btn_fix_kargs = Gtk.Button(label=t("btn_fix_kargs"))
+            self.btn_fix_kargs.add_css_class("suggested-action")
+            self.btn_fix_kargs.add_css_class("pill")
+            self.btn_fix_kargs.set_size_request(-1, 46)
+            self.btn_fix_kargs.connect("clicked", lambda b: self.on_fix_kargs_clicked())
+            btn_box.append(self.btn_fix_kargs)
+
+            self.btn_uninstall_driver = Gtk.Button(label=t("btn_uninstall_driver"))
+            self.btn_uninstall_driver.add_css_class("destructive-action")
+            self.btn_uninstall_driver.add_css_class("pill")
+            self.btn_uninstall_driver.set_size_request(-1, 46)
+            self.btn_uninstall_driver.connect("clicked", lambda b: self.on_uninstall_drivers_clicked(nv_state.get("layered_pkgs", [])))
+            btn_box.append(self.btn_uninstall_driver)
+            nv_group.add(btn_box)
+        elif nv_state.get("active"):
+            nv_group = Adw.PreferencesGroup()
+            self.drv_dynamic_box.append(nv_group)
+
+            act_row = Adw.ActionRow()
+            act_row.set_use_markup(False)
+            act_row.set_title(t("drv_installed_title"))
+            act_row.set_subtitle(", ".join(nv_state.get("layered_pkgs", [])))
+            ok_ico = Gtk.Image.new_from_icon_name(safe_icon(["emblem-ok-symbolic"]))
+            ok_ico.add_css_class("drv-status-ok")
+            act_row.add_prefix(ok_ico)
+
+            self.btn_uninstall_driver = Gtk.Button(label=t("btn_uninstall_driver"))
+            self.btn_uninstall_driver.add_css_class("destructive-action")
+            self.btn_uninstall_driver.add_css_class("pill")
+            self.btn_uninstall_driver.set_valign(Gtk.Align.CENTER)
+            self.btn_uninstall_driver.connect("clicked", lambda b: self.on_uninstall_drivers_clicked(nv_state.get("layered_pkgs", [])))
+            act_row.add_suffix(self.btn_uninstall_driver)
+            nv_group.add(act_row)
+        elif nv_state.get("unsupported"):
+            nv_group = Adw.PreferencesGroup()
+            self.drv_dynamic_box.append(nv_group)
+
+            leg_row = Adw.ActionRow()
+            leg_row.set_use_markup(False)
+            leg_row.set_title(t("drv_unsupported_title"))
+            leg_row.set_subtitle(t("drv_unsupported_desc"))
+            leg_row.set_subtitle_lines(4)
+            leg_row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["dialog-information-symbolic", "video-display-symbolic"])))
+            nv_group.add(leg_row)
+
+        # 3. Firmware Updates Section (fwupd)
+        if fw_updates:
+            fw_group = Adw.PreferencesGroup(
+                title=t("drv_fw_group_title"),
+                description=t("drv_fw_group_desc")
+            )
+            self.drv_dynamic_box.append(fw_group)
+
+            for fw in fw_updates:
+                frow = Adw.ActionRow()
+                frow.set_use_markup(False)
+                ver_str = f"{fw.get('current_version', '')} → {fw.get('new_version', '')}".strip(" →")
+                frow.set_title(f"{fw.get('name', 'Firmware')} ({ver_str})" if ver_str else fw.get("name", "Firmware"))
+                sub_parts = [p for p in (fw.get("vendor", ""), fw.get("summary", "")) if p]
+                frow.set_subtitle(" — ".join(sub_parts) if sub_parts else "LVFS / fwupd")
+                frow.set_subtitle_lines(3)
+                frow.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["software-update-available-symbolic", "computer-symbolic"])))
+                fw_group.add(frow)
+
+            fw_btn_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+            fw_btn_box.set_margin_top(10)
+            self.btn_install_fw = Gtk.Button(label=t("drv_fw_install_btn"))
+            self.btn_install_fw.add_css_class("suggested-action")
+            self.btn_install_fw.add_css_class("pill")
+            self.btn_install_fw.set_size_request(-1, 46)
+            self.btn_install_fw.connect("clicked", self.on_install_fw_clicked)
+            fw_btn_box.append(self.btn_install_fw)
+            fw_group.add(fw_btn_box)
+
+        # 4. Bottom Organized Section: Automatically Configured Hardware
+        hw_group = Adw.PreferencesGroup(
+            title=t("drv_auto_hw_title"),
+            description=t("drv_auto_hw_desc")
+        )
+        self.drv_dynamic_box.append(hw_group)
+
+        for cat_key, cat_tkey, cat_icons in HARDWARE_CATEGORIES:
+            devs = devices_by_cat.get(cat_key, [])
+            if not devs:
+                continue
+            missing_cnt = sum(1 for d in devs if not d.get("driver"))
+            exp = Adw.ExpanderRow()
+            exp.set_use_markup(False)
+            exp.set_title(t(cat_tkey))
+            if missing_cnt > 0:
+                exp.set_subtitle(t("drv_cat_summary_missing", count=len(devs), missing=missing_cnt))
+            else:
+                exp.set_subtitle(t("drv_cat_summary", count=len(devs)))
+            exp.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(cat_icons)))
+            exp.set_expanded(cat_key in ("gpu", "network", "audio") or missing_cnt > 0)
+
+            for dev in devs:
+                drow = Adw.ActionRow()
+                drow.set_use_markup(False)
+                drow.set_title(dev.get("name", "Unknown Device"))
+                drv_name = dev.get("driver", "")
+                drv_txt = t("drv_active_driver", driver=drv_name) if drv_name else t("drv_no_driver")
+                vid = dev.get("vendor_id", "")
+                did = dev.get("device_id", "")
+                id_txt = f" [{vid}:{did}]" if vid and did and vid not in ("iio", "input", "spi") else ""
+                drow.set_subtitle(f"{drv_txt}{id_txt}")
+                drow.set_subtitle_lines(2)
+
+                st_icon = Gtk.Image.new_from_icon_name(
+                    safe_icon(["emblem-ok-symbolic", "object-select-symbolic"] if drv_name else ["dialog-warning-symbolic"])
+                )
+                st_icon.add_css_class("drv-status-ok" if drv_name else "drv-status-warn")
+                drow.add_suffix(st_icon)
+                exp.add_row(drow)
+
+            hw_group.add(exp)
+
+        return False
+
+    def _update_install_selected_btn(self, *_args):
+        if not getattr(self, "btn_install_selected", None):
+            return
+        selected_count = sum(1 for cb, _ in self.drv_checkboxes if cb.get_active())
+        self.btn_install_selected.set_sensitive((not self.drv_busy) and selected_count > 0)
+        if selected_count > 0:
+            self.btn_install_selected.set_label(t("drv_install_selected_count", count=selected_count))
+        else:
+            self.btn_install_selected.set_label(t("drv_install_selected"))
+
+    def _set_drv_controls_sensitive(self, sensitive):
+        self.drv_busy = not sensitive
+        if getattr(self, "btn_drv_rescan", None):
+            self.btn_drv_rescan.set_sensitive(sensitive)
+        for cb, _ in getattr(self, "drv_checkboxes", []):
+            cb.set_sensitive(sensitive)
+        if getattr(self, "btn_install_selected", None):
+            if sensitive:
+                self._update_install_selected_btn()
+            else:
+                self.btn_install_selected.set_sensitive(False)
+        if getattr(self, "btn_install_fw", None):
+            self.btn_install_fw.set_sensitive(sensitive)
+        if getattr(self, "btn_enroll_mok", None):
+            self.btn_enroll_mok.set_sensitive(sensitive)
+        if getattr(self, "btn_fix_kargs", None):
+            self.btn_fix_kargs.set_sensitive(sensitive)
+        if getattr(self, "btn_uninstall_driver", None):
+            self.btn_uninstall_driver.set_sensitive(sensitive)
+
+    def _set_drv_progress(self, fraction, status_text=None):
+        def _upd():
+            self.drv_progress_bar.set_fraction(max(0.0, min(1.0, fraction)))
+            pct = int(round(max(0.0, min(1.0, fraction)) * 100))
+            self.drv_progress_bar.set_text(f"{pct}%")
+            if status_text is not None:
+                self.lbl_drv_status.set_text(status_text)
+            return False
+        GLib.idle_add(_upd)
 
     def append_drv_log(self, text):
         end_iter = self.drv_text_buffer.get_end_iter()
         self.drv_text_buffer.insert(end_iter, text)
         mark = self.drv_text_buffer.create_mark(None, self.drv_text_buffer.get_end_iter(), False)
         self.drv_text_view.scroll_to_mark(mark, 0.05, False, 0.0, 1.0)
+        return False
 
-    def on_install_drivers_clicked(self, cat_info, sb_enabled):
-        mok_pass = ""
-        if sb_enabled and self.mok_password_row:
-            mok_pass = self.mok_password_row.get_text().strip()
-            if not mok_pass:
-                toast = Adw.Toast.new(t("drv_mok_warn"))
-                self.toast_overlay.add_toast(toast)
-                return
-
-        self.btn_install_drivers.set_sensitive(False)
-        self.cuda_switch.set_sensitive(False)
-        if self.mok_password_row:
-            self.mok_password_row.set_sensitive(False)
-
-        self.drv_progress_box.set_visible(True)
+    def _start_drv_operation_ui(self, initial_status):
+        self._set_drv_controls_sensitive(False)
+        self.drv_progress_group.set_visible(True)
+        self.btn_reboot_drivers.set_visible(False)
         self.drv_text_buffer.set_text("")
+        self.drv_progress_bar.set_fraction(0.05)
+        self.drv_progress_bar.set_text("5%")
+        self.lbl_drv_status.set_text(initial_status)
 
-        self.drv_pulse_timer = GLib.timeout_add(100, self._pulse_drv_progress)
+    def _finish_drv_operation(self, rc, success_msg, show_reboot=True):
+        if getattr(self, "drv_pulse_timer", None):
+            GLib.source_remove(self.drv_pulse_timer)
+            self.drv_pulse_timer = None
+
+        self._set_drv_controls_sensitive(True)
+
+        if rc == 0:
+            self.drv_progress_bar.set_fraction(1.0)
+            self.drv_progress_bar.set_text("100%")
+            self.lbl_drv_status.set_text(success_msg)
+            if show_reboot:
+                self.btn_reboot_drivers.set_visible(True)
+            toast = Adw.Toast.new(success_msg)
+            self.toast_overlay.add_toast(toast)
+        elif rc in (126, 127):
+            self.drv_progress_bar.set_fraction(0.0)
+            self.drv_progress_bar.set_text("0%")
+            self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
+            self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
+            toast = Adw.Toast.new(t("drv_auth_cancelled"))
+            self.toast_overlay.add_toast(toast)
+        else:
+            self.drv_progress_bar.set_fraction(0.0)
+            self.drv_progress_bar.set_text("0%")
+            self.lbl_drv_status.set_text(t("drv_error"))
+            toast = Adw.Toast.new(t("drv_error"))
+            self.toast_overlay.add_toast(toast)
+        return False
+
+    def on_install_selected_clicked(self, *_args):
+        selected = [rec for cb, rec in self.drv_checkboxes if cb.get_active()]
+        if not selected:
+            self.toast_overlay.add_toast(Adw.Toast.new(t("drv_select_one_warn")))
+            return
+
+        self._start_drv_operation_ui(t("drv_stage_auth"))
         threading.Thread(
-            target=self.run_driver_install_thread,
-            args=(cat_info, sb_enabled, mok_pass),
+            target=self.run_selected_drivers_thread,
+            args=(selected,),
             daemon=True
         ).start()
 
-    def _pulse_drv_progress(self):
-        self.drv_progress_bar.pulse()
-        return True
+    def run_selected_drivers_thread(self, selected_recs):
+        pkgs = []
+        needs_nv_kargs = False
+        needs_akmods = False
+        needs_fprintd = False
 
-    def run_driver_install_thread(self, cat_info, sb_enabled, mok_pass):
-        pkgs = [cat_info.get("driver_package", "akmod-nvidia")]
-        if cat_info.get("userspace_package"):
-            pkgs.append(cat_info["userspace_package"])
-        if self.cuda_switch.get_active() and cat_info.get("cuda_package"):
-            pkgs.append(cat_info["cuda_package"])
+        for rec in selected_recs:
+            for p in rec.get("packages", []):
+                if p not in pkgs:
+                    pkgs.append(p)
+            if rec.get("needs_nvidia_kargs"):
+                needs_nv_kargs = True
+            if rec.get("needs_akmods"):
+                needs_akmods = True
+            if rec.get("needs_fprintd_enable"):
+                needs_fprintd = True
 
-        pkg_str = " ".join(pkgs)
-        script_commands = ["set -e"]
+        quoted_pkgs = " ".join(shlex.quote(p) for p in pkgs)
+        script_lines = [
+            "set -e",
+            "echo '===SADEEM_STAGE:DOWNLOADING==='",
+            f"echo 'Installing packages via rpm-ostree: {' '.join(pkgs)}'",
+            f"rpm-ostree install -y --idempotent {quoted_pkgs}",
+        ]
 
-        if sb_enabled:
-            script_commands.extend([
-                "echo '[1/4] Checking and preparing Secure Boot signing key...'",
-                "if [ ! -f /etc/pki/akmods/certs/public_key.der ]; then",
-                "    kmodgenca -a || true",
-                "fi",
-                "if [ -f /etc/pki/akmods/certs/public_key.der ]; then",
-                f"    printf '%s\n%s\n' '{mok_pass}' '{mok_pass}' | mokutil --import /etc/pki/akmods/certs/public_key.der || true",
-                "    echo '--> MOK enrollment request prepared successfully.'",
-                "fi",
-                "echo '[2/4] Downloading and layering driver packages via rpm-ostree...'"
+        if needs_nv_kargs:
+            script_lines.extend([
+                "echo '===SADEEM_STAGE:LAYERING==='",
+                "echo 'Configuring NVIDIA kernel boot arguments (kargs)...'",
+                'rpm-ostree kargs --append-if-missing="rd.driver.blacklist=nouveau" --append-if-missing="modprobe.blacklist=nouveau" --append-if-missing="nvidia-drm.modeset=1"',
             ])
-        else:
-            script_commands.append("echo '[1/3] Downloading and layering driver packages via rpm-ostree...'")
 
-        script_commands.extend([
-            f"echo 'Target packages: {pkg_str}'",
-            f"rpm-ostree install -y --idempotent {pkg_str}",
-            "echo ''",
-            "echo '=================================================='",
-            "echo ' Configuring kernel boot arguments (kargs)...     '",
-            "echo ' Blacklisting nouveau and enabling modesetting... '",
-            "echo '=================================================='",
-            'rpm-ostree kargs --append-if-missing="rd.driver.blacklist=nouveau" --append-if-missing="modprobe.blacklist=nouveau" --append-if-missing="nvidia-drm.modeset=1"',
-            "echo ''",
-            "echo '=================================================='",
-            "echo ' Building NVIDIA kernel modules (akmods)...       '",
-            "echo ' This process compiles the driver for your kernel '",
-            "echo ' and may take several minutes. Please wait...     '",
-            "echo '=================================================='",
-            "akmods --force 2>&1 || true",
-            "echo '=================================================='",
-            "echo ' Driver installation and system layering completed! '",
-            "echo '=================================================='"
-        ])
+        if needs_akmods:
+            script_lines.extend([
+                "echo '===SADEEM_STAGE:AKMODS==='",
+                "echo 'Building kernel modules (akmods)...'",
+                "akmods --force 2>&1 || true",
+            ])
 
-        full_script = chr(10).join(script_commands)
+        if needs_fprintd:
+            script_lines.extend([
+                "echo 'Enabling fingerprint service and PAM integration...'",
+                "systemctl enable fprintd.service 2>/dev/null || true",
+                "authselect enable-feature with-fingerprint 2>/dev/null || true",
+            ])
+
+        script_lines.append("echo '===SADEEM_STAGE:DONE==='")
+        full_script = "\n".join(script_lines)
 
         try:
-            GLib.idle_add(self.lbl_drv_status.set_text, t("drv_auth"))
+            self._set_drv_progress(0.12, t("drv_stage_auth"))
             proc = subprocess.Popen(
                 ["pkexec", "/usr/bin/bash", "-c", full_script],
                 stdout=subprocess.PIPE,
@@ -3462,50 +4564,182 @@ stage {{
                 text=True,
                 bufsize=1
             )
+            current_frac = 0.15
+            for line in proc.stdout:
+                clean = line.strip()
+                low = clean.lower()
+                if "===SADEEM_STAGE:DOWNLOADING===" in clean:
+                    current_frac = max(current_frac, 0.22)
+                    self._set_drv_progress(current_frac, t("drv_stage_downloading"))
+                    continue
+                if "===SADEEM_STAGE:LAYERING===" in clean:
+                    current_frac = max(current_frac, 0.72)
+                    self._set_drv_progress(current_frac, t("drv_stage_layering"))
+                    continue
+                if "===SADEEM_STAGE:AKMODS===" in clean:
+                    current_frac = max(current_frac, 0.85)
+                    self._set_drv_progress(current_frac, t("drv_stage_akmods"))
+                    continue
+                if "===SADEEM_STAGE:DONE===" in clean:
+                    current_frac = 0.98
+                    self._set_drv_progress(current_frac, t("drv_stage_complete"))
+                    continue
+
+                GLib.idle_add(self.append_drv_log, line)
+
+                if any(k in low for k in ("downloading", "fetching", "receiving")):
+                    current_frac = min(0.55, current_frac + 0.02)
+                    self._set_drv_progress(current_frac, t("drv_stage_downloading"))
+                elif any(k in low for k in ("checking out", "importing", "applying", "staging", "writing", "running post")):
+                    current_frac = min(0.78, max(current_frac + 0.03, 0.58))
+                    self._set_drv_progress(current_frac, t("drv_stage_layering"))
+                elif "akmod" in low or "building" in low:
+                    current_frac = min(0.94, max(current_frac + 0.02, 0.84))
+                    self._set_drv_progress(current_frac, t("drv_stage_akmods"))
+
+            rc = proc.wait()
+            GLib.idle_add(self._finish_drv_operation, rc, t("drv_done"), True)
+        except Exception as e:
+            GLib.idle_add(self.append_drv_log, f"\n[Error]: {e}\n")
+            GLib.idle_add(self._finish_drv_operation, 1, t("drv_done"), True)
+
+    def on_install_fw_clicked(self, *_args):
+        self._start_drv_operation_ui(t("drv_fw_updating"))
+        threading.Thread(target=self.run_fw_update_thread, daemon=True).start()
+
+    def run_fw_update_thread(self):
+        try:
+            self._set_drv_progress(0.20, t("drv_fw_updating"))
+            proc = subprocess.Popen(
+                ["pkexec", "fwupdmgr", "update", "-y"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1
+            )
+            frac = 0.25
+            for line in proc.stdout:
+                GLib.idle_add(self.append_drv_log, line)
+                m = re.search(r'(\d{1,3})%', line)
+                if m:
+                    val = int(m.group(1))
+                    if 0 <= val <= 100:
+                        frac = max(frac, 0.20 + (val / 100.0) * 0.75)
+                        self._set_drv_progress(min(0.95, frac), t("drv_fw_updating"))
+                else:
+                    frac = min(0.92, frac + 0.02)
+                    self._set_drv_progress(frac, t("drv_fw_updating"))
+            rc = proc.wait()
+            # fwupdmgr exit code 2 means nothing to do / already updated
+            norm_rc = 0 if rc in (0, 2) else rc
+            GLib.idle_add(self._finish_drv_operation, norm_rc, t("drv_fw_done"), True)
+        except Exception as e:
+            GLib.idle_add(self.append_drv_log, f"\n[Error]: {e}\n")
+            GLib.idle_add(self._finish_drv_operation, 1, t("drv_fw_done"), True)
+
+    def on_enroll_mok_clicked(self, *_args):
+        dialog = Gtk.Window(transient_for=self, modal=True)
+        dialog.set_title(t("drv_mok_dialog_title"))
+        dialog.set_default_size(440, -1)
+        dialog.set_resizable(False)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        box.set_margin_top(20)
+        box.set_margin_bottom(20)
+        box.set_margin_start(20)
+        box.set_margin_end(20)
+        dialog.set_child(box)
+
+        lbl_title = Gtk.Label(label=t("drv_mok_dialog_title"))
+        lbl_title.add_css_class("title-3")
+        lbl_title.set_halign(Gtk.Align.START)
+        box.append(lbl_title)
+
+        lbl_body = Gtk.Label(label=t("drv_mok_dialog_body"))
+        lbl_body.set_wrap(True)
+        lbl_body.set_halign(Gtk.Align.START)
+        lbl_body.add_css_class("dim-label")
+        box.append(lbl_body)
+
+        entry = Gtk.PasswordEntry()
+        entry.set_show_peek_icon(True)
+        entry.set_property("placeholder-text", t("drv_mok_pass"))
+        box.append(entry)
+
+        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        btn_row.set_halign(Gtk.Align.END)
+        btn_row.set_margin_top(6)
+        box.append(btn_row)
+
+        btn_cancel = Gtk.Button(label=t("drv_cancel"))
+        btn_cancel.add_css_class("pill")
+        btn_cancel.connect("clicked", lambda b: dialog.close())
+        btn_row.append(btn_cancel)
+
+        btn_ok = Gtk.Button(label=t("drv_confirm"))
+        btn_ok.add_css_class("suggested-action")
+        btn_ok.add_css_class("pill")
+        btn_row.append(btn_ok)
+
+        def _submit(*_a):
+            pw = entry.get_text().strip()
+            if len(pw) < 8:
+                self.toast_overlay.add_toast(Adw.Toast.new(t("drv_mok_dialog_body")))
+                return
+            dialog.close()
+            self._start_drv_operation_ui(t("drv_mok_enrolling"))
+            threading.Thread(target=self.run_mok_enroll_thread, args=(pw,), daemon=True).start()
+
+        btn_ok.connect("clicked", _submit)
+        entry.connect("activate", _submit)
+        dialog.present()
+
+    def run_mok_enroll_thread(self, mok_pass):
+        qpass = shlex.quote(mok_pass)
+        script = f"""set -e
+if [ ! -f /etc/pki/akmods/certs/public_key.der ]; then
+    echo 'Generating akmods Secure Boot signing key...'
+    kmodgenca -a || true
+fi
+if [ -f /etc/pki/akmods/certs/public_key.der ]; then
+    printf '%s\\n%s\\n' {qpass} {qpass} | mokutil --import /etc/pki/akmods/certs/public_key.der
+    echo 'MOK signing key imported successfully.'
+else
+    echo 'Error: /etc/pki/akmods/certs/public_key.der not found.' >&2
+    exit 1
+fi
+"""
+        try:
+            self._set_drv_progress(0.35, t("drv_mok_enrolling"))
+            proc = subprocess.Popen(
+                ["pkexec", "/usr/bin/bash", "-c", script],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1
+            )
             for line in proc.stdout:
                 GLib.idle_add(self.append_drv_log, line)
             rc = proc.wait()
-            GLib.idle_add(self.on_drv_finished, rc)
+            GLib.idle_add(self._finish_drv_operation, rc, t("drv_mok_done"), True)
         except Exception as e:
-            GLib.idle_add(self.append_drv_log, "\n[Error]: " + str(e) + "\n")
-            GLib.idle_add(self.on_drv_finished, 1)
+            GLib.idle_add(self.append_drv_log, f"\n[Error]: {e}\n")
+            GLib.idle_add(self._finish_drv_operation, 1, t("drv_mok_done"), True)
 
     def on_fix_kargs_clicked(self):
-        if hasattr(self, "btn_fix_kargs"):
-            self.btn_fix_kargs.set_sensitive(False)
-        if hasattr(self, "btn_uninstall_driver"):
-            self.btn_uninstall_driver.set_sensitive(False)
-
-        self.drv_progress_box.set_visible(True)
-        self.drv_text_buffer.set_text("")
-        self.lbl_drv_status.set_text(t("drv_fixing_kargs"))
-
-        self.drv_pulse_timer = GLib.timeout_add(100, self._pulse_drv_progress)
-        threading.Thread(
-            target=self.run_fix_kargs_thread,
-            daemon=True
-        ).start()
+        self._start_drv_operation_ui(t("drv_fixing_kargs"))
+        threading.Thread(target=self.run_fix_kargs_thread, daemon=True).start()
 
     def run_fix_kargs_thread(self):
         script = """set -e
-echo '=================================================='
-echo ' [1/2] Blacklisting nouveau & enabling modeset... '
-echo '=================================================='
+echo '[1/2] Blacklisting nouveau & enabling nvidia-drm modeset...'
 rpm-ostree kargs --append-if-missing="rd.driver.blacklist=nouveau" --append-if-missing="modprobe.blacklist=nouveau" --append-if-missing="nvidia-drm.modeset=1"
-echo ''
-echo '--> Active kernel arguments after update:'
-rpm-ostree kargs
-echo ''
-echo '=================================================='
-echo ' [2/2] Ensuring NVIDIA kernel modules (akmods)...  '
-echo '=================================================='
+echo '[2/2] Ensuring NVIDIA kernel modules (akmods)...'
 akmods --force 2>&1 || true
-echo '=================================================='
-echo ' Kernel arguments updated successfully! Please reboot. '
-echo '=================================================='
+echo 'Kernel arguments updated successfully! Please reboot.'
 """
         try:
-            GLib.idle_add(self.lbl_drv_status.set_text, t("drv_auth"))
+            self._set_drv_progress(0.30, t("drv_fixing_kargs"))
             proc = subprocess.Popen(
                 ["pkexec", "/usr/bin/bash", "-c", script],
                 stdout=subprocess.PIPE,
@@ -3516,83 +4750,26 @@ echo '=================================================='
             for line in proc.stdout:
                 GLib.idle_add(self.append_drv_log, line)
             rc = proc.wait()
-            GLib.idle_add(self.on_fix_kargs_finished, rc)
+            GLib.idle_add(self._finish_drv_operation, rc, t("drv_done"), True)
         except Exception as e:
-            GLib.idle_add(self.append_drv_log, "\n[Error]: " + str(e) + "\n")
-            GLib.idle_add(self.on_fix_kargs_finished, 1)
-
-    def on_fix_kargs_finished(self, rc):
-        if hasattr(self, "drv_pulse_timer") and self.drv_pulse_timer:
-            GLib.source_remove(self.drv_pulse_timer)
-            self.drv_pulse_timer = None
-
-        if rc == 0:
-            self.drv_progress_bar.set_fraction(1.0)
-            self.lbl_drv_status.set_text(t("drv_done"))
-            if hasattr(self, "btn_fix_kargs"):
-                self.btn_fix_kargs.set_visible(False)
-            if hasattr(self, "btn_uninstall_driver"):
-                self.btn_uninstall_driver.set_visible(False)
-            self.btn_reboot_drivers.set_visible(True)
-            toast = Adw.Toast.new(t("drv_done"))
-            self.toast_overlay.add_toast(toast)
-        elif rc in (126, 127):
-            self.drv_progress_bar.set_fraction(0.0)
-            self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
-            self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
-            if hasattr(self, "btn_fix_kargs"):
-                self.btn_fix_kargs.set_sensitive(True)
-            if hasattr(self, "btn_uninstall_driver"):
-                self.btn_uninstall_driver.set_sensitive(True)
-            toast = Adw.Toast.new(t("drv_auth_cancelled"))
-            self.toast_overlay.add_toast(toast)
-        else:
-            self.drv_progress_bar.set_fraction(0.0)
-            self.lbl_drv_status.set_text(t("drv_error"))
-            if hasattr(self, "btn_fix_kargs"):
-                self.btn_fix_kargs.set_sensitive(True)
-            if hasattr(self, "btn_uninstall_driver"):
-                self.btn_uninstall_driver.set_sensitive(True)
-            toast = Adw.Toast.new(t("drv_error"))
-            self.toast_overlay.add_toast(toast)
+            GLib.idle_add(self.append_drv_log, f"\n[Error]: {e}\n")
+            GLib.idle_add(self._finish_drv_operation, 1, t("drv_done"), True)
 
     def on_uninstall_drivers_clicked(self, pkgs):
-        if hasattr(self, "btn_fix_kargs"):
-            self.btn_fix_kargs.set_sensitive(False)
-        if hasattr(self, "btn_uninstall_driver"):
-            self.btn_uninstall_driver.set_sensitive(False)
-
-        self.drv_progress_box.set_visible(True)
-        self.drv_text_buffer.set_text("")
-        self.lbl_drv_status.set_text(t("drv_uninstalling"))
-
-        self.drv_pulse_timer = GLib.timeout_add(100, self._pulse_drv_progress)
-        threading.Thread(
-            target=self.run_uninstall_thread,
-            args=(pkgs,),
-            daemon=True
-        ).start()
+        self._start_drv_operation_ui(t("drv_uninstalling"))
+        threading.Thread(target=self.run_uninstall_thread, args=(pkgs,), daemon=True).start()
 
     def run_uninstall_thread(self, pkgs):
-        pkg_str = " ".join(pkgs)
+        quoted_pkgs = " ".join(shlex.quote(p) for p in pkgs)
         script = f"""set -e
-echo '=================================================='
-echo ' [1/2] Uninstalling NVIDIA driver packages...     '
-echo ' Target packages: {pkg_str}'
-echo '=================================================='
-rpm-ostree uninstall {pkg_str} || true
-echo ''
-echo '=================================================='
-echo ' [2/2] Removing nouveau blacklist from kargs...   '
-echo '=================================================='
+echo '[1/2] Uninstalling NVIDIA driver packages: {' '.join(pkgs)}'
+rpm-ostree uninstall {quoted_pkgs} || true
+echo '[2/2] Removing nouveau blacklist from kargs...'
 rpm-ostree kargs --delete-if-present="rd.driver.blacklist=nouveau" --delete-if-present="modprobe.blacklist=nouveau" --delete-if-present="nvidia-drm.modeset=1" || true
-echo ''
-echo '=================================================='
-echo ' NVIDIA driver uninstalled! Please restart.       '
-echo '=================================================='
+echo 'NVIDIA driver uninstalled! Please restart.'
 """
         try:
-            GLib.idle_add(self.lbl_drv_status.set_text, t("drv_auth"))
+            self._set_drv_progress(0.35, t("drv_uninstalling"))
             proc = subprocess.Popen(
                 ["pkexec", "/usr/bin/bash", "-c", script],
                 stdout=subprocess.PIPE,
@@ -3603,82 +4780,10 @@ echo '=================================================='
             for line in proc.stdout:
                 GLib.idle_add(self.append_drv_log, line)
             rc = proc.wait()
-            GLib.idle_add(self.on_uninstall_finished, rc)
+            GLib.idle_add(self._finish_drv_operation, rc, t("drv_uninstalled_done"), True)
         except Exception as e:
-            GLib.idle_add(self.append_drv_log, "\n[Error]: " + str(e) + "\n")
-            GLib.idle_add(self.on_uninstall_finished, 1)
-
-    def on_uninstall_finished(self, rc):
-        if hasattr(self, "drv_pulse_timer") and self.drv_pulse_timer:
-            GLib.source_remove(self.drv_pulse_timer)
-            self.drv_pulse_timer = None
-
-        if rc == 0:
-            self.drv_progress_bar.set_fraction(1.0)
-            self.lbl_drv_status.set_text(t("drv_uninstalled_done"))
-            if hasattr(self, "btn_fix_kargs"):
-                self.btn_fix_kargs.set_visible(False)
-            if hasattr(self, "btn_uninstall_driver"):
-                self.btn_uninstall_driver.set_visible(False)
-            self.btn_reboot_drivers.set_visible(True)
-            toast = Adw.Toast.new(t("drv_uninstalled_done"))
-            self.toast_overlay.add_toast(toast)
-        elif rc in (126, 127):
-            self.drv_progress_bar.set_fraction(0.0)
-            self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
-            self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
-            if hasattr(self, "btn_fix_kargs"):
-                self.btn_fix_kargs.set_sensitive(True)
-            if hasattr(self, "btn_uninstall_driver"):
-                self.btn_uninstall_driver.set_sensitive(True)
-            toast = Adw.Toast.new(t("drv_auth_cancelled"))
-            self.toast_overlay.add_toast(toast)
-        else:
-            self.drv_progress_bar.set_fraction(0.0)
-            self.lbl_drv_status.set_text(t("drv_error"))
-            if hasattr(self, "btn_fix_kargs"):
-                self.btn_fix_kargs.set_sensitive(True)
-            if hasattr(self, "btn_uninstall_driver"):
-                self.btn_uninstall_driver.set_sensitive(True)
-            toast = Adw.Toast.new(t("drv_error"))
-            self.toast_overlay.add_toast(toast)
-
-    def on_drv_finished(self, rc):
-        if hasattr(self, "drv_pulse_timer") and self.drv_pulse_timer:
-            GLib.source_remove(self.drv_pulse_timer)
-            self.drv_pulse_timer = None
-
-        if rc == 0:
-            self.drv_progress_bar.set_fraction(1.0)
-            self.lbl_drv_status.set_text(t("drv_done"))
-            if hasattr(self, "btn_install_drivers"):
-                self.btn_install_drivers.set_visible(False)
-            self.btn_reboot_drivers.set_visible(True)
-            toast = Adw.Toast.new(t("drv_done"))
-            self.toast_overlay.add_toast(toast)
-        elif rc in (126, 127):
-            self.drv_progress_bar.set_fraction(0.0)
-            self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
-            self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
-            if hasattr(self, "btn_install_drivers"):
-                self.btn_install_drivers.set_sensitive(True)
-            if hasattr(self, "cuda_switch"):
-                self.cuda_switch.set_sensitive(True)
-            if getattr(self, "mok_password_row", None):
-                self.mok_password_row.set_sensitive(True)
-            toast = Adw.Toast.new(t("drv_auth_cancelled"))
-            self.toast_overlay.add_toast(toast)
-        else:
-            self.drv_progress_bar.set_fraction(0.0)
-            self.lbl_drv_status.set_text(t("drv_error"))
-            if hasattr(self, "btn_install_drivers"):
-                self.btn_install_drivers.set_sensitive(True)
-            if hasattr(self, "cuda_switch"):
-                self.cuda_switch.set_sensitive(True)
-            if getattr(self, "mok_password_row", None):
-                self.mok_password_row.set_sensitive(True)
-            toast = Adw.Toast.new(t("drv_error"))
-            self.toast_overlay.add_toast(toast)
+            GLib.idle_add(self.append_drv_log, f"\n[Error]: {e}\n")
+            GLib.idle_add(self._finish_drv_operation, 1, t("drv_uninstalled_done"), True)
 
     # =========================================================================
     # TAB 4: CONTAINERS & PACKAGES

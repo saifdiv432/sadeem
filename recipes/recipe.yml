@@ -83,8 +83,10 @@ modules:
       - fastfetch
       - librsvg2-tools
 
-      # Hardware detection & Secure Boot management
+      # Hardware detection, firmware updates & Secure Boot management
       - pciutils
+      - usbutils
+      - fwupd
       - mokutil
 
       # Rumman media converters & processors (ffmpeg is provided by pre-installed ffmpeg-free + libavcodec-freeworld)
