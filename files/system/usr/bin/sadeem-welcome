@@ -889,10 +889,28 @@ APP_ID = "org.sadeem.Welcome"
 CONFIG_DIR = os.path.expanduser("~/.config/sadeem")
 SEEN_FILE = os.path.join(CONFIG_DIR, "welcome-seen")
 LEGACY_SEEN_FILE = os.path.expanduser("~/.config/saifdora/welcome-seen")
+AUTOSTART_DESKTOP_FILENAME = "org.sadeem.Welcome.desktop"
+USER_AUTOSTART_DIR = os.path.expanduser("~/.config/autostart")
+USER_AUTOSTART_FILE = os.path.join(USER_AUTOSTART_DIR, AUTOSTART_DESKTOP_FILENAME)
+
+
+def is_autostart_disabled():
+    """Check if autostart is disabled via user XDG autostart override."""
+    if not os.path.isfile(USER_AUTOSTART_FILE):
+        return False
+    try:
+        with open(USER_AUTOSTART_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                clean = line.strip().lower().replace(" ", "")
+                if clean in ("hidden=true", "x-gnome-autostart-enabled=false"):
+                    return True
+    except Exception:
+        pass
+    return False
 
 
 def is_seen():
-    return os.path.exists(SEEN_FILE) or os.path.exists(LEGACY_SEEN_FILE)
+    return is_autostart_disabled() or os.path.exists(SEEN_FILE) or os.path.exists(LEGACY_SEEN_FILE)
 
 
 def check_nvidia_status():
@@ -1020,7 +1038,7 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
         # Center: Show on startup checkbox (always perfectly centered)
         self.startup_check = Gtk.CheckButton(label=t("check_startup"))
-        self.startup_check.set_active(not is_seen())
+        self.startup_check.set_active(not is_autostart_disabled())
         self.startup_check.connect("toggled", self.on_startup_toggled)
         self.bottom_bar.set_center_widget(self.startup_check)
 
@@ -1497,21 +1515,39 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
     def on_startup_toggled(self, button):
         state = button.get_active()
-        os.makedirs(CONFIG_DIR, exist_ok=True)
         if state:
-            # Active means show on startup -> remove seen files
+            # Active means show on startup -> remove user override so system autostart works
+            if os.path.exists(USER_AUTOSTART_FILE):
+                try:
+                    os.remove(USER_AUTOSTART_FILE)
+                except OSError:
+                    pass
             for sf in (SEEN_FILE, LEGACY_SEEN_FILE):
                 if os.path.exists(sf):
                     try:
                         os.remove(sf)
-                    except Exception:
+                    except OSError:
                         pass
         else:
-            # Inactive means do not show on startup -> create seen file
+            # Inactive means do not show on startup -> create user override file with Hidden=true
             try:
-                with open(SEEN_FILE, "w") as f:
+                os.makedirs(USER_AUTOSTART_DIR, exist_ok=True)
+                content = (
+                    "[Desktop Entry]\n"
+                    "Type=Application\n"
+                    "Name=ترحيب سديم\n"
+                    "Exec=sadeem-welcome\n"
+                    "Hidden=true\n"
+                )
+                with open(USER_AUTOSTART_FILE, "w", encoding="utf-8") as f:
+                    f.write(content)
+            except OSError:
+                pass
+            try:
+                os.makedirs(CONFIG_DIR, exist_ok=True)
+                with open(SEEN_FILE, "w", encoding="utf-8") as f:
                     f.write("seen\n")
-            except Exception:
+            except OSError:
                 pass
 
 
@@ -1525,7 +1561,7 @@ class WelcomeApplication(Adw.Application):
     def do_command_line(self, command_line):
         args = command_line.get_arguments()
         is_autostart = "--autostart" in args or "DESKTOP_AUTOSTART_ID" in os.environ
-        if is_autostart and is_seen():
+        if is_autostart and is_autostart_disabled():
             return 0
 
         self.activate()
@@ -1544,9 +1580,9 @@ class WelcomeApplication(Adw.Application):
 
 
 def main():
-    # Fast exit for autostart if already seen before starting GTK
+    # Fast exit for autostart if disabled by user before starting GTK
     is_autostart = "--autostart" in sys.argv or "DESKTOP_AUTOSTART_ID" in os.environ
-    if is_autostart and is_seen():
+    if is_autostart and is_autostart_disabled():
         sys.exit(0)
 
     GLib.set_prgname("org.sadeem.Welcome")
