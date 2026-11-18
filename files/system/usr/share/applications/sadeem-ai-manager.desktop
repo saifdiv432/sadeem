@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=Sadeem AI Manager
+Name[ar]=مدير سديم للذكاء الاصطناعي
+GenericName=Local AI Model Manager
+GenericName[ar]=مدير نماذج الذكاء الاصطناعي المحلية
+Comment=Discover, download, and run local AI models offline on Sadeem 45
+Comment[ar]=اكتشاف وتنزيل وتشغيل نماذج الذكاء الاصطناعي المحلية بدون إنترنت على سديم 45
+Exec=/usr/bin/sadeem-ai-manager
+Icon=sadeem-ai-manager
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=ai;llm;local;offline;gemma;qwen;phi;deepseek;chat;vision;gguf;llama;ذكاء اصطناعي;نماذج;محلي;محادثة;سديم;
+StartupNotify=true
+StartupWMClass=org.sadeem.AIManager
+X-Purism-FormFactor=Workstation;Mobile;

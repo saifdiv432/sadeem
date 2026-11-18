@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="aiBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a1c33"/>
+      <stop offset="60%" stop-color="#5c1426"/>
+      <stop offset="100%" stop-color="#115e59"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#aiBg)" stroke="#cbd5e1" stroke-width="2.5"/>
+  <!-- Neural orbital ring -->
+  <circle cx="64" cy="64" r="34" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="3" stroke-dasharray="8 6"/>
+  <!-- Main AI four-point star sparkle -->
+  <path d="M64 28 C66 48, 80 62, 100 64 C80 66, 66 80, 64 100 C62 80, 48 66, 28 64 C48 62, 62 48, 64 28 Z" fill="url(#sparkGrad)"/>
+  <!-- Secondary accent sparkle -->
+  <path d="M90 30 C91 36, 95 40, 101 41 C95 42, 91 46, 90 52 C89 46, 85 42, 79 41 C85 40, 89 36, 90 30 Z" fill="rgba(255,255,255,0.88)"/>
+  <!-- Small neural node -->
+  <circle cx="38" cy="88" r="4.5" fill="rgba(255,255,255,0.85)"/>
+</svg>
