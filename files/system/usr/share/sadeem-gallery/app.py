@@ -3,12 +3,10 @@
 """
 Sadeem Gallery — معرض سديم
 GTK 4 / Libadwaita chronological photo gallery, fast RAW/image viewer,
-and full built-in image editor (Crop & Transform, Cairo Markup, Adjustments & Filters).
-Visual Identity: Sadeem Burgundy (#7a1c33), Dark Teal (#0f4c5c), Silver (#e2e8f0).
+and calm GNOME/Adwaita 6-section vertical rail image editor.
 """
 
 import concurrent.futures
-import copy
 import os
 import sys
 import threading
@@ -17,7 +15,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, Pango
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 if APP_DIR not in sys.path:
@@ -42,112 +40,227 @@ MARKUP_COLORS = [
 ]
 
 SADEEM_CSS = """
-.sadeem-burgundy-btn, button.suggested-action {
+.sadeem-canvas-bg {
+    background-color: #18181c;
+}
+.sadeem-btn {
+    background-color: #2e2e35;
+    background-image: none;
+    color: #f1f5f9;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.sadeem-btn:hover {
+    background-color: #393943;
+}
+.sadeem-btn:active {
+    background-color: #444450;
+}
+.sadeem-btn-compact {
+    background-color: #2e2e35;
+    background-image: none;
+    color: #f1f5f9;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    min-height: 30px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.sadeem-btn-compact:hover {
+    background-color: #393943;
+}
+.sadeem-btn-active {
     background-color: #7a1c33;
     background-image: none;
     color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.14);
 }
-.sadeem-burgundy-btn:hover, button.suggested-action:hover {
-    background-color: #5c1426;
+.sadeem-btn-active:hover {
+    background-color: #8c223c;
 }
-.sadeem-teal-btn {
-    background-color: #0f4c5c;
+.sadeem-btn-active label, .sadeem-btn-active image {
+    color: #ffffff;
+}
+.sadeem-btn-danger {
+    background-color: #2e2e35;
+    background-image: none;
+    color: #fca5a5;
+    border-radius: 6px;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 12px;
+}
+.sadeem-btn-danger:hover {
+    background-color: rgba(127, 29, 29, 0.65);
+    color: #fecaca;
+}
+.sadeem-header-btn {
+    border-radius: 6px;
+    min-height: 30px;
+    padding: 3px 10px;
+    font-size: 12px;
+}
+.sadeem-sidebar-shell {
+    background-color: #222227;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sadeem-drawer {
+    background-color: #222227;
+}
+.sadeem-rail {
+    background-color: #1c1c21;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.rail-btn {
+    background-color: transparent;
+    background-image: none;
+    color: #cbd5e1;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    min-height: 50px;
+    padding: 6px 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.rail-btn:hover {
+    background-color: #2e2e35;
+    color: #f8fafc;
+}
+.rail-btn-active {
+    background-color: #7a1c33;
     background-image: none;
     color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.14);
 }
-.sadeem-teal-btn:hover {
-    background-color: #0b3945;
+.rail-btn-active:hover {
+    background-color: #8c223c;
 }
-.filter-pill-active {
+.rail-btn-active label, .rail-btn-active image {
+    color: #ffffff;
+}
+.sadeem-scale trough {
+    min-height: 4px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.14);
+}
+.sadeem-scale highlight {
     background-color: #7a1c33;
-    color: #ffffff;
-    border: 1px solid #be123c;
+    border-radius: 3px;
 }
-.filter-pill-active label {
-    color: #ffffff;
+.sadeem-scale slider {
+    min-width: 14px;
+    min-height: 14px;
+    border-radius: 9999px;
+    background-color: #f1f5f9;
+    border: 2px solid #7a1c33;
+}
+.swatch-dot {
+    min-width: 22px;
+    min-height: 22px;
+    padding: 0;
+    border-radius: 9999px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+}
+.swatch-dot-active {
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 2px #7a1c33;
 }
 .date-section-title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     margin-top: 6px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
-.date-count-pill {
-    background-color: #0f4c5c;
-    color: #e2e8f0;
-    border: 1px solid #14b8a6;
-    border-radius: 9999px;
-    padding: 2px 10px;
+.date-count-lbl {
+    background-color: rgba(255, 255, 255, 0.07);
+    color: #cbd5e1;
+    border-radius: 6px;
+    padding: 2px 8px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
 }
 .thumb-tile {
     padding: 0;
-    border-radius: 12px;
-    border: 2px solid transparent;
-    background-color: alpha(currentColor, 0.06);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: #222227;
 }
 .thumb-tile:hover {
-    border-color: #be123c;
+    border-color: #7a1c33;
 }
 .thumb-badge-raw {
-    background-color: #7a1c33;
-    color: #ffffff;
-    border: 1px solid #be123c;
-    border-radius: 6px;
-    padding: 2px 6px;
+    background-color: rgba(24, 24, 28, 0.86);
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    padding: 1px 5px;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 700;
 }
 .thumb-badge-anim {
-    background-color: #0f4c5c;
-    color: #99f6e4;
-    border: 1px solid #14b8a6;
-    border-radius: 6px;
-    padding: 2px 6px;
+    background-color: rgba(24, 24, 28, 0.86);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    padding: 1px 5px;
     font-size: 10px;
-    font-weight: 800;
-}
-.editor-sidebar {
-    border-left: 1px solid alpha(currentColor, 0.14);
-    border-right: 1px solid alpha(currentColor, 0.14);
-}
-.editor-section-hdr {
-    font-weight: 700;
-    font-size: 13px;
-    color: #e2e8f0;
-    background-color: #0f4c5c;
-    border-radius: 8px;
-    padding: 5px 10px;
-}
-.tool-btn-active {
-    background-color: #7a1c33;
-    color: #ffffff;
-    border: 1px solid #be123c;
-}
-.tool-btn-active label, .tool-btn-active image {
-    color: #ffffff;
-}
-.swatch-btn {
-    min-width: 28px;
-    min-height: 28px;
-    padding: 0;
-    border-radius: 9999px;
-    border: 2px solid rgba(226, 232, 240, 0.45);
-}
-.swatch-btn-active {
-    border: 3px solid #ffffff;
-    box-shadow: 0 0 0 2px #7a1c33;
-}
-.zoom-readout {
-    min-width: 52px;
-    font-size: 12px;
     font-weight: 700;
 }
 .viewer-bottom-bar {
-    background-color: alpha(currentColor, 0.04);
-    border-top: 1px solid alpha(currentColor, 0.10);
+    background-color: #1e1e23;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 5px 12px;
+}
+.zoom-group button {
+    background-color: #2e2e35;
+    background-image: none;
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    min-height: 28px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+.zoom-group button:hover {
+    background-color: #393943;
+}
+.zoom-readout-btn {
+    min-width: 52px;
+    font-weight: 600;
+}
+.save-menu-btn {
+    border-radius: 6px;
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 12px;
+}
+.drawer-subtle-label {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+.info-key-lbl {
+    font-size: 11px;
+    color: #94a3b8;
+}
+.info-val-lbl {
+    font-size: 12px;
+    color: #f1f5f9;
+}
+.loading-chip {
+    background-color: rgba(34, 34, 39, 0.92);
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 6px;
     padding: 6px 12px;
+    font-size: 12px;
 }
 """
 
@@ -166,14 +279,14 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app)
         self.set_title(t("app_title"))
-        self.set_default_size(1180, 780)
-        self.set_size_request(820, 600)
+        self.set_default_size(1200, 780)
+        self.set_size_request(860, 600)
 
         self.settings = media.load_settings()
 
         # Gallery state
         self.all_gallery_items = []
-        self.active_filter = "all"  # "all", "raw", "animated"
+        self.active_filter = "all"
         self.thumb_pool = concurrent.futures.ThreadPoolExecutor(max_workers=4)
         self._scan_generation = 0
 
@@ -182,17 +295,21 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.viewer_index = 0
         self.current_path = None
         self.current_is_raw = False
+        self.current_exif = {}
         self.slideshow_timer = None
         self._load_generation = 0
+        self._settings_open = False
 
         # Editor state
         self.edit_mode = False
-        self.base_image = None       # Current committed PIL RGBA image
-        self.preview_image = None    # Base + adjustments + blur + straighten
+        self.active_rail_section = "crop"
+        self.base_image = None
+        self.preview_image = None
         self.adjustments = editor.default_adjustments()
         self.strokes = []
         self.straighten_angle = 0.0
         self.history = editor.EditorHistory(max_steps=25)
+        self._selected_markup_tool = "none"
         self._adj_debounce_id = None
         self._syncing_resize_spins = False
         self._syncing_adj_widgets = False
@@ -203,7 +320,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.connect("close-request", self._on_close_request)
 
     def _install_css(self):
-        # Dynamically add color swatch background rules
         swatch_rules = []
         for idx, (hx, _name) in enumerate(MARKUP_COLORS):
             swatch_rules.append(f".swatch-color-{idx} {{ background-color: {hx}; background-image: none; }}")
@@ -259,7 +375,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             dlg.present()
 
     # =========================================================================
-    # MAIN LAYOUT & HEADER BARS
+    # ROOT STACK & KEYBOARD SHORTCUTS
     # =========================================================================
     def _build_ui(self):
         self.toast_overlay = Adw.ToastOverlay()
@@ -267,7 +383,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         self.root_stack = Gtk.Stack()
         self.root_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
-        self.root_stack.set_transition_duration(180)
+        self.root_stack.set_transition_duration(160)
         self.toast_overlay.set_child(self.root_stack)
 
         self.gallery_page = self._build_gallery_view()
@@ -322,7 +438,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             if keyval == Gdk.KEY_Escape:
                 if self.slideshow_timer is not None:
                     self._stop_slideshow()
-                else:
+                elif not self._settings_open:
                     self.open_gallery_mode()
                 return True
         else:
@@ -340,53 +456,53 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         hb = Adw.HeaderBar()
         title_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         ico = Gtk.Image.new_from_icon_name("sadeem-gallery")
-        ico.set_pixel_size(22)
+        ico.set_pixel_size(20)
         title_box.append(ico)
         lbl_t = Gtk.Label(label=t("app_title"))
         lbl_t.add_css_class("heading")
         title_box.append(lbl_t)
         hb.set_title_widget(title_box)
 
-        # Quick filter pills on start side
+        # Quick filter buttons (clean rectangular 6px style)
         filter_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         self.filter_buttons = {}
         for fid, fkey in (("all", "filter_all"), ("raw", "filter_raw"), ("animated", "filter_anim")):
             btn = Gtk.Button(label=t(fkey))
-            btn.add_css_class("pill")
+            btn.add_css_class("sadeem-btn-compact")
             btn.connect("clicked", lambda _b, f=fid: self._set_gallery_filter(f))
             filter_box.append(btn)
             self.filter_buttons[fid] = btn
         hb.pack_start(filter_box)
 
-        # Right/end buttons: Choose Folder + Refresh
+        # End buttons: Settings / Choose Folder + Refresh
         btn_folder = Gtk.Button()
         fb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         fb.append(Gtk.Image.new_from_icon_name(safe_icon(["folder-open-symbolic", "folder-symbolic"])))
         fb.append(Gtk.Label(label=t("btn_choose_folder")))
         btn_folder.set_child(fb)
-        btn_folder.add_css_class("pill")
+        btn_folder.add_css_class("sadeem-btn-compact")
         btn_folder.connect("clicked", lambda _b: self._open_folders_dialog())
         hb.pack_end(btn_folder)
 
         btn_ref = Gtk.Button()
         btn_ref.set_icon_name(safe_icon(["view-refresh-symbolic"]))
         btn_ref.set_tooltip_text(t("btn_refresh"))
+        btn_ref.add_css_class("sadeem-header-btn")
         btn_ref.connect("clicked", lambda _b: self.refresh_gallery())
         hb.pack_end(btn_ref)
 
         tv.add_top_bar(hb)
 
-        # Gallery content stack: loading / empty / timeline
         self.gallery_stack = Gtk.Stack()
         self.gallery_stack.set_vexpand(True)
         tv.set_content(self.gallery_stack)
 
         # Loading page
-        load_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        load_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         load_box.set_valign(Gtk.Align.CENTER)
         load_box.set_halign(Gtk.Align.CENTER)
         sp = Gtk.Spinner()
-        sp.set_size_request(42, 42)
+        sp.set_size_request(36, 36)
         sp.set_spinning(True)
         load_box.append(sp)
         l_lbl = Gtk.Label(label=t("gallery_scanning"))
@@ -394,15 +510,15 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         load_box.append(l_lbl)
         self.gallery_stack.add_named(load_box, "loading")
 
-        # Empty state page
-        empty_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        # Empty state
+        empty_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         empty_box.set_valign(Gtk.Align.CENTER)
         empty_box.set_halign(Gtk.Align.CENTER)
         e_ico = Gtk.Image.new_from_icon_name("sadeem-gallery")
-        e_ico.set_pixel_size(72)
+        e_ico.set_pixel_size(64)
         empty_box.append(e_ico)
         e_t = Gtk.Label(label=t("gallery_empty_title"))
-        e_t.add_css_class("title-2")
+        e_t.add_css_class("title-3")
         empty_box.append(e_t)
         e_d = Gtk.Label(label=t("gallery_empty_desc"))
         e_d.add_css_class("dim-label")
@@ -410,21 +526,20 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         e_d.set_justify(Gtk.Justification.CENTER)
         empty_box.append(e_d)
         e_btn = Gtk.Button(label=t("btn_choose_folder"))
-        e_btn.add_css_class("suggested-action")
-        e_btn.add_css_class("pill")
+        e_btn.add_css_class("sadeem-btn")
         e_btn.connect("clicked", lambda _b: self._open_folders_dialog())
         empty_box.append(e_btn)
         self.gallery_stack.add_named(empty_box, "empty")
 
-        # Timeline ScrolledWindow
+        # Timeline scroll area
         scroll = Gtk.ScrolledWindow()
         scroll.set_vexpand(True)
         scroll.set_hexpand(True)
         self.timeline_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
-        self.timeline_box.set_margin_top(16)
-        self.timeline_box.set_margin_bottom(28)
-        self.timeline_box.set_margin_start(20)
-        self.timeline_box.set_margin_end(20)
+        self.timeline_box.set_margin_top(14)
+        self.timeline_box.set_margin_bottom(24)
+        self.timeline_box.set_margin_start(18)
+        self.timeline_box.set_margin_end(18)
         scroll.set_child(self.timeline_box)
         self.gallery_stack.add_named(scroll, "timeline")
 
@@ -442,9 +557,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def _update_filter_styles(self):
         for fid, btn in self.filter_buttons.items():
             if fid == self.active_filter:
-                btn.add_css_class("filter-pill-active")
+                btn.add_css_class("sadeem-btn-active")
             else:
-                btn.remove_css_class("filter-pill-active")
+                btn.remove_css_class("sadeem-btn-active")
 
     def _set_gallery_filter(self, fid):
         self.active_filter = fid
@@ -488,17 +603,17 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         gen = self._scan_generation
 
         for label, group_items in groups:
-            sec = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+            sec = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
             self.timeline_box.append(sec)
 
-            hdr_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+            hdr_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
             lbl = Gtk.Label(label=label)
             lbl.add_css_class("date-section-title")
             lbl.set_halign(Gtk.Align.START)
             hdr_row.append(lbl)
 
             cnt = Gtk.Label(label=t("gallery_count", count=len(group_items)))
-            cnt.add_css_class("date-count-pill")
+            cnt.add_css_class("date-count-lbl")
             cnt.set_valign(Gtk.Align.CENTER)
             hdr_row.append(cnt)
             sec.append(hdr_row)
@@ -506,8 +621,8 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             flow = Gtk.FlowBox()
             flow.set_selection_mode(Gtk.SelectionMode.NONE)
             flow.set_homogeneous(True)
-            flow.set_column_spacing(10)
-            flow.set_row_spacing(10)
+            flow.set_column_spacing(8)
+            flow.set_row_spacing(8)
             flow.set_min_children_per_line(2)
             flow.set_max_children_per_line(8)
             sec.append(flow)
@@ -575,9 +690,20 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             pass
 
     def _open_folders_dialog(self):
+        # Hide "Open Gallery" button automatically while Settings dialog is open
+        self._settings_open = True
+        self._sync_viewer_header_state()
+
         dlg = Adw.Window(transient_for=self, modal=True)
         dlg.set_title(t("folders_dialog_title"))
-        dlg.set_default_size(500, 380)
+        dlg.set_default_size(480, 360)
+
+        def _on_close(*_a):
+            self._settings_open = False
+            self._sync_viewer_header_state()
+            return False
+
+        dlg.connect("close-request", _on_close)
 
         tv = Adw.ToolbarView()
         dlg.set_content(tv)
@@ -586,11 +712,11 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         hb.set_show_end_title_buttons(True)
         tv.add_top_bar(hb)
 
-        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
-        body.set_margin_top(16)
-        body.set_margin_bottom(18)
-        body.set_margin_start(18)
-        body.set_margin_end(18)
+        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        body.set_margin_top(14)
+        body.set_margin_bottom(16)
+        body.set_margin_start(16)
+        body.set_margin_end(16)
         tv.set_content(body)
 
         desc = Gtk.Label(label=t("folders_dialog_desc"))
@@ -643,14 +769,14 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         _populate()
 
-        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         actions.set_halign(Gtk.Align.END)
         actions.set_margin_top(6)
         body.append(actions)
 
         btn_add = Gtk.Button(label=t("folders_add_btn"))
-        btn_add.add_css_class("suggested-action")
-        btn_add.add_css_class("pill")
+        btn_add.add_css_class("sadeem-btn")
+        btn_add.add_css_class("sadeem-btn-active")
 
         def _on_add(_b):
             fd = Gtk.FileDialog()
@@ -678,99 +804,177 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         actions.append(btn_add)
 
         btn_close = Gtk.Button(label=t("folders_close"))
-        btn_close.add_css_class("pill")
+        btn_close.add_css_class("sadeem-btn")
         btn_close.connect("clicked", lambda _b: dlg.close())
         actions.append(btn_close)
 
         dlg.present()
 
     # =========================================================================
-    # MODE 2 & 3: FAST VIEWER + INTEGRATED FULL IMAGE EDITOR
+    # MODE 2 & 3: FAST VIEWER + CALM 6-RAIL INTEGRATED EDITOR
     # =========================================================================
     def _build_viewer_and_editor_view(self):
         tv = Adw.ToolbarView()
 
-        # Viewer HeaderBar
+        # --- Unified HeaderBar with clean Viewer vs Edit state switching ---
         hb = Adw.HeaderBar()
 
-        # Back to Chronological Gallery
-        btn_back = Gtk.Button()
+        # START SIDE: Viewer controls
+        self.btn_back_gallery = Gtk.Button()
         bb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         bb.append(Gtk.Image.new_from_icon_name(safe_icon(["view-grid-symbolic", "go-previous-symbolic"])))
         bb.append(Gtk.Label(label=t("btn_back_gallery")))
-        btn_back.set_child(bb)
-        btn_back.connect("clicked", lambda _b: self.open_gallery_mode())
-        hb.pack_start(btn_back)
+        self.btn_back_gallery.set_child(bb)
+        self.btn_back_gallery.add_css_class("sadeem-btn-compact")
+        self.btn_back_gallery.connect("clicked", lambda _b: self.open_gallery_mode())
+        hb.pack_start(self.btn_back_gallery)
 
-        # Prev / Next navigation
-        nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-        nav_box.add_css_class("linked")
+        self.nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.nav_box.add_css_class("linked")
         self.btn_prev_img = Gtk.Button()
         self.btn_prev_img.set_icon_name(safe_icon(["go-previous-symbolic"]))
         self.btn_prev_img.set_tooltip_text(t("btn_prev_img"))
         self.btn_prev_img.connect("clicked", lambda _b: self._navigate_viewer(-1))
-        nav_box.append(self.btn_prev_img)
+        self.nav_box.append(self.btn_prev_img)
 
         self.btn_next_img = Gtk.Button()
         self.btn_next_img.set_icon_name(safe_icon(["go-next-symbolic"]))
         self.btn_next_img.set_tooltip_text(t("btn_next_img"))
         self.btn_next_img.connect("clicked", lambda _b: self._navigate_viewer(1))
-        nav_box.append(self.btn_next_img)
-        hb.pack_start(nav_box)
+        self.nav_box.append(self.btn_next_img)
+        hb.pack_start(self.nav_box)
 
-        # Center title (filename + counter)
+        # START SIDE: Edit-mode controls (hidden in viewer mode)
+        self.edit_start_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.edit_start_box.set_visible(False)
+
+        self.btn_done_edit = Gtk.Button(label=t("btn_done_edit"))
+        self.btn_done_edit.add_css_class("sadeem-btn-compact")
+        self.btn_done_edit.connect("clicked", lambda _b: self._set_edit_mode(False))
+        self.edit_start_box.append(self.btn_done_edit)
+
+        ur_linked = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        ur_linked.add_css_class("linked")
+        self.btn_undo = Gtk.Button()
+        self.btn_undo.set_icon_name(safe_icon(["edit-undo-symbolic"]))
+        self.btn_undo.set_tooltip_text(t("btn_undo"))
+        self.btn_undo.connect("clicked", lambda _b: self._do_undo())
+        ur_linked.append(self.btn_undo)
+
+        self.btn_redo = Gtk.Button()
+        self.btn_redo.set_icon_name(safe_icon(["edit-redo-symbolic"]))
+        self.btn_redo.set_tooltip_text(t("btn_redo"))
+        self.btn_redo.connect("clicked", lambda _b: self._do_redo())
+        ur_linked.append(self.btn_redo)
+        self.edit_start_box.append(ur_linked)
+        hb.pack_start(self.edit_start_box)
+
+        # CENTER: WindowTitle (filename + properly oriented Arabic counter)
         self.viewer_title = Adw.WindowTitle()
         self.viewer_title.set_title(t("app_title"))
         hb.set_title_widget(self.viewer_title)
 
-        # End buttons: Edit Image, EXIF, Wallpaper, Slideshow
-        self.btn_edit_toggle = Gtk.Button(label=t("btn_edit"))
-        self.btn_edit_toggle.add_css_class("suggested-action")
-        self.btn_edit_toggle.add_css_class("pill")
-        self.btn_edit_toggle.connect("clicked", lambda _b: self._set_edit_mode(not self.edit_mode))
-        hb.pack_end(self.btn_edit_toggle)
+        # END SIDE: Edit-mode single "Save Changes" MenuButton + Popover
+        self.btn_save_menu = Gtk.MenuButton()
+        sm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        sm_box.append(Gtk.Image.new_from_icon_name(safe_icon(["document-save-symbolic"])))
+        sm_box.append(Gtk.Label(label=t("btn_save_changes")))
+        self.btn_save_menu.set_child(sm_box)
+        self.btn_save_menu.add_css_class("sadeem-btn-compact")
+        self.btn_save_menu.set_visible(False)
 
-        # EXIF Info Popover button
-        self.btn_exif = Gtk.MenuButton()
-        self.btn_exif.set_icon_name(safe_icon(["dialog-information-symbolic", "help-about-symbolic"]))
-        self.btn_exif.set_tooltip_text(t("btn_exif"))
-        self.exif_popover = Gtk.Popover()
-        self.exif_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.exif_box.set_margin_top(12)
-        self.exif_box.set_margin_bottom(12)
-        self.exif_box.set_margin_start(14)
-        self.exif_box.set_margin_end(14)
-        self.exif_box.set_size_request(300, -1)
-        self.exif_popover.set_child(self.exif_box)
-        self.btn_exif.set_popover(self.exif_popover)
-        hb.pack_end(self.btn_exif)
+        self.save_popover = Gtk.Popover()
+        sp_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        sp_box.set_margin_top(6)
+        sp_box.set_margin_bottom(6)
+        sp_box.set_margin_start(6)
+        sp_box.set_margin_end(6)
+        self.save_popover.set_child(sp_box)
 
-        # Set as Wallpaper button
-        btn_wall = Gtk.Button()
-        btn_wall.set_icon_name(safe_icon(["preferences-desktop-wallpaper-symbolic", "video-display-symbolic"]))
-        btn_wall.set_tooltip_text(t("btn_wallpaper"))
-        btn_wall.connect("clicked", lambda _b: self._set_as_wallpaper())
-        hb.pack_end(btn_wall)
+        for label_key, icon_names, cb, danger in (
+            ("btn_save_copy", ["document-save-as-symbolic", "document-save-symbolic"], self._open_save_copy_dialog, False),
+            ("btn_overwrite", ["document-save-symbolic"], self._confirm_overwrite_original, True),
+            ("btn_copy_clip", ["edit-copy-symbolic"], self._copy_current_to_clipboard, False),
+        ):
+            mb = Gtk.Button()
+            mb.add_css_class("flat")
+            mb.add_css_class("save-menu-btn")
+            if danger:
+                mb.add_css_class("destructive-action")
+            r = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            r.append(Gtk.Image.new_from_icon_name(safe_icon(icon_names)))
+            lbl = Gtk.Label(label=t(label_key))
+            lbl.set_halign(Gtk.Align.START)
+            r.append(lbl)
+            mb.set_child(r)
 
-        # Slideshow button
+            def _run(_b, func=cb):
+                self.save_popover.popdown()
+                func()
+
+            mb.connect("clicked", _run)
+            sp_box.append(mb)
+
+        self.btn_save_menu.set_popover(self.save_popover)
+        hb.pack_end(self.btn_save_menu)
+
+        # END SIDE: Viewer controls (neutral standard buttons, no pill/loud burgundy)
+        self.viewer_end_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
         self.btn_slideshow = Gtk.Button()
         self.btn_slideshow.set_icon_name(safe_icon(["media-playback-start-symbolic"]))
         self.btn_slideshow.set_tooltip_text(t("btn_slideshow"))
+        self.btn_slideshow.add_css_class("sadeem-header-btn")
         self.btn_slideshow.connect("clicked", lambda _b: self._toggle_slideshow())
-        hb.pack_end(self.btn_slideshow)
+        self.viewer_end_box.append(self.btn_slideshow)
 
+        self.btn_wall = Gtk.Button()
+        self.btn_wall.set_icon_name(safe_icon(["preferences-desktop-wallpaper-symbolic", "video-display-symbolic"]))
+        self.btn_wall.set_tooltip_text(t("btn_wallpaper"))
+        self.btn_wall.add_css_class("sadeem-header-btn")
+        self.btn_wall.connect("clicked", lambda _b: self._set_as_wallpaper())
+        self.viewer_end_box.append(self.btn_wall)
+
+        self.btn_exif = Gtk.MenuButton()
+        self.btn_exif.set_icon_name(safe_icon(["dialog-information-symbolic", "help-about-symbolic"]))
+        self.btn_exif.set_tooltip_text(t("btn_exif"))
+        self.btn_exif.add_css_class("sadeem-header-btn")
+        self.exif_popover = Gtk.Popover()
+        self.exif_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.exif_box.set_margin_top(10)
+        self.exif_box.set_margin_bottom(10)
+        self.exif_box.set_margin_start(12)
+        self.exif_box.set_margin_end(12)
+        self.exif_box.set_size_request(280, -1)
+        self.exif_popover.set_child(self.exif_box)
+        self.btn_exif.set_popover(self.exif_popover)
+        self.viewer_end_box.append(self.btn_exif)
+
+        self.btn_settings = Gtk.Button()
+        self.btn_settings.set_icon_name(safe_icon(["emblem-system-symbolic", "preferences-system-symbolic"]))
+        self.btn_settings.set_tooltip_text(t("btn_settings"))
+        self.btn_settings.add_css_class("sadeem-header-btn")
+        self.btn_settings.connect("clicked", lambda _b: self._open_folders_dialog())
+        self.viewer_end_box.append(self.btn_settings)
+
+        self.btn_edit_toggle = Gtk.Button(label=t("btn_edit"))
+        self.btn_edit_toggle.add_css_class("sadeem-btn-compact")
+        self.btn_edit_toggle.connect("clicked", lambda _b: self._set_edit_mode(True))
+        self.viewer_end_box.append(self.btn_edit_toggle)
+
+        hb.pack_end(self.viewer_end_box)
         tv.add_top_bar(hb)
 
-        # Main workspace: Canvas (left/main) + Editor Sidebar (right/end, hidden unless edit_mode)
+        # --- Main Workspace: 75-80% Canvas + Fixed Slim Sidebar (298px) ---
         main_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         main_row.set_vexpand(True)
         main_row.set_hexpand(True)
         tv.set_content(main_row)
 
-        # Canvas + Loading Overlay
         canvas_overlay = Gtk.Overlay()
         canvas_overlay.set_hexpand(True)
         canvas_overlay.set_vexpand(True)
+        canvas_overlay.add_css_class("sadeem-canvas-bg")
         main_row.append(canvas_overlay)
 
         self.canvas = canvas_mod.ImageCanvas(
@@ -780,26 +984,26 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         )
         canvas_overlay.set_child(self.canvas)
 
-        self.viewer_spinner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.viewer_spinner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         self.viewer_spinner_box.set_halign(Gtk.Align.CENTER)
         self.viewer_spinner_box.set_valign(Gtk.Align.CENTER)
         self.viewer_spinner_box.set_visible(False)
         vsp = Gtk.Spinner()
-        vsp.set_size_request(40, 40)
+        vsp.set_size_request(34, 34)
         vsp.set_spinning(True)
         self.viewer_spinner_box.append(vsp)
         vlbl = Gtk.Label(label=t("viewer_loading"))
-        vlbl.add_css_class("sadeem-tier-pill")
+        vlbl.add_css_class("loading-chip")
         self.viewer_spinner_box.append(vlbl)
         canvas_overlay.add_overlay(self.viewer_spinner_box)
 
-        # Integrated Editor Side Panel
+        # Slim Fixed-Width Editor Sidebar (Drawer 226px + 6-Button Rail 72px = 298px)
         self.editor_panel = self._build_editor_sidebar()
         self.editor_panel.set_visible(False)
         main_row.append(self.editor_panel)
 
-        # Bottom zoom & quick status bar
-        bottom_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        # --- Bottom Status & Unified Compact Zoom Bar ---
+        bottom_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         bottom_bar.add_css_class("viewer-bottom-bar")
 
         self.lbl_viewer_meta = Gtk.Label(label="")
@@ -809,137 +1013,137 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.lbl_viewer_meta.set_halign(Gtk.Align.START)
         bottom_bar.append(self.lbl_viewer_meta)
 
+        # Single compact linked zoom group: [ - | 69% (toggle 100%/Fit) | + | Fit ]
+        zoom_group = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        zoom_group.add_css_class("linked")
+        zoom_group.add_css_class("zoom-group")
+
         btn_zout = Gtk.Button()
         btn_zout.set_icon_name(safe_icon(["zoom-out-symbolic"]))
         btn_zout.set_tooltip_text(t("btn_zoom_out"))
-        btn_zout.add_css_class("flat")
         btn_zout.connect("clicked", lambda _b: self.canvas.zoom_by(1.0 / 1.25))
-        bottom_bar.append(btn_zout)
+        zoom_group.append(btn_zout)
 
-        self.lbl_zoom = Gtk.Label(label="100%")
-        self.lbl_zoom.add_css_class("zoom-readout")
-        bottom_bar.append(self.lbl_zoom)
+        self.btn_zoom_pct = Gtk.Button(label="100%")
+        self.btn_zoom_pct.add_css_class("zoom-readout-btn")
+        self.btn_zoom_pct.set_tooltip_text(t("zoom_toggle_tip"))
+        self.btn_zoom_pct.connect("clicked", lambda _b: self.canvas.toggle_fit_or_100())
+        zoom_group.append(self.btn_zoom_pct)
 
         btn_zin = Gtk.Button()
         btn_zin.set_icon_name(safe_icon(["zoom-in-symbolic"]))
         btn_zin.set_tooltip_text(t("btn_zoom_in"))
-        btn_zin.add_css_class("flat")
         btn_zin.connect("clicked", lambda _b: self.canvas.zoom_by(1.25))
-        bottom_bar.append(btn_zin)
+        zoom_group.append(btn_zin)
 
         btn_fit = Gtk.Button(label=t("btn_zoom_fit"))
-        btn_fit.add_css_class("pill")
         btn_fit.connect("clicked", lambda _b: self.canvas.zoom_fit())
-        bottom_bar.append(btn_fit)
+        zoom_group.append(btn_fit)
 
-        btn_100 = Gtk.Button(label=t("btn_zoom_100"))
-        btn_100.add_css_class("pill")
-        btn_100.connect("clicked", lambda _b: self.canvas.zoom_100())
-        bottom_bar.append(btn_100)
-
+        bottom_bar.append(zoom_group)
         tv.add_bottom_bar(bottom_bar)
+
+        self._sync_viewer_header_state()
         return tv
 
+    def _sync_viewer_header_state(self):
+        """Enforce clean button visibility across Normal Viewer, Settings, and Edit modes."""
+        if not hasattr(self, "btn_back_gallery"):
+            return
+        in_edit = self.edit_mode
+        # Hide 'Open Gallery' whenever Settings dialog is open OR Edit mode is active
+        self.btn_back_gallery.set_visible((not in_edit) and (not self._settings_open))
+        self.nav_box.set_visible(not in_edit)
+        self.viewer_end_box.set_visible(not in_edit)
+
+        self.edit_start_box.set_visible(in_edit)
+        self.btn_save_menu.set_visible(in_edit)
+
+    # =========================================================================
+    # SLIM 6-BUTTON VERTICAL RAIL & COMPACT TOOL DRAWER (298px TOTAL)
+    # =========================================================================
     def _build_editor_sidebar(self):
-        panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        panel.set_size_request(350, -1)
-        panel.add_css_class("editor-sidebar")
+        shell = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        shell.set_hexpand(False)
+        shell.set_size_request(298, -1)
+        shell.add_css_class("sadeem-sidebar-shell")
 
-        # 3-tab switcher bar at top of editor panel
-        tab_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        tab_bar.set_margin_top(10)
-        tab_bar.set_margin_bottom(8)
-        tab_bar.set_margin_start(10)
-        tab_bar.set_margin_end(10)
-        tab_bar.set_homogeneous(True)
-        panel.append(tab_bar)
+        # 1. Compact Tool Drawer (~226px)
+        drawer_scroll = Gtk.ScrolledWindow()
+        drawer_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        drawer_scroll.set_vexpand(True)
+        drawer_scroll.set_hexpand(False)
+        drawer_scroll.set_size_request(226, -1)
+        drawer_scroll.add_css_class("sadeem-drawer")
+        shell.append(drawer_scroll)
 
-        self.editor_stack = Gtk.Stack()
-        self.editor_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        self.editor_stack.set_transition_duration(180)
-        self.editor_stack.set_vexpand(True)
+        self.drawer_stack = Gtk.Stack()
+        self.drawer_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.drawer_stack.set_transition_duration(120)
+        self.drawer_stack.set_hexpand(False)
+        drawer_scroll.set_child(self.drawer_stack)
 
-        self.editor_tab_buttons = {}
-        for tid, key in (("crop", "tab_crop"), ("markup", "tab_markup"), ("adjust", "tab_adjust")):
-            b = Gtk.Button(label=t(key))
-            b.add_css_class("pill")
-            b.connect("clicked", lambda _btn, name=tid: self._select_editor_tab(name))
-            tab_bar.append(b)
-            self.editor_tab_buttons[tid] = b
+        self.drawer_stack.add_named(self._build_drawer_crop(), "crop")
+        self.drawer_stack.add_named(self._build_drawer_rotate(), "rotate")
+        self.drawer_stack.add_named(self._build_drawer_draw(), "draw")
+        self.drawer_stack.add_named(self._build_drawer_light(), "light")
+        self.drawer_stack.add_named(self._build_drawer_filters(), "filters")
+        self.drawer_stack.add_named(self._build_drawer_info(), "info")
 
-        panel.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        # 2. Slim Vertical 6-Button Navigation Rail (~72px) on outer edge
+        rail = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        rail.set_hexpand(False)
+        rail.set_vexpand(True)
+        rail.set_size_request(72, -1)
+        rail.set_margin_top(8)
+        rail.set_margin_bottom(8)
+        rail.set_margin_start(4)
+        rail.set_margin_end(4)
+        rail.add_css_class("sadeem-rail")
+        shell.append(rail)
 
-        # Scrollable tab contents
-        scroll = Gtk.ScrolledWindow()
-        scroll.set_vexpand(True)
-        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scroll.set_child(self.editor_stack)
-        panel.append(scroll)
+        rail_specs = [
+            ("crop", "rail_crop", ["edit-cut-symbolic", "view-fullscreen-symbolic"]),
+            ("rotate", "rail_rotate", ["object-rotate-right-symbolic", "view-refresh-symbolic"]),
+            ("draw", "rail_draw", ["document-edit-symbolic"]),
+            ("light", "rail_light", ["display-brightness-symbolic", "weather-clear-symbolic"]),
+            ("filters", "rail_filters", ["applications-graphics-symbolic", "color-select-symbolic"]),
+            ("info", "rail_info", ["dialog-information-symbolic"]),
+        ]
+        self.rail_buttons = {}
+        for sid, lkey, icons in rail_specs:
+            btn = Gtk.Button()
+            btn.add_css_class("rail-btn")
+            vb = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            vb.set_halign(Gtk.Align.CENTER)
+            vb.set_valign(Gtk.Align.CENTER)
+            ico = Gtk.Image.new_from_icon_name(safe_icon(icons))
+            ico.set_pixel_size(18)
+            vb.append(ico)
+            lbl = Gtk.Label(label=t(lkey))
+            vb.append(lbl)
+            btn.set_child(vb)
+            btn.connect("clicked", lambda _b, name=sid: self._select_rail_section(name))
+            rail.append(btn)
+            self.rail_buttons[sid] = btn
 
-        self.editor_stack.add_named(self._build_tab_crop(), "crop")
-        self.editor_stack.add_named(self._build_tab_markup(), "markup")
-        self.editor_stack.add_named(self._build_tab_adjust(), "adjust")
+        return shell
 
-        panel.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
-
-        # Persistent Save / Copy Action Bar
-        save_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        save_box.set_margin_top(10)
-        save_box.set_margin_bottom(12)
-        save_box.set_margin_start(12)
-        save_box.set_margin_end(12)
-        panel.append(save_box)
-
-        btn_save_copy = Gtk.Button(label=t("btn_save_copy"))
-        btn_save_copy.add_css_class("suggested-action")
-        btn_save_copy.add_css_class("pill")
-        btn_save_copy.connect("clicked", lambda _b: self._open_save_copy_dialog())
-        save_box.append(btn_save_copy)
-
-        row2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        row2.set_homogeneous(True)
-        save_box.append(row2)
-
-        btn_over = Gtk.Button(label=t("btn_overwrite"))
-        btn_over.add_css_class("destructive-action")
-        btn_over.add_css_class("pill")
-        btn_over.connect("clicked", lambda _b: self._confirm_overwrite_original())
-        row2.append(btn_over)
-
-        btn_clip = Gtk.Button(label=t("btn_copy_clip"))
-        btn_clip.add_css_class("sadeem-teal-btn")
-        btn_clip.add_css_class("pill")
-        btn_clip.connect("clicked", lambda _b: self._copy_current_to_clipboard())
-        row2.append(btn_clip)
-
-        self._select_editor_tab("crop")
-        return panel
-
-    # --- Editor Tab 1: Crop & Transform ---
-    def _build_tab_crop(self):
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+    def _make_drawer_box(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         box.set_margin_top(12)
         box.set_margin_bottom(14)
-        box.set_margin_start(12)
-        box.set_margin_end(12)
+        box.set_margin_start(10)
+        box.set_margin_end(10)
+        return box
 
-        # Interactive Crop Section
-        h1 = Gtk.Label(label=t("sec_crop"))
-        h1.add_css_class("editor-section-hdr")
-        h1.set_xalign(0.0)
-        box.append(h1)
+    # 1. Drawer: Crop (auto-activates crop frame, no redundant toggle or headers)
+    def _build_drawer_crop(self):
+        box = self._make_drawer_box()
 
-        self.btn_crop_toggle = Gtk.ToggleButton(label=t("crop_toggle"))
-        self.btn_crop_toggle.add_css_class("pill")
-        self.btn_crop_toggle.connect("toggled", self._on_crop_toggled)
-        box.append(self.btn_crop_toggle)
-
-        ratio_flow = Gtk.FlowBox()
-        ratio_flow.set_selection_mode(Gtk.SelectionMode.NONE)
-        ratio_flow.set_row_spacing(6)
-        ratio_flow.set_column_spacing(6)
-        ratio_flow.set_max_children_per_line(3)
-        box.append(ratio_flow)
+        grid = Gtk.Grid(column_spacing=6, row_spacing=6)
+        grid.set_column_homogeneous(True)
+        box.append(grid)
 
         self.ratio_buttons = {}
         ratios = [
@@ -949,80 +1153,87 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             ("4:3", 4.0 / 3.0, "ratio_4_3"),
             ("9:16", 9.0 / 16.0, "ratio_9_16"),
         ]
-        for rid, val, key in ratios:
+        for idx, (rid, val, key) in enumerate(ratios):
             rb = Gtk.Button(label=t(key))
-            rb.add_css_class("pill")
+            rb.add_css_class("sadeem-btn-compact")
             rb.connect("clicked", lambda _b, r=rid, v=val: self._set_crop_ratio(r, v))
-            ratio_flow.append(rb)
+            grid.attach(rb, idx % 2, idx // 2, 1, 1)
             self.ratio_buttons[rid] = rb
         self._highlight_ratio_btn("free")
 
         btn_apply_crop = Gtk.Button(label=t("btn_apply_crop"))
-        btn_apply_crop.add_css_class("sadeem-teal-btn")
-        btn_apply_crop.add_css_class("pill")
+        btn_apply_crop.add_css_class("sadeem-btn")
+        btn_apply_crop.add_css_class("sadeem-btn-active")
+        btn_apply_crop.set_margin_top(4)
         btn_apply_crop.connect("clicked", lambda _b: self._apply_crop())
         box.append(btn_apply_crop)
+        return box
 
-        # Rotate & Flip Section
-        h2 = Gtk.Label(label=t("sec_transform"))
-        h2.add_css_class("editor-section-hdr")
-        h2.set_xalign(0.0)
-        box.append(h2)
+    # 2. Drawer: Rotate, Flip, Straighten & Resize
+    def _build_drawer_rotate(self):
+        box = self._make_drawer_box()
 
-        rot_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        rot_row.set_homogeneous(True)
-        b_rl = Gtk.Button(label=t("btn_rot_left"))
-        b_rl.add_css_class("pill")
-        b_rl.connect("clicked", lambda _b: self._apply_rotate_90(False))
-        rot_row.append(b_rl)
-        b_rr = Gtk.Button(label=t("btn_rot_right"))
-        b_rr.add_css_class("pill")
-        b_rr.connect("clicked", lambda _b: self._apply_rotate_90(True))
-        rot_row.append(b_rr)
-        box.append(rot_row)
+        # 2x2 grid of compact icon buttons
+        tgrid = Gtk.Grid(column_spacing=6, row_spacing=6)
+        tgrid.set_column_homogeneous(True)
+        box.append(tgrid)
 
-        flip_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        flip_row.set_homogeneous(True)
-        b_fh = Gtk.Button(label=t("btn_flip_h"))
-        b_fh.add_css_class("pill")
-        b_fh.connect("clicked", lambda _b: self._apply_flip(True))
-        flip_row.append(b_fh)
-        b_fv = Gtk.Button(label=t("btn_flip_v"))
-        b_fv.add_css_class("pill")
-        b_fv.connect("clicked", lambda _b: self._apply_flip(False))
-        flip_row.append(b_fv)
-        box.append(flip_row)
+        actions = [
+            (t("btn_rot_right"), ["object-rotate-right-symbolic"], lambda _b: self._apply_rotate_90(True)),
+            (t("btn_rot_left"), ["object-rotate-left-symbolic"], lambda _b: self._apply_rotate_90(False)),
+            (t("btn_flip_h"), ["object-flip-horizontal-symbolic"], lambda _b: self._apply_flip(True)),
+            (t("btn_flip_v"), ["object-flip-vertical-symbolic"], lambda _b: self._apply_flip(False)),
+        ]
+        for idx, (lbl_txt, icons, cb) in enumerate(actions):
+            b = Gtk.Button()
+            b.add_css_class("sadeem-btn-compact")
+            r = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+            r.set_halign(Gtk.Align.CENTER)
+            ico = Gtk.Image.new_from_icon_name(safe_icon(icons))
+            ico.set_pixel_size(14)
+            r.append(ico)
+            r.append(Gtk.Label(label=lbl_txt))
+            b.set_child(r)
+            b.connect("clicked", cb)
+            tgrid.attach(b, idx % 2, idx // 2, 1, 1)
 
-        # Straighten slider (-45 to +45)
-        st_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+        # Fine Straighten slider (-45 to +45)
+        st_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         st_lbl = Gtk.Label(label=t("lbl_straighten"))
+        st_lbl.add_css_class("drawer-subtle-label")
         st_lbl.set_hexpand(True)
         st_lbl.set_halign(Gtk.Align.START)
         st_hdr.append(st_lbl)
-        self.lbl_straighten_val = Gtk.Label(label="0°")
-        self.lbl_straighten_val.add_css_class("caption")
+        self.lbl_straighten_val = Gtk.Label(label="0.0°")
+        self.lbl_straighten_val.add_css_class("drawer-subtle-label")
         st_hdr.append(self.lbl_straighten_val)
         box.append(st_hdr)
 
         self.scale_straighten = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -45.0, 45.0, 0.5)
         self.scale_straighten.set_value(0.0)
         self.scale_straighten.set_draw_value(False)
+        self.scale_straighten.add_css_class("sadeem-scale")
         self.scale_straighten.connect("value-changed", self._on_straighten_changed)
         box.append(self.scale_straighten)
 
         btn_apply_rot = Gtk.Button(label=t("btn_apply_straighten"))
-        btn_apply_rot.add_css_class("pill")
+        btn_apply_rot.add_css_class("sadeem-btn-compact")
         btn_apply_rot.connect("clicked", lambda _b: self._commit_straighten())
         box.append(btn_apply_rot)
 
-        # Resize Section
-        h3 = Gtk.Label(label=t("sec_resize"))
-        h3.add_css_class("editor-section-hdr")
-        h3.set_xalign(0.0)
-        box.append(h3)
+        box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
-        sz_grid = Gtk.Grid(column_spacing=8, row_spacing=8)
+        # Resize (Width x Height px)
+        r_lbl = Gtk.Label(label=t("lbl_resize_dims"))
+        r_lbl.add_css_class("drawer-subtle-label")
+        r_lbl.set_halign(Gtk.Align.START)
+        box.append(r_lbl)
+
+        sz_grid = Gtk.Grid(column_spacing=6, row_spacing=6)
         lw = Gtk.Label(label=t("lbl_width"))
+        lw.add_css_class("caption")
         lw.set_halign(Gtk.Align.START)
         self.spin_w = Gtk.SpinButton.new_with_range(16, 16384, 10)
         self.spin_w.set_hexpand(True)
@@ -1031,6 +1242,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         sz_grid.attach(self.spin_w, 1, 0, 1, 1)
 
         lh = Gtk.Label(label=t("lbl_height"))
+        lh.add_css_class("caption")
         lh.set_halign(Gtk.Align.START)
         self.spin_h = Gtk.SpinButton.new_with_range(16, 16384, 10)
         self.spin_h.set_hexpand(True)
@@ -1043,25 +1255,15 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.chk_lock_aspect.set_active(True)
         box.append(self.chk_lock_aspect)
 
-        btn_resize = Gtk.Button(label=t("btn_apply_resize"))
-        btn_resize.add_css_class("pill")
+        btn_resize = Gtk.Button(label=t("btn_apply"))
+        btn_resize.add_css_class("sadeem-btn-compact")
         btn_resize.connect("clicked", lambda _b: self._apply_resize())
         box.append(btn_resize)
-
         return box
 
-    # --- Editor Tab 2: Markup via Cairo ---
-    def _build_tab_markup(self):
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        box.set_margin_top(12)
-        box.set_margin_bottom(14)
-        box.set_margin_start(12)
-        box.set_margin_end(12)
-
-        h1 = Gtk.Label(label=t("sec_tools"))
-        h1.add_css_class("editor-section-hdr")
-        h1.set_xalign(0.0)
-        box.append(h1)
+    # 3. Drawer: Draw / Markup (Cairo) — compact 2-col tool grid + color dots + thickness
+    def _build_drawer_draw(self):
+        box = self._make_drawer_box()
 
         tools_grid = Gtk.Grid(column_spacing=6, row_spacing=6)
         tools_grid.set_column_homogeneous(True)
@@ -1080,84 +1282,67 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.tool_buttons = {}
         for idx, (tid, key, icons) in enumerate(tools):
             btn = Gtk.Button()
-            btn.add_css_class("pill")
-            inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            btn.add_css_class("sadeem-btn-compact")
+            btn.set_size_request(-1, 32)
+            inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
             inner.set_halign(Gtk.Align.CENTER)
-            inner.append(Gtk.Image.new_from_icon_name(safe_icon(icons)))
+            ico = Gtk.Image.new_from_icon_name(safe_icon(icons))
+            ico.set_pixel_size(14)
+            inner.append(ico)
             inner.append(Gtk.Label(label=t(key)))
             btn.set_child(inner)
             btn.connect("clicked", lambda _b, tool_id=tid: self._select_markup_tool(tool_id))
             tools_grid.attach(btn, idx % 2, idx // 2, 1, 1)
             self.tool_buttons[tid] = btn
 
-        h2 = Gtk.Label(label=t("sec_color"))
-        h2.add_css_class("editor-section-hdr")
-        h2.set_xalign(0.0)
-        box.append(h2)
+        box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
-        swatch_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        # Small circular color dots row
+        swatch_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         swatch_row.set_halign(Gtk.Align.CENTER)
         self.swatch_buttons = {}
         for idx, (hx, _nm) in enumerate(MARKUP_COLORS):
             sb = Gtk.Button()
-            sb.add_css_class("swatch-btn")
+            sb.add_css_class("swatch-dot")
             sb.add_css_class(f"swatch-color-{idx}")
             sb.connect("clicked", lambda _b, c=hx: self._select_markup_color(c))
             swatch_row.append(sb)
             self.swatch_buttons[hx] = sb
         box.append(swatch_row)
 
-        th_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        # Stroke thickness slider
+        th_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         th_lbl = Gtk.Label(label=t("lbl_thickness"))
+        th_lbl.add_css_class("drawer-subtle-label")
         th_lbl.set_hexpand(True)
         th_lbl.set_halign(Gtk.Align.START)
         th_hdr.append(th_lbl)
         self.lbl_thick_val = Gtk.Label(label="6 px")
-        self.lbl_thick_val.add_css_class("caption")
+        self.lbl_thick_val.add_css_class("drawer-subtle-label")
         th_hdr.append(self.lbl_thick_val)
         box.append(th_hdr)
 
         self.scale_thick = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 2.0, 40.0, 1.0)
         self.scale_thick.set_value(6.0)
         self.scale_thick.set_draw_value(False)
+        self.scale_thick.add_css_class("sadeem-scale")
         self.scale_thick.connect("value-changed", self._on_thickness_changed)
         box.append(self.scale_thick)
 
-        # Undo / Redo / Clear
-        ur_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        ur_row.set_homogeneous(True)
-        self.btn_undo = Gtk.Button(label=t("btn_undo"))
-        self.btn_undo.add_css_class("pill")
-        self.btn_undo.connect("clicked", lambda _b: self._do_undo())
-        ur_row.append(self.btn_undo)
-
-        self.btn_redo = Gtk.Button(label=t("btn_redo"))
-        self.btn_redo.add_css_class("pill")
-        self.btn_redo.connect("clicked", lambda _b: self._do_redo())
-        ur_row.append(self.btn_redo)
-        box.append(ur_row)
-
         btn_clr = Gtk.Button(label=t("btn_clear_markup"))
-        btn_clr.add_css_class("pill")
+        btn_clr.add_css_class("sadeem-btn-danger")
+        btn_clr.set_margin_top(4)
         btn_clr.connect("clicked", lambda _b: self._clear_markup())
         box.append(btn_clr)
 
-        self._select_markup_tool("freehand")
+        # Default tool is "none" (Pan) when not actively drawing
+        self._select_markup_tool("none")
         self._select_markup_color("#7a1c33")
         return box
 
-    # --- Editor Tab 3: Adjustments & Filters ---
-    def _build_tab_adjust(self):
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        box.set_margin_top(12)
-        box.set_margin_bottom(14)
-        box.set_margin_start(12)
-        box.set_margin_end(12)
-
-        h1 = Gtk.Label(label=t("sec_adjustments"))
-        h1.add_css_class("editor-section-hdr")
-        h1.set_xalign(0.0)
-        box.append(h1)
+    # 4. Drawer: Light / Adjustments (5 slim sliders + Reset)
+    def _build_drawer_light(self):
+        box = self._make_drawer_box()
 
         self.adj_scales = {}
         self.adj_labels = {}
@@ -1169,33 +1354,36 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             ("warmth", "adj_warmth", -50.0, 50.0, 0.0, 1.0),
         ]
         for key, str_key, vmin, vmax, vdef, step in specs:
-            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
             lbl = Gtk.Label(label=t(str_key))
+            lbl.add_css_class("drawer-subtle-label")
             lbl.set_hexpand(True)
             lbl.set_halign(Gtk.Align.START)
             row.append(lbl)
             vlbl = Gtk.Label(label="0" if key == "warmth" else "100%")
-            vlbl.add_css_class("caption")
+            vlbl.add_css_class("drawer-subtle-label")
             row.append(vlbl)
             box.append(row)
 
             sc = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, vmin, vmax, step)
             sc.set_value(vdef)
             sc.set_draw_value(False)
+            sc.add_css_class("sadeem-scale")
             sc.connect("value-changed", lambda s, k=key: self._on_adj_slider_changed(k, s.get_value()))
             box.append(sc)
             self.adj_scales[key] = sc
             self.adj_labels[key] = vlbl
 
         btn_rst = Gtk.Button(label=t("btn_reset_adj"))
-        btn_rst.add_css_class("pill")
+        btn_rst.add_css_class("sadeem-btn-compact")
+        btn_rst.set_margin_top(6)
         btn_rst.connect("clicked", lambda _b: self._reset_adjustments())
         box.append(btn_rst)
+        return box
 
-        h2 = Gtk.Label(label=t("sec_filters"))
-        h2.add_css_class("editor-section-hdr")
-        h2.set_xalign(0.0)
-        box.append(h2)
+    # 5. Drawer: Preset Filters (2-col compact grid)
+    def _build_drawer_filters(self):
+        box = self._make_drawer_box()
 
         flt_grid = Gtk.Grid(column_spacing=6, row_spacing=6)
         flt_grid.set_column_homogeneous(True)
@@ -1212,22 +1400,29 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         ]
         for idx, (pid, skey) in enumerate(presets):
             b = Gtk.Button(label=t(skey))
-            b.add_css_class("pill")
+            b.add_css_class("sadeem-btn-compact")
             b.connect("clicked", lambda _b, f=pid: self._select_preset_filter(f))
             flt_grid.attach(b, idx % 2, idx // 2, 1, 1)
             self.filter_preset_btns[pid] = b
         self._highlight_preset_btn("original")
+        return box
 
+    # 6. Drawer: Clean EXIF & Image Information List
+    def _build_drawer_info(self):
+        box = self._make_drawer_box()
+        self.drawer_info_list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        box.append(self.drawer_info_list)
         return box
 
     # =========================================================================
-    # VIEWER LOADING & NAVIGATION
+    # VIEWER LOADING, NAVIGATION & METADATA
     # =========================================================================
     def open_file_directly(self, file_path):
         items, idx = media.list_sibling_images(file_path)
         self.viewer_items = items
         self.viewer_index = idx
         self.root_stack.set_visible_child_name("viewer")
+        self._sync_viewer_header_state()
         self._load_viewer_index(idx)
 
     def open_viewer_from_gallery(self, item, gallery_list):
@@ -1239,6 +1434,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 break
         self.viewer_index = idx
         self.root_stack.set_visible_child_name("viewer")
+        self._sync_viewer_header_state()
         self._load_viewer_index(idx)
 
     def _navigate_viewer(self, delta):
@@ -1258,7 +1454,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.current_is_raw = media.is_raw_file(path)
 
         self.viewer_title.set_title(item["name"])
-        self.viewer_title.set_subtitle(f"{idx + 1} / {len(self.viewer_items)}")
+        self.viewer_title.set_subtitle(
+            t("viewer_counter", cur=idx + 1, total=len(self.viewer_items))
+        )
         self.btn_prev_img.set_sensitive(len(self.viewer_items) > 1)
         self.btn_next_img.set_sensitive(len(self.viewer_items) > 1)
 
@@ -1268,6 +1466,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.strokes = []
         self.adjustments = editor.default_adjustments()
         self.straighten_angle = 0.0
+        self.scale_straighten.set_value(0.0)
         self._sync_adjustment_widgets()
 
         self._load_generation += 1
@@ -1299,6 +1498,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         self.base_image = pil_img
         self.preview_image = pil_img.copy()
+        self.current_exif = exif or {}
         self.canvas.set_strokes(self.strokes)
         if anim_frames:
             self.canvas.set_animated_frames(anim_frames)
@@ -1306,21 +1506,23 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             self.canvas.set_pil_image(self.preview_image, reset_view=True)
 
         self._sync_resize_spins()
-        self._populate_exif_popover(exif)
-        meta_parts = [exif.get("dimensions", ""), exif.get("filesize", ""), exif.get("format", "")]
-        self.lbl_viewer_meta.set_text("  •  ".join([p for p in meta_parts if p]))
+        self._populate_exif_views(self.current_exif)
+        self._update_bottom_meta()
         return False
 
-    def _populate_exif_popover(self, info):
-        self._clear_box(self.exif_box)
-        hdr = Gtk.Label(label=t("exif_title"))
-        hdr.add_css_class("heading")
-        hdr.set_halign(Gtk.Align.START)
-        self.exif_box.append(hdr)
-        self.exif_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+    def _update_bottom_meta(self):
+        info = dict(self.current_exif)
+        if self.base_image is not None:
+            info["dimensions"] = f"{self.base_image.width} × {self.base_image.height} px"
+        meta_parts = [info.get("dimensions", ""), info.get("filesize", ""), info.get("format", "")]
+        self.lbl_viewer_meta.set_text("  •  ".join([p for p in meta_parts if p and p != t("exif_unknown")]))
+
+    def _populate_exif_views(self, info):
+        if self.base_image is not None:
+            info = dict(info)
+            info["dimensions"] = f"{self.base_image.width} × {self.base_image.height} px"
 
         rows = [
-            ("exif_file", info.get("filename")),
             ("exif_dimensions", info.get("dimensions")),
             ("exif_filesize", info.get("filesize")),
             ("exif_format", info.get("format")),
@@ -1331,26 +1533,51 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             ("exif_iso", info.get("iso")),
             ("exif_shutter", info.get("shutter")),
             ("exif_focal", info.get("focal")),
-            ("exif_folder", info.get("folder")),
+            ("exif_file", info.get("filename")),
         ]
-        grid = Gtk.Grid(column_spacing=12, row_spacing=6)
+
+        # 1. Viewer EXIF Popover
+        self._clear_box(self.exif_box)
+        hdr = Gtk.Label(label=t("exif_title"))
+        hdr.add_css_class("heading")
+        hdr.set_halign(Gtk.Align.START)
+        self.exif_box.append(hdr)
+        self.exif_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        grid = Gtk.Grid(column_spacing=12, row_spacing=5)
         self.exif_box.append(grid)
         for r_idx, (k_str, val) in enumerate(rows):
-            kl = Gtk.Label(label=t(k_str) + ":")
+            kl = Gtk.Label(label=t(k_str))
             kl.set_halign(Gtk.Align.START)
-            kl.add_css_class("caption")
-            kl.add_css_class("dim-label")
+            kl.add_css_class("info-key-lbl")
             vl = Gtk.Label(label=str(val or t("exif_unknown")))
             vl.set_halign(Gtk.Align.START)
             vl.set_wrap(True)
-            vl.set_max_width_chars(28)
+            vl.set_max_width_chars(24)
             vl.set_selectable(True)
-            vl.add_css_class("caption")
+            vl.add_css_class("info-val-lbl")
             grid.attach(kl, 0, r_idx, 1, 1)
             grid.attach(vl, 1, r_idx, 1, 1)
 
+        # 2. Editor Rail "Info" Drawer (clean row list)
+        self._clear_box(self.drawer_info_list)
+        for k_str, val in rows:
+            item_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            kl = Gtk.Label(label=t(k_str))
+            kl.set_halign(Gtk.Align.START)
+            kl.add_css_class("info-key-lbl")
+            vl = Gtk.Label(label=str(val or t("exif_unknown")))
+            vl.set_halign(Gtk.Align.START)
+            vl.set_wrap(True)
+            vl.set_max_width_chars(24)
+            vl.set_selectable(True)
+            vl.add_css_class("info-val-lbl")
+            item_box.append(kl)
+            item_box.append(vl)
+            self.drawer_info_list.append(item_box)
+            self.drawer_info_list.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
     def _on_canvas_zoom_changed(self, pct):
-        self.lbl_zoom.set_text(f"{pct}%")
+        self.btn_zoom_pct.set_label(f"{pct}%")
 
     def _toggle_slideshow(self):
         if self.slideshow_timer is not None:
@@ -1396,14 +1623,14 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         threading.Thread(target=_worker, daemon=True).start()
 
     # =========================================================================
-    # EDITOR MODE LOGIC
+    # EDITOR MODE & 6-BUTTON RAIL STATE MANAGEMENT
     # =========================================================================
     def _set_edit_mode(self, enabled):
         if enabled and self.base_image is None:
             return
         self.edit_mode = bool(enabled)
         self.editor_panel.set_visible(self.edit_mode)
-        self.btn_edit_toggle.set_label(t("btn_done_edit") if self.edit_mode else t("btn_edit"))
+        self._sync_viewer_header_state()
 
         if self.edit_mode:
             self._stop_slideshow()
@@ -1411,30 +1638,32 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             self._refresh_editor_preview()
             self._sync_resize_spins()
             self._update_undo_redo_buttons()
-            self._select_editor_tab("crop")
+            self._select_rail_section("crop")
         else:
             self.canvas.set_crop_active(False)
-            self.btn_crop_toggle.set_active(False)
             self.canvas.markup_tool = "none"
 
-    def _select_editor_tab(self, tab_id):
-        self.editor_stack.set_visible_child_name(tab_id)
-        for tid, btn in self.editor_tab_buttons.items():
-            if tid == tab_id:
-                btn.add_css_class("filter-pill-active")
+    def _select_rail_section(self, section_id):
+        self.active_rail_section = section_id
+        self.drawer_stack.set_visible_child_name(section_id)
+        for sid, btn in self.rail_buttons.items():
+            if sid == section_id:
+                btn.add_css_class("rail-btn-active")
             else:
-                btn.remove_css_class("filter-pill-active")
+                btn.remove_css_class("rail-btn-active")
 
-        if tab_id == "crop":
+        if section_id == "crop":
+            # Auto-enable interactive crop frame upon selecting Crop rail button
             self.canvas.markup_tool = "none"
-        elif tab_id == "markup":
+            self.canvas.set_crop_active(True)
+        elif section_id == "draw":
             self.canvas.set_crop_active(False)
-            self.btn_crop_toggle.set_active(False)
-            self.canvas.markup_tool = getattr(self, "_selected_markup_tool", "freehand")
+            self.canvas.markup_tool = self._selected_markup_tool
         else:
             self.canvas.set_crop_active(False)
-            self.btn_crop_toggle.set_active(False)
             self.canvas.markup_tool = "none"
+            if section_id == "info":
+                self._populate_exif_views(self.current_exif)
 
     def _push_history(self):
         self.history.push(self.base_image, self.strokes, self.adjustments)
@@ -1455,6 +1684,8 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._sync_resize_spins()
         self.canvas.set_strokes(self.strokes)
         self._refresh_editor_preview()
+        self._populate_exif_views(self.current_exif)
+        self._update_bottom_meta()
         self._update_undo_redo_buttons()
 
     def _do_redo(self):
@@ -1468,6 +1699,8 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._sync_resize_spins()
         self.canvas.set_strokes(self.strokes)
         self._refresh_editor_preview()
+        self._populate_exif_views(self.current_exif)
+        self._update_bottom_meta()
         self._update_undo_redo_buttons()
 
     def _refresh_editor_preview(self):
@@ -1483,21 +1716,18 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.canvas.set_strokes(self.strokes)
         self.canvas.set_pil_image(self.preview_image, reset_view=False)
 
-    # --- Crop & Transform Handlers ---
-    def _on_crop_toggled(self, btn):
-        self.canvas.set_crop_active(btn.get_active())
-
+    # --- 1. Crop Handlers ---
     def _highlight_ratio_btn(self, active_id):
         for rid, b in self.ratio_buttons.items():
             if rid == active_id:
-                b.add_css_class("tool-btn-active")
+                b.add_css_class("sadeem-btn-active")
             else:
-                b.remove_css_class("tool-btn-active")
+                b.remove_css_class("sadeem-btn-active")
 
     def _set_crop_ratio(self, rid, val):
         self._highlight_ratio_btn(rid)
-        if not self.btn_crop_toggle.get_active():
-            self.btn_crop_toggle.set_active(True)
+        if not self.canvas.crop_active:
+            self.canvas.set_crop_active(True)
         self.canvas.set_crop_aspect(val)
 
     def _apply_crop(self):
@@ -1505,24 +1735,29 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             return
         rect = tuple(self.canvas.crop_rect)
         self._push_history()
-        # Bake current markup & blur before cropping so coordinates stay exact
-        baked = editor.composite_full_image(self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle)
+        baked = editor.composite_full_image(
+            self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle
+        )
         self.base_image = editor.crop_image(baked, rect)
         self.strokes = []
         self.straighten_angle = 0.0
         self.scale_straighten.set_value(0.0)
-        self.btn_crop_toggle.set_active(False)
-        self.canvas.set_crop_active(False)
         self._sync_resize_spins()
         self._refresh_editor_preview()
+        self.canvas.reset_crop_rect()
         self.canvas.zoom_fit()
+        self._populate_exif_views(self.current_exif)
+        self._update_bottom_meta()
         self._toast(t("toast_crop_applied"))
 
+    # --- 2. Rotate, Flip, Straighten & Resize Handlers ---
     def _apply_rotate_90(self, clockwise):
         if self.base_image is None:
             return
         self._push_history()
-        baked = editor.composite_full_image(self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle)
+        baked = editor.composite_full_image(
+            self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle
+        )
         self.base_image = editor.rotate_90(baked, clockwise=clockwise)
         self.strokes = []
         self.straighten_angle = 0.0
@@ -1530,12 +1765,16 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._sync_resize_spins()
         self._refresh_editor_preview()
         self.canvas.zoom_fit()
+        self._populate_exif_views(self.current_exif)
+        self._update_bottom_meta()
 
     def _apply_flip(self, horizontal):
         if self.base_image is None:
             return
         self._push_history()
-        baked = editor.composite_full_image(self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle)
+        baked = editor.composite_full_image(
+            self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle
+        )
         self.base_image = editor.flip_image(baked, horizontal=horizontal)
         self.strokes = []
         self.straighten_angle = 0.0
@@ -1552,13 +1791,17 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         if self.base_image is None or abs(self.straighten_angle) < 0.05:
             return
         self._push_history()
-        baked = editor.composite_full_image(self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle)
+        baked = editor.composite_full_image(
+            self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle
+        )
         self.base_image = baked
         self.strokes = []
         self.straighten_angle = 0.0
         self.scale_straighten.set_value(0.0)
         self._sync_resize_spins()
         self._refresh_editor_preview()
+        self._populate_exif_views(self.current_exif)
+        self._update_bottom_meta()
 
     def _sync_resize_spins(self):
         if self.base_image is None:
@@ -1590,7 +1833,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         nw = int(self.spin_w.get_value())
         nh = int(self.spin_h.get_value())
         self._push_history()
-        baked = editor.composite_full_image(self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle)
+        baked = editor.composite_full_image(
+            self.base_image, editor.default_adjustments(), self.strokes, self.straighten_angle
+        )
         self.base_image = editor.resize_image(baked, nw, nh)
         self.strokes = []
         self.straighten_angle = 0.0
@@ -1598,18 +1843,20 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._sync_resize_spins()
         self._refresh_editor_preview()
         self.canvas.zoom_fit()
+        self._populate_exif_views(self.current_exif)
+        self._update_bottom_meta()
         self._toast(t("toast_resize_applied", w=nw, h=nh))
 
-    # --- Markup Handlers ---
+    # --- 3. Draw / Markup Handlers ---
     def _select_markup_tool(self, tool_id):
         self._selected_markup_tool = tool_id
-        if self.edit_mode and self.editor_stack.get_visible_child_name() == "markup":
+        if self.edit_mode and self.active_rail_section == "draw":
             self.canvas.markup_tool = tool_id
         for tid, b in self.tool_buttons.items():
             if tid == tool_id:
-                b.add_css_class("tool-btn-active")
+                b.add_css_class("sadeem-btn-active")
             else:
-                b.remove_css_class("tool-btn-active")
+                b.remove_css_class("sadeem-btn-active")
         if tool_id == "text" and self.edit_mode:
             self._toast(t("toast_text_hint"))
 
@@ -1617,9 +1864,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.canvas.markup_color = hex_color
         for hx, sb in self.swatch_buttons.items():
             if hx == hex_color:
-                sb.add_css_class("swatch-btn-active")
+                sb.add_css_class("swatch-dot-active")
             else:
-                sb.remove_css_class("swatch-btn-active")
+                sb.remove_css_class("swatch-dot-active")
 
     def _on_thickness_changed(self, scale):
         val = int(round(scale.get_value()))
@@ -1638,7 +1885,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def _on_canvas_text_click(self, ix, iy):
         dlg = Adw.Window(transient_for=self, modal=True)
         dlg.set_title(t("text_dialog_title"))
-        dlg.set_default_size(400, -1)
+        dlg.set_default_size(380, -1)
         dlg.set_resizable(False)
 
         tv = Adw.ToolbarView()
@@ -1649,7 +1896,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         tv.add_top_bar(hb)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        box.set_margin_top(16)
+        box.set_margin_top(14)
         box.set_margin_bottom(16)
         box.set_margin_start(16)
         box.set_margin_end(16)
@@ -1664,13 +1911,13 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         box.append(btns)
 
         b_cancel = Gtk.Button(label=t("btn_cancel"))
-        b_cancel.add_css_class("pill")
+        b_cancel.add_css_class("sadeem-btn")
         b_cancel.connect("clicked", lambda _b: dlg.close())
         btns.append(b_cancel)
 
         b_ok = Gtk.Button(label=t("text_dialog_add"))
-        b_ok.add_css_class("suggested-action")
-        b_ok.add_css_class("pill")
+        b_ok.add_css_class("sadeem-btn")
+        b_ok.add_css_class("sadeem-btn-active")
 
         def _commit(*_a):
             txt = entry.get_text().strip()
@@ -1702,7 +1949,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.canvas.set_strokes(self.strokes)
         self._refresh_editor_preview()
 
-    # --- Adjustments & Filters Handlers ---
+    # --- 4 & 5. Light & Filters Handlers ---
     def _schedule_debounced_preview(self):
         if self._adj_debounce_id is not None:
             try:
@@ -1741,9 +1988,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def _highlight_preset_btn(self, active_id):
         for pid, b in self.filter_preset_btns.items():
             if pid == active_id:
-                b.add_css_class("tool-btn-active")
+                b.add_css_class("sadeem-btn-active")
             else:
-                b.remove_css_class("tool-btn-active")
+                b.remove_css_class("sadeem-btn-active")
 
     def _select_preset_filter(self, preset_id):
         self._push_history()
@@ -1784,7 +2031,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         folder = os.path.dirname(os.path.abspath(self.current_path))
         stem, orig_ext = os.path.splitext(os.path.basename(self.current_path))
-        default_fmt_idx = 0  # PNG
+        default_fmt_idx = 0
         if orig_ext.lower() in (".jpg", ".jpeg"):
             default_fmt_idx = 1
         elif orig_ext.lower() == ".webp":
@@ -1794,7 +2041,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         dlg = Adw.Window(transient_for=self, modal=True)
         dlg.set_title(t("save_dialog_title"))
-        dlg.set_default_size(440, -1)
+        dlg.set_default_size(420, -1)
         dlg.set_resizable(False)
 
         tv = Adw.ToolbarView()
@@ -1804,14 +2051,15 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         hb.set_show_end_title_buttons(True)
         tv.add_top_bar(hb)
 
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        box.set_margin_top(16)
-        box.set_margin_bottom(18)
-        box.set_margin_start(18)
-        box.set_margin_end(18)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        box.set_margin_top(14)
+        box.set_margin_bottom(16)
+        box.set_margin_start(16)
+        box.set_margin_end(16)
         tv.set_content(box)
 
         lbl_name = Gtk.Label(label=t("save_dialog_name"))
+        lbl_name.add_css_class("drawer-subtle-label")
         lbl_name.set_halign(Gtk.Align.START)
         box.append(lbl_name)
 
@@ -1820,6 +2068,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         box.append(entry)
 
         lbl_fmt = Gtk.Label(label=t("save_dialog_fmt"))
+        lbl_fmt.add_css_class("drawer-subtle-label")
         lbl_fmt.set_halign(Gtk.Align.START)
         box.append(lbl_fmt)
 
@@ -1842,13 +2091,13 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         box.append(btns)
 
         b_cancel = Gtk.Button(label=t("btn_cancel"))
-        b_cancel.add_css_class("pill")
+        b_cancel.add_css_class("sadeem-btn")
         b_cancel.connect("clicked", lambda _b: dlg.close())
         btns.append(b_cancel)
 
         b_save = Gtk.Button(label=t("save_dialog_save"))
-        b_save.add_css_class("suggested-action")
-        b_save.add_css_class("pill")
+        b_save.add_css_class("sadeem-btn")
+        b_save.add_css_class("sadeem-btn-active")
 
         def _do_save(*_a):
             idx = dd_fmt.get_selected()
@@ -1861,7 +2110,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             try:
                 editor.save_pil_image(final_img, dest, fmt=fmt_name)
                 self._toast(t("toast_saved", name=os.path.basename(dest)))
-                self.all_gallery_items = []  # mark gallery for refresh on return
+                self.all_gallery_items = []
             except Exception as exc:
                 self._toast(t("toast_save_err", err=str(exc)))
 
@@ -1896,6 +2145,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 self.strokes = []
                 self.adjustments = editor.default_adjustments()
                 self.straighten_angle = 0.0
+                self.scale_straighten.set_value(0.0)
                 self._sync_adjustment_widgets()
                 self.history.clear()
                 self._update_undo_redo_buttons()

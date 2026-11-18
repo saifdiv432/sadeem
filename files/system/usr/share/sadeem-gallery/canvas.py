@@ -25,6 +25,7 @@ class ImageCanvas(Gtk.DrawingArea):
         self.set_vexpand(True)
         self.set_focusable(True)
         self.set_draw_func(self._on_draw)
+        self.connect("resize", lambda *_a: self._emit_zoom())
 
         self.on_zoom_changed = on_zoom_changed
         self.on_stroke_finished = on_stroke_finished
@@ -223,6 +224,12 @@ class ImageCanvas(Gtk.DrawingArea):
         self.pan_y = 0.0
         self.queue_draw()
         self._emit_zoom()
+
+    def toggle_fit_or_100(self):
+        if self.fit_mode or abs(self._get_effective_scale() - 1.0) > 0.02:
+            self.zoom_100()
+        else:
+            self.zoom_fit()
 
     def zoom_by(self, factor, anchor=None):
         if self.img_w <= 0:
@@ -510,8 +517,8 @@ class ImageCanvas(Gtk.DrawingArea):
     # Cairo Drawing
     # -------------------------------------------------------------------------
     def _on_draw(self, _area, ctx, width, height):
-        # Neutral deep slate canvas backdrop for accurate color inspection
-        ctx.set_source_rgb(0.09, 0.10, 0.12)
+        # Calm dark Adwaita canvas backdrop (#18181c)
+        ctx.set_source_rgb(24 / 255.0, 24 / 255.0, 28 / 255.0)
         ctx.rectangle(0, 0, width, height)
         ctx.fill()
 
