@@ -39,6 +39,18 @@ MARKUP_COLORS = [
     ("#111827", "Black"),
 ]
 
+GALLERY_CATEGORIES = [
+    ("all", "cat_all", ["view-grid-symbolic", "image-x-generic-symbolic"]),
+    ("camera", "cat_camera", ["camera-photo-symbolic", "image-x-generic-symbolic"]),
+    ("screenshots", "cat_screenshots", ["applets-screenshooter-symbolic", "video-display-symbolic"]),
+    ("hd", "cat_hd", ["zoom-fit-best-symbolic", "view-fullscreen-symbolic"]),
+    ("portrait", "cat_portrait", ["object-flip-vertical-symbolic", "phone-symbolic"]),
+    ("landscape", "cat_landscape", ["object-flip-horizontal-symbolic", "video-display-symbolic"]),
+    ("animated", "cat_animated", ["media-playback-start-symbolic", "video-x-generic-symbolic"]),
+    ("raw", "cat_raw", ["camera-photo-symbolic", "applications-photography-symbolic"]),
+    ("vector", "cat_vector", ["applications-graphics-symbolic", "image-x-generic-symbolic"]),
+]
+
 SADEEM_CSS = """
 .sadeem-canvas-bg {
     background-color: #18181c;
@@ -298,7 +310,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.current_exif = {}
         self.slideshow_timer = None
         self._load_generation = 0
-        self._settings_open = False
 
         # Editor state
         self.edit_mode = False
@@ -438,7 +449,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             if keyval == Gdk.KEY_Escape:
                 if self.slideshow_timer is not None:
                     self._stop_slideshow()
-                elif not self._settings_open:
+                else:
                     self.open_gallery_mode()
                 return True
         else:
@@ -463,25 +474,59 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         title_box.append(lbl_t)
         hb.set_title_widget(title_box)
 
-        # Quick filter buttons (clean rectangular 6px style)
-        filter_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        self.filter_buttons = {}
-        for fid, fkey in (("all", "filter_all"), ("raw", "filter_raw"), ("animated", "filter_anim")):
-            btn = Gtk.Button(label=t(fkey))
-            btn.add_css_class("sadeem-btn-compact")
-            btn.connect("clicked", lambda _b, f=fid: self._set_gallery_filter(f))
-            filter_box.append(btn)
-            self.filter_buttons[fid] = btn
-        hb.pack_start(filter_box)
+        # Single rich Category Dropdown button (Gtk.MenuButton + Gtk.Popover)
+        self.btn_category_menu = Gtk.MenuButton()
+        self.btn_category_menu.add_css_class("sadeem-btn-compact")
+        cat_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        cat_btn_box.append(Gtk.Image.new_from_icon_name(safe_icon(["view-list-symbolic", "view-grid-symbolic"])))
+        self.lbl_category_title = Gtk.Label(label=f"{t('filter_prefix')}: {t('cat_all')}")
+        cat_btn_box.append(self.lbl_category_title)
+        cat_btn_box.append(Gtk.Image.new_from_icon_name(safe_icon(["pan-down-symbolic"])))
+        self.btn_category_menu.set_child(cat_btn_box)
 
-        # End buttons: Settings / Choose Folder + Refresh
+        self.category_popover = Gtk.Popover()
+        cat_pop_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+        cat_pop_box.set_margin_top(6)
+        cat_pop_box.set_margin_bottom(6)
+        cat_pop_box.set_margin_start(6)
+        cat_pop_box.set_margin_end(6)
+        cat_pop_box.set_size_request(240, -1)
+        self.category_popover.set_child(cat_pop_box)
+
+        self.filter_buttons = {}
+        for cid, ckey, cicons in GALLERY_CATEGORIES:
+            cb = Gtk.Button()
+            cb.add_css_class("flat")
+            cb.add_css_class("save-menu-btn")
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            ico = Gtk.Image.new_from_icon_name(safe_icon(cicons))
+            ico.set_pixel_size(15)
+            row.append(ico)
+            lbl = Gtk.Label(label=t(ckey))
+            lbl.set_halign(Gtk.Align.START)
+            lbl.set_hexpand(True)
+            row.append(lbl)
+            cb.set_child(row)
+
+            def _pick(_b, f=cid):
+                self.category_popover.popdown()
+                self._set_gallery_filter(f)
+
+            cb.connect("clicked", _pick)
+            cat_pop_box.append(cb)
+            self.filter_buttons[cid] = cb
+
+        self.btn_category_menu.set_popover(self.category_popover)
+        hb.pack_start(self.btn_category_menu)
+
+        # End buttons: Direct Choose Folder + Refresh
         btn_folder = Gtk.Button()
         fb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         fb.append(Gtk.Image.new_from_icon_name(safe_icon(["folder-open-symbolic", "folder-symbolic"])))
         fb.append(Gtk.Label(label=t("btn_choose_folder")))
         btn_folder.set_child(fb)
         btn_folder.add_css_class("sadeem-btn-compact")
-        btn_folder.connect("clicked", lambda _b: self._open_folders_dialog())
+        btn_folder.connect("clicked", lambda _b: self._choose_folder_directly())
         hb.pack_end(btn_folder)
 
         btn_ref = Gtk.Button()
@@ -501,10 +546,10 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         load_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         load_box.set_valign(Gtk.Align.CENTER)
         load_box.set_halign(Gtk.Align.CENTER)
-        sp = Gtk.Spinner()
-        sp.set_size_request(36, 36)
-        sp.set_spinning(True)
-        load_box.append(sp)
+        self.gallery_spinner = Gtk.Spinner()
+        self.gallery_spinner.set_size_request(36, 36)
+        self.gallery_spinner.set_spinning(False)
+        load_box.append(self.gallery_spinner)
         l_lbl = Gtk.Label(label=t("gallery_scanning"))
         l_lbl.add_css_class("dim-label")
         load_box.append(l_lbl)
@@ -527,7 +572,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         empty_box.append(e_d)
         e_btn = Gtk.Button(label=t("btn_choose_folder"))
         e_btn.add_css_class("sadeem-btn")
-        e_btn.connect("clicked", lambda _b: self._open_folders_dialog())
+        e_btn.connect("clicked", lambda _b: self._choose_folder_directly())
         empty_box.append(e_btn)
         self.gallery_stack.add_named(empty_box, "empty")
 
@@ -555,11 +600,19 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             self.refresh_gallery()
 
     def _update_filter_styles(self):
+        cat_label_key = "cat_all"
+        for cid, ckey, _icons in GALLERY_CATEGORIES:
+            if cid == self.active_filter:
+                cat_label_key = ckey
+                break
+        self.lbl_category_title.set_text(f"{t('filter_prefix')}: {t(cat_label_key)}")
         for fid, btn in self.filter_buttons.items():
             if fid == self.active_filter:
+                btn.remove_css_class("flat")
                 btn.add_css_class("sadeem-btn-active")
             else:
                 btn.remove_css_class("sadeem-btn-active")
+                btn.add_css_class("flat")
 
     def _set_gallery_filter(self, fid):
         self.active_filter = fid
@@ -569,31 +622,35 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def refresh_gallery(self):
         self._scan_generation += 1
         gen = self._scan_generation
+        self.gallery_spinner.set_spinning(True)
         self.gallery_stack.set_visible_child_name("loading")
         dirs = media.get_scan_directories(self.settings)
 
         def _worker():
-            items = media.scan_directories(dirs)
-            GLib.idle_add(self._on_gallery_scanned, gen, items)
+            items = []
+            try:
+                items = media.scan_directories(dirs)
+            except Exception:
+                items = []
+            finally:
+                GLib.idle_add(self._on_gallery_scanned, gen, items)
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _on_gallery_scanned(self, gen, items):
         if gen != self._scan_generation:
             return False
-        self.all_gallery_items = items
+        self.gallery_spinner.set_spinning(False)
+        self.all_gallery_items = items or []
         self._render_gallery_timeline()
         return False
 
     def _get_filtered_items(self):
-        if self.active_filter == "raw":
-            return [it for it in self.all_gallery_items if it["is_raw"]]
-        if self.active_filter == "animated":
-            return [it for it in self.all_gallery_items if it["is_animated"]]
-        return list(self.all_gallery_items)
+        return [it for it in self.all_gallery_items if media.matches_category(it, self.active_filter)]
 
     def _render_gallery_timeline(self):
         self._clear_box(self.timeline_box)
+        self.gallery_spinner.set_spinning(False)
         filtered = self._get_filtered_items()
         if not filtered:
             self.gallery_stack.set_visible_child_name("empty")
@@ -689,126 +746,28 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         except Exception:
             pass
 
-    def _open_folders_dialog(self):
-        # Hide "Open Gallery" button automatically while Settings dialog is open
-        self._settings_open = True
-        self._sync_viewer_header_state()
+    def _choose_folder_directly(self):
+        """Open native folder chooser directly and add/scan the selected folder."""
+        fd = Gtk.FileDialog()
+        fd.set_title(t("btn_choose_folder"))
 
-        dlg = Adw.Window(transient_for=self, modal=True)
-        dlg.set_title(t("folders_dialog_title"))
-        dlg.set_default_size(480, 360)
+        def _picked(dialog, res):
+            try:
+                gfile = dialog.select_folder_finish(res)
+                if gfile:
+                    path = gfile.get_path()
+                    if path and os.path.isdir(path):
+                        extras = list(self.settings.get("extra_folders", []))
+                        ap = os.path.abspath(path)
+                        if ap not in [os.path.abspath(x) for x in extras] and ap != os.path.abspath(media.get_default_pictures_dir()):
+                            extras.append(ap)
+                            self.settings["extra_folders"] = extras
+                            media.save_settings(self.settings)
+                        self.refresh_gallery()
+            except GLib.Error:
+                pass
 
-        def _on_close(*_a):
-            self._settings_open = False
-            self._sync_viewer_header_state()
-            return False
-
-        dlg.connect("close-request", _on_close)
-
-        tv = Adw.ToolbarView()
-        dlg.set_content(tv)
-        hb = Adw.HeaderBar()
-        hb.set_show_start_title_buttons(False)
-        hb.set_show_end_title_buttons(True)
-        tv.add_top_bar(hb)
-
-        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        body.set_margin_top(14)
-        body.set_margin_bottom(16)
-        body.set_margin_start(16)
-        body.set_margin_end(16)
-        tv.set_content(body)
-
-        desc = Gtk.Label(label=t("folders_dialog_desc"))
-        desc.set_wrap(True)
-        desc.set_halign(Gtk.Align.START)
-        desc.add_css_class("dim-label")
-        body.append(desc)
-
-        lb = Gtk.ListBox()
-        lb.add_css_class("boxed-list")
-        lb.set_selection_mode(Gtk.SelectionMode.NONE)
-        body.append(lb)
-
-        def _populate():
-            child = lb.get_first_child()
-            while child is not None:
-                nxt = child.get_next_sibling()
-                lb.remove(child)
-                child = nxt
-
-            def_row = Adw.ActionRow()
-            def_row.set_use_markup(False)
-            def_row.set_title(t("folders_default_label"))
-            def_row.set_subtitle(media.get_default_pictures_dir())
-            def_row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["folder-pictures-symbolic", "folder-symbolic"])))
-            lb.append(def_row)
-
-            for folder in list(self.settings.get("extra_folders", [])):
-                row = Adw.ActionRow()
-                row.set_use_markup(False)
-                row.set_title(os.path.basename(folder.rstrip("/")) or folder)
-                row.set_subtitle(folder)
-                row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["folder-symbolic"])))
-                rm = Gtk.Button()
-                rm.set_icon_name(safe_icon(["user-trash-symbolic", "list-remove-symbolic"]))
-                rm.add_css_class("flat")
-                rm.set_valign(Gtk.Align.CENTER)
-                rm.set_tooltip_text(t("folders_remove_tip"))
-
-                def _remove(_b, fpath=folder):
-                    extras = [x for x in self.settings.get("extra_folders", []) if x != fpath]
-                    self.settings["extra_folders"] = extras
-                    media.save_settings(self.settings)
-                    _populate()
-                    self.refresh_gallery()
-
-                rm.connect("clicked", _remove)
-                row.add_suffix(rm)
-                lb.append(row)
-
-        _populate()
-
-        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        actions.set_halign(Gtk.Align.END)
-        actions.set_margin_top(6)
-        body.append(actions)
-
-        btn_add = Gtk.Button(label=t("folders_add_btn"))
-        btn_add.add_css_class("sadeem-btn")
-        btn_add.add_css_class("sadeem-btn-active")
-
-        def _on_add(_b):
-            fd = Gtk.FileDialog()
-            fd.set_title(t("btn_choose_folder"))
-
-            def _picked(dialog, res):
-                try:
-                    gfile = dialog.select_folder_finish(res)
-                    if gfile:
-                        path = gfile.get_path()
-                        if path:
-                            extras = list(self.settings.get("extra_folders", []))
-                            if path not in extras and os.path.abspath(path) != os.path.abspath(media.get_default_pictures_dir()):
-                                extras.append(path)
-                                self.settings["extra_folders"] = extras
-                                media.save_settings(self.settings)
-                                _populate()
-                                self.refresh_gallery()
-                except GLib.Error:
-                    pass
-
-            fd.select_folder(dlg, None, _picked)
-
-        btn_add.connect("clicked", _on_add)
-        actions.append(btn_add)
-
-        btn_close = Gtk.Button(label=t("folders_close"))
-        btn_close.add_css_class("sadeem-btn")
-        btn_close.connect("clicked", lambda _b: dlg.close())
-        actions.append(btn_close)
-
-        dlg.present()
+        fd.select_folder(self, None, _picked)
 
     # =========================================================================
     # MODE 2 & 3: FAST VIEWER + CALM 6-RAIL INTEGRATED EDITOR
@@ -950,13 +909,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.btn_exif.set_popover(self.exif_popover)
         self.viewer_end_box.append(self.btn_exif)
 
-        self.btn_settings = Gtk.Button()
-        self.btn_settings.set_icon_name(safe_icon(["emblem-system-symbolic", "preferences-system-symbolic"]))
-        self.btn_settings.set_tooltip_text(t("btn_settings"))
-        self.btn_settings.add_css_class("sadeem-header-btn")
-        self.btn_settings.connect("clicked", lambda _b: self._open_folders_dialog())
-        self.viewer_end_box.append(self.btn_settings)
-
         self.btn_edit_toggle = Gtk.Button(label=t("btn_edit"))
         self.btn_edit_toggle.add_css_class("sadeem-btn-compact")
         self.btn_edit_toggle.connect("clicked", lambda _b: self._set_edit_mode(True))
@@ -1047,12 +999,11 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         return tv
 
     def _sync_viewer_header_state(self):
-        """Enforce clean button visibility across Normal Viewer, Settings, and Edit modes."""
+        """Enforce clean button visibility between Viewer Mode and Edit Mode."""
         if not hasattr(self, "btn_back_gallery"):
             return
         in_edit = self.edit_mode
-        # Hide 'Open Gallery' whenever Settings dialog is open OR Edit mode is active
-        self.btn_back_gallery.set_visible((not in_edit) and (not self._settings_open))
+        self.btn_back_gallery.set_visible(not in_edit)
         self.nav_box.set_visible(not in_edit)
         self.viewer_end_box.set_visible(not in_edit)
 
@@ -1060,7 +1011,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.btn_save_menu.set_visible(in_edit)
 
     # =========================================================================
-    # SLIM 6-BUTTON VERTICAL RAIL & COMPACT TOOL DRAWER (298px TOTAL)
+    # SLIM 5-BUTTON VERTICAL RAIL & COMPACT TOOL DRAWER (298px TOTAL)
     # =========================================================================
     def _build_editor_sidebar(self):
         shell = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -1088,9 +1039,8 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.drawer_stack.add_named(self._build_drawer_draw(), "draw")
         self.drawer_stack.add_named(self._build_drawer_light(), "light")
         self.drawer_stack.add_named(self._build_drawer_filters(), "filters")
-        self.drawer_stack.add_named(self._build_drawer_info(), "info")
 
-        # 2. Slim Vertical 6-Button Navigation Rail (~72px) on outer edge
+        # 2. Slim Vertical 5-Button Navigation Rail (~72px) on outer edge
         rail = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         rail.set_hexpand(False)
         rail.set_vexpand(True)
@@ -1108,7 +1058,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             ("draw", "rail_draw", ["document-edit-symbolic"]),
             ("light", "rail_light", ["display-brightness-symbolic", "weather-clear-symbolic"]),
             ("filters", "rail_filters", ["applications-graphics-symbolic", "color-select-symbolic"]),
-            ("info", "rail_info", ["dialog-information-symbolic"]),
         ]
         self.rail_buttons = {}
         for sid, lkey, icons in rail_specs:
@@ -1407,13 +1356,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._highlight_preset_btn("original")
         return box
 
-    # 6. Drawer: Clean EXIF & Image Information List
-    def _build_drawer_info(self):
-        box = self._make_drawer_box()
-        self.drawer_info_list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        box.append(self.drawer_info_list)
-        return box
-
     # =========================================================================
     # VIEWER LOADING, NAVIGATION & METADATA
     # =========================================================================
@@ -1536,7 +1478,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             ("exif_file", info.get("filename")),
         ]
 
-        # 1. Viewer EXIF Popover
+        # Viewer EXIF Popover (Viewer Mode only)
         self._clear_box(self.exif_box)
         hdr = Gtk.Label(label=t("exif_title"))
         hdr.add_css_class("heading")
@@ -1557,24 +1499,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             vl.add_css_class("info-val-lbl")
             grid.attach(kl, 0, r_idx, 1, 1)
             grid.attach(vl, 1, r_idx, 1, 1)
-
-        # 2. Editor Rail "Info" Drawer (clean row list)
-        self._clear_box(self.drawer_info_list)
-        for k_str, val in rows:
-            item_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-            kl = Gtk.Label(label=t(k_str))
-            kl.set_halign(Gtk.Align.START)
-            kl.add_css_class("info-key-lbl")
-            vl = Gtk.Label(label=str(val or t("exif_unknown")))
-            vl.set_halign(Gtk.Align.START)
-            vl.set_wrap(True)
-            vl.set_max_width_chars(24)
-            vl.set_selectable(True)
-            vl.add_css_class("info-val-lbl")
-            item_box.append(kl)
-            item_box.append(vl)
-            self.drawer_info_list.append(item_box)
-            self.drawer_info_list.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
     def _on_canvas_zoom_changed(self, pct):
         self.btn_zoom_pct.set_label(f"{pct}%")
@@ -1662,8 +1586,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         else:
             self.canvas.set_crop_active(False)
             self.canvas.markup_tool = "none"
-            if section_id == "info":
-                self._populate_exif_views(self.current_exif)
 
     def _push_history(self):
         self.history.push(self.base_image, self.strokes, self.adjustments)

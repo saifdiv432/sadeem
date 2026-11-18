@@ -142,34 +142,106 @@ def _parse_exif_datetime(raw_str):
     return None
 
 
-def get_image_timestamp(path, st=None):
-    """Return datetime taken from EXIF DateTimeOriginal if quickly readable, else file mtime."""
-    ext = os.path.splitext(path)[1].lower()
-    if ext in (".jpg", ".jpeg", ".tif", ".tiff", ".webp", ".png"):
+def _probe_svg_dimensions(path):
+    """Quickly parse width/height or viewBox from the header of an SVG file."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            head = f.read(4096)
+        m_vb = re.search(r'viewBox\s*=\s*["\']\s*[-\d.]+\s+[-\d.]+\s+([\d.]+)\s+([\d.]+)\s*["\']', head, re.IGNORECASE)
+        if m_vb:
+            return int(float(m_vb.group(1))), int(float(m_vb.group(2)))
+        mw = re.search(r'\bwidth\s*=\s*["\']\s*([\d.]+)', head, re.IGNORECASE)
+        mh = re.search(r'\bheight\s*=\s*["\']\s*([\d.]+)', head, re.IGNORECASE)
+        if mw and mh:
+            return int(float(mw.group(1))), int(float(mh.group(1)))
+    except Exception:
+        pass
+    return 0, 0
+
+
+def _probe_fast_metadata(path, ext, st):
+    """
+    Fast lazy header probe returning (dt, width, height, is_animated).
+    Avoids pixel decoding so directory scans stay instantaneous.
+    """
+    dt = None
+    w, h = 0, 0
+    animated = (ext == ".gif")
+
+    if ext == ".svg":
+        w, h = _probe_svg_dimensions(path)
+    else:
         try:
             with Image.open(path) as img:
-                exif = img.getexif()
-                if exif:
-                    # Check ExifIFD sub-IFD (0x8769) first for DateTimeOriginal
-                    dt_str = None
-                    try:
-                        sub = exif.get_ifd(0x8769)
-                        if sub:
-                            dt_str = sub.get(TAG_DATETIME_ORIG)
-                    except Exception:
-                        pass
-                    if not dt_str:
-                        dt_str = exif.get(TAG_DATETIME_ORIG) or exif.get(TAG_DATETIME)
-                    dt = _parse_exif_datetime(dt_str)
-                    if dt:
-                        return dt
+                w, h = img.size
+                if ext == ".webp":
+                    animated = bool(getattr(img, "is_animated", False) and getattr(img, "n_frames", 1) > 1)
+                if ext in (".jpg", ".jpeg", ".tif", ".tiff", ".webp", ".png") or ext in RAW_EXTS:
+                    exif = img.getexif()
+                    if exif:
+                        # Swap width/height for 90°/270° EXIF orientation tags
+                        orient = exif.get(274)
+                        if orient in (5, 6, 7, 8):
+                            w, h = h, w
+                        dt_str = None
+                        try:
+                            sub = exif.get_ifd(0x8769)
+                            if sub:
+                                dt_str = sub.get(TAG_DATETIME_ORIG)
+                        except Exception:
+                            pass
+                        if not dt_str:
+                            dt_str = exif.get(TAG_DATETIME_ORIG) or exif.get(TAG_DATETIME)
+                        dt = _parse_exif_datetime(dt_str)
         except Exception:
             pass
-    try:
-        mtime = st.st_mtime if st is not None else os.path.getmtime(path)
-        return datetime.datetime.fromtimestamp(mtime)
-    except Exception:
-        return datetime.datetime.now()
+
+    if dt is None:
+        try:
+            mtime = st.st_mtime if st is not None else os.path.getmtime(path)
+            dt = datetime.datetime.fromtimestamp(mtime)
+        except Exception:
+            dt = datetime.datetime.now()
+
+    return dt, w, h, animated
+
+
+def is_screenshot_item(path, name):
+    """Detect screenshots by folder name or filename prefix (Arabic & English)."""
+    parts = [p.lower() for p in os.path.normpath(os.path.dirname(path)).split(os.sep)]
+    if any(p in ("screenshots", "screenshot", "لقطات الشاشة", "لقطات_الشاشة") for p in parts):
+        return True
+    low = name.strip().lower()
+    for prefix in ("screenshot", "screen shot", "screen_shot", "لقطة شاشة", "لقطة_شاشة", "لقطة للشاشة", "لقطة من"):
+        if low.startswith(prefix):
+            return True
+    return False
+
+
+def matches_category(item, category):
+    """Evaluate whether a scanned gallery item matches one of the 9 rich filter categories."""
+    if not category or category == "all":
+        return True
+    ext = item.get("ext", "")
+    w = int(item.get("width", 0) or 0)
+    h = int(item.get("height", 0) or 0)
+    if category == "camera":
+        return ext in (".jpg", ".jpeg", ".heic", ".heif", ".png")
+    if category == "screenshots":
+        return bool(item.get("is_screenshot", False))
+    if category == "hd":
+        return max(w, h) >= 1920
+    if category == "portrait":
+        return h > w > 0
+    if category == "landscape":
+        return w > h > 0
+    if category == "animated":
+        return bool(item.get("is_animated", False))
+    if category == "raw":
+        return bool(item.get("is_raw", False))
+    if category == "vector":
+        return ext in (".svg", ".ico")
+    return True
 
 
 def scan_directories(directories):
@@ -188,16 +260,16 @@ def scan_directories(directories):
                 full = os.path.join(dirpath, fname)
                 if not is_supported_image(full):
                     continue
-                real = os.path.realpath(full)
-                if real in seen:
-                    continue
-                seen.add(real)
                 try:
+                    real = os.path.realpath(full)
+                    if real in seen:
+                        continue
+                    seen.add(real)
                     st = os.stat(full)
                 except OSError:
                     continue
-                dt = get_image_timestamp(full, st)
                 ext = os.path.splitext(full)[1].lower()
+                dt, w, h, animated = _probe_fast_metadata(full, ext, st)
                 items.append({
                     "path": full,
                     "name": fname,
@@ -205,8 +277,11 @@ def scan_directories(directories):
                     "mtime": st.st_mtime,
                     "size": st.st_size,
                     "dt": dt,
+                    "width": w,
+                    "height": h,
                     "is_raw": ext in RAW_EXTS,
-                    "is_animated": is_animated_file(full),
+                    "is_animated": animated,
+                    "is_screenshot": is_screenshot_item(full, fname),
                 })
     items.sort(key=lambda x: (x["dt"], x["mtime"]), reverse=True)
     return items
