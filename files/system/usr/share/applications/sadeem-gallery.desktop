@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Sadeem Gallery
+Name[ar]=معرض سديم
+GenericName=Photo Gallery & Image Editor
+GenericName[ar]=معرض ومحرر الصور
+Comment=Chronological photo gallery, fast RAW/image viewer, and built-in image editor for Sadeem 45
+Comment[ar]=معرض زمني سريع ومستعرض صور وملفات RAW ومحرر صور شامل لنظام سديم 45
+Exec=/usr/bin/sadeem-gallery %F
+Icon=sadeem-gallery
+Terminal=false
+Type=Application
+Categories=Graphics;Photography;Viewer;2DGraphics;RasterGraphics;
+Keywords=photos;gallery;viewer;editor;raw;exif;crop;markup;pictures;معرض;صور;تعديل;محرر;خام;سديم;
+MimeType=image/jpeg;image/png;image/webp;image/gif;image/heif;image/heic;image/avif;image/jxl;image/svg+xml;image/tiff;image/bmp;image/x-icon;image/x-dcraw;image/x-canon-cr2;image/x-canon-cr3;image/x-nikon-nef;image/x-sony-arw;image/x-adobe-dng;image/x-fuji-raf;image/x-olympus-orf;image/x-panasonic-rw2;
+StartupNotify=true
+StartupWMClass=org.sadeem.Gallery
+X-Purism-FormFactor=Workstation;Mobile;

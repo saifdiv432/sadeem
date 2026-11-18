@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="galBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a1c33"/>
+      <stop offset="52%" stop-color="#442646"/>
+      <stop offset="100%" stop-color="#0f4c5c"/>
+    </linearGradient>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2b0f1d"/>
+      <stop offset="55%" stop-color="#1c2740"/>
+      <stop offset="100%" stop-color="#0b3642"/>
+    </linearGradient>
+    <linearGradient id="mtnFront" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9f2442"/>
+      <stop offset="100%" stop-color="#5c1426"/>
+    </linearGradient>
+    <linearGradient id="mtnBack" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#147482"/>
+      <stop offset="100%" stop-color="#0f4c5c"/>
+    </linearGradient>
+    <linearGradient id="silverFrame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Main Squircle Container -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#galBg)" stroke="#e2e8f0" stroke-opacity="0.45" stroke-width="2"/>
+
+  <!-- Tilted Background Photo Card -->
+  <g transform="rotate(-7 64 64)">
+    <rect x="24" y="28" width="76" height="64" rx="12" fill="#e2e8f0" fill-opacity="0.22" stroke="#e2e8f0" stroke-opacity="0.55" stroke-width="2"/>
+  </g>
+
+  <!-- Primary Creative Photo Frame -->
+  <rect x="24" y="30" width="80" height="68" rx="13" fill="url(#skyGrad)" stroke="url(#silverFrame)" stroke-width="3.2"/>
+
+  <!-- Inner Mountain Landscape -->
+  <clipPath id="photoClip">
+    <rect x="27" y="33" width="74" height="62" rx="10"/>
+  </clipPath>
+  <g clip-path="url(#photoClip)">
+    <!-- Sun / Moon Orb -->
+    <circle cx="80" cy="50" r="9" fill="#e2e8f0"/>
+    <circle cx="80" cy="50" r="14" fill="#99f6e4" fill-opacity="0.22"/>
+    <!-- Rear Teal Mountain -->
+    <path d="M52 96 L78 58 L106 96 Z" fill="url(#mtnBack)"/>
+    <!-- Front Burgundy Mountain -->
+    <path d="M22 96 L53 54 L84 96 Z" fill="url(#mtnFront)"/>
+    <!-- Subtle Snow/Silver Ridge Highlights -->
+    <path d="M53 54 L61 65 L56 64 L53 68 L49 63 Z" fill="#e2e8f0" fill-opacity="0.88"/>
+    <path d="M78 58 L84 67 L80 66 L78 69 L75 65 Z" fill="#99f6e4" fill-opacity="0.85"/>
+  </g>
+
+  <!-- Creative Edit Sparkle Accent (top-right corner) -->
+  <path d="M98 20 C99 26, 102 29, 108 30 C102 31, 99 34, 98 40 C97 34, 94 31, 88 30 C94 29, 97 26, 98 20 Z" fill="#ffffff"/>
+  <circle cx="87" cy="21" r="2.4" fill="#99f6e4"/>
+</svg>
