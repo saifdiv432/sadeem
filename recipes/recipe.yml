@@ -38,7 +38,6 @@ modules:
       - gstreamer1-plugins-bad-freeworld
       - gstreamer1-plugins-ugly
       - gstreamer1-plugin-libav
-      - mesa-va-drivers-freeworld
       - intel-media-driver
 
       # Image formats & thumbnails
@@ -97,6 +96,11 @@ modules:
 
       # Container sandbox & compatibility runtime
       - distrobox
+
+  # Best-effort installation of mesa-va-drivers-freeworld (non-blocking on RPM Fusion Mesa version skew)
+  - type: script
+    snippets:
+      - "rpm-ostree install mesa-va-drivers-freeworld || echo 'Skipping mesa-va-drivers-freeworld due to temporary Mesa version skew'"
 
   # System-wide Flatpaks configuration (disables Fedora remote and enables Flathub)
   - type: default-flatpaks
