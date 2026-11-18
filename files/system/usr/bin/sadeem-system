@@ -1514,6 +1514,44 @@ def get_current_booted_digest():
     return ""
 
 
+def get_active_deployment_image_info():
+    """Extract local image digest and clean OCI image reference from deployments[0]."""
+    try:
+        res = subprocess.run(
+            ["rpm-ostree", "status", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            deployments = data.get("deployments", [])
+            if deployments:
+                active = deployments[0]
+                local_digest = (
+                    active.get("container-image-reference-digest")
+                    or active.get("base-commit-meta", {}).get("ostree.manifest-digest")
+                    or ""
+                ).strip()
+                image_ref = (active.get("container-image-reference") or "").strip()
+                for prefix in (
+                    "ostree-image-signed:docker://",
+                    "ostree-unverified-image:docker://",
+                    "ostree-unverified-registry:docker://",
+                    "ostree-unverified-registry:",
+                    "ostree-image-signed:",
+                    "docker://",
+                ):
+                    if image_ref.startswith(prefix):
+                        image_ref = image_ref[len(prefix):].strip()
+                        break
+                return local_digest, image_ref
+    except Exception:
+        pass
+    return "", ""
+
+
 def trigger_system_reboot():
     """Trigger a safe, graceful GNOME session reboot with systemctl fallback."""
     try:
@@ -3007,56 +3045,81 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             "box": {"has_update": False, "count": 0}
         }
 
-        # 1. rpm-ostree upgrade --check
+        # 1. System image update check via OCI digest comparison (skopeo),
+        #    with rpm-ostree upgrade --check as fallback if skopeo cannot run.
         if do_sys:
+            skopeo_checked = False
             try:
-                # 1. Clean locally cached metadata to guarantee pulling the latest digest from remote registry
-                subprocess.run(["rpm-ostree", "cleanup", "-m"], capture_output=True, text=True, timeout=30, check=False)
-
-                # Get currently booted image digest
-                current_digest = get_current_booted_digest()
-
-                # Run update check (exit code 0 indicates update available; exit code 77 indicates unchanged / no update)
-                res = subprocess.run(["rpm-ostree", "upgrade", "--check"], capture_output=True, text=True, timeout=90, check=False)
-                if res.returncode == 0:
-                    out = res.stdout.strip()
-                    has_available_section = ("AvailableUpdate" in out and "AvailableUpdate: none" not in out) or "Diff:" in out
-
-                    if has_available_section:
-                        # Extract incoming image digest from AvailableUpdate section
-                        m_digest = re.search(r'Digest:\s*(sha256:[a-f0-9]+)', out, re.IGNORECASE)
-                        if not m_digest:
-                            m_digest = re.search(r'sha256:[a-f0-9]{64}', out)
-
-                        new_digest = m_digest.group(1).strip() if (m_digest and m_digest.lastindex) else (m_digest.group(0).strip() if m_digest else "")
-
-                        # Compare digests: same-day builds share identical Version (e.g. 45.20261117.0)
-                        # but differ in sha256 digest
-                        if new_digest and current_digest:
-                            has_update = (new_digest != current_digest)
-                        else:
-                            # If digest couldn't be extracted, rely on returncode == 0 and AvailableUpdate/Diff section
-                            has_update = True
-
-                        if has_update:
-                            results["sys"]["has_update"] = True
-                            if new_digest:
-                                results["sys"]["digest"] = new_digest
-                            m_ver = re.search(r'Version:\s*([^\s\n]+)', out)
-                            if m_ver:
-                                results["sys"]["version"] = m_ver.group(1)
-                            m_diff = re.search(r'Diff:\s*([^\n]+)', out)
-                            if m_diff:
-                                results["sys"]["diff"] = m_diff.group(1)
-                            elif "Upgraded:" in out:
-                                upg = [l.strip() for l in out.splitlines() if l.strip().startswith("Upgraded:")]
-                                if upg:
-                                    results["sys"]["diff"] = upg[0]
-                            elif new_digest:
-                                short_digest = new_digest.replace("sha256:", "")[:12]
+                local_digest, image_ref = get_active_deployment_image_info()
+                if local_digest and image_ref:
+                    res = subprocess.run(
+                        ["skopeo", "inspect", "--format", "{{.Digest}}", f"docker://{image_ref}"],
+                        capture_output=True,
+                        text=True,
+                        timeout=45,
+                        check=False,
+                    )
+                    if res.returncode == 0:
+                        remote_digest = res.stdout.strip()
+                        if re.match(r'^[a-z0-9]+:[a-f0-9]+$', remote_digest, re.IGNORECASE):
+                            skopeo_checked = True
+                            if remote_digest.lower() != local_digest.lower():
+                                results["sys"]["has_update"] = True
+                                results["sys"]["digest"] = remote_digest
+                                short_digest = remote_digest.replace("sha256:", "")[:12]
                                 results["sys"]["diff"] = f"Digest: {short_digest}..."
             except Exception:
-                pass
+                skopeo_checked = False
+
+            if not skopeo_checked:
+                try:
+                    # Fallback: clean locally cached metadata to pull latest info via rpm-ostree
+                    subprocess.run(["rpm-ostree", "cleanup", "-m"], capture_output=True, text=True, timeout=30, check=False)
+
+                    # Get currently booted image digest
+                    current_digest = get_current_booted_digest()
+
+                    # Run update check (exit code 0 indicates update available; exit code 77 indicates unchanged / no update)
+                    res = subprocess.run(["rpm-ostree", "upgrade", "--check"], capture_output=True, text=True, timeout=90, check=False)
+                    if res.returncode == 0:
+                        out = res.stdout.strip()
+                        has_available_section = ("AvailableUpdate" in out and "AvailableUpdate: none" not in out) or "Diff:" in out
+
+                        if has_available_section:
+                            # Extract incoming image digest from AvailableUpdate section
+                            m_digest = re.search(r'Digest:\s*(sha256:[a-f0-9]+)', out, re.IGNORECASE)
+                            if not m_digest:
+                                m_digest = re.search(r'sha256:[a-f0-9]{64}', out)
+
+                            new_digest = m_digest.group(1).strip() if (m_digest and m_digest.lastindex) else (m_digest.group(0).strip() if m_digest else "")
+
+                            # Compare digests: same-day builds share identical Version (e.g. 45.20261117.0)
+                            # but differ in sha256 digest
+                            if new_digest and current_digest:
+                                has_update = (new_digest != current_digest)
+                            else:
+                                # If digest couldn't be extracted, rely on returncode == 0 and AvailableUpdate/Diff section
+                                has_update = True
+
+                            if has_update:
+                                results["sys"]["has_update"] = True
+                                if new_digest:
+                                    results["sys"]["digest"] = new_digest
+                                m_ver = re.search(r'Version:\s*([^\s\n]+)', out)
+                                if m_ver:
+                                    results["sys"]["version"] = m_ver.group(1)
+                                m_diff = re.search(r'Diff:\s*([^\n]+)', out)
+                                if m_diff:
+                                    results["sys"]["diff"] = m_diff.group(1)
+                                elif "Upgraded:" in out:
+                                    upg = [l.strip() for l in out.splitlines() if l.strip().startswith("Upgraded:")]
+                                    if upg:
+                                        results["sys"]["diff"] = upg[0]
+                                elif new_digest:
+                                    short_digest = new_digest.replace("sha256:", "")[:12]
+                                    results["sys"]["diff"] = f"Digest: {short_digest}..."
+                except Exception:
+                    pass
 
         # 2. flatpak remote-ls --updates --columns=application,name,version,download-size
         if do_flatpak:
