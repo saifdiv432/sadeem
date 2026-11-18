@@ -1,22 +1,70 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
-    <linearGradient id="aiBg" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#7a1c33"/>
-      <stop offset="60%" stop-color="#5c1426"/>
-      <stop offset="100%" stop-color="#115e59"/>
+      <stop offset="52%" stop-color="#442646"/>
+      <stop offset="100%" stop-color="#0f4c5c"/>
     </linearGradient>
-    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#99f6e4" stop-opacity="0.32"/>
+      <stop offset="60%" stop-color="#7a1c33" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#0f4c5c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chipGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a0f1c"/>
+      <stop offset="55%" stop-color="#19192b"/>
+      <stop offset="100%" stop-color="#0a2e38"/>
+    </linearGradient>
+    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
     </linearGradient>
   </defs>
-  <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#aiBg)" stroke="#cbd5e1" stroke-width="2.5"/>
-  <!-- Neural orbital ring -->
-  <circle cx="64" cy="64" r="34" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="3" stroke-dasharray="8 6"/>
-  <!-- Main AI four-point star sparkle -->
-  <path d="M64 28 C66 48, 80 62, 100 64 C80 66, 66 80, 64 100 C62 80, 48 66, 28 64 C48 62, 62 48, 64 28 Z" fill="url(#sparkGrad)"/>
-  <!-- Secondary accent sparkle -->
-  <path d="M90 30 C91 36, 95 40, 101 41 C95 42, 91 46, 90 52 C89 46, 85 42, 79 41 C85 40, 89 36, 90 30 Z" fill="rgba(255,255,255,0.88)"/>
-  <!-- Small neural node -->
-  <circle cx="38" cy="88" r="4.5" fill="rgba(255,255,255,0.85)"/>
+
+  <!-- Squircle app container in Sadeem Burgundy & Dark Teal -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#bgGrad)" stroke="#e2e8f0" stroke-opacity="0.45" stroke-width="2"/>
+  <circle cx="64" cy="64" r="46" fill="url(#coreGlow)"/>
+
+  <!-- Processor chip metallic pins (Top, Bottom, Left, Right) -->
+  <g stroke="#e2e8f0" stroke-width="4" stroke-linecap="round">
+    <!-- Top pins -->
+    <line x1="48" y1="19" x2="48" y2="31"/>
+    <line x1="64" y1="17" x2="64" y2="31"/>
+    <line x1="80" y1="19" x2="80" y2="31"/>
+    <!-- Bottom pins -->
+    <line x1="48" y1="97" x2="48" y2="109"/>
+    <line x1="64" y1="97" x2="64" y2="111"/>
+    <line x1="80" y1="97" x2="80" y2="109"/>
+    <!-- Left pins -->
+    <line x1="19" y1="48" x2="31" y2="48"/>
+    <line x1="17" y1="64" x2="31" y2="64"/>
+    <line x1="19" y1="80" x2="31" y2="80"/>
+    <!-- Right pins -->
+    <line x1="97" y1="48" x2="109" y2="48"/>
+    <line x1="97" y1="64" x2="111" y2="64"/>
+    <line x1="97" y1="80" x2="109" y2="80"/>
+  </g>
+
+  <!-- Smart AI Processor Chip Frame -->
+  <rect x="31" y="31" width="66" height="66" rx="14" fill="url(#chipGrad)" stroke="url(#silverGrad)" stroke-width="3"/>
+  <rect x="40" y="40" width="48" height="48" rx="8" fill="none" stroke="#e2e8f0" stroke-opacity="0.30" stroke-width="1.5"/>
+
+  <!-- Neural synapse traces inside chip -->
+  <g stroke="#e2e8f0" stroke-opacity="0.38" stroke-width="1.5" stroke-linecap="round">
+    <line x1="47" y1="47" x2="57" y2="57"/>
+    <line x1="81" y1="81" x2="71" y2="71"/>
+    <line x1="47" y1="81" x2="57" y2="71"/>
+  </g>
+
+  <!-- Neural corner nodes -->
+  <circle cx="47" cy="47" r="2.6" fill="#e2e8f0"/>
+  <circle cx="47" cy="81" r="2.6" fill="#99f6e4"/>
+  <circle cx="81" cy="81" r="2.6" fill="#e2e8f0"/>
+
+  <!-- Main Neural Inference Sparkle Star -->
+  <path d="M64 44 C65.8 55.6, 72.4 62.2, 84 64 C72.4 65.8, 65.8 72.4, 64 84 C62.2 72.4, 55.6 65.8, 44 64 C55.6 62.2, 62.2 55.6, 64 44 Z" fill="url(#silverGrad)"/>
+  <circle cx="64" cy="64" r="3.2" fill="#7a1c33" stroke="#e2e8f0" stroke-width="1.2"/>
+
+  <!-- Secondary AI Sparkle -->
+  <path d="M79 44 C79.5 47.4, 81.2 49.1, 84.5 49.6 C81.2 50.1, 79.5 51.8, 79 55.2 C78.5 51.8, 76.8 50.1, 73.5 49.6 C76.8 49.1, 78.5 47.4, 79 44 Z" fill="#99f6e4"/>
 </svg>

@@ -73,18 +73,22 @@ STRINGS = {
         "size_label": "الحجم: ~{size:.1f} GB",
         "ram_req_label": "الذاكرة المطلوبة: ~{ram:.1f} GB",
         "btn_download": "تنزيل وتهيئة",
-        "btn_download_locked": "تنزيل (تحذير الذاكرة)",
         "btn_cancel": "إلغاء",
         "btn_chat_now": "بدء المحادثة الآن",
         "btn_delete": "حذف النموذج",
+        "heavy_card_notice": "تنويه: هذا النموذج يتطلب عتاداً أقوى من إمكانات حاسوبك، وقد يعمل ببطء شديد أو يتسبب في تجمد الشاشة وانهيار البرنامج عند تشغيله.",
         "dl_preparing": "جاري تحضير التنزيل ومحرك التشغيل...",
         "dl_progress": "{label}: {pct}% ({done:.0f} / {total:.0f} MB — {speed:.1f} MB/s)",
         "dl_done": "تم تنزيل وتهيئة {name} بنجاح! يمكنك بدء المحادثة الآن.",
         "dl_cancelled": "تم إلغاء التنزيل.",
         "dl_error": "فشل التنزيل: {err}",
-        "warn_heavy_title": "تحذير: النموذج يتطلب ذاكرة أكبر من المتاح",
-        "warn_heavy_body": "يحتاج النموذج «{name}» إلى نحو {req:.1f} GB من الذاكرة (أكثر من 85% من الذاكرة المتاحة على جهازك). قد يؤدي تشغيله إلى بطء شديد أو تجمّد النظام.\n\nهل تريد المتابعة وتنزيله رغم ذلك؟",
-        "warn_continue": "تنزيل على مسؤوليتي",
+        "warn_heavy_title": "تحذير: النموذج يفوق إمكانات جهازك",
+        "warn_heavy_body": "النموذج «{name}» يتطلب عتاداً أقوى من إمكانات حاسوبك (يحتاج نحو {req:.1f} GB من الذاكرة)، وقد يعمل ببطء شديد أو يتسبب في تجمد الشاشة وانهيار البرنامج عند تشغيله.\n\nكيف ترغب في المتابعة؟",
+        "btn_show_suitable": "عرض النماذج المناسبة",
+        "warn_continue": "المواصلة على أي حال",
+        "suggest_stronger_title": "جهازك يدعم نماذج أقوى وأكثر دقة",
+        "suggest_stronger_body": "عتاد حاسوبك يسمح بتشغيل نماذج أكبر وأقل هلوسة وأفضل في البرمجة والتحليل ({rec_range}) بدلاً من النموذج الخفيف «{name}».\n\nهل تود عرض النماذج المناسبة لقدرات جهازك أم متابعة التنزيل؟",
+        "suggest_continue": "متابعة التنزيل",
         "del_confirm_title": "حذف النموذج المحلي؟",
         "del_confirm_body": "سيتم حذف ملفات النموذج «{name}» من جهازك لتوفير مساحة التخزين.",
         "del_confirm_btn": "حذف نهائياً",
@@ -157,18 +161,22 @@ STRINGS = {
         "size_label": "Size: ~{size:.1f} GB",
         "ram_req_label": "RAM Required: ~{ram:.1f} GB",
         "btn_download": "Download & Setup",
-        "btn_download_locked": "Download (RAM Warning)",
         "btn_cancel": "Cancel",
         "btn_chat_now": "Start Chat Now",
         "btn_delete": "Delete Model",
+        "heavy_card_notice": "Notice: This model requires stronger hardware than your computer provides and may run very slowly or cause screen freezes and app crashes.",
         "dl_preparing": "Preparing download and inference engine...",
         "dl_progress": "{label}: {pct}% ({done:.0f} / {total:.0f} MB — {speed:.1f} MB/s)",
         "dl_done": "{name} downloaded and ready! You can start chatting now.",
         "dl_cancelled": "Download cancelled.",
         "dl_error": "Download failed: {err}",
-        "warn_heavy_title": "Warning: Model Exceeds Available Memory",
-        "warn_heavy_body": "'{name}' requires roughly {req:.1f} GB of RAM (over 85% of your usable memory). Running it may cause severe slowdowns or freezes.\n\nDo you still want to download it?",
-        "warn_continue": "Download Anyway",
+        "warn_heavy_title": "Warning: Model Exceeds Your Device Capabilities",
+        "warn_heavy_body": "'{name}' requires stronger hardware than your computer provides (~{req:.1f} GB RAM) and may run very slowly or cause screen freezes and app crashes.\n\nHow would you like to proceed?",
+        "btn_show_suitable": "Show Suitable Models",
+        "warn_continue": "Continue Anyway",
+        "suggest_stronger_title": "Your Device Supports Stronger, More Accurate Models",
+        "suggest_stronger_body": "Your hardware can run larger models with lower hallucination and better coding and analysis ({rec_range}) instead of the lightweight '{name}'.\n\nWould you like to view the recommended models or continue downloading?",
+        "suggest_continue": "Continue Download",
         "del_confirm_title": "Delete Local Model?",
         "del_confirm_body": "This will delete '{name}' files from your disk to free up storage space.",
         "del_confirm_btn": "Delete",
@@ -232,9 +240,9 @@ def safe_icon(names, fallback="applications-science-symbolic"):
 
 SADEEM_CSS = """
 .sadeem-ai-badge {
-    background: linear-gradient(135deg, #7a1c33 0%, #5c1426 60%, #115e59 100%);
+    background: linear-gradient(135deg, #7a1c33 0%, #442646 52%, #0f4c5c 100%);
     border-radius: 9999px;
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(226, 232, 240, 0.35);
     box-shadow: 0 4px 14px rgba(122, 28, 51, 0.35);
 }
 .sadeem-ai-badge image {
@@ -249,59 +257,110 @@ SADEEM_CSS = """
     background-color: #5c1426;
 }
 .sadeem-tier-pill {
-    background-color: rgba(122, 28, 51, 0.16);
-    color: #7a1c33;
-    border: 1px solid rgba(122, 28, 51, 0.35);
+    background-color: #7a1c33;
+    color: #ffffff;
+    border: 1px solid #be123c;
     border-radius: 9999px;
     padding: 4px 12px;
     font-weight: 700;
     font-size: 12px;
 }
+.sadeem-tier-pill label {
+    color: #ffffff;
+}
 .compat-excellent {
-    background-color: rgba(38, 162, 105, 0.16);
-    color: #1f8a57;
-    border: 1px solid rgba(38, 162, 105, 0.4);
+    background-color: #14532d;
+    color: #bbf7d0;
+    border: 1px solid #22c55e;
     border-radius: 9999px;
     padding: 3px 10px;
     font-size: 11px;
     font-weight: 700;
+}
+.compat-excellent label, .compat-excellent image {
+    color: #bbf7d0;
 }
 .compat-acceptable {
-    background-color: rgba(229, 165, 10, 0.18);
-    color: #a87200;
-    border: 1px solid rgba(229, 165, 10, 0.45);
+    background-color: #713f12;
+    color: #fef08a;
+    border: 1px solid #eab308;
     border-radius: 9999px;
     padding: 3px 10px;
     font-size: 11px;
     font-weight: 700;
+}
+.compat-acceptable label, .compat-acceptable image {
+    color: #fef08a;
 }
 .compat-too_heavy {
-    background-color: rgba(224, 27, 36, 0.16);
-    color: #c01c28;
-    border: 1px solid rgba(224, 27, 36, 0.42);
+    background-color: #7f1d1d;
+    color: #fecaca;
+    border: 1px solid #ef4444;
     border-radius: 9999px;
     padding: 3px 10px;
     font-size: 11px;
     font-weight: 700;
 }
+.compat-too_heavy label, .compat-too_heavy image {
+    color: #fecaca;
+}
 .vision-pill {
-    background-color: rgba(17, 94, 89, 0.16);
-    color: #115e59;
-    border: 1px solid rgba(17, 94, 89, 0.35);
+    background-color: #134e4a;
+    color: #99f6e4;
+    border: 1px solid #14b8a6;
     border-radius: 9999px;
-    padding: 2px 9px;
+    padding: 3px 10px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
+}
+.vision-pill label {
+    color: #99f6e4;
 }
 .meta-pill {
-    background-color: rgba(128, 128, 128, 0.14);
+    background-color: rgba(128, 128, 128, 0.18);
+    border: 1px solid rgba(128, 128, 128, 0.28);
     border-radius: 9999px;
-    padding: 2px 9px;
+    padding: 3px 10px;
     font-size: 11px;
     font-weight: 600;
 }
+.heavy-notice-box {
+    background-color: #7f1d1d;
+    color: #fecaca;
+    border: 1px solid #ef4444;
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+.heavy-notice-box label, .heavy-notice-box image {
+    color: #fecaca;
+    font-size: 12px;
+    font-weight: 600;
+}
+.tier-highlight {
+    border: 2px solid #be123c;
+    border-radius: 14px;
+    background-color: rgba(122, 28, 51, 0.12);
+    padding: 10px;
+}
+.onb-dot {
+    min-width: 10px;
+    min-height: 10px;
+    padding: 0;
+    border-radius: 9999px;
+    background-color: alpha(currentColor, 0.25);
+    border: none;
+}
+.onb-dot-active {
+    min-width: 26px;
+    min-height: 10px;
+    padding: 0;
+    border-radius: 9999px;
+    background-color: #7a1c33;
+    border: 1px solid #be123c;
+}
 .cmp-header {
-    background-color: rgba(122, 28, 51, 0.14);
+    background-color: #7a1c33;
+    color: #ffffff;
     font-weight: 700;
     padding: 10px 12px;
     border-radius: 8px;
@@ -330,33 +389,39 @@ SADEEM_CSS = """
     font-size: 12px;
 }
 .chat-status-ready {
-    background-color: rgba(38, 162, 105, 0.16);
-    color: #1f8a57;
+    background-color: #14532d;
+    color: #bbf7d0;
+    border: 1px solid #22c55e;
     border-radius: 9999px;
     padding: 3px 12px;
     font-size: 12px;
     font-weight: 700;
 }
 .chat-status-busy {
-    background-color: rgba(229, 165, 10, 0.18);
-    color: #a87200;
+    background-color: #713f12;
+    color: #fef08a;
+    border: 1px solid #eab308;
     border-radius: 9999px;
     padding: 3px 12px;
     font-size: 12px;
     font-weight: 700;
 }
 .chat-chip {
-    background-color: rgba(122, 28, 51, 0.14);
-    border: 1px solid rgba(122, 28, 51, 0.3);
+    background-color: #7a1c33;
+    color: #ffffff;
+    border: 1px solid #be123c;
     border-radius: 9999px;
     padding: 4px 12px;
     font-size: 12px;
 }
+.chat-chip label, .chat-chip button {
+    color: #ffffff;
+}
 """
 
 
-class OnboardingWindow(Gtk.Window):
-    """Interactive 3-card Adw.Carousel onboarding guide."""
+class OnboardingWindow(Adw.Window):
+    """Interactive 3-step Gtk.Stack onboarding guide with single Adw.HeaderBar."""
 
     def __init__(self, parent_window, on_finish_cb):
         super().__init__(transient_for=parent_window, modal=True)
@@ -365,12 +430,13 @@ class OnboardingWindow(Gtk.Window):
         self.set_default_size(560, 470)
         self.set_resizable(False)
 
-        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.set_child(root)
+        toolbar_view = Adw.ToolbarView()
+        self.set_content(toolbar_view)
 
         hb = Adw.HeaderBar()
+        hb.set_show_start_title_buttons(False)
         hb.set_show_end_title_buttons(True)
-        root.append(hb)
+        toolbar_view.add_top_bar(hb)
 
         body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         body.set_margin_top(16)
@@ -378,26 +444,42 @@ class OnboardingWindow(Gtk.Window):
         body.set_margin_start(24)
         body.set_margin_end(24)
         body.set_vexpand(True)
-        root.append(body)
+        body.set_hexpand(True)
+        toolbar_view.set_content(body)
 
-        self.carousel = Adw.Carousel()
-        self.carousel.set_vexpand(True)
-        self.carousel.set_hexpand(True)
-        self.carousel.set_allow_mouse_drag(True)
-        self.carousel.set_allow_scroll_wheel(True)
-        body.append(self.carousel)
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        self.stack.set_transition_duration(260)
+        self.stack.set_vexpand(True)
+        self.stack.set_hexpand(True)
+        self.stack.set_overflow(Gtk.Overflow.HIDDEN)
+        body.append(self.stack)
 
         slides = [
             (["security-high-symbolic", "channel-secure-symbolic"], t("onb_1_title"), t("onb_1_desc")),
             (["computer-symbolic", "video-display-symbolic"], t("onb_2_title"), t("onb_2_desc")),
             (["folder-download-symbolic", "system-software-install-symbolic"], t("onb_3_title"), t("onb_3_desc")),
         ]
-        for icons, title, desc in slides:
-            self.carousel.append(self._build_slide(icons, title, desc))
+        self.slide_names = []
+        for idx, (icons, title, desc) in enumerate(slides):
+            name = f"slide_{idx}"
+            self.slide_names.append(name)
+            self.stack.add_named(self._build_slide(icons, title, desc), name)
 
-        dots = Adw.CarouselIndicatorDots()
-        dots.set_carousel(self.carousel)
-        body.append(dots)
+        # Page indicator dots
+        dots_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        dots_box.set_halign(Gtk.Align.CENTER)
+        dots_box.set_valign(Gtk.Align.CENTER)
+        body.append(dots_box)
+
+        self.dot_buttons = []
+        for idx in range(len(self.slide_names)):
+            dot = Gtk.Button()
+            dot.add_css_class("onb-dot")
+            dot.set_valign(Gtk.Align.CENTER)
+            dot.connect("clicked", lambda _b, i=idx: self._go_to_page(i))
+            dots_box.append(dot)
+            self.dot_buttons.append(dot)
 
         nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         nav_box.set_margin_top(6)
@@ -424,13 +506,16 @@ class OnboardingWindow(Gtk.Window):
         self.btn_start.connect("clicked", self._on_finish)
         nav_box.append(self.btn_start)
 
-        self.carousel.connect("page-changed", self._on_page_changed)
-        self._on_page_changed(self.carousel, 0)
+        self.current_index = 0
+        self._go_to_page(0)
 
     def _build_slide(self, icons, title, desc):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         box.set_valign(Gtk.Align.CENTER)
-        box.set_halign(Gtk.Align.CENTER)
+        box.set_halign(Gtk.Align.FILL)
+        box.set_hexpand(True)
+        box.set_vexpand(True)
+        box.set_overflow(Gtk.Overflow.HIDDEN)
         box.set_margin_start(16)
         box.set_margin_end(16)
 
@@ -448,34 +533,45 @@ class OnboardingWindow(Gtk.Window):
 
         lbl_t = Gtk.Label(label=title)
         lbl_t.set_wrap(True)
+        lbl_t.set_max_width_chars(38)
+        lbl_t.set_halign(Gtk.Align.CENTER)
         lbl_t.set_justify(Gtk.Justification.CENTER)
         lbl_t.add_css_class("title-2")
         box.append(lbl_t)
 
         lbl_d = Gtk.Label(label=desc)
         lbl_d.set_wrap(True)
-        lbl_d.set_max_width_chars(46)
+        lbl_d.set_max_width_chars(44)
+        lbl_d.set_halign(Gtk.Align.CENTER)
         lbl_d.set_justify(Gtk.Justification.CENTER)
         lbl_d.add_css_class("dim-label")
         box.append(lbl_d)
         return box
 
-    def _on_page_changed(self, carousel, index):
-        total = carousel.get_n_pages()
+    def _go_to_page(self, index):
+        total = len(self.slide_names)
+        index = max(0, min(index, total - 1))
+        self.current_index = index
+        self.stack.set_visible_child_name(self.slide_names[index])
         self.btn_prev.set_visible(index > 0)
         is_last = index >= total - 1
         self.btn_next.set_visible(not is_last)
         self.btn_start.set_visible(is_last)
+        for i, dot in enumerate(self.dot_buttons):
+            if i == index:
+                dot.remove_css_class("onb-dot")
+                dot.add_css_class("onb-dot-active")
+            else:
+                dot.remove_css_class("onb-dot-active")
+                dot.add_css_class("onb-dot")
 
     def _on_prev(self, *_a):
-        idx = int(round(self.carousel.get_position()))
-        if idx > 0:
-            self.carousel.scroll_to(self.carousel.get_nth_page(idx - 1), True)
+        if self.current_index > 0:
+            self._go_to_page(self.current_index - 1)
 
     def _on_next(self, *_a):
-        idx = int(round(self.carousel.get_position()))
-        if idx + 1 < self.carousel.get_n_pages():
-            self.carousel.scroll_to(self.carousel.get_nth_page(idx + 1), True)
+        if self.current_index + 1 < len(self.slide_names):
+            self._go_to_page(self.current_index + 1)
 
     def _on_finish(self, *_a):
         self.close()
@@ -498,6 +594,8 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
         # Download state per model_id -> {cancel_event, progress_box, bar, label, btn_dl, btn_chat, btn_del}
         self.active_downloads = {}
         self.model_widgets = {}
+        self.tier_sections = {}
+        self._tier_highlight_timer = None
 
         # Chat state
         self.installed_models = []
@@ -529,6 +627,10 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
             Gtk.StyleContext.add_provider_for_display(
                 display, prov, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
             )
+            local_icons = os.path.abspath(os.path.join(APP_DIR, "..", "icons"))
+            if os.path.isdir(local_icons):
+                theme = Gtk.IconTheme.get_for_display(display)
+                theme.add_search_path(local_icons)
 
     def _on_close_request(self, *_args):
         for dl in list(self.active_downloads.values()):
@@ -630,6 +732,7 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
     def _build_catalog_page(self):
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
+        self.catalog_scroll = scrolled
 
         clamp = Adw.Clamp()
         clamp.set_maximum_size(860)
@@ -642,22 +745,17 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
         content.set_margin_start(20)
         content.set_margin_end(20)
         clamp.set_child(content)
+        self.catalog_content = content
 
         # Page Hero Header
         hero = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         hero.set_halign(Gtk.Align.CENTER)
         content.append(hero)
 
-        badge = Gtk.Box()
-        badge.set_size_request(64, 64)
-        badge.set_halign(Gtk.Align.CENTER)
-        badge.add_css_class("sadeem-ai-badge")
-        b_img = Gtk.Image.new_from_icon_name(safe_icon(["sadeem-ai-manager", "applications-science-symbolic"]))
-        b_img.set_pixel_size(34)
-        b_img.set_hexpand(True)
-        b_img.set_vexpand(True)
-        badge.append(b_img)
-        hero.append(badge)
+        hero_icon = Gtk.Image.new_from_icon_name("sadeem-ai-manager")
+        hero_icon.set_pixel_size(72)
+        hero_icon.set_halign(Gtk.Align.CENTER)
+        hero.append(hero_icon)
 
         lbl_title = Gtk.Label(label=t("app_title"))
         lbl_title.add_css_class("title-1")
@@ -773,6 +871,7 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
     def _render_catalog(self):
         self._clear_box(self.catalog_box)
         self.model_widgets = {}
+        self.tier_sections = {}
         tiers = self.catalog.get("tiers", [])
         models = self.catalog.get("models", [])
 
@@ -782,11 +881,14 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
             if not tier_models:
                 continue
 
+            tier_wrap = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
             grp = Adw.PreferencesGroup(
                 title=tier["name_ar"] if LANG == "ar" else tier["name_en"],
                 description=tier["desc_ar"] if LANG == "ar" else tier["desc_en"]
             )
-            self.catalog_box.append(grp)
+            tier_wrap.append(grp)
+            self.catalog_box.append(tier_wrap)
+            self.tier_sections[tid] = tier_wrap
 
             for model in tier_models:
                 grp.add(self._build_model_card(model))
@@ -899,17 +1001,40 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
         act_row.set_margin_top(4)
         inner.append(act_row)
 
-        btn_dl = Gtk.Button(label=t("btn_download_locked") if compat["level"] == "too_heavy" else t("btn_download"))
-        if compat["level"] != "too_heavy":
-            btn_dl.add_css_class("suggested-action")
+        is_heavy = compat.get("level") in ("too_heavy", "heavy")
+        btn_dl = Gtk.Button(label=t("btn_download"))
+        btn_dl.add_css_class("suggested-action")
         btn_dl.add_css_class("pill")
+        btn_dl.set_valign(Gtk.Align.CENTER)
         btn_dl.set_visible(not installed)
         btn_dl.connect("clicked", lambda b, m=model, c=compat: self._on_download_clicked(m, c))
         act_row.append(btn_dl)
 
+        heavy_notice = None
+        if is_heavy:
+            heavy_notice = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            heavy_notice.add_css_class("heavy-notice-box")
+            heavy_notice.set_hexpand(True)
+            heavy_notice.set_valign(Gtk.Align.CENTER)
+            heavy_notice.set_visible(not installed)
+
+            w_ico = Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic", "emblem-important-symbolic"]))
+            w_ico.set_pixel_size(16)
+            w_ico.set_valign(Gtk.Align.CENTER)
+            heavy_notice.append(w_ico)
+
+            w_lbl = Gtk.Label(label=t("heavy_card_notice"))
+            w_lbl.set_wrap(True)
+            w_lbl.set_xalign(0.0)
+            w_lbl.set_halign(Gtk.Align.START)
+            w_lbl.set_hexpand(True)
+            heavy_notice.append(w_lbl)
+            act_row.append(heavy_notice)
+
         btn_chat = Gtk.Button(label=t("btn_chat_now"))
         btn_chat.add_css_class("suggested-action")
         btn_chat.add_css_class("pill")
+        btn_chat.set_valign(Gtk.Align.CENTER)
         btn_chat.set_visible(installed)
         btn_chat.connect("clicked", lambda b, m=model: self._open_chat_with_model(m))
         act_row.append(btn_chat)
@@ -917,6 +1042,7 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
         btn_del = Gtk.Button(label=t("btn_delete"))
         btn_del.add_css_class("destructive-action")
         btn_del.add_css_class("pill")
+        btn_del.set_valign(Gtk.Align.CENTER)
         btn_del.set_visible(installed)
         btn_del.connect("clicked", lambda b, m=model: self._confirm_delete_model(m))
         act_row.append(btn_del)
@@ -928,66 +1054,127 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
             "btn_dl": btn_dl,
             "btn_chat": btn_chat,
             "btn_del": btn_del,
+            "heavy_notice": heavy_notice,
         }
 
         # Restore visible progress if download already active
         if mid in self.active_downloads:
             prog_box.set_visible(True)
             btn_dl.set_visible(False)
+            if heavy_notice is not None:
+                heavy_notice.set_visible(False)
 
         return card
 
     def _on_download_clicked(self, model, compat):
-        if compat["level"] == "too_heavy":
+        rec_tier = (self.hw or {}).get("recommended_tier", "light")
+        if compat.get("level") in ("too_heavy", "heavy"):
             self._show_heavy_warning(model, compat)
+        elif model.get("tier") == "light" and rec_tier in ("medium", "pro"):
+            self._show_stronger_model_suggestion(model)
         else:
             self._start_model_download(model)
 
+    def _present_alert_dialog(self, heading, body, responses, on_response):
+        """Show an Adw.AlertDialog (with Adw.MessageDialog fallback) with custom responses."""
+        if hasattr(Adw, "AlertDialog"):
+            dlg = Adw.AlertDialog.new(heading, body)
+            for resp_id, label, appearance in responses:
+                dlg.add_response(resp_id, label)
+                if appearance is not None:
+                    dlg.set_response_appearance(resp_id, appearance)
+            dlg.set_default_response(responses[0][0])
+            dlg.set_close_response("cancel")
+            dlg.connect("response", lambda _d, r: on_response(r))
+            dlg.present(self)
+        else:
+            dlg = Adw.MessageDialog(transient_for=self, modal=True, heading=heading, body=body)
+            for resp_id, label, appearance in responses:
+                dlg.add_response(resp_id, label)
+                if appearance is not None:
+                    dlg.set_response_appearance(resp_id, appearance)
+            dlg.set_default_response(responses[0][0])
+            dlg.set_close_response("cancel")
+            dlg.connect("response", lambda _d, r: on_response(r))
+            dlg.present()
+
+    def _scroll_to_recommended_tier(self):
+        self.view_stack.set_visible_child_name("catalog")
+        rec_tier = (self.hw or {}).get("recommended_tier", "light")
+        target_box = self.tier_sections.get(rec_tier)
+        if not target_box and self.tier_sections:
+            target_box = next(iter(self.tier_sections.values()))
+        if not target_box:
+            return
+
+        for box in self.tier_sections.values():
+            box.remove_css_class("tier-highlight")
+        target_box.add_css_class("tier-highlight")
+
+        if self._tier_highlight_timer:
+            try:
+                GLib.source_remove(self._tier_highlight_timer)
+            except Exception:
+                pass
+            self._tier_highlight_timer = None
+
+        def _clear_highlight():
+            self._tier_highlight_timer = None
+            for box in self.tier_sections.values():
+                box.remove_css_class("tier-highlight")
+            return False
+
+        self._tier_highlight_timer = GLib.timeout_add(4500, _clear_highlight)
+
+        def _do_scroll():
+            try:
+                ok, rect = target_box.compute_bounds(self.catalog_content)
+                if ok:
+                    adj = self.catalog_scroll.get_vadjustment()
+                    target_y = max(0.0, rect.get_y() - 12.0)
+                    max_y = max(0.0, adj.get_upper() - adj.get_page_size())
+                    adj.set_value(min(target_y, max_y))
+            except Exception:
+                pass
+            return False
+
+        GLib.idle_add(_do_scroll)
+
     def _show_heavy_warning(self, model, compat):
-        dlg = Gtk.Window(transient_for=self, modal=True)
-        dlg.set_title(t("warn_heavy_title"))
-        dlg.set_default_size(440, -1)
-        dlg.set_resizable(False)
+        heading = t("warn_heavy_title")
+        body = t("warn_heavy_body", name=model["name"], req=compat["ram_required_gb"])
+        responses = [
+            ("show_suitable", t("btn_show_suitable"), Adw.ResponseAppearance.SUGGESTED),
+            ("continue", t("warn_continue"), Adw.ResponseAppearance.DESTRUCTIVE),
+            ("cancel", t("btn_cancel"), Adw.ResponseAppearance.DEFAULT),
+        ]
 
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
-        box.set_margin_top(20)
-        box.set_margin_bottom(20)
-        box.set_margin_start(20)
-        box.set_margin_end(20)
-        dlg.set_child(box)
+        def _on_resp(resp_id):
+            if resp_id == "show_suitable":
+                self._scroll_to_recommended_tier()
+            elif resp_id == "continue":
+                self._start_model_download(model)
 
-        lbl_t = Gtk.Label(label=t("warn_heavy_title"))
-        lbl_t.add_css_class("title-3")
-        lbl_t.set_wrap(True)
-        lbl_t.set_halign(Gtk.Align.START)
-        box.append(lbl_t)
+        self._present_alert_dialog(heading, body, responses, _on_resp)
 
-        lbl_b = Gtk.Label(label=t("warn_heavy_body", name=model["name"], req=compat["ram_required_gb"]))
-        lbl_b.set_wrap(True)
-        lbl_b.set_halign(Gtk.Align.START)
-        lbl_b.add_css_class("dim-label")
-        box.append(lbl_b)
+    def _show_stronger_model_suggestion(self, model):
+        hw = self.hw or {}
+        rec_range = hw.get("recommended_range_ar") if LANG == "ar" else hw.get("recommended_range_en")
+        heading = t("suggest_stronger_title")
+        body = t("suggest_stronger_body", name=model["name"], rec_range=rec_range or "")
+        responses = [
+            ("show_suitable", t("btn_show_suitable"), Adw.ResponseAppearance.SUGGESTED),
+            ("continue", t("suggest_continue"), Adw.ResponseAppearance.DEFAULT),
+            ("cancel", t("btn_cancel"), Adw.ResponseAppearance.DEFAULT),
+        ]
 
-        btns = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        btns.set_halign(Gtk.Align.END)
-        box.append(btns)
+        def _on_resp(resp_id):
+            if resp_id == "show_suitable":
+                self._scroll_to_recommended_tier()
+            elif resp_id == "continue":
+                self._start_model_download(model)
 
-        b_cancel = Gtk.Button(label=t("btn_cancel"))
-        b_cancel.add_css_class("pill")
-        b_cancel.connect("clicked", lambda b: dlg.close())
-        btns.append(b_cancel)
-
-        b_ok = Gtk.Button(label=t("warn_continue"))
-        b_ok.add_css_class("destructive-action")
-        b_ok.add_css_class("pill")
-
-        def _go(*_a):
-            dlg.close()
-            self._start_model_download(model)
-
-        b_ok.connect("clicked", _go)
-        btns.append(b_ok)
-        dlg.present()
+        self._present_alert_dialog(heading, body, responses, _on_resp)
 
     def _start_model_download(self, model):
         mid = model["id"]
@@ -999,6 +1186,8 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
         w = self.model_widgets.get(mid)
         if w:
             w["btn_dl"].set_visible(False)
+            if w.get("heavy_notice") is not None:
+                w["heavy_notice"].set_visible(False)
             w["prog_box"].set_visible(True)
             w["prog_bar"].set_fraction(0.0)
             w["prog_bar"].set_text("0%")
@@ -1050,10 +1239,14 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
             w["prog_box"].set_visible(False)
             if success:
                 w["btn_dl"].set_visible(False)
+                if w.get("heavy_notice") is not None:
+                    w["heavy_notice"].set_visible(False)
                 w["btn_chat"].set_visible(True)
                 w["btn_del"].set_visible(True)
             else:
                 w["btn_dl"].set_visible(True)
+                if w.get("heavy_notice") is not None:
+                    w["heavy_notice"].set_visible(True)
 
         if success:
             self.toast_overlay.add_toast(Adw.Toast.new(t("dl_done", name=model["name"])))
@@ -1222,14 +1415,24 @@ class SadeemAIManagerWindow(Adw.ApplicationWindow):
                 f"{ratings.get('arabic_ar' if is_ar else 'arabic_en', '')}\n(~{total_dl_gb:.1f} GB)",
             ]
             for offset, text in enumerate(cells, start=2):
-                lbl = Gtk.Label(label=text)
-                lbl.add_css_class("cmp-cell")
-                lbl.set_wrap(True)
-                lbl.set_max_width_chars(24)
-                lbl.set_xalign(0.0)
                 if offset == 5 and model.get("vision"):
-                    lbl.add_css_class("vision-pill")
-                grid.attach(lbl, offset, row_idx, 1, 1)
+                    c_vis = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+                    c_vis.add_css_class("cmp-cell")
+                    c_vis.set_valign(Gtk.Align.CENTER)
+                    v_lbl = Gtk.Label(label=text)
+                    v_lbl.add_css_class("vision-pill")
+                    v_lbl.set_halign(Gtk.Align.START)
+                    v_lbl.set_wrap(True)
+                    v_lbl.set_max_width_chars(22)
+                    c_vis.append(v_lbl)
+                    grid.attach(c_vis, offset, row_idx, 1, 1)
+                else:
+                    lbl = Gtk.Label(label=text)
+                    lbl.add_css_class("cmp-cell")
+                    lbl.set_wrap(True)
+                    lbl.set_max_width_chars(24)
+                    lbl.set_xalign(0.0)
+                    grid.attach(lbl, offset, row_idx, 1, 1)
 
     # =========================================================================
     # PAGE 3: INTEGRATED LOCAL CHAT VIEW
