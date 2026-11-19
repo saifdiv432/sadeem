@@ -2,7 +2,8 @@
 # ==============================================================================
 # Sadeem OS - Automated External Applications Installer
 # Fetches and installs the latest releases of bundled third-party applications
-# directly from GitHub Releases API during image build.
+# directly from GitHub Releases API during image build, with resilient python3
+# API resolution and static fallbacks for rate-limited environments.
 # ==============================================================================
 
 set -euo pipefail
@@ -15,68 +16,119 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Configure curl authentication header if GitHub token is present in the environment
-CURL_AUTH_ARGS=()
-if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-    CURL_AUTH_ARGS=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
-elif [[ -n "${GH_TOKEN:-}" ]]; then
-    CURL_AUTH_ARGS=(-H "Authorization: Bearer ${GH_TOKEN}")
-fi
-
-USER_AGENT="Sadeem-OS-Build/1.0 (https://github.com/saifdiv432/sadeem)"
-
-# Function: fetch_latest_github_release
-# Arguments:
-#   $1: GitHub repo (owner/repo)
-#   $2: Asset regex pattern (e.g. "x86_64.*linux.*\.tar\.gz$")
-#   $3: Output archive path
-# Outputs:
-#   Echoes detected tag name
-fetch_latest_github_release() {
+# ------------------------------------------------------------------------------
+# Function: resolve_release_asset
+# Uses Python 3 to query GitHub API for latest release, falls back to /releases
+# if 404, and automatically returns fallback_url on rate limit / network error.
+# ------------------------------------------------------------------------------
+resolve_release_asset() {
     local repo="$1"
     local pattern="$2"
-    local output_file="$3"
+    local fallback_url="$3"
 
-    echo "==> Querying latest release for ${repo} via GitHub API..." >&2
-    local api_url="https://api.github.com/repos/${repo}/releases/latest"
+    python3 - "$repo" "$pattern" "$fallback_url" << 'PYEOF'
+import sys
+import os
+import json
+import re
+import urllib.request
+import urllib.error
 
-    local release_json
-    if ! release_json=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${CURL_AUTH_ARGS[@]}" "${api_url}" 2>/dev/null); then
-        echo "ERROR: Failed to connect or fetch release metadata from ${api_url}" >&2
-        exit 1
+repo = sys.argv[1]
+pattern = sys.argv[2]
+fallback_url = sys.argv[3]
+
+headers = {
+    'User-Agent': 'sadeem-builder',
+    'Accept': 'application/vnd.github+json',
+}
+token = os.environ.get('GITHUB_TOKEN') or os.environ.get('GH_TOKEN')
+if token:
+    headers['Authorization'] = f'Bearer {token}'
+
+endpoints = [
+    f"https://api.github.com/repos/{repo}/releases/latest",
+    f"https://api.github.com/repos/{repo}/releases"
+]
+
+found_url = None
+found_tag = None
+
+for url in endpoints:
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode('utf-8', errors='replace'))
+            releases = data if isinstance(data, list) else [data]
+            for release in releases:
+                if not isinstance(release, dict):
+                    continue
+                tag = release.get('tag_name', 'unknown')
+                for asset in release.get('assets', []):
+                    name = asset.get('name', '')
+                    if re.search(pattern, name, re.IGNORECASE):
+                        download_url = asset.get('browser_download_url')
+                        if download_url:
+                            found_url = download_url
+                            found_tag = tag
+                            break
+                if found_url:
+                    break
+        if found_url:
+            break
+    except urllib.error.HTTPError as e:
+        sys.stderr.write(f"WARNING: GitHub API returned HTTP {e.code} for {url}: {e.reason}\n")
+    except Exception as e:
+        sys.stderr.write(f"WARNING: Failed to query {url}: {e}\n")
+
+if found_url:
+    sys.stderr.write(f"==> Resolved {repo} ({found_tag}): {found_url}\n")
+    print(found_url)
+else:
+    sys.stderr.write(f"WARNING: Using fallback URL for {repo}: {fallback_url}\n")
+    print(fallback_url)
+PYEOF
+}
+
+# ------------------------------------------------------------------------------
+# Function: download_and_verify_archive
+# Downloads archive with curl, checks validity, and retries with fallback if needed.
+# ------------------------------------------------------------------------------
+download_and_verify_archive() {
+    local url="$1"
+    local fallback_url="$2"
+    local dest_file="$3"
+
+    echo "==> Downloading archive from ${url}..." >&2
+    if ! curl -fSL --retry 3 --retry-delay 2 -H "User-Agent: sadeem-builder" -o "$dest_file" "$url" || [[ ! -s "$dest_file" ]]; then
+        if [[ "$url" != "$fallback_url" ]]; then
+            echo "WARNING: Download failed or empty from ${url}. Retrying with fallback: ${fallback_url}..." >&2
+            rm -f "$dest_file"
+            if ! curl -fSL --retry 3 --retry-delay 2 -H "User-Agent: sadeem-builder" -o "$dest_file" "$fallback_url" || [[ ! -s "$dest_file" ]]; then
+                echo "ERROR: Fallback download also failed from ${fallback_url}" >&2
+                return 1
+            fi
+        else
+            echo "ERROR: Failed to download from ${url}" >&2
+            return 1
+        fi
     fi
 
-    if [[ -z "$release_json" ]] || [[ "$release_json" == "null" ]]; then
-        echo "ERROR: Empty release metadata received for ${repo} from ${api_url}" >&2
-        exit 1
+    if ! tar -tzf "$dest_file" >/dev/null 2>&1; then
+        if [[ "$url" != "$fallback_url" ]]; then
+            echo "WARNING: Downloaded archive from ${url} is invalid. Retrying with fallback: ${fallback_url}..." >&2
+            rm -f "$dest_file"
+            if ! curl -fSL --retry 3 --retry-delay 2 -H "User-Agent: sadeem-builder" -o "$dest_file" "$fallback_url" || [[ ! -s "$dest_file" ]] || ! tar -tzf "$dest_file" >/dev/null 2>&1; then
+                echo "ERROR: Fallback archive also invalid from ${fallback_url}" >&2
+                return 1
+            fi
+        else
+            echo "ERROR: Archive is invalid or corrupted." >&2
+            return 1
+        fi
     fi
 
-    local tag_name
-    tag_name=$(echo "$release_json" | jq -r '.tag_name // empty')
-    if [[ -z "$tag_name" ]]; then
-        echo "ERROR: Could not parse tag_name for ${repo}." >&2
-        exit 1
-    fi
-
-    local download_url
-    download_url=$(echo "$release_json" | jq -r --arg pat "$pattern" '[.assets[] | select(.name | test($pat))] | first | .browser_download_url // empty')
-    if [[ -z "$download_url" ]]; then
-        echo "ERROR: Could not find asset matching '${pattern}' in release ${tag_name} for ${repo}." >&2
-        exit 1
-    fi
-
-    echo "==> Downloading ${repo} (${tag_name}) from ${download_url}..." >&2
-    if ! curl -fsSL -H "User-Agent: ${USER_AGENT}" "${CURL_AUTH_ARGS[@]}" -o "$output_file" "$download_url"; then
-        echo "ERROR: Failed to download asset from ${download_url}" >&2
-        exit 1
-    fi
-
-    if [[ ! -s "$output_file" ]]; then
-        echo "ERROR: Downloaded file for ${repo} is missing or empty." >&2
-        exit 1
-    fi
-
-    echo "$tag_name"
+    return 0
 }
 
 # ------------------------------------------------------------------------------
@@ -87,12 +139,15 @@ echo "=========================================================="
 echo "Installing ZapFast (crmne/zapfast)..."
 echo "=========================================================="
 
+ZAPFAST_FALLBACK="https://github.com/crmne/zapfast/releases/download/v0.21.3/zapfast-v0.21.3-x86_64-unknown-linux-gnu.tar.gz"
 ZAPFAST_ARCHIVE="${TMP_WORK_DIR}/zapfast.tar.gz"
 ZAPFAST_EXTRACT="${TMP_WORK_DIR}/zapfast_extracted"
 mkdir -p "$ZAPFAST_EXTRACT"
 
-ZAPFAST_TAG=$(fetch_latest_github_release "crmne/zapfast" "x86_64.*linux.*\\.tar\\.gz$" "$ZAPFAST_ARCHIVE")
-echo "==> Extracting ZapFast (${ZAPFAST_TAG})..."
+ZAPFAST_URL=$(resolve_release_asset "crmne/zapfast" "x86_64.*linux.*\.tar\.gz$" "$ZAPFAST_FALLBACK")
+download_and_verify_archive "$ZAPFAST_URL" "$ZAPFAST_FALLBACK" "$ZAPFAST_ARCHIVE"
+
+echo "==> Extracting ZapFast..."
 tar -xzf "$ZAPFAST_ARCHIVE" -C "$ZAPFAST_EXTRACT"
 
 ZAPFAST_BIN=$(find "$ZAPFAST_EXTRACT" -type f -name "zapfast" | head -n 1)
@@ -109,10 +164,10 @@ mkdir -p "${TARGET_ROOT}/usr/share/icons/hicolor/scalable/apps"
 install -m 755 "$ZAPFAST_BIN" "${TARGET_ROOT}/usr/share/zapfast/zapfast"
 
 # Ensure /usr/bin/zapfast runner exists
-cat << 'EOF' > "${TARGET_ROOT}/usr/bin/zapfast"
+cat << 'RUNNER' > "${TARGET_ROOT}/usr/bin/zapfast"
 #!/usr/bin/bash
 exec /usr/share/zapfast/zapfast "$@"
-EOF
+RUNNER
 chmod 755 "${TARGET_ROOT}/usr/bin/zapfast"
 
 # Copy omarchy themes if present
@@ -124,7 +179,7 @@ if [[ -n "$ZAPFAST_SVG" ]] && [[ -f "$ZAPFAST_SVG" ]]; then
     cp -f "$ZAPFAST_SVG" "${TARGET_ROOT}/usr/share/icons/hicolor/scalable/apps/zapfast.svg"
 fi
 
-echo "==> ZapFast (${ZAPFAST_TAG}) installed successfully."
+echo "==> ZapFast installed successfully."
 
 # ------------------------------------------------------------------------------
 # 2. Install Mister Download Manager (MDM)
@@ -134,12 +189,15 @@ echo "=========================================================="
 echo "Installing Mister Download Manager (anefzaoui/misterdownloadmanager)..."
 echo "=========================================================="
 
+MDM_FALLBACK="https://github.com/anefzaoui/misterdownloadmanager/releases/download/v0.5.2/MisterDownloadManager-0.5.2-linux-x86_64.tar.gz"
 MDM_ARCHIVE="${TMP_WORK_DIR}/mdm.tar.gz"
 MDM_EXTRACT="${TMP_WORK_DIR}/mdm_extracted"
 mkdir -p "$MDM_EXTRACT"
 
-MDM_TAG=$(fetch_latest_github_release "anefzaoui/misterdownloadmanager" ".*linux.*x86_64.*\\.tar\\.gz$" "$MDM_ARCHIVE")
-echo "==> Extracting Mister Download Manager (${MDM_TAG})..."
+MDM_URL=$(resolve_release_asset "anefzaoui/misterdownloadmanager" ".*linux.*x86_64.*\.tar\.gz$" "$MDM_FALLBACK")
+download_and_verify_archive "$MDM_URL" "$MDM_FALLBACK" "$MDM_ARCHIVE"
+
+echo "==> Extracting Mister Download Manager..."
 tar -xzf "$MDM_ARCHIVE" -C "$MDM_EXTRACT"
 
 mkdir -p "${TARGET_ROOT}/usr/bin"
@@ -169,7 +227,7 @@ if [[ -n "$MDM_EXT_DIR" ]] && [[ -d "$MDM_EXT_DIR" ]]; then
     cp -rf "$MDM_EXT_DIR" "${TARGET_ROOT}/usr/share/misterdownloadmanager/"
 fi
 
-echo "==> Mister Download Manager (${MDM_TAG}) installed successfully."
+echo "==> Mister Download Manager installed successfully."
 
 echo "=========================================================="
 echo "All external applications fetched and installed successfully!"
