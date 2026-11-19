@@ -10,6 +10,13 @@ modules:
     files:
       - source: system
         destination: /
+      - source: scripts
+        destination: /tmp/scripts
+
+  # Fetch and install latest external GitHub release binaries (ZapFast, Mister Download Manager)
+  - type: script
+    snippets:
+      - "bash /tmp/scripts/install-external-apps.sh"
 
   # Import RPM Fusion GPG signing keys into RPM database
   - type: script
@@ -314,7 +321,7 @@ modules:
         dconf update || true
         mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer || true
         rm -f /usr/share/applications/sadeem-system.desktop /usr/share/applications/sadeem-welcome.desktop /etc/xdg/autostart/sadeem-welcome.desktop || true
-        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager /usr/bin/zapfast /usr/bin/misterdownloadmanager* /usr/share/zapfast/zapfast || true
 
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs
