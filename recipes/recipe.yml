@@ -255,17 +255,7 @@ modules:
     scripts:
       - install-external-apps.sh
 
-  # ============================================================================
-  # 4. SADEEM SYSTEM FILES & ASSETS
-  # Placed near the bottom so changes to desktop files, custom scripts, and icons
-  # do not invalidate heavy package installation layers.
-  # ============================================================================
-  - type: files
-    files:
-      - source: system
-        destination: /
-
-  # Post-copy setup: compile schemas, update dconf, convert Plymouth logos, update icon caches, and set permissions
+  # System setup: compile schemas, update dconf, convert Plymouth logos, update icon caches, and set permissions
   - type: script
     snippets:
       - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
@@ -328,6 +318,15 @@ modules:
         mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer && ln -sf ../sadeem-updater-check.timer /usr/lib/systemd/user/timers.target.wants/sadeem-updater-check.timer || true
         rm -f /usr/share/applications/sadeem-system.desktop /usr/share/applications/sadeem-welcome.desktop /etc/xdg/autostart/sadeem-welcome.desktop || true
         chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager /usr/bin/zapfast /usr/bin/misterdownloadmanager* /usr/share/zapfast/zapfast /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge || true
+
+  # ============================================================================
+  # 4. SADEEM SYSTEM FILES & ASSETS
+  # Placed before initramfs so custom Plymouth splash watermark is packed into initramfs
+  # ============================================================================
+  - type: files
+    files:
+      - source: system
+        destination: /
 
   # ============================================================================
   # 5. FINAL BOOT CONFIGURATION & SIGNING
