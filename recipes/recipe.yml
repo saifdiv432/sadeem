@@ -6,26 +6,14 @@ base-image: quay.io/fedora-ostree-desktops/silverblue
 image-version: 45
 
 modules:
-  - type: files
-    files:
-      - source: system
-        destination: /
-
-  # Fetch and install latest external GitHub release binaries (ZapFast, Mister Download Manager)
-  - type: script
-    scripts:
-      - install-external-apps.sh
-
-  # Import RPM Fusion GPG signing keys into RPM database
-  - type: script
-    snippets:
-      - "rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-rpmfusion*"
-
-  # Install required multimedia codecs, drivers, fonts, and utilities from Fedora & RPM Fusion
+  # ============================================================================
+  # 1. HEAVY & STATIC PACKAGES LAYER (rpm-ostree)
+  # Cached permanently across builds unless packages or base Fedora version changes.
+  # ============================================================================
   - type: rpm-ostree
     keys:
-      - /etc/pki/rpm-gpg/RPM-GPG-KEY-rpmfusion-free-fedora-2020
-      - /etc/pki/rpm-gpg/RPM-GPG-KEY-rpmfusion-nonfree-fedora-2020
+      - https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-2020
+      - https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-nonfree-fedora-2020
     repos:
       - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-%OS_VERSION%.noarch.rpm
       - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-%OS_VERSION%.noarch.rpm
@@ -109,6 +97,9 @@ modules:
     snippets:
       - "rpm-ostree install mesa-va-drivers-freeworld || echo 'Skipping mesa-va-drivers-freeworld due to temporary Mesa version skew'"
 
+  # ============================================================================
+  # 2. STATIC SYSTEM CONFIGURATIONS & FLATPAKS
+  # ============================================================================
   # System-wide Flatpaks configuration (disables Fedora remote and enables Flathub)
   - type: default-flatpaks
     configurations:
@@ -145,12 +136,9 @@ modules:
         - saifdora-accent-watcher.service
         - sadeem-init-sandbox.service
 
-  # Compile dconf defaults, glib schemas, update MIME database, update logos and icon cache, fastfetch hook, and customize os-release
+  # Static system branding, sound theme generation, and Plymouth defaults
   - type: script
     snippets:
-      - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
-      - "dconf update"
-      - "update-desktop-database /usr/share/applications || true"
       - |
         for OS_REL in /usr/lib/os-release /etc/os-release; do
           if [ -f "$OS_REL" ] && [ ! -L "$OS_REL" ]; then
@@ -180,46 +168,14 @@ modules:
         done
         echo -e "[Product]\nproduct_name = Sadeem 45" > /etc/anaconda/product.d/sadeem.conf
 
-        # Apply Sadeem burgundy CSS to Cockpit Shell, Firefox kiosk theme, and Anaconda WebUI
-        if [ -f /usr/share/sadeem/cockpit-branding.css ]; then
-          for CSS_FILE in /usr/share/cockpit/branding/fedora/branding.css /usr/share/cockpit/branding/*/*.css /usr/share/cockpit/shell/shell.css /usr/share/cockpit/shell/*.css; do
-            if [ -f "$CSS_FILE" ]; then
-              echo -e "\n/* Sadeem Burgundy Cockpit Top Bar */\n" >> "$CSS_FILE"
-              cat /usr/share/sadeem/cockpit-branding.css >> "$CSS_FILE"
-              gzip -kf "$CSS_FILE" 2>/dev/null || true
-            fi
-          done
-        fi
-        if [ -f /usr/share/sadeem/anaconda-burgundy.css ]; then
-          for CSS_FILE in /usr/share/cockpit/anaconda/*.css /usr/share/cockpit/anaconda-webui/*.css /usr/share/anaconda/*.css; do
-            if [ -f "$CSS_FILE" ]; then
-              echo -e "\n/* Sadeem Burgundy Anaconda WebUI Theme */\n" >> "$CSS_FILE"
-              cat /usr/share/sadeem/anaconda-burgundy.css >> "$CSS_FILE"
-              gzip -kf "$CSS_FILE" 2>/dev/null || true
-            fi
-          done
-          for HTML_FILE in /usr/share/cockpit/anaconda/*.html /usr/share/cockpit/anaconda-webui/*.html /usr/share/cockpit/anaconda/index.html /usr/share/anaconda/*.html; do
-            if [ -f "$HTML_FILE" ] && ! grep -q "anaconda-burgundy.css" "$HTML_FILE"; then
-              sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$HTML_FILE" 2>/dev/null || true
-            fi
-          done
-        fi
-        # Firefox kiosk top bar styling for Anaconda WebUI
-        for UC in /usr/share/anaconda/firefox-theme/*/chrome/userChrome.css; do
-          if [ -f "$UC" ]; then
-            sed -i -E 's/#(294172|3c6eb4|0066cc|0055aa|51a2da|0088ce|06c)/#7a1c33/gI' "$UC" || true
-            echo -e "\n:root, #navigator-toolbox, #titlebar, #TabsToolbar, #nav-bar, .titlebar-color { background-color: #7a1c33 !important; background-image: none !important; color: #ffffff !important; }\n" >> "$UC" || true
-          fi
-        done
-
         # Remove restricted Fedora flatpak remotes and ensure Flathub is configured system-wide
         flatpak remote-delete --system --force fedora 2>/dev/null || true
         flatpak remote-delete --system --force fedora-testing 2>/dev/null || true
         rm -f /etc/flatpak/remotes.d/fedora*.flatpakrepo 2>/dev/null || true
         flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
         flatpak override --system --talk-name=org.freedesktop.portal.WebExtensions --talk-name=org.freedesktop.Flatpak org.mozilla.firefox 2>/dev/null || true
-        chmod +x /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge 2>/dev/null || true
 
+        # Plymouth theme defaults
         mkdir -p /usr/share/pixmaps /usr/share/plymouth/themes/spinner /usr/share/icons/hicolor/scalable/apps /etc/plymouth
         echo -e "[Daemon]\nTheme=spinner\nShowDelay=0\nDeviceTimeout=8" > /etc/plymouth/plymouthd.conf
         echo -e "[Daemon]\nTheme=spinner\nShowDelay=0\nDeviceTimeout=8\nUseSimpledrmNoLuks=1" > /usr/share/plymouth/plymouthd.defaults
@@ -234,22 +190,6 @@ modules:
           sed -i 's/ModuleName=tribar/ModuleName=text/' /usr/share/plymouth/themes/tribar/tribar.plymouth || true
         fi
         plymouth-set-default-theme spinner || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text-dark.svg || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/pixmaps/fedora-logo-sprite.svg || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo-small.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 280 -h 83 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora_logo_med.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 280 -h 83 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora_whitelogo_med.png || true
-        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/pixmaps/fedora_whitelogo.svg || true
-        gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
 
         # Generate Sadeem sound theme files if needed
         mkdir -p /usr/share/sounds/sadeem/stereo
@@ -306,21 +246,91 @@ modules:
         save_snd("dialog-error.oga", samples)
         ' || true
 
-        # Safely remove gnome-tweaks if present in base image
-        rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
-        if [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ]; then
-          rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png
-          rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png
-          for OLD_LOGO in /usr/share/pixmaps/saifdora*.png; do
-            [ -f "$OLD_LOGO" ] && cp -f /usr/share/pixmaps/fedora-gdm-logo.png "$OLD_LOGO"
+  # ============================================================================
+  # 3. EXTERNAL APPS INSTALLER
+  # Fetches latest ZapFast and Mister Download Manager binaries from GitHub releases
+  # ============================================================================
+  - type: script
+    scripts:
+      - install-external-apps.sh
+
+  # ============================================================================
+  # 4. SADEEM SYSTEM FILES & ASSETS
+  # Placed near the bottom so changes to desktop files, custom scripts, and icons
+  # do not invalidate heavy package installation layers.
+  # ============================================================================
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Post-copy setup: compile schemas, update dconf, convert Plymouth logos, update icon caches, and set permissions
+  - type: script
+    snippets:
+      - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
+      - "dconf update"
+      - "update-desktop-database /usr/share/applications || true"
+      - |
+        # Apply Sadeem burgundy CSS to Cockpit Shell, Firefox kiosk theme, and Anaconda WebUI
+        if [ -f /usr/share/sadeem/cockpit-branding.css ]; then
+          for CSS_FILE in /usr/share/cockpit/branding/fedora/branding.css /usr/share/cockpit/branding/*/*.css /usr/share/cockpit/shell/shell.css /usr/share/cockpit/shell/*.css; do
+            if [ -f "$CSS_FILE" ]; then
+              echo -e "\n/* Sadeem Burgundy Cockpit Top Bar */\n" >> "$CSS_FILE"
+              cat /usr/share/sadeem/cockpit-branding.css >> "$CSS_FILE"
+              gzip -kf "$CSS_FILE" 2>/dev/null || true
+            fi
           done
         fi
+        if [ -f /usr/share/sadeem/anaconda-burgundy.css ]; then
+          for CSS_FILE in /usr/share/cockpit/anaconda/*.css /usr/share/cockpit/anaconda-webui/*.css /usr/share/anaconda/*.css; do
+            if [ -f "$CSS_FILE" ]; then
+              echo -e "\n/* Sadeem Burgundy Anaconda WebUI Theme */\n" >> "$CSS_FILE"
+              cat /usr/share/sadeem/anaconda-burgundy.css >> "$CSS_FILE"
+              gzip -kf "$CSS_FILE" 2>/dev/null || true
+            fi
+          done
+          for HTML_FILE in /usr/share/cockpit/anaconda/*.html /usr/share/cockpit/anaconda-webui/*.html /usr/share/cockpit/anaconda/index.html /usr/share/anaconda/*.html; do
+            if [ -f "$HTML_FILE" ] && ! grep -q "anaconda-burgundy.css" "$HTML_FILE"; then
+              sed -i 's|</head>|<link rel="stylesheet" href="/usr/share/sadeem/anaconda-burgundy.css">\n</head>|' "$HTML_FILE" 2>/dev/null || true
+            fi
+          done
+        fi
+        # Firefox kiosk top bar styling for Anaconda WebUI
+        for UC in /usr/share/anaconda/firefox-theme/*/chrome/userChrome.css; do
+          if [ -f "$UC" ]; then
+            sed -i -E 's/#(294172|3c6eb4|0066cc|0055aa|51a2da|0088ce|06c)/#7a1c33/gI' "$UC" || true
+            echo -e "\n:root, #navigator-toolbox, #titlebar, #TabsToolbar, #nav-bar, .titlebar-color { background-color: #7a1c33 !important; background-image: none !important; color: #ffffff !important; }\n" >> "$UC" || true
+          fi
+        done
+
+        # Plymouth watermark and distributor logos
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/distributor-logo-fedora.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text-dark.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-text.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/plymouth/themes/spinner/watermark.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && rsvg-convert -w 128 -h 128 /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg -o /usr/share/pixmaps/fedora-logo-sprite.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/pixmaps/fedora-logo-sprite.svg || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora-gdm-logo.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 220 -h 65 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora-logo-small.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 340 -h 101 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/system-logo-white.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg ] && rsvg-convert -w 280 -h 83 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text.svg -o /usr/share/pixmaps/fedora_logo_med.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 280 -h 83 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora_whitelogo_med.png || true
+        [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/pixmaps/fedora_whitelogo.svg || true
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+
+        # Safely remove gnome-tweaks if present in base image
+        rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
         dconf update || true
         mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer || true
         rm -f /usr/share/applications/sadeem-system.desktop /usr/share/applications/sadeem-welcome.desktop /etc/xdg/autostart/sadeem-welcome.desktop || true
-        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager /usr/bin/zapfast /usr/bin/misterdownloadmanager* /usr/share/zapfast/zapfast || true
+        chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager /usr/bin/zapfast /usr/bin/misterdownloadmanager* /usr/share/zapfast/zapfast /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge || true
 
+  # ============================================================================
+  # 5. FINAL BOOT CONFIGURATION & SIGNING
+  # ============================================================================
   # Regenerate initramfs to update boot splash and Plymouth watermark
   - type: initramfs
 

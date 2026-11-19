@@ -84,6 +84,14 @@ TRANSLATIONS = {
         "status_sys_staging": "Deploying system layer and building kernel modules...",
         "status_sys_ready_reboot": "Update complete — ready to restart",
         "status_upd_complete": "100% — Update complete",
+        "btn_restart_to_apply": "Restart to Apply Update",
+        "btn_cancel_update": "Cancel Upgrade",
+        "btn_cleanup_cache": "Clean Update Cache",
+        "toast_cache_cleaned": "Update cache cleaned successfully",
+        "status_auto_heal_retry": "Cache conflict detected, automatically cleaning and retrying...",
+        "status_pending_reboot": "A system update has been downloaded and is ready to apply upon reboot.",
+        "status_update_cancelled": "Update was cancelled.",
+        "status_cleaning_cache": "Cleaning update cache...",
         "colors_presets_title": "Preset Colors",
         "colors_presets_desc": "Choose a color to apply immediately to the desktop and apps",
         "colors_custom_title": "Custom Color",
@@ -269,6 +277,14 @@ TRANSLATIONS = {
         "status_sys_staging": "جاري تثبيت الطبقة وتجهيز وحدات النواة...",
         "status_sys_ready_reboot": "اكتمل التحديث — جاهز لإعادة التشغيل",
         "status_upd_complete": "100% — اكتمل التحديث",
+        "btn_restart_to_apply": "إعادة التشغيل لتفعيل التحديث",
+        "btn_cancel_update": "إلغاء التحديث",
+        "btn_cleanup_cache": "تنظيف ذاكرة التحديثات",
+        "toast_cache_cleaned": "تم تنظيف ذاكرة التحديثات المؤقتة بنجاح",
+        "status_auto_heal_retry": "تم اكتشاف تعارض في ذاكرة التحديثات المؤقتة، جاري التنظيف وإعادة المحاولة تلقائياً...",
+        "status_pending_reboot": "تم تنزيل تحديث للنظام وجاهز للتفعيل بعد إعادة التشغيل.",
+        "status_update_cancelled": "تم إلغاء التحديث.",
+        "status_cleaning_cache": "جاري تنظيف ذاكرة التحديثات المؤقتة...",
         "colors_presets_title": "الألوان الجاهزة",
         "colors_presets_desc": "اختر لوناً لتطبيقه فوراً على الواجهة والتطبيقات",
         "colors_custom_title": "لون مخصص",
@@ -449,6 +465,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "Téléchargement des fichiers système...",
         "status_sys_staging": "Déploiement de la couche système et préparation des modules noyau...",
         "status_upd_complete": "100% — Mise à jour terminée",
+        "btn_restart_to_apply": "Redémarrer pour appliquer la mise à jour",
+        "btn_cancel_update": "Annuler la mise à jour",
+        "btn_cleanup_cache": "Nettoyer le cache des mises à jour",
+        "toast_cache_cleaned": "Cache des mises à jour nettoyé avec succès",
+        "status_auto_heal_retry": "Conflit de cache détecté, nettoyage et nouvelle tentative automatiques...",
+        "status_pending_reboot": "Une mise à jour du système a été téléchargée et est prête à être appliquée au redémarrage.",
+        "status_update_cancelled": "La mise à jour a été annulée.",
+        "status_cleaning_cache": "Nettoyage du cache des mises à jour...",
         "colors_presets_title": "Couleurs prédéfinies",
         "colors_presets_desc": "Choisissez une couleur à appliquer immédiatement",
         "colors_custom_title": "Couleur personnalisée",
@@ -566,6 +590,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "Descargando archivos del sistema...",
         "status_sys_staging": "Implementando capa del sistema y preparando módulos del núcleo...",
         "status_upd_complete": "100% — Actualización completada",
+        "btn_restart_to_apply": "Reiniciar para aplicar la actualización",
+        "btn_cancel_update": "Cancelar actualización",
+        "btn_cleanup_cache": "Limpiar caché de actualizaciones",
+        "toast_cache_cleaned": "Caché de actualizaciones limpiada con éxito",
+        "status_auto_heal_retry": "Conflicto de caché detectado, limpiando y reintentando automáticamente...",
+        "status_pending_reboot": "Se ha descargado una actualización del sistema y está lista para aplicarse al reiniciar.",
+        "status_update_cancelled": "La actualización fue cancelada.",
+        "status_cleaning_cache": "Limpiando la caché de actualizaciones...",
         "colors_presets_title": "Colores predefinidos",
         "colors_presets_desc": "Elige un color para aplicarlo de inmediato",
         "colors_custom_title": "Color personalizado",
@@ -683,6 +715,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "Systemdateien werden heruntergeladen...",
         "status_sys_staging": "System-Layer wird bereitgestellt und Kernel-Module werden erstellt...",
         "status_upd_complete": "100% — Aktualisierung abgeschlossen",
+        "btn_restart_to_apply": "Neu starten, um die Aktualisierung anzuwenden",
+        "btn_cancel_update": "Aktualisierung abbrechen",
+        "btn_cleanup_cache": "Update-Cache bereinigen",
+        "toast_cache_cleaned": "Update-Cache erfolgreich bereinigt",
+        "status_auto_heal_retry": "Cache-Konflikt erkannt, automatisches Bereinigen und erneuter Versuch...",
+        "status_pending_reboot": "Ein Systemupdate wurde heruntergeladen und wird nach dem Neustart angewendet.",
+        "status_update_cancelled": "Aktualisierung wurde abgebrochen.",
+        "status_cleaning_cache": "Update-Cache wird bereinigt...",
         "colors_presets_title": "Voreingestellte Farben",
         "colors_presets_desc": "Wählen Sie eine Farbe, um sie sofort anzuwenden",
         "colors_custom_title": "Benutzerdefinierte Farbe",
@@ -800,6 +840,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "Sistem dosyaları indiriliyor...",
         "status_sys_staging": "Sistem katmanı dağıtılıyor ve çekirdek modülleri hazırlanıyor...",
         "status_upd_complete": "%100 — Güncelleme tamamlandı",
+        "btn_restart_to_apply": "Güncellemeyi Uygulamak İçin Yeniden Başlat",
+        "btn_cancel_update": "Güncellemeyi İptal Et",
+        "btn_cleanup_cache": "Güncelleme Önbelleğini Temizle",
+        "toast_cache_cleaned": "Güncelleme önbelleği başarıyla temizlendi",
+        "status_auto_heal_retry": "Önbellek çakışması tespit edildi, otomatik temizlenip yeniden deneniyor...",
+        "status_pending_reboot": "Sistem güncellemesi indirildi ve yeniden başlatıldığında uygulanmaya hazır.",
+        "status_update_cancelled": "Güncelleme iptal edildi.",
+        "status_cleaning_cache": "Güncelleme önbelleği temizleniyor...",
         "colors_presets_title": "Hazır Renkler",
         "colors_presets_desc": "Masaüstüne ve uygulamalara hemen uygulamak için bir renk seçin",
         "colors_custom_title": "Özel Renk",
@@ -917,6 +965,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "Загрузка системных файлов...",
         "status_sys_staging": "Развертывание системного слоя и сборка модулей ядра...",
         "status_upd_complete": "100% — Обновление завершено",
+        "btn_restart_to_apply": "Перезагрузить для применения обновления",
+        "btn_cancel_update": "Отменить обновление",
+        "btn_cleanup_cache": "Очистить кэш обновлений",
+        "toast_cache_cleaned": "Кэш обновлений успешно очищен",
+        "status_auto_heal_retry": "Обнаружен конфликт кэша, автоматическая очистка и повторная попытка...",
+        "status_pending_reboot": "Обновление системы загружено и готово к применению после перезагрузки.",
+        "status_update_cancelled": "Обновление отменено.",
+        "status_cleaning_cache": "Очистка кэша обновлений...",
         "colors_presets_title": "Готовые цвета",
         "colors_presets_desc": "Выберите цвет для немедленного применения",
         "colors_custom_title": "Пользовательский цвет",
@@ -1034,6 +1090,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "A transferir ficheiros do sistema...",
         "status_sys_staging": "A implementar camada do sistema e a preparar módulos do kernel...",
         "status_upd_complete": "100% — Atualização concluída",
+        "btn_restart_to_apply": "Reiniciar para aplicar a atualização",
+        "btn_cancel_update": "Cancelar atualização",
+        "btn_cleanup_cache": "Limpar cache de atualizações",
+        "toast_cache_cleaned": "Cache de atualizações limpo com sucesso",
+        "status_auto_heal_retry": "Conflito de cache detetado, limpando e tentando novamente automaticamente...",
+        "status_pending_reboot": "Uma atualização do sistema foi descarregada e está pronta a ser aplicada após reiniciar.",
+        "status_update_cancelled": "A atualização foi cancelada.",
+        "status_cleaning_cache": "A limpar a cache de atualizações...",
         "colors_presets_title": "Cores predefinidas",
         "colors_presets_desc": "Escolha uma cor para aplicar imediatamente",
         "colors_custom_title": "Cor personalizada",
@@ -1151,6 +1215,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "Download dei file di sistema in corso...",
         "status_sys_staging": "Distribuzione del livello di sistema e preparazione dei moduli kernel...",
         "status_upd_complete": "100% — Aggiornamento completato",
+        "btn_restart_to_apply": "Riavvia per applicare l'aggiornamento",
+        "btn_cancel_update": "Annulla aggiornamento",
+        "btn_cleanup_cache": "Pulisci cache aggiornamenti",
+        "toast_cache_cleaned": "Cache degli aggiornamenti ripulita con successo",
+        "status_auto_heal_retry": "Rilevato conflitto nella cache, pulizia e nuovo tentativo automatici...",
+        "status_pending_reboot": "Un aggiornamento di sistema è stato scaricato ed è pronto per essere applicato al riavvio.",
+        "status_update_cancelled": "L'aggiornamento è stato annullato.",
+        "status_cleaning_cache": "Pulizia della cache degli aggiornamenti...",
         "colors_presets_title": "Colori predefiniti",
         "colors_presets_desc": "Scegli un colore da applicare subito",
         "colors_custom_title": "Colore personalizzato",
@@ -1268,6 +1340,14 @@ TRANSLATIONS = {
         "status_sys_downloading": "正在下载系统文件...",
         "status_sys_staging": "正在部署系统层并构建内核模块...",
         "status_upd_complete": "100% — 更新完成",
+        "btn_restart_to_apply": "重启以应用更新",
+        "btn_cancel_update": "取消升级",
+        "btn_cleanup_cache": "清理更新缓存",
+        "toast_cache_cleaned": "更新缓存清理成功",
+        "status_auto_heal_retry": "检测到缓存冲突，正在自动清理并重试...",
+        "status_pending_reboot": "系统更新已下载，重启后即可应用。",
+        "status_update_cancelled": "更新已取消。",
+        "status_cleaning_cache": "正在清理更新缓存...",
         "colors_presets_title": "预设颜色",
         "colors_presets_desc": "选择一种颜色并立即应用到桌面和应用程序",
         "colors_custom_title": "自定义颜色",
@@ -1489,10 +1569,24 @@ def has_pending_reboot():
         if res.returncode == 0 and res.stdout.strip():
             data = json.loads(res.stdout)
             deployments = data.get("deployments", [])
-            if deployments and deployments[0].get("booted") is False:
+            if deployments:
+                if deployments[0].get("booted") is False:
+                    return True
+                for d in deployments:
+                    if d.get("staged") is True:
+                        return True
+    except Exception:
+        pass
+
+    try:
+        res = subprocess.run(["rpm-ostree", "status"], capture_output=True, text=True, check=False)
+        if res.returncode == 0 and res.stdout:
+            txt = res.stdout.lower()
+            if "changes queued for next boot" in txt or "staged" in txt:
                 return True
     except Exception:
         pass
+
     return False
 
 
@@ -2668,21 +2762,22 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             if pending:
                 def _ui():
                     self.reboot_ready = True
-                    self.btn_start_update.set_label(t("install_and_restart"))
+                    self.btn_start_update.set_label(t("btn_restart_to_apply"))
                     self.btn_start_update.set_sensitive(True)
                     if not self.btn_start_update.has_css_class("suggested-action"):
                         self.btn_start_update.add_css_class("suggested-action")
                     if not self.btn_start_update.has_css_class("pill"):
                         self.btn_start_update.add_css_class("pill")
-                    self.upd_status_label.set_text(t("status_reboot"))
+                    self.upd_status_label.set_text(t("status_pending_reboot"))
+                    self.sys_row.set_sensitive(False)
                     if hasattr(self, "upd_results_group"):
                         for r in getattr(self, "upd_result_rows", []):
                             self.upd_results_group.remove(r)
                         self.upd_result_rows = []
                         row = Adw.ActionRow()
                         row.set_use_markup(False)
-                        row.set_title(t("install_and_restart"))
-                        row.set_subtitle(t("status_reboot"))
+                        row.set_title(t("btn_restart_to_apply"))
+                        row.set_subtitle(t("status_pending_reboot"))
                         row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-reboot-symbolic", "view-refresh-symbolic"])))
                         self.upd_results_group.add(row)
                         self.upd_result_rows.append(row)
@@ -2698,13 +2793,14 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         def _apply():
             self.reboot_ready = pending
             if pending:
-                self.btn_start_update.set_label(t("install_and_restart"))
+                self.btn_start_update.set_label(t("btn_restart_to_apply"))
                 self.btn_start_update.set_sensitive(True)
                 if not self.btn_start_update.has_css_class("suggested-action"):
                     self.btn_start_update.add_css_class("suggested-action")
                 if not self.btn_start_update.has_css_class("pill"):
                     self.btn_start_update.add_css_class("pill")
-                self.upd_status_label.set_text(t("status_reboot"))
+                self.upd_status_label.set_text(t("status_pending_reboot"))
+                self.sys_row.set_sensitive(False)
             else:
                 if getattr(self, "current_update_stage", "idle") == "idle":
                     self.btn_start_update.set_label(t("btn_check_updates"))
@@ -2713,17 +2809,103 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     self.btn_start_update.add_css_class("suggested-action")
                 if not self.btn_start_update.has_css_class("pill"):
                     self.btn_start_update.add_css_class("pill")
+                self.sys_row.set_sensitive(True)
             return False
 
         GLib.idle_add(_apply)
 
     def on_action_button_clicked(self, btn):
-        if getattr(self, "reboot_ready", False):
+        if getattr(self, "reboot_ready", False) or has_pending_reboot():
             trigger_system_reboot()
         elif getattr(self, "current_update_stage", "idle") == "results_has_updates":
             self.start_installation()
         else:
             self.start_checking()
+
+    def on_cleanup_cache_clicked(self, btn):
+        if getattr(self, "is_updating", False) or getattr(self, "is_checking", False):
+            return
+
+        def _set_sens(s):
+            if hasattr(self, "btn_cleanup_cache"):
+                self.btn_cleanup_cache.set_sensitive(s)
+            if hasattr(self, "btn_header_cleanup"):
+                self.btn_header_cleanup.set_sensitive(s)
+            return False
+
+        _set_sens(False)
+        self.upd_status_label.set_text(t("status_cleaning_cache"))
+        self.append_upd_log("")
+        self.append_upd_log("=== " + t("btn_cleanup_cache") + " ===")
+
+        def _worker():
+            try:
+                subprocess.run(["pkexec", "rpm-ostree", "cancel"], capture_output=True, text=True, check=False, timeout=30)
+                subprocess.run(["pkexec", "rpm-ostree", "cleanup", "-m"], capture_output=True, text=True, check=False, timeout=60)
+            except Exception:
+                pass
+
+            def _done():
+                _set_sens(True)
+                self.toast_overlay.add_toast(Adw.Toast.new(t("toast_cache_cleaned")))
+                self.upd_status_label.set_text(t("toast_cache_cleaned"))
+                self.append_upd_log(t("toast_cache_cleaned"))
+                return False
+
+            GLib.idle_add(_done)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def on_cancel_update_clicked(self, btn):
+        if not getattr(self, "is_updating", False):
+            return
+
+        self._update_cancelled = True
+        self.btn_cancel_update.set_sensitive(False)
+        self.upd_status_label.set_text(t("status_update_cancelled"))
+        self.append_upd_log("")
+        self.append_upd_log(f"=== {t('status_update_cancelled')} ===")
+
+        def _cancel_worker():
+            try:
+                subprocess.run(["pkexec", "rpm-ostree", "cancel"], capture_output=True, text=True, check=False, timeout=15)
+            except Exception:
+                pass
+            proc = getattr(self, "_current_update_proc", None)
+            if proc is not None:
+                try:
+                    proc.terminate()
+                    time.sleep(0.5)
+                    if proc.poll() is None:
+                        proc.kill()
+                except Exception:
+                    pass
+
+            def _reset_ui():
+                self.stop_all_upd_timers()
+                self.stop_upd_pulse()
+                self.is_updating = False
+                self.current_update_stage = "idle"
+                self.btn_cancel_update.set_visible(False)
+                self.btn_cancel_update.set_sensitive(True)
+                if hasattr(self, "btn_cleanup_cache"):
+                    self.btn_cleanup_cache.set_sensitive(True)
+                if hasattr(self, "btn_header_cleanup"):
+                    self.btn_header_cleanup.set_sensitive(True)
+                self.upd_spinner.stop()
+                self.upd_spinner.set_visible(False)
+                self.upd_progress_bar.set_visible(False)
+                self.sys_row.set_sensitive(True)
+                self.flatpak_row.set_sensitive(True)
+                self.box_row.set_sensitive(True)
+                self.check_box_availability()
+                self.update_action_button_state()
+                self.upd_status_label.set_text(t("status_update_cancelled"))
+                return False
+
+            GLib.idle_add(_reset_ui)
+
+        threading.Thread(target=_cancel_worker, daemon=True).start()
 
     def build_page_header(self, icon_names, title, subtitle):
         return build_page_header(icon_names, title, subtitle)
@@ -2739,6 +2921,12 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.header_bar = Adw.HeaderBar()
         self.switcher_title = Adw.ViewSwitcherTitle()
         self.switcher_title.set_title(t("app_title"))
+
+        self.btn_header_cleanup = Gtk.Button()
+        self.btn_header_cleanup.set_icon_name(safe_icon(["edit-clear-symbolic", "user-trash-symbolic"]))
+        self.btn_header_cleanup.set_tooltip_text(t("btn_cleanup_cache"))
+        self.btn_header_cleanup.connect("clicked", self.on_cleanup_cache_clicked)
+        self.header_bar.pack_start(self.btn_header_cleanup)
 
         # ViewStack
         self.view_stack = Adw.ViewStack()
@@ -2786,12 +2974,20 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         self.toolbar_view.set_content(self.view_stack)
 
+        self.view_stack.connect("notify::visible-child-name", lambda *args: (
+            hasattr(self, "btn_header_cleanup") and self.btn_header_cleanup.set_visible(
+                self.view_stack.get_visible_child_name() == "updates"
+            )
+        ))
+
         # Initial Tab Selection
         self.set_active_tab(initial_tab)
 
     def set_active_tab(self, tab_name):
         if tab_name in ("updates", "colors", "drivers", "containers"):
             self.view_stack.set_visible_child_name(tab_name)
+            if hasattr(self, "btn_header_cleanup"):
+                self.btn_header_cleanup.set_visible(tab_name == "updates")
             if tab_name == "updates":
                 self.check_initial_reboot_status()
 
@@ -2826,6 +3022,13 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         # Target Switches Group
         pref_group = Adw.PreferencesGroup()
         pref_group.set_title(t("upd_group_targets"))
+
+        self.btn_cleanup_cache = Gtk.Button(label=t("btn_cleanup_cache"))
+        self.btn_cleanup_cache.set_icon_name(safe_icon(["edit-clear-symbolic", "user-trash-symbolic"]))
+        self.btn_cleanup_cache.add_css_class("flat")
+        self.btn_cleanup_cache.set_tooltip_text(t("btn_cleanup_cache"))
+        self.btn_cleanup_cache.connect("clicked", self.on_cleanup_cache_clicked)
+        pref_group.set_header_suffix(self.btn_cleanup_cache)
         content.append(pref_group)
 
         self.sys_row = Adw.SwitchRow()
@@ -2889,6 +3092,14 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.btn_start_update.set_hexpand(True)
         self.btn_start_update.connect("clicked", self.on_action_button_clicked)
         actions_box.append(self.btn_start_update)
+
+        self.btn_cancel_update = Gtk.Button(label=t("btn_cancel_update"))
+        self.btn_cancel_update.add_css_class("destructive-action")
+        self.btn_cancel_update.add_css_class("pill")
+        self.btn_cancel_update.set_size_request(-1, 46)
+        self.btn_cancel_update.set_visible(False)
+        self.btn_cancel_update.connect("clicked", self.on_cancel_update_clicked)
+        actions_box.append(self.btn_cancel_update)
 
         content.append(actions_box)
 
@@ -3093,6 +3304,10 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         if getattr(self, "is_checking", False) or getattr(self, "is_updating", False):
             return
 
+        if has_pending_reboot():
+            self.check_initial_reboot_status()
+            return
+
         run_sys = self.sys_row.get_active()
         run_flatpak = self.flatpak_row.get_active()
         run_box = self.box_row.get_active()
@@ -3102,6 +3317,10 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
         self.is_checking = True
         self.btn_start_update.set_sensitive(False)
+        if hasattr(self, "btn_cleanup_cache"):
+            self.btn_cleanup_cache.set_sensitive(False)
+        if hasattr(self, "btn_header_cleanup"):
+            self.btn_header_cleanup.set_sensitive(False)
         self.sys_row.set_sensitive(False)
         self.flatpak_row.set_sensitive(False)
         self.box_row.set_sensitive(False)
@@ -3251,6 +3470,15 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.is_checking = False
         self.upd_spinner.stop()
         self.upd_spinner.set_visible(False)
+        if hasattr(self, "btn_cleanup_cache"):
+            self.btn_cleanup_cache.set_sensitive(True)
+        if hasattr(self, "btn_header_cleanup"):
+            self.btn_header_cleanup.set_sensitive(True)
+
+        if has_pending_reboot():
+            self.check_initial_reboot_status()
+            return False
+
         self.sys_row.set_sensitive(True)
         self.flatpak_row.set_sensitive(True)
         self.box_row.set_sensitive(True)
@@ -3328,6 +3556,10 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         if getattr(self, "is_updating", False):
             return
 
+        if has_pending_reboot():
+            self.check_initial_reboot_status()
+            return
+
         run_sys = self.sys_row.get_active()
         run_flatpak = self.flatpak_row.get_active()
         run_box = self.box_row.get_active()
@@ -3336,9 +3568,17 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             return
 
         self.is_updating = True
+        self._update_cancelled = False
+        self._cache_retry_attempted = False
         self.current_update_stage = "installing"
         self.btn_start_update.set_sensitive(False)
         self.btn_start_update.set_label(t("btn_updating"))
+        self.btn_cancel_update.set_visible(True)
+        self.btn_cancel_update.set_sensitive(True)
+        if hasattr(self, "btn_cleanup_cache"):
+            self.btn_cleanup_cache.set_sensitive(False)
+        if hasattr(self, "btn_header_cleanup"):
+            self.btn_header_cleanup.set_sensitive(False)
         self.sys_row.set_sensitive(False)
         self.flatpak_row.set_sensitive(False)
         self.box_row.set_sensitive(False)
@@ -3620,6 +3860,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     stderr=slave_fd,
                     close_fds=True,
                 )
+                self._current_update_proc = proc
                 os.close(slave_fd)
                 slave_fd = None
 
@@ -3629,6 +3870,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     ansi_pattern = re.compile(r'\x1b\[[0-9;?]*[A-Za-z]')
 
                     while True:
+                        if getattr(self, "_update_cancelled", False):
+                            break
                         try:
                             chunk = os.read(master_fd, 4096)
                         except OSError as exc:
@@ -3671,8 +3914,11 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     stderr=subprocess.STDOUT,
                     bufsize=0,
                 )
+                self._current_update_proc = proc
                 buf = bytearray()
                 while True:
+                    if getattr(self, "_update_cancelled", False):
+                        break
                     b = proc.stdout.read(1)
                     if not b:
                         break
@@ -3697,6 +3943,9 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             self.stop_all_upd_timers()
             self.stop_upd_pulse()
 
+            if getattr(self, "_update_cancelled", False):
+                return 1, "cancelled"
+
             if proc.returncode == 0:
                 if is_rpm_ostree:
                     if task_idx == total_tasks - 1:
@@ -3720,6 +3969,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             self.append_upd_log(err_msg)
             return 1, err_msg
         finally:
+            self._current_update_proc = None
             for fd in (slave_fd, master_fd):
                 if fd is not None:
                     try:
@@ -3740,6 +3990,9 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         overall_success = True
 
         for idx, task in enumerate(tasks):
+            if getattr(self, "_update_cancelled", False):
+                return
+
             if task == "sys":
                 GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_sys")))
                 code, out = self.run_upd_command(
@@ -3748,6 +4001,33 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     idx,
                     total
                 )
+                if getattr(self, "_update_cancelled", False):
+                    return
+
+                if code != 0 and not getattr(self, "_cache_retry_attempted", False):
+                    err_pattern = re.compile(r"checksum|corrupt|metadata|Transaction in progress|EOF|While pulling", re.IGNORECASE)
+                    if err_pattern.search(out):
+                        self._cache_retry_attempted = True
+                        GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_auto_heal_retry")))
+                        self.append_upd_log("")
+                        self.append_upd_log("=== " + t("status_auto_heal_retry") + " ===")
+                        try:
+                            subprocess.run(["pkexec", "rpm-ostree", "cancel"], capture_output=True, text=True, check=False, timeout=30)
+                            subprocess.run(["pkexec", "rpm-ostree", "cleanup", "-m"], capture_output=True, text=True, check=False, timeout=60)
+                        except Exception as e:
+                            self.append_upd_log(f"Auto-heal cleanup error: {e}")
+                        time.sleep(1.0)
+                        if getattr(self, "_update_cancelled", False):
+                            return
+                        code, out = self.run_upd_command(
+                            ["pkexec", "rpm-ostree", "upgrade"],
+                            "rpm-ostree upgrade (auto-retry)",
+                            idx,
+                            total
+                        )
+                        if getattr(self, "_update_cancelled", False):
+                            return
+
                 if code == 0:
                     out_lower = out.lower()
                     if any(phrase in out_lower for phrase in [
@@ -3773,6 +4053,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     overall_success = False
 
             elif task == "flatpak":
+                if getattr(self, "_update_cancelled", False):
+                    return
                 GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_flatpak")))
                 code, out = self.run_upd_command(
                     ["flatpak", "update", "-y", "--noninteractive"],
@@ -3780,6 +4062,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     idx,
                     total
                 )
+                if getattr(self, "_update_cancelled", False):
+                    return
                 if code == 0:
                     GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_flatpak_cleanup")))
                     self.run_upd_command(
@@ -3792,6 +4076,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     overall_success = False
 
             elif task == "box":
+                if getattr(self, "_update_cancelled", False):
+                    return
                 GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_box")))
                 code, out = self.run_upd_command(
                     ["distrobox", "upgrade", "sadeem-box"],
@@ -3799,6 +4085,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     idx,
                     total
                 )
+                if getattr(self, "_update_cancelled", False):
+                    return
                 if code == 0:
                     GLib.idle_add(lambda: self.upd_status_label.set_text(t("status_box_cleanup")))
                     self.run_upd_command(
@@ -3810,12 +4098,20 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 else:
                     overall_success = False
 
+        if getattr(self, "_update_cancelled", False):
+            return
         GLib.idle_add(self.on_updates_finished, overall_success)
 
     def on_updates_finished(self, success):
         self.is_updating = False
         self.stop_all_upd_timers()
         self.stop_upd_pulse()
+        self.btn_cancel_update.set_visible(False)
+        self.btn_cancel_update.set_sensitive(True)
+        if hasattr(self, "btn_cleanup_cache"):
+            self.btn_cleanup_cache.set_sensitive(True)
+        if hasattr(self, "btn_header_cleanup"):
+            self.btn_header_cleanup.set_sensitive(True)
         self.sys_row.set_sensitive(True)
         self.flatpak_row.set_sensitive(True)
         self.box_row.set_sensitive(True)
@@ -3838,24 +4134,25 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             def _ui():
                 if pending:
                     self.reboot_ready = True
-                    self.btn_start_update.set_label(t("install_and_restart"))
+                    self.btn_start_update.set_label(t("btn_restart_to_apply"))
                     self.btn_start_update.set_sensitive(True)
                     if not self.btn_start_update.has_css_class("suggested-action"):
                         self.btn_start_update.add_css_class("suggested-action")
                     if not self.btn_start_update.has_css_class("pill"):
                         self.btn_start_update.add_css_class("pill")
-                    self.upd_status_label.set_text(t("status_reboot"))
+                    self.upd_status_label.set_text(t("status_pending_reboot"))
                     for r in getattr(self, "upd_result_rows", []):
                         self.upd_results_group.remove(r)
                     self.upd_result_rows = []
                     row = Adw.ActionRow()
                     row.set_use_markup(False)
-                    row.set_title(t("install_and_restart"))
-                    row.set_subtitle(t("status_reboot"))
+                    row.set_title(t("btn_restart_to_apply"))
+                    row.set_subtitle(t("status_pending_reboot"))
                     row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-reboot-symbolic", "view-refresh-symbolic"])))
                     self.upd_results_group.add(row)
                     self.upd_result_rows.append(row)
                     self.upd_results_group.set_visible(True)
+                    self.sys_row.set_sensitive(False)
                 elif success:
                     self.reboot_ready = False
                     self.current_update_stage = "idle"

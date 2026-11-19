@@ -1,0 +1,16 @@
+[Unit]
+Description=Sadeem Flatpak System Setup and Default Applications
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/usr/bin/flatpak
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sadeem-flatpak-setup
+Restart=on-failure
+RestartSec=15
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
