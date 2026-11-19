@@ -10,13 +10,11 @@ modules:
     files:
       - source: system
         destination: /
-      - source: scripts
-        destination: /tmp/scripts
 
   # Fetch and install latest external GitHub release binaries (ZapFast, Mister Download Manager)
   - type: script
-    snippets:
-      - "bash /tmp/scripts/install-external-apps.sh"
+    scripts:
+      - install-external-apps.sh
 
   # Import RPM Fusion GPG signing keys into RPM database
   - type: script
