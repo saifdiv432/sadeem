@@ -135,6 +135,7 @@ modules:
         - saifdora-apply-theme.service
         - saifdora-accent-watcher.service
         - sadeem-init-sandbox.service
+        - sadeem-updater-check.timer
 
   # Static system branding, sound theme generation, and Plymouth defaults
   - type: script
@@ -324,7 +325,7 @@ modules:
         # Safely remove gnome-tweaks if present in base image
         rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
         dconf update || true
-        mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer || true
+        mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer && ln -sf ../sadeem-updater-check.timer /usr/lib/systemd/user/timers.target.wants/sadeem-updater-check.timer || true
         rm -f /usr/share/applications/sadeem-system.desktop /usr/share/applications/sadeem-welcome.desktop /etc/xdg/autostart/sadeem-welcome.desktop || true
         chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager /usr/bin/zapfast /usr/bin/misterdownloadmanager* /usr/share/zapfast/zapfast /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge || true
 

@@ -92,6 +92,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "A system update has been downloaded and is ready to apply upon reboot.",
         "status_update_cancelled": "Update was cancelled.",
         "status_cleaning_cache": "Cleaning update cache...",
+        "policy_group_title": "Update & Notification Policy",
+        "policy_group_desc": "Choose how background update checks, downloads, and notifications behave",
+        "policy_smart_title": "Smart Mode (Recommended)",
+        "policy_smart_desc": "Silently stage small updates (≤ 50 MB) on unmetered networks, alert for larger updates or metered networks",
+        "policy_notify_title": "Notifications Only",
+        "policy_notify_desc": "Periodically check for updates and alert with total size without downloading in background",
+        "policy_manual_title": "Fully Manual",
+        "policy_manual_desc": "Disable automatic checks and notifications; only check when opening the app manually",
+        "policy_manual_warning_title": "Security Warning",
+        "policy_manual_warning": "Not recommended: Disabling automatic updates and notifications may compromise your device's security and stability.",
+        "notif_staged_title": "System Update Ready",
+        "notif_staged_body": "A lightweight update of {size} MB was prepared in the background and will apply on next reboot.",
+        "notif_important_title": "Important System Update Available",
+        "notif_available_title": "System Updates Available",
+        "notif_important_body": "New updates totaling {size} MB are available. Click to view details and install.",
+        "notif_reminder_title": "System Update Reminder",
+        "notif_reminder_body": "14 days have passed since the last full update. {size} MB of updates are ready to install.",
         "colors_presets_title": "Preset Colors",
         "colors_presets_desc": "Choose a color to apply immediately to the desktop and apps",
         "colors_custom_title": "Custom Color",
@@ -285,6 +302,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "تم تنزيل تحديث للنظام وجاهز للتفعيل بعد إعادة التشغيل.",
         "status_update_cancelled": "تم إلغاء التحديث.",
         "status_cleaning_cache": "جاري تنظيف ذاكرة التحديثات المؤقتة...",
+        "policy_group_title": "سياسة التحديثات والإشعارات",
+        "policy_group_desc": "حدد سلوك فحص التحديثات في الخلفية وتنزيلها وإرسال الإشعارات",
+        "policy_smart_title": "الوضع الذكي (مستحسن)",
+        "policy_smart_desc": "تنزيل وتجهيز التحديثات الخفيفة (≤ 50 م.ب) بصمت على الشبكات غير المحدودة، والتنبيه للتحديثات الكبيرة أو المحدودة",
+        "policy_notify_title": "إشعارات فقط",
+        "policy_notify_desc": "فحص دوري للتحديثات والتنبيه بالحجم الإجمالي دون تنزيل تلقائي في الخلفية",
+        "policy_manual_title": "يدوي بالكامل",
+        "policy_manual_desc": "إيقاف الفحص التلقائي والإشعارات كلياً، والفحص فقط عند فتح التطبيق يدوياً",
+        "policy_manual_warning_title": "تحذير أمني",
+        "policy_manual_warning": "غير مستحسن: إيقاف التحديثات التلقائية والإشعارات قد يعرّض أمان جهازك واستقراره للخطر.",
+        "notif_staged_title": "تحديث النظام جاهز",
+        "notif_staged_body": "تم تجهيز تحديث خفيف بحجم {size} م.ب في الخلفية، وسيتم تطبيقه عند إعادة التشغيل القادمة.",
+        "notif_important_title": "يتوفر تحديث مهم للنظام",
+        "notif_available_title": "تتوفر تحديثات جديدة للنظام",
+        "notif_important_body": "تتوفر تحديثات جديدة بحجم إجمالي {size} م.ب. انقر للاستعراض والتثبيت.",
+        "notif_reminder_title": "تذكير بتحديث النظام",
+        "notif_reminder_body": "مضى 14 يوماً منذ آخر تحديث كامل للنظام. تتوفر تحديثات بحجم {size} م.ب جاهزة للتثبيت.",
         "colors_presets_title": "الألوان الجاهزة",
         "colors_presets_desc": "اختر لوناً لتطبيقه فوراً على الواجهة والتطبيقات",
         "colors_custom_title": "لون مخصص",
@@ -473,6 +507,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "Une mise à jour du système a été téléchargée et est prête à être appliquée au redémarrage.",
         "status_update_cancelled": "La mise à jour a été annulée.",
         "status_cleaning_cache": "Nettoyage du cache des mises à jour...",
+        "policy_group_title": "Politique de mise à jour et notifications",
+        "policy_group_desc": "Choisissez le comportement des vérifications en arrière-plan, téléchargements et notifications",
+        "policy_smart_title": "Mode intelligent (Recommandé)",
+        "policy_smart_desc": "Télécharger en arrière-plan les petites màj (≤ 50 Mo) sur réseau non limité, alerter pour les màj volumineuses",
+        "policy_notify_title": "Notifications uniquement",
+        "policy_notify_desc": "Vérifier périodiquement et notifier avec la taille totale sans télécharger en arrière-plan",
+        "policy_manual_title": "Entièrement manuel",
+        "policy_manual_desc": "Désactiver les vérifications automatiques et les notifications ; vérifier uniquement à l'ouverture de l'application",
+        "policy_manual_warning_title": "Avertissement de sécurité",
+        "policy_manual_warning": "Non recommandé : La désactivation des mises à jour automatiques et des notifications peut compromettre la sécurité et la stabilité de votre système.",
+        "notif_staged_title": "Mise à jour du système prête",
+        "notif_staged_body": "Une mise à jour légère de {size} Mo a été préparée en arrière-plan et s'appliquera au prochain redémarrage.",
+        "notif_important_title": "Mise à jour importante disponible",
+        "notif_available_title": "Mises à jour système disponibles",
+        "notif_important_body": "De nouvelles mises à jour ({size} Mo) sont disponibles. Cliquez pour afficher et installer.",
+        "notif_reminder_title": "Rappel de mise à jour système",
+        "notif_reminder_body": "14 jours se sont écoulés depuis la dernière mise à jour complète. {size} Mo de mises à jour sont prêtes.",
         "colors_presets_title": "Couleurs prédéfinies",
         "colors_presets_desc": "Choisissez une couleur à appliquer immédiatement",
         "colors_custom_title": "Couleur personnalisée",
@@ -598,6 +649,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "Se ha descargado una actualización del sistema y está lista para aplicarse al reiniciar.",
         "status_update_cancelled": "La actualización fue cancelada.",
         "status_cleaning_cache": "Limpiando la caché de actualizaciones...",
+        "policy_group_title": "Política de actualizaciones y notificaciones",
+        "policy_group_desc": "Elija cómo se comportan las comprobaciones en segundo plano, descargas y notificaciones",
+        "policy_smart_title": "Modo inteligente (Recomendado)",
+        "policy_smart_desc": "Descargar en segundo plano actualizaciones ligeras (≤ 50 MB) en redes no medidas, alertar en caso contrario",
+        "policy_notify_title": "Solo notificaciones",
+        "policy_notify_desc": "Comprobar periódicamente y notificar el tamaño total sin descargar en segundo plano",
+        "policy_manual_title": "Totalmente manual",
+        "policy_manual_desc": "Desactivar comprobaciones y notificaciones automáticas; comprobar solo al abrir la aplicación manualmente",
+        "policy_manual_warning_title": "Advertencia de seguridad",
+        "policy_manual_warning": "No recomendado: Desactivar las actualizaciones y notificaciones automáticas puede comprometer la seguridad y estabilidad del sistema.",
+        "notif_staged_title": "Actualización del sistema lista",
+        "notif_staged_body": "Se preparó una actualización ligera de {size} MB en segundo plano que se aplicará en el próximo reinicio.",
+        "notif_important_title": "Actualización importante del sistema disponible",
+        "notif_available_title": "Actualizaciones del sistema disponibles",
+        "notif_important_body": "Hay nuevas actualizaciones disponibles por un total de {size} MB. Haga clic para ver e instalar.",
+        "notif_reminder_title": "Recordatorio de actualización del sistema",
+        "notif_reminder_body": "Han pasado 14 días desde la última actualización completa. Hay {size} MB listos para instalar.",
         "colors_presets_title": "Colores predefinidos",
         "colors_presets_desc": "Elige un color para aplicarlo de inmediato",
         "colors_custom_title": "Color personalizado",
@@ -723,6 +791,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "Ein Systemupdate wurde heruntergeladen und wird nach dem Neustart angewendet.",
         "status_update_cancelled": "Aktualisierung wurde abgebrochen.",
         "status_cleaning_cache": "Update-Cache wird bereinigt...",
+        "policy_group_title": "Update- und Benachrichtigungsrichtlinie",
+        "policy_group_desc": "Legen Sie fest, wie Hintergrundprüfungen, Downloads und Benachrichtigungen erfolgen",
+        "policy_smart_title": "Intelligenter Modus (Empfohlen)",
+        "policy_smart_desc": "Kleine Updates (≤ 50 MB) im Hintergrund vorbereiten, bei getakteten Verbindungen oder großen Updates warnen",
+        "policy_notify_title": "Nur Benachrichtigungen",
+        "policy_notify_desc": "Regelmäßig prüfen und mit Gesamtgröße benachrichtigen, ohne automatisch herunterzuladen",
+        "policy_manual_title": "Vollständig manuell",
+        "policy_manual_desc": "Automatische Prüfungen und Benachrichtigungen deaktivieren; nur bei manuellem Start prüfen",
+        "policy_manual_warning_title": "Sicherheitswarnung",
+        "policy_manual_warning": "Nicht empfohlen: Das Deaktivieren automatischer Updates und Benachrichtigungen kann die Sicherheit und Stabilität beeinträchtigen.",
+        "notif_staged_title": "System-Update bereit",
+        "notif_staged_body": "Ein leichtes Update ({size} MB) wurde vorbereitet und wird beim nächsten Neustart angewendet.",
+        "notif_important_title": "Wichtiges System-Update verfügbar",
+        "notif_available_title": "System-Updates verfügbar",
+        "notif_important_body": "Neue Updates mit einer Gesamtgröße von {size} MB sind verfügbar. Klicken zum Anzeigen und Installieren.",
+        "notif_reminder_title": "Erinnerung an System-Update",
+        "notif_reminder_body": "Seit dem letzten vollständigen Update sind 14 Tage vergangen. {size} MB Updates stehen bereit.",
         "colors_presets_title": "Voreingestellte Farben",
         "colors_presets_desc": "Wählen Sie eine Farbe, um sie sofort anzuwenden",
         "colors_custom_title": "Benutzerdefinierte Farbe",
@@ -848,6 +933,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "Sistem güncellemesi indirildi ve yeniden başlatıldığında uygulanmaya hazır.",
         "status_update_cancelled": "Güncelleme iptal edildi.",
         "status_cleaning_cache": "Güncelleme önbelleği temizleniyor...",
+        "policy_group_title": "Güncelleme ve Bildirim İlkesi",
+        "policy_group_desc": "Arka plan denetimleri, indirmeler ve bildirim davranışını seçin",
+        "policy_smart_title": "Akıllı Mod (Önerilen)",
+        "policy_smart_desc": "Tarifesiz ağlarda küçük güncellemeleri (≤ 50 MB) sessizce hazırla, büyük veya tarifeli ağlarda uyar",
+        "policy_notify_title": "Yalnızca Bildirimler",
+        "policy_notify_desc": "Arka planda indirmeden düzenli olarak denetle ve toplam boyutla bildir",
+        "policy_manual_title": "Tamamen Manuel",
+        "policy_manual_desc": "Otomatik denetimleri ve bildirimleri devre dışı bırak; yalnızca uygulama açıldığında denetle",
+        "policy_manual_warning_title": "Güvenlik Uyarısı",
+        "policy_manual_warning": "Önerilmez: Otomatik güncellemeleri ve bildirimleri kapatmak sistem güvenliğini ve kararlılığını tehlikeye atabilir.",
+        "notif_staged_title": "Sistem Güncellemesi Hazır",
+        "notif_staged_body": "Arka planda {size} MB boyutunda hafif bir güncelleme hazırlandı ve yeniden başlatmada uygulanacak.",
+        "notif_important_title": "Önemli Sistem Güncellemesi Mevcut",
+        "notif_available_title": "Sistem Güncellemeleri Mevcut",
+        "notif_important_body": "Toplam {size} MB boyutunda yeni güncellemeler mevcut. İncelemek ve yüklemek için tıklayın.",
+        "notif_reminder_title": "Sistem Güncelleme Hatırlatıcısı",
+        "notif_reminder_body": "Son tam güncellemeden bu yana 14 gün geçti. {size} MB güncelleme yüklemeye hazır.",
         "colors_presets_title": "Hazır Renkler",
         "colors_presets_desc": "Masaüstüne ve uygulamalara hemen uygulamak için bir renk seçin",
         "colors_custom_title": "Özel Renk",
@@ -973,6 +1075,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "Обновление системы загружено и готово к применению после перезагрузки.",
         "status_update_cancelled": "Обновление отменено.",
         "status_cleaning_cache": "Очистка кэша обновлений...",
+        "policy_group_title": "Политика обновлений и уведомлений",
+        "policy_group_desc": "Выберите режим проверки, загрузки и уведомлений в фоновом режиме",
+        "policy_smart_title": "Умный режим (Рекомендуется)",
+        "policy_smart_desc": "Фоновая подготовка небольших обновлений (≤ 50 МБ) в безлимитных сетях, оповещение для остальных",
+        "policy_notify_title": "Только уведомления",
+        "policy_notify_desc": "Периодическая проверка и уведомление с общим размером без автоматической загрузки",
+        "policy_manual_title": "Полностью вручную",
+        "policy_manual_desc": "Отключить автопроверку и уведомления; проверять только при ручном открытии приложения",
+        "policy_manual_warning_title": "Предупреждение о безопасности",
+        "policy_manual_warning": "Не рекомендуется: Отключение автообновлений и уведомлений может поставить под угрозу безопасность и стабильность системы.",
+        "notif_staged_title": "Обновление системы готово",
+        "notif_staged_body": "Легковесное обновление размером {size} МБ подготовлено и применится при следующей перезагрузке.",
+        "notif_important_title": "Доступно важное обновление системы",
+        "notif_available_title": "Доступны обновления системы",
+        "notif_important_body": "Доступны обновления общим размером {size} МБ. Нажмите для просмотра и установки.",
+        "notif_reminder_title": "Напоминание об обновлении системы",
+        "notif_reminder_body": "Прошло 14 дней с момента последнего полного обновления. Доступно {size} МБ обновлений.",
         "colors_presets_title": "Готовые цвета",
         "colors_presets_desc": "Выберите цвет для немедленного применения",
         "colors_custom_title": "Пользовательский цвет",
@@ -1098,6 +1217,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "Uma atualização do sistema foi descarregada e está pronta a ser aplicada após reiniciar.",
         "status_update_cancelled": "A atualização foi cancelada.",
         "status_cleaning_cache": "A limpar a cache de atualizações...",
+        "policy_group_title": "Política de Atualizações e Notificações",
+        "policy_group_desc": "Escolha o comportamento das verificações em segundo plano, transferências e notificações",
+        "policy_smart_title": "Modo Inteligente (Recomendado)",
+        "policy_smart_desc": "Preparar atualizações leves (≤ 50 MB) em redes sem limite, alertar para atualizações maiores",
+        "policy_notify_title": "Apenas Notificações",
+        "policy_notify_desc": "Verificar periodicamente e notificar o tamanho total sem descarregar em segundo plano",
+        "policy_manual_title": "Totalmente Manual",
+        "policy_manual_desc": "Desativar verificações e notificações automáticas; verificar apenas ao abrir manualmente",
+        "policy_manual_warning_title": "Aviso de Segurança",
+        "policy_manual_warning": "Não recomendado: Desativar atualizações e notificações automáticas pode comprometer a segurança e estabilidade do sistema.",
+        "notif_staged_title": "Atualização do Sistema Pronta",
+        "notif_staged_body": "Uma atualização leve de {size} MB foi preparada em segundo plano e será aplicada no próximo reinício.",
+        "notif_important_title": "Atualização Importante Disponível",
+        "notif_available_title": "Atualizações do Sistema Disponíveis",
+        "notif_important_body": "Estão disponíveis novas atualizações com um total de {size} MB. Clique para ver e instalar.",
+        "notif_reminder_title": "Lembrete de Atualização do Sistema",
+        "notif_reminder_body": "Passaram 14 dias desde a última atualização completa. Há {size} MB prontos a instalar.",
         "colors_presets_title": "Cores predefinidas",
         "colors_presets_desc": "Escolha uma cor para aplicar imediatamente",
         "colors_custom_title": "Cor personalizada",
@@ -1223,6 +1359,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "Un aggiornamento di sistema è stato scaricato ed è pronto per essere applicato al riavvio.",
         "status_update_cancelled": "L'aggiornamento è stato annullato.",
         "status_cleaning_cache": "Pulizia della cache degli aggiornamenti...",
+        "policy_group_title": "Criteri di aggiornamento e notifiche",
+        "policy_group_desc": "Scegli il comportamento per controlli in background, download e notifiche",
+        "policy_smart_title": "Modalità intelligente (Consigliata)",
+        "policy_smart_desc": "Scarica in background aggiornamenti leggeri (≤ 50 MB) su reti non a consumo, avvisa per gli altri",
+        "policy_notify_title": "Solo notifiche",
+        "policy_notify_desc": "Controlla periodicamente e avvisa con la dimensione totale senza scaricare in background",
+        "policy_manual_title": "Completamente manuale",
+        "policy_manual_desc": "Disattiva controlli e notifiche automatiche; controlla solo all'avvio manuale dell'app",
+        "policy_manual_warning_title": "Avviso di sicurezza",
+        "policy_manual_warning": "Non consigliato: La disattivazione degli aggiornamenti e delle notifiche automatiche può compromettere la sicurezza e la stabilità del sistema.",
+        "notif_staged_title": "Aggiornamento di sistema pronto",
+        "notif_staged_body": "Un aggiornamento leggero di {size} MB è stato preparato in background e verrà applicato al prossimo riavvio.",
+        "notif_important_title": "Importante aggiornamento di sistema disponibile",
+        "notif_available_title": "Aggiornamenti di sistema disponibili",
+        "notif_important_body": "Sono disponibili nuovi aggiornamenti per un totale di {size} MB. Fai clic per visualizzare e installare.",
+        "notif_reminder_title": "Promemoria aggiornamento di sistema",
+        "notif_reminder_body": "Sono trascorsi 14 giorni dall'ultimo aggiornamento completo. Ci sono {size} MB pronti per l'installazione.",
         "colors_presets_title": "Colori predefiniti",
         "colors_presets_desc": "Scegli un colore da applicare subito",
         "colors_custom_title": "Colore personalizzato",
@@ -1348,6 +1501,23 @@ TRANSLATIONS = {
         "status_pending_reboot": "系统更新已下载，重启后即可应用。",
         "status_update_cancelled": "更新已取消。",
         "status_cleaning_cache": "正在清理更新缓存...",
+        "policy_group_title": "更新与通知策略",
+        "policy_group_desc": "选择后台检查、下载和通知的处理方式",
+        "policy_smart_title": "智能模式（推荐）",
+        "policy_smart_desc": "在非按流量计费网络下静默预载小型更新（≤ 50 MB），大型或计费网络下发送提醒",
+        "policy_notify_title": "仅发送通知",
+        "policy_notify_desc": "定期检查并显示总大小通知，不在后台自动下载",
+        "policy_manual_title": "完全手动",
+        "policy_manual_desc": "禁用自动检查与通知，仅在手动打开应用时检查",
+        "policy_manual_warning_title": "安全警告",
+        "policy_manual_warning": "不推荐：停用自动更新和通知可能会影响系统的安全性和稳定性。",
+        "notif_staged_title": "系统更新就绪",
+        "notif_staged_body": "后台已准备好大小为 {size} MB 的轻量更新，将在下次重启时应用。",
+        "notif_important_title": "有重要系统更新可用",
+        "notif_available_title": "有可用的系统更新",
+        "notif_important_body": "发现总计 {size} MB 的新更新。点击以查看详情并安装。",
+        "notif_reminder_title": "系统更新提醒",
+        "notif_reminder_body": "距离上次完整更新已有 14 天。已有 {size} MB 的更新等待安装。",
         "colors_presets_title": "预设颜色",
         "colors_presets_desc": "选择一种颜色并立即应用到桌面和应用程序",
         "colors_custom_title": "自定义颜色",
@@ -1659,6 +1829,355 @@ def get_active_deployment_image_info():
     except Exception:
         pass
     return "", ""
+
+
+UPDATER_CONFIG_DIR = os.path.expanduser("~/.config/sadeem-updater")
+UPDATER_CONFIG_FILE = os.path.join(UPDATER_CONFIG_DIR, "config.json")
+UPDATER_STATE_FILE = os.path.join(UPDATER_CONFIG_DIR, "state.json")
+
+
+def load_updater_config():
+    default_cfg = {
+        "policy": "smart"  # 'smart', 'notify_only', 'manual'
+    }
+    if os.path.exists(UPDATER_CONFIG_FILE):
+        try:
+            with open(UPDATER_CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    default_cfg.update(data)
+        except Exception:
+            pass
+    return default_cfg
+
+
+def save_updater_config(cfg):
+    try:
+        os.makedirs(UPDATER_CONFIG_DIR, exist_ok=True)
+        with open(UPDATER_CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error saving updater config: {e}", file=sys.stderr)
+
+
+def load_updater_state():
+    default_state = {
+        "last_full_update": 0.0,
+        "last_reminder_sent": 0.0
+    }
+    if os.path.exists(UPDATER_STATE_FILE):
+        try:
+            with open(UPDATER_STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    default_state.update(data)
+        except Exception:
+            pass
+    return default_state
+
+
+def save_updater_state(st):
+    try:
+        os.makedirs(UPDATER_CONFIG_DIR, exist_ok=True)
+        with open(UPDATER_STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(st, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error saving updater state: {e}", file=sys.stderr)
+
+
+def record_manual_full_update():
+    """Resets last_full_update timestamp when a full manual update completes successfully."""
+    st = load_updater_state()
+    st["last_full_update"] = time.time()
+    st["last_reminder_sent"] = 0.0
+    save_updater_state(st)
+
+
+def parse_size_to_mb(size_str):
+    if not size_str:
+        return 0.0
+    s = size_str.strip().lower()
+    if s.isdigit():
+        return float(s) / (1024.0 * 1024.0)
+    m = re.match(r"^([\d.]+)\s*([a-z]+)?$", s)
+    if not m:
+        return 0.0
+    val = float(m.group(1))
+    unit = (m.group(2) or "b").lower()
+    if unit in ("gb", "gib", "g"):
+        return val * 1024.0
+    elif unit in ("mb", "mib", "m"):
+        return val
+    elif unit in ("kb", "kib", "k"):
+        return val / 1024.0
+    elif unit in ("b", "bytes"):
+        return val / (1024.0 * 1024.0)
+    return val
+
+
+def is_network_metered():
+    try:
+        res = subprocess.run(
+            ["nmcli", "-t", "-f", "GENERAL.METERED", "dev", "show"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False
+        )
+        if res.returncode == 0:
+            for line in res.stdout.splitlines():
+                line = line.strip().lower()
+                if "yes" in line:
+                    return True
+    except Exception:
+        pass
+    return False
+
+
+def is_battery_low():
+    """Returns True if device is currently discharging on battery and <= 25%."""
+    try:
+        ps_dir = "/sys/class/power_supply"
+        if not os.path.exists(ps_dir):
+            return False
+        
+        ac_online = False
+        battery_found = False
+        low_battery = False
+        
+        for name in os.listdir(ps_dir):
+            path = os.path.join(ps_dir, name)
+            if not os.path.isdir(path):
+                continue
+            type_path = os.path.join(path, "type")
+            ps_type = ""
+            if os.path.exists(type_path):
+                try:
+                    with open(type_path, "r") as f:
+                        ps_type = f.read().strip()
+                except Exception:
+                    pass
+            
+            if ps_type in ("Mains", "USB", "USB_C", "USB_PD"):
+                online_path = os.path.join(path, "online")
+                if os.path.exists(online_path):
+                    try:
+                        with open(online_path, "r") as f:
+                            if f.read().strip() == "1":
+                                ac_online = True
+                    except Exception:
+                        pass
+            elif ps_type == "Battery" or name.startswith("BAT"):
+                battery_found = True
+                cap_path = os.path.join(path, "capacity")
+                if os.path.exists(cap_path):
+                    try:
+                        with open(cap_path, "r") as f:
+                            cap = int(f.read().strip())
+                            if cap <= 25:
+                                low_battery = True
+                    except Exception:
+                        pass
+        
+        if ac_online:
+            return False
+        if battery_found and low_battery:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def compute_rpm_ostree_update_size_mb(image_ref, local_digest):
+    """Accurately calculates ostree update download size by comparing missing container layer blobs."""
+    if not image_ref:
+        return 0.0
+    try:
+        res = subprocess.run(
+            ["skopeo", "inspect", "--raw", f"docker://{image_ref}"],
+            capture_output=True,
+            text=True,
+            timeout=25,
+            check=False
+        )
+        if res.returncode != 0 or not res.stdout.strip():
+            return 0.0
+        manifest_data = json.loads(res.stdout)
+        
+        # If multi-arch index / manifest list:
+        if manifest_data.get("schemaVersion") == 2 and "manifests" in manifest_data:
+            target_digest = None
+            for m in manifest_data["manifests"]:
+                platform = m.get("platform", {})
+                if platform.get("os") == "linux" and platform.get("architecture") in ("amd64", "x86_64"):
+                    target_digest = m.get("digest")
+                    break
+            if not target_digest and manifest_data["manifests"]:
+                target_digest = manifest_data["manifests"][0].get("digest")
+            
+            if target_digest:
+                if local_digest and target_digest == local_digest:
+                    return 0.0
+                repo_part = image_ref.split(":")[0]
+                res2 = subprocess.run(
+                    ["skopeo", "inspect", "--raw", f"docker://{repo_part}@{target_digest}"],
+                    capture_output=True,
+                    text=True,
+                    timeout=25,
+                    check=False
+                )
+                if res2.returncode == 0 and res2.stdout.strip():
+                    manifest_data = json.loads(res2.stdout)
+                else:
+                    return 0.0
+            else:
+                return 0.0
+        
+        layers = manifest_data.get("layers", [])
+        if not layers:
+            return 0.0
+            
+        blob_dir = "/ostree/repo/refs/heads/ostree/container/blob"
+        existing_blobs = set()
+        if os.path.exists(blob_dir):
+            try:
+                existing_blobs = set(os.listdir(blob_dir))
+            except Exception:
+                pass
+                
+        missing_bytes = 0
+        for layer in layers:
+            digest = layer.get("digest", "")
+            size = layer.get("size", 0)
+            blob_name = digest.replace(":", "_3A_")
+            if blob_name not in existing_blobs:
+                missing_bytes += size
+                
+        return round(missing_bytes / (1024.0 * 1024.0), 2)
+    except Exception as e:
+        print(f"Error computing rpm-ostree update size: {e}", file=sys.stderr)
+        return 0.0
+
+
+def compute_flatpak_update_size_mb():
+    """Computes total download size for pending flatpak updates across system and user installations."""
+    total_mb = 0.0
+    for mode in ["--system", "--user"]:
+        try:
+            res = subprocess.run(
+                ["flatpak", "remote-ls", "--updates", mode, "--columns=download-size"],
+                capture_output=True,
+                text=True,
+                timeout=25,
+                check=False
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                for line in res.stdout.strip().splitlines():
+                    line = line.strip()
+                    if line:
+                        total_mb += parse_size_to_mb(line)
+        except Exception:
+            pass
+    return round(total_mb, 2)
+
+
+def send_desktop_notification(title, body, icon="sadeem-updater", urgency="normal"):
+    """Dispatches a desktop notification with default action opening sadeem-system updates tab."""
+    script = f'''
+action=$(notify-send -a "sadeem-updater" -i "{icon}" -u "{urgency}" -h string:desktop-entry:sadeem-updater -A default="فتح التحديثات" "{title}" "{body}" 2>/dev/null)
+if [ -n "$action" ]; then
+    /usr/bin/sadeem-system --tab=updates &
+fi
+'''
+    try:
+        subprocess.Popen(["bash", "-c", script], start_new_session=True)
+    except Exception as e:
+        print(f"Error sending desktop notification: {e}", file=sys.stderr)
+
+
+def run_background_update_check():
+    """Headless background task executed periodically by systemd user timer."""
+    cfg = load_updater_config()
+    policy = cfg.get("policy", "smart")
+    
+    # 1. Fully manual policy: do nothing
+    if policy == "manual":
+        return 0
+
+    st = load_updater_state()
+    now = time.time()
+    if st.get("last_full_update", 0.0) == 0.0:
+        st["last_full_update"] = now
+        save_updater_state(st)
+
+    # 2. Compute available updates size
+    local_digest, image_ref = get_active_deployment_image_info()
+    ostree_size_mb = 0.0
+    if image_ref:
+        ostree_size_mb = compute_rpm_ostree_update_size_mb(image_ref, local_digest)
+        
+    flatpak_size_mb = compute_flatpak_update_size_mb()
+    total_size_mb = round(ostree_size_mb + flatpak_size_mb, 1)
+
+    # 3. Check 14-day full update reminder rule
+    FOURTEEN_DAYS = 14 * 86400  # 1,209,600 seconds
+    last_full = st.get("last_full_update", now)
+    last_reminder = st.get("last_reminder_sent", 0.0)
+    
+    if (now - last_full >= FOURTEEN_DAYS) and (now - last_reminder >= FOURTEEN_DAYS) and (total_size_mb > 0):
+        send_desktop_notification(
+            title=t("notif_reminder_title"),
+            body=t("notif_reminder_body", size=f"{total_size_mb:.1f}"),
+            icon="software-update-urgent-symbolic",
+            urgency="normal"
+        )
+        st["last_reminder_sent"] = now
+        save_updater_state(st)
+        return 0
+
+    if total_size_mb <= 0:
+        return 0
+
+    # 4. Handle Smart Mode vs Notifications Only
+    metered = is_network_metered()
+    battery_low = is_battery_low()
+
+    if policy == "smart":
+        if total_size_mb <= 50.0 and not metered and not battery_low:
+            # Silently stage update
+            try:
+                # Stage ostree update if ostree has updates
+                if ostree_size_mb > 0:
+                    subprocess.run(["rpm-ostree", "upgrade"], capture_output=True, timeout=600, check=False)
+                # Update flatpaks if any
+                if flatpak_size_mb > 0:
+                    subprocess.run(["flatpak", "update", "-y"], capture_output=True, timeout=600, check=False)
+                
+                send_desktop_notification(
+                    title=t("notif_staged_title"),
+                    body=t("notif_staged_body", size=f"{total_size_mb:.1f}"),
+                    icon="software-update-available-symbolic",
+                    urgency="low"
+                )
+            except Exception as e:
+                print(f"Error staging update in background: {e}", file=sys.stderr)
+        else:
+            # Larger than 50 MB or metered network or battery low: notify without downloading
+            send_desktop_notification(
+                title=t("notif_important_title"),
+                body=t("notif_important_body", size=f"{total_size_mb:.1f}"),
+                icon="software-update-available-symbolic",
+                urgency="normal"
+            )
+    elif policy == "notify_only":
+        send_desktop_notification(
+            title=t("notif_available_title"),
+            body=t("notif_important_body", size=f"{total_size_mb:.1f}"),
+            icon="software-update-available-symbolic",
+            urgency="normal"
+        )
+
+    return 0
 
 
 def trigger_system_reboot():
@@ -3128,6 +3647,78 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.upd_expander.set_child(scrolled_text)
         content.append(self.upd_expander)
 
+        # Policy Settings Group
+        self.policy_group = Adw.PreferencesGroup()
+        self.policy_group.set_title(t("policy_group_title"))
+        self.policy_group.set_description(t("policy_group_desc"))
+
+        current_cfg = load_updater_config()
+        current_policy = current_cfg.get("policy", "smart")
+
+        # Smart Mode Row
+        self.row_smart = Adw.ActionRow()
+        self.row_smart.set_title(t("policy_smart_title"))
+        self.row_smart.set_subtitle(t("policy_smart_desc"))
+        self.row_smart.set_activatable(True)
+        self.check_smart = Gtk.CheckButton()
+        self.check_smart.set_active(current_policy == "smart")
+        self.row_smart.add_prefix(self.check_smart)
+        self.row_smart.set_activatable_widget(self.check_smart)
+        self.policy_group.add(self.row_smart)
+
+        # Notifications Only Row
+        self.row_notify = Adw.ActionRow()
+        self.row_notify.set_title(t("policy_notify_title"))
+        self.row_notify.set_subtitle(t("policy_notify_desc"))
+        self.row_notify.set_activatable(True)
+        self.check_notify = Gtk.CheckButton()
+        self.check_notify.set_group(self.check_smart)
+        self.check_notify.set_active(current_policy == "notify_only")
+        self.row_notify.add_prefix(self.check_notify)
+        self.row_notify.set_activatable_widget(self.check_notify)
+        self.policy_group.add(self.row_notify)
+
+        # Fully Manual Row
+        self.row_manual = Adw.ActionRow()
+        self.row_manual.set_title(t("policy_manual_title"))
+        self.row_manual.set_subtitle(t("policy_manual_desc"))
+        self.row_manual.set_activatable(True)
+        self.check_manual = Gtk.CheckButton()
+        self.check_manual.set_group(self.check_smart)
+        self.check_manual.set_active(current_policy == "manual")
+        self.row_manual.add_prefix(self.check_manual)
+        self.row_manual.set_activatable_widget(self.check_manual)
+        self.policy_group.add(self.row_manual)
+
+        # Warning row for manual mode
+        self.row_manual_warn = Adw.ActionRow()
+        self.row_manual_warn.set_title(t("policy_manual_warning_title"))
+        self.row_manual_warn.set_subtitle(t("policy_manual_warning"))
+        warn_icon = Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic", "warning-symbolic"]))
+        warn_icon.add_css_class("warning")
+        self.row_manual_warn.add_prefix(warn_icon)
+        self.row_manual_warn.add_css_class("warning")
+        self.row_manual_warn.set_visible(current_policy == "manual")
+        self.policy_group.add(self.row_manual_warn)
+
+        def on_policy_toggled(button):
+            if button.get_active():
+                if button == self.check_smart:
+                    save_updater_config({"policy": "smart"})
+                    self.row_manual_warn.set_visible(False)
+                elif button == self.check_notify:
+                    save_updater_config({"policy": "notify_only"})
+                    self.row_manual_warn.set_visible(False)
+                elif button == self.check_manual:
+                    save_updater_config({"policy": "manual"})
+                    self.row_manual_warn.set_visible(True)
+
+        self.check_smart.connect("toggled", on_policy_toggled)
+        self.check_notify.connect("toggled", on_policy_toggled)
+        self.check_manual.connect("toggled", on_policy_toggled)
+
+        content.append(self.policy_group)
+
         return scrolled
 
     def _stop_upd_timers_sync(self):
@@ -4118,6 +4709,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.check_box_availability()
 
         if success:
+            record_manual_full_update()
             self.upd_progress_bar.set_visible(True)
             self.upd_progress_bar.set_show_text(True)
             self.upd_progress_bar.set_fraction(1.0)
@@ -5659,6 +6251,8 @@ class SadeemSystemApp(Adw.Application):
 
 
 def main():
+    if "--check-background" in sys.argv:
+        return run_background_update_check()
     GLib.set_prgname("org.sadeem.System")
     app = SadeemSystemApp()
     return app.run(sys.argv)

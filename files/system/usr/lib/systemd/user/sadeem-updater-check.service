@@ -1,0 +1,9 @@
+[Unit]
+Description=Sadeem Smart Background Update Check
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sadeem-system --check-background
+Nice=19
+IOSchedulingClass=idle
