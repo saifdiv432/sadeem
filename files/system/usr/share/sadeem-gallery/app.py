@@ -39,16 +39,47 @@ MARKUP_COLORS = [
     ("#111827", "Black"),
 ]
 
+FORMAT_FILTER_OPTIONS = [
+    ("all", "fmt_all", "fmt_short_all", ["view-grid-symbolic"]),
+    ("jpeg", "fmt_jpeg", "fmt_short_jpeg", ["image-x-generic-symbolic"]),
+    ("png", "fmt_png", "fmt_short_png", ["image-x-generic-symbolic"]),
+    ("webp", "fmt_webp", "fmt_short_webp", ["image-x-generic-symbolic"]),
+    ("heic_avif", "fmt_heic_avif", "fmt_short_heic_avif", ["camera-photo-symbolic"]),
+    ("animated", "fmt_animated", "fmt_short_animated", ["media-playback-start-symbolic"]),
+    ("raw", "fmt_raw", "fmt_short_raw", ["applications-photography-symbolic"]),
+    ("vector", "fmt_vector", "fmt_short_vector", ["applications-graphics-symbolic"]),
+    ("other", "fmt_other", "fmt_short_other", ["document-open-symbolic"]),
+]
+
+DIMENSION_FILTER_OPTIONS = [
+    ("all", "dim_all", "dim_short_all", ["view-grid-symbolic"]),
+    ("landscape", "dim_landscape", "dim_short_landscape", ["object-flip-horizontal-symbolic"]),
+    ("portrait", "dim_portrait", "dim_short_portrait", ["object-flip-vertical-symbolic"]),
+    ("square", "dim_square", "dim_short_square", ["view-grid-symbolic"]),
+    ("ultrawide", "dim_ultrawide", "dim_short_ultrawide", ["view-fullscreen-symbolic"]),
+    ("standard", "dim_standard", "dim_short_standard", ["zoom-fit-best-symbolic"]),
+]
+
+RESOLUTION_FILTER_OPTIONS = [
+    ("all", "res_all", "res_short_all", ["view-grid-symbolic"]),
+    ("low", "res_low", "res_short_low", ["image-x-generic-symbolic"]),
+    ("hd", "res_hd", "res_short_hd", ["video-display-symbolic"]),
+    ("fhd", "res_fhd", "res_short_fhd", ["zoom-fit-best-symbolic"]),
+    ("2k", "res_2k", "res_short_2k", ["view-fullscreen-symbolic"]),
+    ("4k", "res_4k", "res_short_4k", ["starred-symbolic"]),
+]
+
+# Legacy alias
 GALLERY_CATEGORIES = [
-    ("all", "cat_all", ["view-grid-symbolic", "image-x-generic-symbolic"]),
-    ("camera", "cat_camera", ["camera-photo-symbolic", "image-x-generic-symbolic"]),
-    ("screenshots", "cat_screenshots", ["applets-screenshooter-symbolic", "video-display-symbolic"]),
-    ("hd", "cat_hd", ["zoom-fit-best-symbolic", "view-fullscreen-symbolic"]),
-    ("portrait", "cat_portrait", ["object-flip-vertical-symbolic", "phone-symbolic"]),
-    ("landscape", "cat_landscape", ["object-flip-horizontal-symbolic", "video-display-symbolic"]),
-    ("animated", "cat_animated", ["media-playback-start-symbolic", "video-x-generic-symbolic"]),
-    ("raw", "cat_raw", ["camera-photo-symbolic", "applications-photography-symbolic"]),
-    ("vector", "cat_vector", ["applications-graphics-symbolic", "image-x-generic-symbolic"]),
+    ("all", "cat_all", ["view-grid-symbolic"]),
+    ("camera", "cat_camera", ["camera-photo-symbolic"]),
+    ("screenshots", "cat_screenshots", ["applets-screenshooter-symbolic"]),
+    ("hd", "cat_hd", ["zoom-fit-best-symbolic"]),
+    ("portrait", "cat_portrait", ["object-flip-vertical-symbolic"]),
+    ("landscape", "cat_landscape", ["object-flip-horizontal-symbolic"]),
+    ("animated", "cat_animated", ["media-playback-start-symbolic"]),
+    ("raw", "cat_raw", ["camera-photo-symbolic"]),
+    ("vector", "cat_vector", ["applications-graphics-symbolic"]),
 ]
 
 SADEEM_CSS = """
@@ -298,6 +329,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         # Gallery state
         self.all_gallery_items = []
+        self.filter_format = "all"
+        self.filter_dimensions = "all"
+        self.filter_resolution = "all"
         self.active_filter = "all"
         self.thumb_pool = concurrent.futures.ThreadPoolExecutor(max_workers=4)
         self._scan_generation = 0
@@ -474,50 +508,43 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         title_box.append(lbl_t)
         hb.set_title_widget(title_box)
 
-        # Single rich Category Dropdown button (Gtk.MenuButton + Gtk.Popover)
-        self.btn_category_menu = Gtk.MenuButton()
-        self.btn_category_menu.add_css_class("sadeem-btn-compact")
-        cat_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        cat_btn_box.append(Gtk.Image.new_from_icon_name(safe_icon(["view-list-symbolic", "view-grid-symbolic"])))
-        self.lbl_category_title = Gtk.Label(label=f"{t('filter_prefix')}: {t('cat_all')}")
-        cat_btn_box.append(self.lbl_category_title)
-        cat_btn_box.append(Gtk.Image.new_from_icon_name(safe_icon(["pan-down-symbolic"])))
-        self.btn_category_menu.set_child(cat_btn_box)
+        # 3 compact orthogonal filter dropdowns + reset button
+        filters_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-        self.category_popover = Gtk.Popover()
-        cat_pop_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
-        cat_pop_box.set_margin_top(6)
-        cat_pop_box.set_margin_bottom(6)
-        cat_pop_box.set_margin_start(6)
-        cat_pop_box.set_margin_end(6)
-        cat_pop_box.set_size_request(240, -1)
-        self.category_popover.set_child(cat_pop_box)
+        # 1. Format dropdown
+        self.btn_fmt_menu, self.lbl_fmt_title, self.pop_fmt, self.fmt_item_btns = self._create_filter_menu(
+            FORMAT_FILTER_OPTIONS,
+            prefix_key="filter_fmt_prefix",
+            on_select=self._on_format_filter_selected,
+        )
+        filters_box.append(self.btn_fmt_menu)
 
-        self.filter_buttons = {}
-        for cid, ckey, cicons in GALLERY_CATEGORIES:
-            cb = Gtk.Button()
-            cb.add_css_class("flat")
-            cb.add_css_class("save-menu-btn")
-            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            ico = Gtk.Image.new_from_icon_name(safe_icon(cicons))
-            ico.set_pixel_size(15)
-            row.append(ico)
-            lbl = Gtk.Label(label=t(ckey))
-            lbl.set_halign(Gtk.Align.START)
-            lbl.set_hexpand(True)
-            row.append(lbl)
-            cb.set_child(row)
+        # 2. Dimensions dropdown
+        self.btn_dim_menu, self.lbl_dim_title, self.pop_dim, self.dim_item_btns = self._create_filter_menu(
+            DIMENSION_FILTER_OPTIONS,
+            prefix_key="filter_dim_prefix",
+            on_select=self._on_dimension_filter_selected,
+        )
+        filters_box.append(self.btn_dim_menu)
 
-            def _pick(_b, f=cid):
-                self.category_popover.popdown()
-                self._set_gallery_filter(f)
+        # 3. Resolution dropdown
+        self.btn_res_menu, self.lbl_res_title, self.pop_res, self.res_item_btns = self._create_filter_menu(
+            RESOLUTION_FILTER_OPTIONS,
+            prefix_key="filter_res_prefix",
+            on_select=self._on_resolution_filter_selected,
+        )
+        filters_box.append(self.btn_res_menu)
 
-            cb.connect("clicked", _pick)
-            cat_pop_box.append(cb)
-            self.filter_buttons[cid] = cb
+        # 4. Clear/Reset filter button
+        self.btn_clear_filters = Gtk.Button()
+        self.btn_clear_filters.set_icon_name(safe_icon(["edit-clear-symbolic", "user-trash-symbolic"]))
+        self.btn_clear_filters.set_tooltip_text(t("filter_clear_tooltip"))
+        self.btn_clear_filters.add_css_class("sadeem-header-btn")
+        self.btn_clear_filters.set_visible(False)
+        self.btn_clear_filters.connect("clicked", lambda _b: self._reset_all_filters())
+        filters_box.append(self.btn_clear_filters)
 
-        self.btn_category_menu.set_popover(self.category_popover)
-        hb.pack_start(self.btn_category_menu)
+        hb.pack_start(filters_box)
 
         # End buttons: Direct Choose Folder + Refresh
         btn_folder = Gtk.Button()
@@ -574,6 +601,11 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         e_btn.add_css_class("sadeem-btn")
         e_btn.connect("clicked", lambda _b: self._choose_folder_directly())
         empty_box.append(e_btn)
+        self.btn_empty_reset = Gtk.Button(label=t("filter_clear_tooltip"))
+        self.btn_empty_reset.add_css_class("sadeem-btn")
+        self.btn_empty_reset.set_visible(False)
+        self.btn_empty_reset.connect("clicked", lambda _b: self._reset_all_filters())
+        empty_box.append(self.btn_empty_reset)
         self.gallery_stack.add_named(empty_box, "empty")
 
         # Timeline scroll area
@@ -599,23 +631,150 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         if not self.all_gallery_items:
             self.refresh_gallery()
 
+    def _create_filter_menu(self, options, prefix_key, on_select):
+        btn = Gtk.MenuButton()
+        btn.add_css_class("sadeem-btn-compact")
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        lbl = Gtk.Label(label=f"{t(prefix_key)}: {t('fmt_short_all')}")
+        lbl.set_halign(Gtk.Align.CENTER)
+        box.append(lbl)
+
+        arr = Gtk.Image.new_from_icon_name(safe_icon(["pan-down-symbolic"]))
+        arr.set_pixel_size(12)
+        box.append(arr)
+        btn.set_child(box)
+
+        popover = Gtk.Popover()
+        pop_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        pop_box.set_margin_top(6)
+        pop_box.set_margin_bottom(6)
+        pop_box.set_margin_start(6)
+        pop_box.set_margin_end(6)
+        pop_box.set_size_request(220, -1)
+        popover.set_child(pop_box)
+
+        item_btns = {}
+        for fid, fkey, _fshort, ficons in options:
+            cb = Gtk.Button()
+            cb.add_css_class("flat")
+            cb.add_css_class("save-menu-btn")
+
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            ico = Gtk.Image.new_from_icon_name(safe_icon(ficons))
+            ico.set_pixel_size(15)
+            row.append(ico)
+
+            item_lbl = Gtk.Label(label=t(fkey))
+            item_lbl.set_halign(Gtk.Align.START)
+            item_lbl.set_hexpand(True)
+            row.append(item_lbl)
+
+            cb.set_child(row)
+
+            def _pick(_b, val=fid, pop=popover):
+                pop.popdown()
+                on_select(val)
+
+            cb.connect("clicked", _pick)
+            pop_box.append(cb)
+            item_btns[fid] = cb
+
+        btn.set_popover(popover)
+        return btn, lbl, popover, item_btns
+
+    def _on_format_filter_selected(self, fmt_id):
+        self.filter_format = fmt_id
+        self._update_filter_styles()
+        self._render_gallery_timeline()
+
+    def _on_dimension_filter_selected(self, dim_id):
+        self.filter_dimensions = dim_id
+        self._update_filter_styles()
+        self._render_gallery_timeline()
+
+    def _on_resolution_filter_selected(self, res_id):
+        self.filter_resolution = res_id
+        self._update_filter_styles()
+        self._render_gallery_timeline()
+
+    def _reset_all_filters(self):
+        self.filter_format = "all"
+        self.filter_dimensions = "all"
+        self.filter_resolution = "all"
+        self._update_filter_styles()
+        self._render_gallery_timeline()
+
     def _update_filter_styles(self):
-        cat_label_key = "cat_all"
-        for cid, ckey, _icons in GALLERY_CATEGORIES:
-            if cid == self.active_filter:
-                cat_label_key = ckey
+        # 1. Format label and styles
+        fmt_short_key = "fmt_short_all"
+        for fid, _fkey, fshort, _icons in FORMAT_FILTER_OPTIONS:
+            if fid == self.filter_format:
+                fmt_short_key = fshort
                 break
-        self.lbl_category_title.set_text(f"{t('filter_prefix')}: {t(cat_label_key)}")
-        for fid, btn in self.filter_buttons.items():
-            if fid == self.active_filter:
+        self.lbl_fmt_title.set_text(f"{t('filter_fmt_prefix')}: {t(fmt_short_key)}")
+        for fid, btn in self.fmt_item_btns.items():
+            if fid == self.filter_format:
                 btn.remove_css_class("flat")
                 btn.add_css_class("sadeem-btn-active")
             else:
                 btn.remove_css_class("sadeem-btn-active")
                 btn.add_css_class("flat")
+        if self.filter_format != "all":
+            self.btn_fmt_menu.add_css_class("sadeem-btn-active")
+        else:
+            self.btn_fmt_menu.remove_css_class("sadeem-btn-active")
+
+        # 2. Dimensions label and styles
+        dim_short_key = "dim_short_all"
+        for did, _dkey, dshort, _icons in DIMENSION_FILTER_OPTIONS:
+            if did == self.filter_dimensions:
+                dim_short_key = dshort
+                break
+        self.lbl_dim_title.set_text(f"{t('filter_dim_prefix')}: {t(dim_short_key)}")
+        for did, btn in self.dim_item_btns.items():
+            if did == self.filter_dimensions:
+                btn.remove_css_class("flat")
+                btn.add_css_class("sadeem-btn-active")
+            else:
+                btn.remove_css_class("sadeem-btn-active")
+                btn.add_css_class("flat")
+        if self.filter_dimensions != "all":
+            self.btn_dim_menu.add_css_class("sadeem-btn-active")
+        else:
+            self.btn_dim_menu.remove_css_class("sadeem-btn-active")
+
+        # 3. Resolution label and styles
+        res_short_key = "res_short_all"
+        for rid, _rkey, rshort, _icons in RESOLUTION_FILTER_OPTIONS:
+            if rid == self.filter_resolution:
+                res_short_key = rshort
+                break
+        self.lbl_res_title.set_text(f"{t('filter_res_prefix')}: {t(res_short_key)}")
+        for rid, btn in self.res_item_btns.items():
+            if rid == self.filter_resolution:
+                btn.remove_css_class("flat")
+                btn.add_css_class("sadeem-btn-active")
+            else:
+                btn.remove_css_class("sadeem-btn-active")
+                btn.add_css_class("flat")
+        if self.filter_resolution != "all":
+            self.btn_res_menu.add_css_class("sadeem-btn-active")
+        else:
+            self.btn_res_menu.remove_css_class("sadeem-btn-active")
+
+        # 4. Clear/Reset filter button visibility
+        has_active_filter = (
+            self.filter_format != "all"
+            or self.filter_dimensions != "all"
+            or self.filter_resolution != "all"
+        )
+        self.btn_clear_filters.set_visible(has_active_filter)
+        if hasattr(self, "btn_empty_reset"):
+            self.btn_empty_reset.set_visible(has_active_filter)
 
     def _set_gallery_filter(self, fid):
-        self.active_filter = fid
+        self.filter_format = fid
         self._update_filter_styles()
         self._render_gallery_timeline()
 
@@ -646,7 +805,15 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         return False
 
     def _get_filtered_items(self):
-        return [it for it in self.all_gallery_items if media.matches_category(it, self.active_filter)]
+        return [
+            it for it in self.all_gallery_items
+            if media.matches_filters(
+                it,
+                self.filter_format,
+                self.filter_dimensions,
+                self.filter_resolution
+            )
+        ]
 
     def _render_gallery_timeline(self):
         self._clear_box(self.timeline_box)

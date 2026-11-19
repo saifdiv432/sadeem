@@ -22,7 +22,9 @@ import i18n
 
 CONFIG_DIR = os.path.expanduser("~/.config/sadeem-gallery")
 SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
-THUMB_CACHE_DIR = os.path.expanduser("~/.cache/sadeem-gallery/thumbs")
+CACHE_DIR = os.path.expanduser("~/.cache/sadeem-gallery")
+THUMB_CACHE_DIR = os.path.join(CACHE_DIR, "thumbs")
+META_CACHE_FILE = os.path.join(CACHE_DIR, "meta.json")
 THUMB_SIZE = 220
 
 STANDARD_EXTS = {
@@ -54,7 +56,35 @@ TAG_LENS = EXIF_TAG_MAP.get("LensModel", 42036)
 
 def ensure_dirs():
     os.makedirs(CONFIG_DIR, exist_ok=True)
+    os.makedirs(CACHE_DIR, exist_ok=True)
     os.makedirs(THUMB_CACHE_DIR, exist_ok=True)
+
+
+def _magick_bin():
+    return shutil.which("magick") or shutil.which("convert")
+
+
+def load_meta_cache():
+    if os.path.isfile(META_CACHE_FILE):
+        try:
+            with open(META_CACHE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+    return {}
+
+
+def save_meta_cache(cache_data):
+    ensure_dirs()
+    try:
+        tmp = f"{META_CACHE_FILE}.tmp.{os.getpid()}"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(cache_data, f, ensure_ascii=False)
+        os.replace(tmp, META_CACHE_FILE)
+    except Exception:
+        pass
 
 
 def get_default_pictures_dir():
@@ -146,14 +176,31 @@ def _probe_svg_dimensions(path):
     """Quickly parse width/height or viewBox from the header of an SVG file."""
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            head = f.read(4096)
-        m_vb = re.search(r'viewBox\s*=\s*["\']\s*[-\d.]+\s+[-\d.]+\s+([\d.]+)\s+([\d.]+)\s*["\']', head, re.IGNORECASE)
+            head = f.read(8192)
+        m_vb = re.search(r'viewBox\s*=\s*["\']\s*[-+\d.]+\s+[-+\d.]+\s+([+\d.]+)\s+([+\d.]+)\s*["\']', head, re.IGNORECASE)
         if m_vb:
             return int(float(m_vb.group(1))), int(float(m_vb.group(2)))
-        mw = re.search(r'\bwidth\s*=\s*["\']\s*([\d.]+)', head, re.IGNORECASE)
-        mh = re.search(r'\bheight\s*=\s*["\']\s*([\d.]+)', head, re.IGNORECASE)
+        mw = re.search(r'\bwidth\s*=\s*["\']\s*([+\d.]+)', head, re.IGNORECASE)
+        mh = re.search(r'\bheight\s*=\s*["\']\s*([+\d.]+)', head, re.IGNORECASE)
         if mw and mh:
             return int(float(mw.group(1))), int(float(mh.group(1)))
+    except Exception:
+        pass
+    return 0, 0
+
+
+def _probe_raw_dimensions(path):
+    """Attempt fast dimension extraction for RAW formats via ImageMagick identify."""
+    mbin = _magick_bin()
+    if not mbin:
+        return 0, 0
+    try:
+        cmd = [mbin, "identify", "-format", "%w %h", f"{path}[0]"] if os.path.basename(mbin) == "magick" else [mbin, "-format", "%w %h", f"{path}[0]"]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=2.0, check=False)
+        if res.returncode == 0 and res.stdout:
+            parts = res.stdout.strip().split()
+            if len(parts) >= 2:
+                return int(parts[0]), int(parts[1])
     except Exception:
         pass
     return 0, 0
@@ -196,6 +243,11 @@ def _probe_fast_metadata(path, ext, st):
         except Exception:
             pass
 
+    if ext in RAW_EXTS and (w <= 0 or h <= 0):
+        rw, rh = _probe_raw_dimensions(path)
+        if rw > 0 and rh > 0:
+            w, h = rw, rh
+
     if dt is None:
         try:
             mtime = st.st_mtime if st is not None else os.path.getmtime(path)
@@ -218,36 +270,120 @@ def is_screenshot_item(path, name):
     return False
 
 
-def matches_category(item, category):
-    """Evaluate whether a scanned gallery item matches one of the 9 rich filter categories."""
-    if not category or category == "all":
+def matches_format(item, fmt):
+    """Match image format category."""
+    if not fmt or fmt == "all":
         return True
-    ext = item.get("ext", "")
-    w = int(item.get("width", 0) or 0)
-    h = int(item.get("height", 0) or 0)
-    if category == "camera":
-        return ext in (".jpg", ".jpeg", ".heic", ".heif", ".png")
-    if category == "screenshots":
-        return bool(item.get("is_screenshot", False))
-    if category == "hd":
-        return max(w, h) >= 1920
-    if category == "portrait":
-        return h > w > 0
-    if category == "landscape":
-        return w > h > 0
-    if category == "animated":
-        return bool(item.get("is_animated", False))
-    if category == "raw":
-        return bool(item.get("is_raw", False))
-    if category == "vector":
+    ext = (item.get("ext") or "").lower()
+    if fmt == "jpeg":
+        return ext in (".jpg", ".jpeg")
+    if fmt == "png":
+        return ext == ".png"
+    if fmt == "webp":
+        return ext == ".webp"
+    if fmt == "heic_avif":
+        return ext in (".heic", ".heif", ".avif")
+    if fmt == "animated":
+        return bool(item.get("is_animated", False)) or ext == ".gif"
+    if fmt == "raw":
+        return bool(item.get("is_raw", False)) or ext in RAW_EXTS
+    if fmt == "vector":
         return ext in (".svg", ".ico")
+    if fmt == "other":
+        return ext in (".tiff", ".tif", ".bmp", ".jxl")
     return True
 
 
+def matches_dimensions(item, dim):
+    """Match image dimensions and aspect ratio category."""
+    if not dim or dim == "all":
+        return True
+    w = int(item.get("width", 0) or 0)
+    h = int(item.get("height", 0) or 0)
+    if w <= 0 or h <= 0:
+        return False
+    ratio = w / h
+    longest = max(w, h)
+    shortest = min(w, h)
+    aspect_max = longest / shortest
+    if dim == "landscape":
+        return w > h
+    if dim == "portrait":
+        return h > w
+    if dim == "square":
+        return 0.95 <= ratio <= 1.05
+    if dim == "ultrawide":
+        return aspect_max >= 1.7
+    if dim == "standard":
+        return 1.25 <= aspect_max <= 1.65
+    return True
+
+
+def matches_resolution(item, res):
+    """Match image resolution category based on longest side max(width, height)."""
+    if not res or res == "all":
+        return True
+    w = int(item.get("width", 0) or 0)
+    h = int(item.get("height", 0) or 0)
+    longest = max(w, h)
+    if longest <= 0:
+        return False
+    if res == "low":
+        return longest < 1280
+    if res == "hd":
+        return 1280 <= longest < 1920
+    if res == "fhd":
+        return 1920 <= longest < 2560
+    if res == "2k":
+        return 2560 <= longest < 3840
+    if res == "4k":
+        return longest >= 3840
+    return True
+
+
+def matches_filters(item, fmt="all", dim="all", res="all"):
+    """Evaluate whether an item matches all 3 orthogonal filters simultaneously (AND logic)."""
+    return (
+        matches_format(item, fmt) and
+        matches_dimensions(item, dim) and
+        matches_resolution(item, res)
+    )
+
+
+def matches_category(item, category):
+    """Legacy helper for backward compatibility."""
+    if not category or category == "all":
+        return True
+    if category in ("camera", "screenshots", "hd", "portrait", "landscape", "animated", "raw", "vector"):
+        ext = item.get("ext", "")
+        w = int(item.get("width", 0) or 0)
+        h = int(item.get("height", 0) or 0)
+        if category == "camera":
+            return ext in (".jpg", ".jpeg", ".heic", ".heif", ".png")
+        if category == "screenshots":
+            return bool(item.get("is_screenshot", False))
+        if category == "hd":
+            return max(w, h) >= 1920
+        if category == "portrait":
+            return h > w > 0
+        if category == "landscape":
+            return w > h > 0
+        if category == "animated":
+            return bool(item.get("is_animated", False)) or ext == ".gif"
+        if category == "raw":
+            return bool(item.get("is_raw", False)) or ext in RAW_EXTS
+        if category == "vector":
+            return ext in (".svg", ".ico")
+    return matches_filters(item, fmt=category)
+
+
 def scan_directories(directories):
-    """Recursively scan directories excluding hidden folders/files, sorted newest-first."""
+    """Recursively scan directories excluding hidden folders/files, sorted newest-first with fast metadata caching."""
+    meta_cache = load_meta_cache()
+    dirty = False
     items = []
     seen = set()
+
     for root_dir in directories:
         if not os.path.isdir(root_dir):
             continue
@@ -268,8 +404,39 @@ def scan_directories(directories):
                     st = os.stat(full)
                 except OSError:
                     continue
+
                 ext = os.path.splitext(full)[1].lower()
-                dt, w, h, animated = _probe_fast_metadata(full, ext, st)
+                cached = meta_cache.get(real)
+                if (
+                    cached
+                    and isinstance(cached, dict)
+                    and cached.get("mtime") == st.st_mtime
+                    and cached.get("width", 0) > 0
+                    and cached.get("height", 0) > 0
+                ):
+                    w = int(cached.get("width") or 0)
+                    h = int(cached.get("height") or 0)
+                    animated = bool(cached.get("is_animated", False))
+                    dt_str = cached.get("dt")
+                    dt = None
+                    if dt_str:
+                        try:
+                            dt = datetime.datetime.fromisoformat(dt_str)
+                        except Exception:
+                            dt = None
+                    if dt is None:
+                        dt = datetime.datetime.fromtimestamp(st.st_mtime)
+                else:
+                    dt, w, h, animated = _probe_fast_metadata(full, ext, st)
+                    meta_cache[real] = {
+                        "mtime": st.st_mtime,
+                        "dt": dt.isoformat() if dt else None,
+                        "width": w,
+                        "height": h,
+                        "is_animated": animated,
+                    }
+                    dirty = True
+
                 items.append({
                     "path": full,
                     "name": fname,
@@ -283,6 +450,10 @@ def scan_directories(directories):
                     "is_animated": animated,
                     "is_screenshot": is_screenshot_item(full, fname),
                 })
+
+    if dirty:
+        save_meta_cache(meta_cache)
+
     items.sort(key=lambda x: (x["dt"], x["mtime"]), reverse=True)
     return items
 
@@ -414,10 +585,6 @@ def _extract_embedded_jpeg_preview(raw_path, max_scan_bytes=12 * 1024 * 1024):
         return best_img
     except Exception:
         return None
-
-
-def _magick_bin():
-    return shutil.which("magick") or shutil.which("convert")
 
 
 def _magick_decode_to_pil(path, max_dim=None):
