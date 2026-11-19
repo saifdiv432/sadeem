@@ -10,22 +10,22 @@ modules:
   # 1. HEAVY & STATIC PACKAGES LAYER (rpm-ostree)
   # Cached permanently across builds unless packages or base Fedora version changes.
   # ============================================================================
+  # 1.1 Enable RPM Fusion repositories first
   - type: rpm-ostree
     keys:
       - https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-2020
       - https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-nonfree-fedora-2020
-    repos:
+    install:
       - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-%OS_VERSION%.noarch.rpm
       - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-%OS_VERSION%.noarch.rpm
+
+  # 1.2 Remove unwanted base packages and install required packages, codecs, drivers, fonts & utilities
+  - type: rpm-ostree
     remove:
       - gnome-tour
       - firefox
       - firefox-langpacks
     install:
-      # RPM Fusion release packages
-      - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-%OS_VERSION%.noarch.rpm
-      - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-%OS_VERSION%.noarch.rpm
-
       # Hardware acceleration & codecs
       - libavcodec-freeworld
       - gstreamer1-plugins-bad-freeworld
