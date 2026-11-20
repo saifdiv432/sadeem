@@ -55,6 +55,9 @@ TRANSLATIONS = {
         "btn_start_update": "Start Update Now",
         "btn_updating": "Updating...",
         "btn_reboot_now": "Restart Now",
+        "btn_cancel": "Cancel",
+        "reboot_dialog_title": "Restart System",
+        "reboot_dialog_body": "Are you sure you want to restart now to apply updates?",
         "upd_details_title": "Process Details & Output",
         "status_ready": "Click below to check for available updates",
         "status_checking": "Checking for updates...",
@@ -265,6 +268,9 @@ TRANSLATIONS = {
         "btn_start_update": "بدء التحديث الآن",
         "btn_updating": "جاري التحديث...",
         "btn_reboot_now": "إعادة التشغيل الآن",
+        "btn_cancel": "إلغاء",
+        "reboot_dialog_title": "إعادة تشغيل النظام",
+        "reboot_dialog_body": "هل تريد إعادة تشغيل الجهاز الآن لتفعيل التحديثات؟",
         "upd_details_title": "تفاصيل العملية وسجل الأوامر",
         "status_ready": "اضغط للتحقق من وجود تحديثات جديدة للنظام والتطبيقات",
         "status_checking": "جارٍ البحث عن تحديثات...",
@@ -475,6 +481,9 @@ TRANSLATIONS = {
         "btn_start_update": "Démarrer la mise à jour",
         "btn_updating": "Mise à jour en cours...",
         "btn_reboot_now": "Redémarrer maintenant",
+        "btn_cancel": "Annuler",
+        "reboot_dialog_title": "Redémarrer le système",
+        "reboot_dialog_body": "Voulez-vous redémarrer l'appareil maintenant pour appliquer les mises à jour ?",
         "upd_details_title": "Détails du processus et journal",
         "status_ready": "Cliquez ci-dessous pour vérifier les mises à jour disponibles",
         "status_checking": "Recherche de mises à jour...",
@@ -617,6 +626,9 @@ TRANSLATIONS = {
         "btn_start_update": "Iniciar actualización",
         "btn_updating": "Actualizando...",
         "btn_reboot_now": "Reiniciar ahora",
+        "btn_cancel": "Cancelar",
+        "reboot_dialog_title": "Reiniciar el sistema",
+        "reboot_dialog_body": "¿Desea reiniciar el dispositivo ahora para aplicar las actualizaciones?",
         "upd_details_title": "Detalles del proceso y registro",
         "status_ready": "Haga clic abajo para comprobar actualizaciones disponibles",
         "status_checking": "Buscando actualizaciones...",
@@ -759,6 +771,9 @@ TRANSLATIONS = {
         "btn_start_update": "Aktualisierung starten",
         "btn_updating": "Wird aktualisiert...",
         "btn_reboot_now": "Jetzt neu starten",
+        "btn_cancel": "Abbrechen",
+        "reboot_dialog_title": "System neustarten",
+        "reboot_dialog_body": "Möchten Sie das Gerät jetzt neustarten, um die Aktualisierungen anzuwenden?",
         "upd_details_title": "Prozessdetails und Protokoll",
         "status_ready": "Klicken Sie unten, um nach verfügbaren Updates zu suchen",
         "status_checking": "Suche nach Updates...",
@@ -901,6 +916,9 @@ TRANSLATIONS = {
         "btn_start_update": "Güncellemeyi Başlat",
         "btn_updating": "Güncelleniyor...",
         "btn_reboot_now": "Şimdi Yeniden Başlat",
+        "btn_cancel": "İptal",
+        "reboot_dialog_title": "Sistemi Yeniden Başlat",
+        "reboot_dialog_body": "Güncellemeleri uygulamak için cihazı şimdi yeniden başlatmak istiyor musunuz?",
         "upd_details_title": "İşlem Ayrıntıları ve Günlük",
         "status_ready": "Mevcut güncellemeleri kontrol etmek için aşağıya tıklayın",
         "status_checking": "Güncellemeler kontrol ediliyor...",
@@ -1043,6 +1061,9 @@ TRANSLATIONS = {
         "btn_start_update": "Начать обновление",
         "btn_updating": "Обновление...",
         "btn_reboot_now": "Перезагрузить сейчас",
+        "btn_cancel": "Отмена",
+        "reboot_dialog_title": "Перезагрузка системы",
+        "reboot_dialog_body": "Перезагрузить устройство сейчас для применения обновлений?",
         "upd_details_title": "Подробности процесса и журнал",
         "status_ready": "Нажмите ниже, чтобы проверить наличие обновлений",
         "status_checking": "Поиск обновлений...",
@@ -1185,6 +1206,9 @@ TRANSLATIONS = {
         "btn_start_update": "Iniciar Atualização",
         "btn_updating": "Atualizando...",
         "btn_reboot_now": "Reiniciar Agora",
+        "btn_cancel": "Cancelar",
+        "reboot_dialog_title": "Reiniciar o sistema",
+        "reboot_dialog_body": "Deseja reiniciar o dispositivo agora para aplicar as atualizações?",
         "upd_details_title": "Detalhes do Processo e Registro",
         "status_ready": "Clique abaixo para verificar atualizações disponíveis",
         "status_checking": "A procurar atualizações...",
@@ -1327,6 +1351,9 @@ TRANSLATIONS = {
         "btn_start_update": "Avvia aggiornamento",
         "btn_updating": "Aggiornamento in corso...",
         "btn_reboot_now": "Riavvia ora",
+        "btn_cancel": "Annulla",
+        "reboot_dialog_title": "Riavvia il sistema",
+        "reboot_dialog_body": "Vuoi riavviare il dispositivo adesso per applicare gli aggiornamenti?",
         "upd_details_title": "Dettagli del processo e registro",
         "status_ready": "Fai clic qui sotto per cercare gli aggiornamenti disponibili",
         "status_checking": "Ricerca aggiornamenti in corso...",
@@ -1469,6 +1496,9 @@ TRANSLATIONS = {
         "btn_start_update": "立即开始更新",
         "btn_updating": "正在更新...",
         "btn_reboot_now": "立即重启",
+        "btn_cancel": "取消",
+        "reboot_dialog_title": "重启系统",
+        "reboot_dialog_body": "您确定要立即重启设备以应用更新吗？",
         "upd_details_title": "过程详情与输出日志",
         "status_ready": "点击下方检查可用的系统与应用更新",
         "status_checking": "正在检查更新...",
@@ -2180,26 +2210,62 @@ def run_background_update_check():
     return 0
 
 
-def trigger_system_reboot():
-    """Trigger a safe, graceful GNOME session reboot with systemctl fallback."""
-    try:
-        res = subprocess.run([
-            "gdbus", "call", "--session",
-            "--dest", "org.gnome.SessionManager",
-            "--object-path", "/org/gnome/SessionManager",
-            "--method", "org.gnome.SessionManager.Reboot"
-        ], capture_output=True, text=True, check=False)
-        if res.returncode == 0:
-            return True
-    except Exception:
-        pass
+_active_reboot_dialog = None
 
-    try:
-        subprocess.Popen(["systemctl", "reboot"])
-        return True
-    except Exception as e:
-        print(f"Error triggering system reboot: {e}", file=sys.stderr)
-        return False
+
+def prompt_reboot_confirmation(parent_window=None):
+    """Show an Adw.AlertDialog (with Adw.MessageDialog fallback) confirming system reboot.
+    Strictly executes `systemctl reboot` only when the user explicitly confirms ('reboot').
+    """
+    global _active_reboot_dialog
+    if _active_reboot_dialog is not None:
+        return
+
+    if parent_window is None:
+        app = Gio.Application.get_default()
+        if app:
+            parent_window = getattr(app, "window", None) or app.get_active_window()
+
+    heading = t("reboot_dialog_title")
+    body = t("reboot_dialog_body")
+
+    def _on_response(dialog, response):
+        global _active_reboot_dialog
+        _active_reboot_dialog = None
+        if response == "reboot":
+            try:
+                subprocess.Popen(["systemctl", "reboot"])
+            except Exception as e:
+                print(f"Error triggering system reboot: {e}", file=sys.stderr)
+
+    if hasattr(Adw, "AlertDialog"):
+        dlg = Adw.AlertDialog.new(heading, body)
+        dlg.add_response("cancel", t("btn_cancel"))
+        dlg.add_response("reboot", t("btn_reboot_now"))
+        dlg.set_response_appearance("reboot", Adw.ResponseAppearance.SUGGESTED)
+        dlg.set_default_response("reboot")
+        dlg.set_close_response("cancel")
+        dlg.connect("response", _on_response)
+        _active_reboot_dialog = dlg
+        if parent_window:
+            dlg.present(parent_window)
+        else:
+            dlg.present()
+    else:
+        dlg = Adw.MessageDialog(transient_for=parent_window, modal=True, heading=heading, body=body)
+        dlg.add_response("cancel", t("btn_cancel"))
+        dlg.add_response("reboot", t("btn_reboot_now"))
+        dlg.set_response_appearance("reboot", Adw.ResponseAppearance.SUGGESTED)
+        dlg.set_default_response("reboot")
+        dlg.set_close_response("cancel")
+        dlg.connect("response", _on_response)
+        _active_reboot_dialog = dlg
+        dlg.present()
+
+
+def trigger_system_reboot(parent_window=None):
+    """Prompt the user with confirmation dialog before rebooting."""
+    prompt_reboot_confirmation(parent_window)
 
 def launch_boxbuddy():
     for cmd in [
@@ -3298,12 +3364,17 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                         row.set_title(t("btn_restart_to_apply"))
                         row.set_subtitle(t("status_pending_reboot"))
                         row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-reboot-symbolic", "view-refresh-symbolic"])))
+                        row.set_activatable(True)
+                        row.connect("activated", lambda r: self.confirm_reboot())
                         self.upd_results_group.add(row)
                         self.upd_result_rows.append(row)
                         self.upd_results_group.set_visible(True)
                     return False
                 GLib.idle_add(_ui)
         threading.Thread(target=_check, daemon=True).start()
+
+    def confirm_reboot(self):
+        prompt_reboot_confirmation(self)
 
     def update_action_button_state(self, pending=None):
         if pending is None:
@@ -3335,7 +3406,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
     def on_action_button_clicked(self, btn):
         if getattr(self, "reboot_ready", False) or has_pending_reboot():
-            trigger_system_reboot()
+            self.confirm_reboot()
         elif getattr(self, "current_update_stage", "idle") == "results_has_updates":
             self.start_installation()
         else:
@@ -4741,10 +4812,13 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     row.set_title(t("btn_restart_to_apply"))
                     row.set_subtitle(t("status_pending_reboot"))
                     row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["system-reboot-symbolic", "view-refresh-symbolic"])))
+                    row.set_activatable(True)
+                    row.connect("activated", lambda r: self.confirm_reboot())
                     self.upd_results_group.add(row)
                     self.upd_result_rows.append(row)
                     self.upd_results_group.set_visible(True)
                     self.sys_row.set_sensitive(False)
+                    self.confirm_reboot()
                 elif success:
                     self.reboot_ready = False
                     self.current_update_stage = "idle"
@@ -5312,7 +5386,7 @@ stage {{
         self.btn_reboot_drivers.add_css_class("pill")
         self.btn_reboot_drivers.set_size_request(-1, 48)
         self.btn_reboot_drivers.set_visible(False)
-        self.btn_reboot_drivers.connect("clicked", lambda b: trigger_system_reboot())
+        self.btn_reboot_drivers.connect("clicked", lambda b: self.confirm_reboot())
         self.drv_progress_box.append(self.btn_reboot_drivers)
 
     def build_drivers_page(self):
