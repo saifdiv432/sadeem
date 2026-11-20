@@ -4310,9 +4310,9 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                         return
 
                     # Stage 2: Downloading / Pulling OCI layers -> 5%..65% across total layers
-                    m_layer_full = re.search(r'\[(\d+)/(\d+)\]\s+Fetching layer\s+\S+\s+\(([^)]+)\)', clean)
-                    m_layer_simple = re.search(r'\[(\d+)/(\d+)\]\s+Fetching layer', clean)
-                    m_need = re.search(r'layers needed:\s*(\d+)', clean_lower)
+                    m_layer_full = re.search(r'\[(\d+)/(\d+)\]\s+Fetching\s+(?:ostree\s+chunk|layer)\s+\S+\s+\(([^)]+)\)', clean)
+                    m_layer_simple = re.search(r'\[(\d+)/(\d+)\]\s+Fetching\s+(?:ostree\s+chunk|layer)', clean)
+                    m_need = re.search(r'(?:layers|chunks|ostree chunks)\s+needed:\s*(\d+)', clean_lower)
 
                     if m_layer_full:
                         k = int(m_layer_full.group(1))
@@ -4337,7 +4337,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     is_dl_line = (
                         m_layer_full is not None
                         or m_layer_simple is not None
-                        or any(k in clean_lower for k in ("downloading", "pulling", "fetching", "receiving objects", "receiving delta", "ostree chunk", "layers needed"))
+                        or any(k in clean_lower for k in ("downloading", "pulling", "fetching", "receiving objects", "receiving delta", "ostree chunk", "layers needed", "chunks needed"))
                         or (ostree_stage[0] == "downloading" and (
                             "%" in clean
                             or re.search(r'\d+(?:\.\d+)?\s*(?:kb|kib|mb|mib|gb|gib)', clean_lower)
@@ -4487,7 +4487,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
 
                         stream_buf = stream_buf[pos:]
 
-                        if stream_buf and any(s in stream_buf for s in ('Fetching layer', 'layers needed', '...')):
+                        if stream_buf and any(s in stream_buf for s in ('Fetching', 'layers needed', 'chunks needed', '...')):
                             _process_line(stream_buf, log_line=False, is_cr=True)
 
                     if stream_buf.strip():
