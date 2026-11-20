@@ -271,14 +271,8 @@ modules:
         done
 
   # ============================================================================
-  # 4. FINAL BOOT CONFIGURATION
-  # ============================================================================
-  # Regenerate initramfs
-  - type: initramfs
-
-  # ============================================================================
-  # 5. SADEEM SYSTEM FILES & ASSETS
-  # Placed after initramfs so app and asset changes do not trigger initramfs rebuild
+  # 4. SADEEM SYSTEM FILES & ASSETS
+  # Placed after heavy package installations and scripts
   # ============================================================================
   - type: files
     files:
@@ -334,10 +328,17 @@ modules:
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && rsvg-convert -w 280 -h 83 /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg -o /usr/share/pixmaps/fedora_whitelogo_med.png || true
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/pixmaps/fedora_whitelogo.svg || true
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
+        plymouth-set-default-theme spinner || true
 
         mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer && ln -sf ../sadeem-updater-check.timer /usr/lib/systemd/user/timers.target.wants/sadeem-updater-check.timer || true
         rm -f /usr/share/applications/sadeem-system.desktop /usr/share/applications/sadeem-welcome.desktop /etc/xdg/autostart/sadeem-welcome.desktop || true
         chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager /usr/bin/zapfast /usr/bin/misterdownloadmanager* /usr/share/zapfast/zapfast /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge || true
+
+  # ============================================================================
+  # 5. FINAL BOOT CONFIGURATION
+  # Regenerate initramfs to update boot splash and Plymouth watermark
+  # ============================================================================
+  - type: initramfs
 
   # ============================================================================
   # 6. SIGNING
