@@ -255,7 +255,37 @@ modules:
     scripts:
       - install-external-apps.sh
 
-  # System setup: compile schemas, update dconf, convert Plymouth logos, update icon caches, and set permissions
+  # Base image adjustments and cleanup
+  - type: script
+    snippets:
+      - |
+        # Safely remove gnome-tweaks if present in base image
+        rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
+
+        # Firefox kiosk top bar styling for Anaconda WebUI
+        for UC in /usr/share/anaconda/firefox-theme/*/chrome/userChrome.css; do
+          if [ -f "$UC" ]; then
+            sed -i -E 's/#(294172|3c6eb4|0066cc|0055aa|51a2da|0088ce|06c)/#7a1c33/gI' "$UC" || true
+            echo -e "\n:root, #navigator-toolbox, #titlebar, #TabsToolbar, #nav-bar, .titlebar-color { background-color: #7a1c33 !important; background-image: none !important; color: #ffffff !important; }\n" >> "$UC" || true
+          fi
+        done
+
+  # ============================================================================
+  # 4. FINAL BOOT CONFIGURATION
+  # ============================================================================
+  # Regenerate initramfs
+  - type: initramfs
+
+  # ============================================================================
+  # 5. SADEEM SYSTEM FILES & ASSETS
+  # Placed after initramfs so app and asset changes do not trigger initramfs rebuild
+  # ============================================================================
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Post-copy setup: recompile schemas, update dconf, and finalize branding/permissions
   - type: script
     snippets:
       - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
@@ -286,13 +316,6 @@ modules:
             fi
           done
         fi
-        # Firefox kiosk top bar styling for Anaconda WebUI
-        for UC in /usr/share/anaconda/firefox-theme/*/chrome/userChrome.css; do
-          if [ -f "$UC" ]; then
-            sed -i -E 's/#(294172|3c6eb4|0066cc|0055aa|51a2da|0088ce|06c)/#7a1c33/gI' "$UC" || true
-            echo -e "\n:root, #navigator-toolbox, #titlebar, #TabsToolbar, #nav-bar, .titlebar-color { background-color: #7a1c33 !important; background-image: none !important; color: #ffffff !important; }\n" >> "$UC" || true
-          fi
-        done
 
         # Plymouth watermark and distributor logos
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg /usr/share/icons/hicolor/scalable/apps/fedora-logo-icon.svg || true
@@ -312,27 +335,12 @@ modules:
         [ -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg ] && cp -f /usr/share/icons/hicolor/scalable/apps/sadeem-logo-text-dark.svg /usr/share/pixmaps/fedora_whitelogo.svg || true
         gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
 
-        # Safely remove gnome-tweaks if present in base image
-        rpm -q gnome-tweaks >/dev/null 2>&1 && rpm -e --nodeps gnome-tweaks || true
-        dconf update || true
         mkdir -p /usr/lib/systemd/user/timers.target.wants && ln -sf ../sadeem-housekeeping.timer /usr/lib/systemd/user/timers.target.wants/sadeem-housekeeping.timer && ln -sf ../sadeem-updater-check.timer /usr/lib/systemd/user/timers.target.wants/sadeem-updater-check.timer || true
         rm -f /usr/share/applications/sadeem-system.desktop /usr/share/applications/sadeem-welcome.desktop /etc/xdg/autostart/sadeem-welcome.desktop || true
         chmod +x /usr/bin/sadeem-colors /usr/bin/sadeem-welcome /usr/bin/sadeem-updater /usr/bin/saifdora-accent-watcher /usr/bin/sadeem-init-sandbox /usr/bin/sadeem-pkg-installer /usr/bin/sadeem-system /usr/bin/saifdora-nvidia-manager /usr/bin/sadeem-housekeeping /usr/bin/sadeem-ai-manager /usr/bin/zapfast /usr/bin/misterdownloadmanager* /usr/share/zapfast/zapfast /etc/skel/.var/app/org.mozilla.firefox/.mozilla/native-messaging-hosts/misterdownloadmanager-flatpak-bridge || true
 
   # ============================================================================
-  # 4. SADEEM SYSTEM FILES & ASSETS
-  # Placed before initramfs so custom Plymouth splash watermark is packed into initramfs
+  # 6. SIGNING
   # ============================================================================
-  - type: files
-    files:
-      - source: system
-        destination: /
-
-  # ============================================================================
-  # 5. FINAL BOOT CONFIGURATION & SIGNING
-  # ============================================================================
-  # Regenerate initramfs to update boot splash and Plymouth watermark
-  - type: initramfs
-
   # Container signing policy configuration
   - type: signing
