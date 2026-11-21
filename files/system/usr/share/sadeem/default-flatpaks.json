@@ -1,0 +1,90 @@
+[
+  {
+    "app_id": "org.mozilla.firefox",
+    "name": "Firefox",
+    "name_ar": "متصفح الويب فيرفوكس",
+    "icon": "org.mozilla.firefox",
+    "description": "Fast, private, and secure web browser",
+    "description_ar": "متصفح الويب السريع والآمن"
+  },
+  {
+    "app_id": "org.gnome.TextEditor",
+    "name": "Text Editor",
+    "name_ar": "محرر النصوص",
+    "icon": "org.gnome.TextEditor",
+    "description": "Simple and modern text editor for GNOME",
+    "description_ar": "محرر نصوص بسيط وحديث"
+  },
+  {
+    "app_id": "org.libreoffice.LibreOffice",
+    "name": "LibreOffice",
+    "name_ar": "حزمة ليبر أوفيس",
+    "icon": "org.libreoffice.LibreOffice",
+    "description": "Comprehensive office productivity suite",
+    "description_ar": "حزمة مكتبية متكاملة للمستندات والجداول"
+  },
+  {
+    "app_id": "com.mattjakeman.ExtensionManager",
+    "name": "Extension Manager",
+    "name_ar": "مدير الامتدادات",
+    "icon": "com.mattjakeman.ExtensionManager",
+    "description": "Browse, install, and manage GNOME Shell extensions",
+    "description_ar": "تصفح وتثبيت وإدارة امتدادات جنوم"
+  },
+  {
+    "app_id": "com.github.tchx84.Flatseal",
+    "name": "Flatseal",
+    "name_ar": "مدير الأذونات (فلات سيل)",
+    "icon": "com.github.tchx84.Flatseal",
+    "description": "Review and modify permissions of your Flatpak applications",
+    "description_ar": "التحكم في أذونات وصلاحيات تطبيقات فلات باك"
+  },
+  {
+    "app_id": "org.videolan.VLC",
+    "name": "VLC Media Player",
+    "name_ar": "مشغل الوسائط VLC",
+    "icon": "org.videolan.VLC",
+    "description": "Play all video, audio files, and streaming protocols",
+    "description_ar": "مشغل الفيديو والصوتيات العالمي الشامل"
+  },
+  {
+    "app_id": "page.tesk.Refine",
+    "name": "Refine",
+    "name_ar": "محرر واجهة جنوم (رفاين)",
+    "icon": "page.tesk.Refine",
+    "description": "Fine-tune and customize GNOME desktop settings",
+    "description_ar": "تخصيص وضبط مظهر وأزرار سطح المكتب"
+  },
+  {
+    "app_id": "com.usebottles.bottles",
+    "name": "Bottles",
+    "name_ar": "بوتلز (تشغيل برامج ويندوز)",
+    "icon": "com.usebottles.bottles",
+    "description": "Easily manage Windows wine prefixes and run software",
+    "description_ar": "تشغيل ألعاب وبرامج ويندوز عبر Wine بسهولة"
+  },
+  {
+    "app_id": "net.davidotek.pupgui2",
+    "name": "ProtonPlus",
+    "name_ar": "بروتون بلس (إدارة توافق الألعاب)",
+    "icon": "net.davidotek.pupgui2",
+    "description": "Manage Proton, Wine, and compatibility layers for gaming",
+    "description_ar": "إدارة أدوات التوافق Proton و Wine لتشغيل الألعاب"
+  },
+  {
+    "app_id": "io.github.dvlv.boxbuddyrs",
+    "name": "BoxBuddy",
+    "name_ar": "بوكس بادي (إدارة الحاويات)",
+    "icon": "io.github.dvlv.boxbuddyrs",
+    "description": "GUI manager for Distrobox and development containers",
+    "description_ar": "واجهة رسومية لإدارة حاويات Distrobox"
+  },
+  {
+    "app_id": "it.mijorus.gearlever",
+    "name": "Gear Lever",
+    "name_ar": "جير ليفر (إدارة تطبيقات AppImage)",
+    "icon": "it.mijorus.gearlever",
+    "description": "Manage, update, and integrate AppImage files seamlessly",
+    "description_ar": "تنظيم وتشغيل ملفات AppImage وإضافتها للقائمة"
+  }
+]

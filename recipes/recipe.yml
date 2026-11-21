@@ -285,6 +285,7 @@ modules:
       - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
       - "dconf update"
       - "update-desktop-database /usr/share/applications || true"
+      - "chmod 644 /usr/share/sadeem/default-flatpaks.json 2>/dev/null || true"
       - |
         # Apply Sadeem burgundy CSS to Cockpit Shell, Firefox kiosk theme, and Anaconda WebUI
         if [ -f /usr/share/sadeem/cockpit-branding.css ]; then

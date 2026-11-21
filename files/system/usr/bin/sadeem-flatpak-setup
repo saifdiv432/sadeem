@@ -35,19 +35,25 @@ if ! curl -s --head --connect-timeout 6 https://dl.flathub.org/repo/flathub.flat
 fi
 
 echo "[sadeem-flatpak] Network ready. Installing default Flatpaks..."
-APPS=(
-  org.mozilla.firefox
-  org.gnome.TextEditor
-  org.libreoffice.LibreOffice
-  com.mattjakeman.ExtensionManager
-  com.github.tchx84.Flatseal
-  org.videolan.VLC
-  page.tesk.Refine
-  com.usebottles.bottles
-  net.davidotek.pupgui2
-  io.github.dvlv.boxbuddyrs
-  it.mijorus.gearlever
-)
+APPS=()
+if [ -f "/usr/share/sadeem/default-flatpaks.json" ] && command -v python3 >/dev/null 2>&1; then
+  APPS=($(python3 -c 'import json; print(" ".join([x["app_id"] for x in json.load(open("/usr/share/sadeem/default-flatpaks.json"))]))' 2>/dev/null || true))
+fi
+if [ ${#APPS[@]} -eq 0 ]; then
+  APPS=(
+    org.mozilla.firefox
+    org.gnome.TextEditor
+    org.libreoffice.LibreOffice
+    com.mattjakeman.ExtensionManager
+    com.github.tchx84.Flatseal
+    org.videolan.VLC
+    page.tesk.Refine
+    com.usebottles.bottles
+    net.davidotek.pupgui2
+    io.github.dvlv.boxbuddyrs
+    it.mijorus.gearlever
+  )
+fi
 
 FAILED=0
 for app in "${APPS[@]}"; do

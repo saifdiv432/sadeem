@@ -9,6 +9,10 @@ Built with Python 3, GTK 4, and Libadwaita following GNOME Human Interface Guide
 import sys
 import os
 import subprocess
+import json
+import re
+import threading
+import time
 import gi
 
 gi.require_version('Gtk', '4.0')
@@ -25,6 +29,21 @@ WELCOME_TRANSLATIONS = {
         "btn_start": "Get Started",
         "check_startup": "Show on startup",
         "toast_installing": "Application installation is completing in the background, it will appear in the menu within minutes",
+        # Slide 0: Essential Flatpaks Setup
+        "s0_title": "Preparing Essential Apps",
+        "s0_sub": "Default runtimes and applications are installing in the background to ensure full system functionality.",
+        "s0_all_done": "All essential applications are installed ✓",
+        "s0_all_done_sub": "All default applications are installed and ready to use.",
+        "s0_status_idle": "Waiting for background installation service or network connection...",
+        "s0_status_runtime": "Downloading essential runtime: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "Downloading and installing essential runtime: {name}...",
+        "s0_status_app": "Downloading and installing {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "Downloading and installing {name}...",
+        "s0_status_verifying": "Verifying installed applications...",
+        "s0_btn_retry": "Start / Resume Installation Now",
+        "s0_installed": "Installed",
+        "s0_installing": "Installing...",
+        "s0_waiting": "Queued",
         # Slide 1
         "s1_title": "Ready Out of the Box",
         "s1_sub": "Sadeem 45 includes comprehensive codecs, hardware acceleration, and essential utilities pre-configured.",
@@ -90,6 +109,21 @@ WELCOME_TRANSLATIONS = {
         "btn_start": "ابدأ الاستخدام",
         "check_startup": "العرض عند بدء التشغيل",
         "toast_installing": "يتم استكمال تثبيت التطبيق في الخلفية، وسيظهر في القائمة خلال دقائق",
+        # Slide 0: Essential Flatpaks Setup
+        "s0_title": "تجهيز التطبيقات الأساسية",
+        "s0_sub": "يتم الآن تثبيت بيئات التشغيل والتطبيقات الافتراضية في الخلفية لضمان عمل النظام بكامل كفاءته.",
+        "s0_all_done": "تم تثبيت جميع التطبيقات الأساسية بنجاح ✓",
+        "s0_all_done_sub": "جميع التطبيقات الافتراضية مثبتة وجاهزة للاستخدام الآن.",
+        "s0_status_idle": "في انتظار بدء خدمة التثبيت أو توفر اتصال بالإنترنت...",
+        "s0_status_runtime": "جاري تنزيل بيئة التشغيل الأساسية: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "جاري تنزيل وتثبيت بيئة التشغيل الأساسية: {name}...",
+        "s0_status_app": "جاري تنزيل وتثبيت {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "جاري تنزيل وتثبيت {name}...",
+        "s0_status_verifying": "جاري التحقق من التطبيقات المثبتة...",
+        "s0_btn_retry": "بدء / استئناف التثبيت الآن",
+        "s0_installed": "مثبّت",
+        "s0_installing": "جاري التثبيت...",
+        "s0_waiting": "في الانتظار",
         # Slide 1
         "s1_title": "جاهز للاستخدام الفوري",
         "s1_sub": "يتضمن سديم 45 دعماً شاملاً لجميع برامج الترميز، وتسريع العتاد، والأدوات الأساسية مهيأة مسبقاً.",
@@ -966,6 +1000,231 @@ def get_active_accent_color():
     return "#7a1c33"
 
 
+DEFAULT_FLATPAKS_PATH = "/usr/share/sadeem/default-flatpaks.json"
+FLATPAK_SERVICE_NAME = "sadeem-flatpak-setup.service"
+
+FALLBACK_DEFAULT_FLATPAKS = [
+    {"app_id": "org.mozilla.firefox", "name": "Firefox", "name_ar": "متصفح الويب فيرفوكس", "icon": "org.mozilla.firefox"},
+    {"app_id": "org.gnome.TextEditor", "name": "Text Editor", "name_ar": "محرر النصوص", "icon": "org.gnome.TextEditor"},
+    {"app_id": "org.libreoffice.LibreOffice", "name": "LibreOffice", "name_ar": "حزمة ليبر أوفيس", "icon": "org.libreoffice.LibreOffice"},
+    {"app_id": "com.mattjakeman.ExtensionManager", "name": "Extension Manager", "name_ar": "مدير الامتدادات", "icon": "com.mattjakeman.ExtensionManager"},
+    {"app_id": "com.github.tchx84.Flatseal", "name": "Flatseal", "name_ar": "مدير الأذونات (فلات سيل)", "icon": "com.github.tchx84.Flatseal"},
+    {"app_id": "org.videolan.VLC", "name": "VLC Media Player", "name_ar": "مشغل الوسائط VLC", "icon": "org.videolan.VLC"},
+    {"app_id": "page.tesk.Refine", "name": "Refine", "name_ar": "محرر واجهة جنوم (رفاين)", "icon": "page.tesk.Refine"},
+    {"app_id": "com.usebottles.bottles", "name": "Bottles", "name_ar": "بوتلز (تشغيل برامج ويندوز)", "icon": "com.usebottles.bottles"},
+    {"app_id": "net.davidotek.pupgui2", "name": "ProtonPlus", "name_ar": "بروتون بلس (إدارة توافق الألعاب)", "icon": "net.davidotek.pupgui2"},
+    {"app_id": "io.github.dvlv.boxbuddyrs", "name": "BoxBuddy", "name_ar": "بوكس بادي (إدارة الحاويات)", "icon": "io.github.dvlv.boxbuddyrs"},
+    {"app_id": "it.mijorus.gearlever", "name": "Gear Lever", "name_ar": "جير ليفر (إدارة تطبيقات AppImage)", "icon": "it.mijorus.gearlever"}
+]
+
+RUNTIME_FRIENDLY_NAMES = {
+    "org.gnome.Platform": {"ar": "بيئة تشغيل جنوم", "en": "GNOME Platform"},
+    "org.kde.Platform": {"ar": "بيئة تشغيل كيدي", "en": "KDE Platform"},
+    "org.freedesktop.Platform.GL": {"ar": "محرك الرسوميات (GL)", "en": "Freedesktop GL Drivers"},
+    "org.freedesktop.Platform.VAAPI": {"ar": "تسريع الفيديو العتادي (VAAPI)", "en": "Hardware Video Codecs"},
+    "org.freedesktop.Platform": {"ar": "بيئة تشغيل فري ديسكتوب", "en": "Freedesktop Platform"},
+    "org.winehq.Wine": {"ar": "بيئة تشغيل واين (Wine)", "en": "Wine Runtime"},
+}
+
+
+def load_default_flatpaks_list():
+    """Load default Flatpaks from system JSON file or repository fallback."""
+    candidates = [DEFAULT_FLATPAKS_PATH]
+    this_file = globals().get("__file__")
+    if this_file:
+        candidates.append(os.path.abspath(os.path.join(os.path.dirname(this_file), "..", "share", "sadeem", "default-flatpaks.json")))
+    for p in candidates:
+        if os.path.isfile(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, list) and len(data) > 0:
+                        return data
+                    elif isinstance(data, dict) and "apps" in data:
+                        return data["apps"]
+            except Exception:
+                pass
+    return FALLBACK_DEFAULT_FLATPAKS
+
+
+def get_installed_flatpaks_set():
+    """Query flatpak list --columns=application and return set of installed application IDs."""
+    try:
+        res = subprocess.run(["flatpak", "list", "--columns=application"], capture_output=True, text=True, check=False)
+        if res.returncode == 0:
+            return {line.strip() for line in res.stdout.splitlines() if line.strip() and line.strip() != "Application ID"}
+    except Exception:
+        pass
+    return set()
+
+
+def check_flatpaks_installed_sync():
+    """Synchronously verify whether all default Flatpaks are installed."""
+    apps = load_default_flatpaks_list()
+    installed = get_installed_flatpaks_set()
+    missing = [a["app_id"] for a in apps if a["app_id"] not in installed]
+    all_done = (len(missing) == 0)
+    return all_done, installed, set(missing)
+
+
+def get_runtime_friendly_name(ref, lang="ar"):
+    for prefix, names in RUNTIME_FRIENDLY_NAMES.items():
+        if ref.startswith(prefix):
+            return names.get(lang, names.get("en", prefix))
+    short = ref.split("/")[-1] if "/" in ref else ref
+    return f"بيئة التشغيل ({short})" if lang in ("ar", "ur") else f"Runtime ({short})"
+
+
+def parse_live_flatpak_status(default_apps, lang="ar"):
+    """
+    Parse active processes and journal logs to determine the live progress of Flatpak installation.
+    Returns a dictionary with comprehensive status details.
+    """
+    installed_set = get_installed_flatpaks_set()
+    total_count = len(default_apps)
+    installed_count = sum(1 for a in default_apps if a["app_id"] in installed_set)
+    all_installed = (installed_count == total_count)
+
+    # 1. Check if background service or flatpak process is active
+    is_active = False
+    try:
+        res = subprocess.run(["systemctl", "is-active", FLATPAK_SERVICE_NAME], capture_output=True, text=True, check=False)
+        out = res.stdout.strip().lower()
+        if out in ("active", "activating"):
+            is_active = True
+    except Exception:
+        pass
+
+    active_cmdline = ""
+    try:
+        res_ps = subprocess.run(["ps", "-eo", "args"], capture_output=True, text=True, check=False)
+        for line in res_ps.stdout.splitlines():
+            line_str = line.strip()
+            if "flatpak install" in line_str or "sadeem-flatpak-setup" in line_str:
+                is_active = True
+                active_cmdline = line_str
+                break
+    except Exception:
+        pass
+
+    # 2. Check journalctl logs
+    journal_lines = []
+    try:
+        res_j = subprocess.run(["journalctl", "-u", FLATPAK_SERVICE_NAME, "-n", "35", "--no-pager"], capture_output=True, text=True, check=False)
+        if res_j.returncode == 0:
+            journal_lines = res_j.stdout.splitlines()
+    except Exception:
+        pass
+
+    # 3. Detect current item, runtime vs app, size, and percentage
+    current_ref = None
+    is_runtime = False
+    current_app_id = None
+    pkg_size = None
+    pkg_pct = None
+
+    if active_cmdline:
+        for app in default_apps:
+            if app["app_id"] in active_cmdline:
+                current_app_id = app["app_id"]
+                break
+
+    for raw_line in reversed(journal_lines):
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        if not pkg_size:
+            m_size = re.search(r"size:\s*([\d\.]+\s*(?:kB|MB|GB))", line, re.IGNORECASE)
+            if m_size:
+                pkg_size = m_size.group(1)
+            else:
+                m_slash = re.search(r"([\d\.]+\s*(?:kB|MB|GB))\s*/\s*([\d\.]+\s*(?:kB|MB|GB))", line, re.IGNORECASE)
+                if m_slash:
+                    pkg_size = m_slash.group(2)
+
+        if pkg_pct is None:
+            m_pct = re.search(r"\b(\d{1,3})%", line)
+            if m_pct:
+                val = int(m_pct.group(1))
+                if 0 <= val <= 100:
+                    pkg_pct = val
+
+        if not current_ref and not current_app_id:
+            m_rt = re.search(r"Installing\s+runtime/([^\s/]+)", line)
+            if m_rt:
+                current_ref = m_rt.group(1)
+                is_runtime = True
+                continue
+
+            m_app = re.search(r"Installing\s+app/([^\s/]+)", line)
+            if m_app:
+                current_app_id = m_app.group(1)
+                is_runtime = False
+                continue
+
+            m_sadeem_app = re.search(r"\[sadeem-flatpak\]\s+Installing\s+([a-zA-Z0-9_\.-]+)", line)
+            if m_sadeem_app:
+                current_app_id = m_sadeem_app.group(1)
+                is_runtime = False
+                continue
+
+    if not current_app_id and not is_runtime and not all_installed:
+        for app in default_apps:
+            if app["app_id"] not in installed_set:
+                current_app_id = app["app_id"]
+                break
+
+    if all_installed:
+        fraction = 1.0
+    else:
+        sub_frac = (pkg_pct / 100.0 if pkg_pct is not None else 0.25) / max(total_count, 1)
+        base_frac = installed_count / max(total_count, 1)
+        fraction = min(0.99, base_frac + (sub_frac if is_active else 0.0))
+
+    if all_installed:
+        status_text = t("s0_all_done")
+    elif not is_active:
+        status_text = t("s0_status_idle")
+    elif is_runtime and current_ref:
+        rt_name = get_runtime_friendly_name(current_ref, lang)
+        if pkg_size and pkg_pct is not None:
+            status_text = t("s0_status_runtime", name=rt_name, size=pkg_size, pct=pkg_pct)
+        elif pkg_size:
+            status_text = f"جاري تنزيل بيئة التشغيل الأساسية: {rt_name} ({pkg_size})..." if lang in ("ar", "ur") else f"Downloading runtime: {rt_name} ({pkg_size})..."
+        else:
+            status_text = t("s0_status_runtime_nosize", name=rt_name)
+    elif current_app_id:
+        app_name = current_app_id
+        for app in default_apps:
+            if app["app_id"] == current_app_id:
+                app_name = app.get(f"name_{lang}", app.get("name_ar" if lang in ("ar", "ur") else "name", app.get("name")))
+                break
+        if pkg_size and pkg_pct is not None:
+            status_text = t("s0_status_app", name=app_name, size=pkg_size, pct=pkg_pct)
+        elif pkg_size:
+            status_text = f"جاري تنزيل وتثبيت {app_name} ({pkg_size})..." if lang in ("ar", "ur") else f"Downloading and installing {app_name} ({pkg_size})..."
+        else:
+            status_text = t("s0_status_app_nosize", name=app_name)
+    else:
+        status_text = t("s0_status_verifying")
+
+    return {
+        "all_installed": all_installed,
+        "installed_set": installed_set,
+        "installed_count": installed_count,
+        "total_count": total_count,
+        "is_active": is_active,
+        "current_app_id": current_app_id,
+        "is_runtime": is_runtime,
+        "current_ref": current_ref,
+        "pkg_size": pkg_size,
+        "pkg_pct": pkg_pct,
+        "fraction": fraction,
+        "status_text": status_text
+    }
+
+
 class WelcomeWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1053,12 +1312,28 @@ class WelcomeWindow(Adw.ApplicationWindow):
 
         self.toolbar_view.add_bottom_bar(self.bottom_bar)
 
-        # Build 5 Carousel Slides (3 rows each)
+        # Build Carousel Slides
+        self.connect("close-request", self.on_close_request)
+
+        # Check initial Flatpaks installation status
+        self.default_flatpaks = load_default_flatpaks_list()
+        all_flatpaks_installed, _, _ = check_flatpaks_installed_sync()
+
+        # Build Carousel Slides (Slide 0 is essential Flatpaks installation)
+        self.build_slide_flatpaks(all_flatpaks_installed)
         self.build_slide_ready()
         self.build_slide_apps()
         self.build_slide_extensions()
         self.build_slide_hardware()
         self.build_slide_navigation()
+
+        # If all installed: start on Slide 1 (ready out of the box), without forcing Flatpaks slide
+        # If any apps missing: start on Slide 0 (flatpaks setup)
+        if all_flatpaks_installed:
+            GLib.timeout_add(50, lambda: self.carousel.scroll_to(self.carousel.get_nth_page(1), False))
+
+        # Start live background monitoring thread
+        self.start_flatpak_monitor()
 
     def apply_custom_css(self):
         """Apply CSS rules for seamless background, rounded buttons, and badges."""
@@ -1129,6 +1404,22 @@ class WelcomeWindow(Adw.ApplicationWindow):
             font-size: 14px;
             opacity: 0.85;
         }}
+
+        progressbar.flatpak-progress trough {{
+            min-height: 8px;
+            border-radius: 9999px;
+            background-color: rgba(255, 255, 255, 0.12);
+        }}
+
+        progressbar.flatpak-progress progress {{
+            min-height: 8px;
+            border-radius: 9999px;
+            background-color: @accent_bg_color;
+        }}
+
+        image.success {{
+            color: #2ec27e;
+        }}
         """
         provider = Gtk.CssProvider()
         provider.load_from_string(css)
@@ -1183,6 +1474,224 @@ class WelcomeWindow(Adw.ApplicationWindow):
             btn.add_css_class("suggested-action")
         btn.connect("clicked", on_click)
         return btn
+
+    def on_close_request(self, *args):
+        self._flatpak_monitoring = False
+        return False
+
+    def build_slide_flatpaks(self, all_installed):
+        """Slide 0: Live preparation and installation of default Flatpak apps."""
+        slide, box = self.create_slide_container(
+            ["system-software-install-symbolic", "emblem-synchronizing-symbolic"] if not all_installed else ["object-select-symbolic", "system-software-install-symbolic"],
+            t("s0_title"),
+            t("s0_all_done_sub") if all_installed else t("s0_sub")
+        )
+        self.flatpak_slide = slide
+        self.flatpak_box = box
+
+        # Status & Progress Card Container
+        card_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        card_box.set_margin_top(4)
+        card_box.set_margin_bottom(6)
+
+        # Top row in card: Detailed status line and percentage
+        status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        status_box.set_hexpand(True)
+
+        self.flatpak_status_label = Gtk.Label(label=t("s0_all_done") if all_installed else t("s0_status_verifying"))
+        self.flatpak_status_label.set_wrap(True)
+        self.flatpak_status_label.set_xalign(0.0 if LANG not in ("ar", "ur") else 1.0)
+        self.flatpak_status_label.set_hexpand(True)
+        self.flatpak_status_label.add_css_class("caption")
+        self.flatpak_status_label.add_css_class("dim-label")
+        status_box.append(self.flatpak_status_label)
+
+        total_count = len(self.default_flatpaks)
+        inst_count = total_count if all_installed else 0
+        self.flatpak_pct_label = Gtk.Label(label=f"100% ({total_count}/{total_count})" if all_installed else f"0% (0/{total_count})")
+        self.flatpak_pct_label.add_css_class("heading")
+        self.flatpak_pct_label.add_css_class("bold")
+        status_box.append(self.flatpak_pct_label)
+
+        card_box.append(status_box)
+
+        # Progress bar
+        self.flatpak_progress_bar = Gtk.ProgressBar()
+        self.flatpak_progress_bar.set_fraction(1.0 if all_installed else 0.0)
+        self.flatpak_progress_bar.set_hexpand(True)
+        self.flatpak_progress_bar.add_css_class("flatpak-progress")
+        card_box.append(self.flatpak_progress_bar)
+
+        # Safety / Manual resume button
+        self.flatpak_retry_btn = Gtk.Button(label=t("s0_btn_retry"))
+        self.flatpak_retry_btn.add_css_class("pill")
+        self.flatpak_retry_btn.add_css_class("suggested-action")
+        self.flatpak_retry_btn.set_halign(Gtk.Align.CENTER)
+        self.flatpak_retry_btn.set_size_request(220, 36)
+        self.flatpak_retry_btn.connect("clicked", self.on_retry_flatpaks)
+        self.flatpak_retry_btn.set_visible(False)
+        card_box.append(self.flatpak_retry_btn)
+
+        box.append(card_box)
+
+        # Preferences Group with Apps List
+        self.flatpak_group = Adw.PreferencesGroup()
+        self.flatpak_rows = {}
+
+        for app in self.default_flatpaks:
+            app_id = app["app_id"]
+            app_title = app.get(f"name_{LANG}", app.get("name_ar" if LANG in ("ar", "ur") else "name", app.get("name")))
+
+            icon_candidates = [app.get("icon", app_id), app_id]
+            icon_widget = create_colorful_app_icon(icon_candidates, icon_candidates, size=32)
+
+            row = Adw.ActionRow()
+            row.set_title(app_title)
+            row.set_subtitle(app_id)
+            row.set_activatable(False)
+            row.set_title_lines(1)
+            row.set_subtitle_lines(1)
+            row.add_prefix(icon_widget)
+
+            # Suffix container
+            s_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            s_box.set_valign(Gtk.Align.CENTER)
+
+            lbl = Gtk.Label(label=t("s0_installed") if all_installed else t("s0_waiting"))
+            lbl.add_css_class("caption")
+            lbl.add_css_class("dim-label")
+            s_box.append(lbl)
+
+            icon_box = Gtk.Box()
+            icon_box.set_valign(Gtk.Align.CENTER)
+            if all_installed:
+                chk = Gtk.Image.new_from_icon_name("object-select-symbolic")
+                chk.add_css_class("success")
+                icon_box.append(chk)
+            else:
+                waiting_icon = Gtk.Image.new_from_icon_name("alarm-symbolic")
+                waiting_icon.add_css_class("dim-label")
+                icon_box.append(waiting_icon)
+            s_box.append(icon_box)
+
+            row.add_suffix(s_box)
+            self.flatpak_group.add(row)
+            self.flatpak_rows[app_id] = (row, lbl, icon_box)
+
+        scroller = Gtk.ScrolledWindow()
+        scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroller.set_propagate_natural_height(True)
+        scroller.set_max_content_height(230)
+        scroller.set_child(self.flatpak_group)
+
+        box.append(scroller)
+        self.carousel.append(slide)
+
+    def _apply_flatpak_update(self, data):
+        """Called on main UI thread via GLib.idle_add to update widgets smoothly."""
+        if not self.get_visible():
+            return False
+
+        all_installed = data["all_installed"]
+        fraction = data["fraction"]
+        installed_count = data["installed_count"]
+        total_count = data["total_count"]
+        status_text = data["status_text"]
+        is_active = data["is_active"]
+        installed_set = data["installed_set"]
+        current_app_id = data["current_app_id"]
+
+        self.flatpak_progress_bar.set_fraction(fraction)
+        self.flatpak_pct_label.set_text(f"{int(fraction * 100)}% ({installed_count}/{total_count})")
+        self.flatpak_status_label.set_text(status_text)
+
+        # Retry button visibility
+        if all_installed or is_active:
+            self.flatpak_retry_btn.set_visible(False)
+        else:
+            self.flatpak_retry_btn.set_visible(True)
+
+        # Update each row
+        for app_id, (row, lbl, icon_box) in self.flatpak_rows.items():
+            child = icon_box.get_first_child()
+            if app_id in installed_set:
+                lbl.set_text(t("s0_installed"))
+                lbl.remove_css_class("dim-label")
+                if not isinstance(child, Gtk.Image) or child.get_icon_name() != "object-select-symbolic":
+                    if child:
+                        icon_box.remove(child)
+                    chk = Gtk.Image.new_from_icon_name("object-select-symbolic")
+                    chk.add_css_class("success")
+                    icon_box.append(chk)
+            elif app_id == current_app_id and is_active:
+                lbl.set_text(t("s0_installing"))
+                lbl.remove_css_class("dim-label")
+                if not isinstance(child, Gtk.Spinner):
+                    if child:
+                        icon_box.remove(child)
+                    sp = Gtk.Spinner()
+                    sp.start()
+                    icon_box.append(sp)
+            else:
+                lbl.set_text(t("s0_waiting"))
+                if not lbl.has_css_class("dim-label"):
+                    lbl.add_css_class("dim-label")
+                if not isinstance(child, Gtk.Image) or child.get_icon_name() != "alarm-symbolic":
+                    if child:
+                        icon_box.remove(child)
+                    wt = Gtk.Image.new_from_icon_name("alarm-symbolic")
+                    wt.add_css_class("dim-label")
+                    icon_box.append(wt)
+
+        return False
+
+    def start_flatpak_monitor(self):
+        """Start daemon thread to periodically query Flatpak status."""
+        self._flatpak_monitoring = True
+
+        def monitor_worker():
+            consecutive_done = 0
+            while self._flatpak_monitoring:
+                try:
+                    data = parse_live_flatpak_status(self.default_flatpaks, lang=LANG)
+                    GLib.idle_add(self._apply_flatpak_update, data)
+                    if data["all_installed"]:
+                        consecutive_done += 1
+                        if consecutive_done >= 3:
+                            time.sleep(8)
+                            continue
+                    else:
+                        consecutive_done = 0
+                except Exception:
+                    pass
+                time.sleep(1.2)
+
+        t_mon = threading.Thread(target=monitor_worker, daemon=True)
+        t_mon.start()
+
+    def on_retry_flatpaks(self, button):
+        button.set_sensitive(False)
+        self.flatpak_status_label.set_text(t("s0_status_verifying"))
+
+        def run_start():
+            ok = False
+            try:
+                res = subprocess.run(["systemctl", "restart", FLATPAK_SERVICE_NAME], capture_output=True, text=True, check=False)
+                if res.returncode == 0:
+                    ok = True
+            except Exception:
+                pass
+            if not ok:
+                try:
+                    all_done, installed, missing = check_flatpaks_installed_sync()
+                    if missing:
+                        subprocess.Popen(["flatpak", "install", "--system", "-y", "--noninteractive", "flathub"] + list(missing))
+                        ok = True
+                except Exception:
+                    pass
+            GLib.idle_add(lambda: button.set_sensitive(True))
+
+        threading.Thread(target=run_start, daemon=True).start()
 
     def build_slide_ready(self):
         """Slide 1: Out-of-the-box readiness (3 rows)."""
