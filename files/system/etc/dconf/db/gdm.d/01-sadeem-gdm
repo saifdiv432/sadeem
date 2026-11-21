@@ -1,2 +1,11 @@
 [org/gnome/login-screen]
 logo='/usr/share/pixmaps/fedora-gdm-logo.png'
+
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/sadeem/sadeem-light.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/sadeem/sadeem-dark.jpg'
+picture-options='zoom'
+
+[org/gnome/desktop/screensaver]
+picture-uri='file:///usr/share/backgrounds/sadeem/sadeem-dark.jpg'
+picture-options='zoom'
