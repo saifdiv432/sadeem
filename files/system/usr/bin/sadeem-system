@@ -4311,12 +4311,12 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 if is_rpm_ostree:
                     cur_frac = getattr(self, "_upd_current_frac", 0.05)
 
-                    # Stage 5: Final staging / Transaction complete -> 100%
+                    # Stage 5: Final completion -> 100%
                     final_keywords = (
-                        "staging deployment",
                         "transaction complete",
                         "changes queued for next boot",
                         "changes queued",
+                        "upgraded:",
                     )
                     if any(k in clean_lower for k in final_keywords):
                         if ostree_stage[0] != "complete":
@@ -4326,8 +4326,9 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                             self.update_upd_progress(1.0, text=t("status_sys_ready_reboot"))
                         return
 
-                    # Stage 4: Layered packages, kernel modules, initramfs, writing objects -> 80%..95%
+                    # Stage 4: Staging deployment, kernel modules, initramfs, writing objects -> 80%..95%
                     integrating_keywords = (
+                        "staging deployment",
                         "running %post",
                         "executing %post",
                         "running post",
@@ -4380,23 +4381,34 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                             self.update_upd_progress(max(0.05, cur_frac))
                         return
 
-                    # Stage 2: Downloading / Pulling OCI layers -> 5%..65% across total layers
-                    m_layer_full = re.search(r'\[(\d+)/(\d+)\]\s+Fetching\s+(?:ostree\s+chunk|layer)\s+\S+\s+\(([^)]+)\)', clean)
-                    m_layer_simple = re.search(r'\[(\d+)/(\d+)\]\s+Fetching\s+(?:ostree\s+chunk|layer)', clean)
+                    # Stage 2: Downloading / Pulling OCI layers -> 10%..70% across total layers
+                    m_layer_full = re.search(r'\[(\d+)/(\d+)\]\s+Fetching\s+(?:ostree\s+chunk|layer)\s+(\S+)(?:\s+\(([^)]+)\))?', clean, re.IGNORECASE)
+                    m_layer_simple = re.search(r'\[(\d+)/(\d+)\]\s+Fetching\s+(?:ostree\s+chunk|layer)', clean, re.IGNORECASE)
+                    m_chunk_bare = re.search(r'Fetching\s+(?:ostree\s+chunk|layer)\s+(\S+)(?:\s+\(([^)]+)\))?', clean, re.IGNORECASE)
                     m_need = re.search(r'(?:layers|chunks|ostree chunks)\s+needed:\s*(\d+)', clean_lower)
+                    m_receiving = re.search(r'Receiving\s+(?:objects|delta parts):\s*(\d{1,3})%', clean, re.IGNORECASE)
 
                     if m_layer_full:
                         k = int(m_layer_full.group(1))
                         N = int(m_layer_full.group(2))
-                        size_str = m_layer_full.group(3).strip()
+                        size_str = m_layer_full.group(4).strip() if m_layer_full.group(4) else ""
                         chunk_state["current"] = k
                         chunk_state["total"] = N
-                        chunk_state["size_str"] = size_str
+                        if size_str:
+                            chunk_state["size_str"] = size_str
                     elif m_layer_simple:
                         k = int(m_layer_simple.group(1))
                         N = int(m_layer_simple.group(2))
                         chunk_state["current"] = k
                         chunk_state["total"] = N
+                        size_str = chunk_state.get("size_str", "")
+                    elif m_chunk_bare and not m_layer_simple:
+                        h = m_chunk_bare.group(1)
+                        if h != chunk_state.get("last_hash"):
+                            chunk_state["last_hash"] = h
+                            chunk_state["current"] = chunk_state.get("current", 0) + 1
+                        if m_chunk_bare.group(2):
+                            chunk_state["size_str"] = m_chunk_bare.group(2).strip()
                         size_str = chunk_state.get("size_str", "")
                     elif m_need:
                         chunk_state["total"] = int(m_need.group(1))
@@ -4408,6 +4420,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     is_dl_line = (
                         m_layer_full is not None
                         or m_layer_simple is not None
+                        or m_chunk_bare is not None
+                        or m_receiving is not None
                         or any(k in clean_lower for k in ("downloading", "pulling", "fetching", "receiving objects", "receiving delta", "ostree chunk", "layers needed", "chunks needed"))
                         or (ostree_stage[0] == "downloading" and (
                             "%" in clean
@@ -4422,23 +4436,10 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                         N = chunk_state.get("total", 0)
 
                         if N > 0:
-                            # Divide 5.0% to 65.0% (width of 60.0%) across N layers
-                            layer_start = 5.0 + ((k - 1) / N) * 60.0
-                            layer_end = 5.0 + (k / N) * 60.0
+                            # Divide 10.0% to 70.0% (width of 60.0%) across N layers
+                            layer_start = 10.0 + ((k - 1) / N) * 60.0
+                            layer_end = 10.0 + (k / N) * 60.0
                             creep_max = max(layer_start, layer_end - 0.5)
-
-                            if size_str:
-                                status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N} (\u2066{size_str}\u2069)..."
-                            else:
-                                status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N}..."
-
-                            # Check if current layer finished
-                            if "done" in clean_lower or "✔" in clean:
-                                layer_done_frac = layer_end / 100.0
-                                cur_f = getattr(self, "_upd_current_frac", 0.05)
-                                self.update_upd_progress(max(cur_f, layer_done_frac))
-                                self._set_upd_status_text(status_msg)
-                                return
 
                             # Check for ratio or percentage within layer k
                             m_ratio = re.search(
@@ -4449,15 +4450,28 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                             m_pct = re.search(r'(\d{1,3})(?:\.\d+)?%', clean)
 
                             computed_pct = None
-                            if m_ratio:
+                            if "done" in clean_lower or "✔" in clean:
+                                computed_pct = layer_end
+                                status_msg = f"تم تنزيل الحزمة {k} من {N} ✓"
+                            elif m_ratio:
                                 cur_b = _unit_to_bytes(m_ratio.group(1), m_ratio.group(2))
                                 tot_b = _unit_to_bytes(m_ratio.group(3), m_ratio.group(4))
                                 if tot_b > 0:
                                     ratio_pct = max(0.0, min(100.0, (cur_b / tot_b) * 100.0))
                                     computed_pct = layer_start + (ratio_pct / 100.0) * (layer_end - layer_start)
+                                    status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N} ({m_ratio.group(1)} {m_ratio.group(2)} / {m_ratio.group(3)} {m_ratio.group(4)} — {int(ratio_pct)}%)..."
                             elif m_pct:
                                 val = max(0, min(100, int(m_pct.group(1))))
                                 computed_pct = layer_start + (val / 100.0) * (layer_end - layer_start)
+                                if size_str:
+                                    status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N} (\u2066{size_str}\u2069 — {val}%)..."
+                                else:
+                                    status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N} ({val}%)..."
+                            else:
+                                if size_str:
+                                    status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N} (\u2066{size_str}\u2069)..."
+                                else:
+                                    status_msg = f"جاري تنزيل ملفات النظام: الحزمة {k} من {N}..."
 
                             if computed_pct is not None:
                                 cur_f = getattr(self, "_upd_current_frac", 0.05)
@@ -4471,13 +4485,29 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                                 self.start_upd_download_creep(status_text=status_msg, min_pct=layer_start, max_pct=creep_max)
                             return
                         else:
-                            m_size = re.search(r'(\d+(?:\.\d+)?\s*(?:kB|KB|KiB|MB|MiB|GB|GiB))', clean, re.IGNORECASE)
-                            if m_size:
-                                status_msg = f"جاري تنزيل ملفات النظام (\u2066{m_size.group(1)}\u2069)..."
+                            m_pct = re.search(r'(\d{1,3})(?:\.\d+)?%', clean)
+                            if m_receiving:
+                                val = max(0, min(100, int(m_receiving.group(1))))
+                                computed_pct = 10.0 + (val / 100.0) * 60.0
+                                cur_f = getattr(self, "_upd_current_frac", 0.05)
+                                self.update_upd_progress(max(cur_f, computed_pct / 100.0))
+                                self._set_upd_status_text(f"جاري استقبال حزم النظام ({val}%)...")
+                                return
+                            elif m_pct:
+                                val = max(0, min(100, int(m_pct.group(1))))
+                                computed_pct = 10.0 + (val / 100.0) * 60.0
+                                cur_f = getattr(self, "_upd_current_frac", 0.05)
+                                self.update_upd_progress(max(cur_f, computed_pct / 100.0))
+                                self._set_upd_status_text(f"جاري تنزيل ملفات النظام ({val}%)...")
+                                return
                             else:
-                                status_msg = t("status_sys_downloading")
-                            self.start_upd_download_creep(status_text=status_msg, min_pct=5.0, max_pct=10.0)
-                            return
+                                m_size = re.search(r'(\d+(?:\.\d+)?\s*(?:kB|KB|KiB|MB|MiB|GB|GiB))', clean, re.IGNORECASE)
+                                if m_size:
+                                    status_msg = f"جاري تنزيل ملفات النظام (\u2066{m_size.group(1)}\u2069)..."
+                                else:
+                                    status_msg = t("status_sys_downloading")
+                                self.start_upd_download_creep(status_text=status_msg, min_pct=10.0, max_pct=25.0)
+                                return
 
                 else:
                     # Non-rpm-ostree commands (Flatpak, Distrobox)
