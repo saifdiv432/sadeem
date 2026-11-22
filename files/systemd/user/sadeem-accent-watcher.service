@@ -1,0 +1,12 @@
+[Unit]
+Description=Sadeem Settings Accent Color Intercept Watcher
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sadeem-accent-watcher
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

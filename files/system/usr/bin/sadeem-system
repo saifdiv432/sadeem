@@ -2213,7 +2213,8 @@ PRESET_HEXES = [
 
 REMOTE_DB_URL = "https://raw.githubusercontent.com/saifdiv432/saifdora-Silverblue-45/main/data/nvidia-gpu-ids.json"
 LOCAL_DB_PATHS = [
-    "/usr/share/saifdora-nvidia/gpu-ids.json",
+    "/usr/share/sadeem/nvidia/gpu-ids.json",
+    "/usr/share/sadeem-nvidia/gpu-ids.json",
     "/usr/share/sadeem-system/gpu-ids.json",
 ]
 
@@ -5931,7 +5932,7 @@ button.suggested-action {{
             f.write(gtk3_content)
 
         # 3. GNOME Shell theme overrides
-        shell_theme_dir = os.path.expanduser("~/.local/share/themes/Saifdora-Custom/gnome-shell")
+        shell_theme_dir = os.path.expanduser("~/.local/share/themes/Sadeem-Custom/gnome-shell")
         os.makedirs(shell_theme_dir, exist_ok=True)
         shell_css = f"""@import url("resource:///org/gnome/shell/theme/gnome-shell.css");
 
@@ -6000,11 +6001,11 @@ stage {{
 
         # Dual sync for Shell theme
         if hex_val.lower() == "#7a1c33":
-            subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Saifdora-Burgundy"], check=False)
+            subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Sadeem-Burgundy"], check=False)
         else:
             subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Default"], check=False)
             time.sleep(0.05)
-            subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Saifdora-Custom"], check=False)
+            subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Sadeem-Custom"], check=False)
 
     # =========================================================================
     # TAB 3: SADEEM DRIVER & HARDWARE MANAGER
@@ -6037,6 +6038,16 @@ stage {{
         self.lbl_drv_note.add_css_class("caption")
         self.drv_progress_box.append(self.lbl_drv_note)
 
+        self.btn_reboot_drivers = Gtk.Button(label=t("btn_reboot_drivers"))
+        self.btn_reboot_drivers.add_css_class("suggested-action")
+        self.btn_reboot_drivers.add_css_class("pill")
+        self.btn_reboot_drivers.set_size_request(-1, 48)
+        self.btn_reboot_drivers.set_margin_top(4)
+        self.btn_reboot_drivers.set_margin_bottom(4)
+        self.btn_reboot_drivers.set_visible(False)
+        self.btn_reboot_drivers.connect("clicked", lambda b: self.confirm_reboot())
+        self.drv_progress_box.append(self.btn_reboot_drivers)
+
         self.drv_expander = Gtk.Expander.new(t("drv_log_expander"))
         self.drv_expander.set_expanded(True)
         self.drv_progress_box.append(self.drv_expander)
@@ -6058,14 +6069,6 @@ stage {{
         self.drv_text_view.set_top_margin(10)
         self.drv_text_view.set_bottom_margin(10)
         log_scrolled.set_child(self.drv_text_view)
-
-        self.btn_reboot_drivers = Gtk.Button(label=t("btn_reboot_drivers"))
-        self.btn_reboot_drivers.add_css_class("suggested-action")
-        self.btn_reboot_drivers.add_css_class("pill")
-        self.btn_reboot_drivers.set_size_request(-1, 48)
-        self.btn_reboot_drivers.set_visible(False)
-        self.btn_reboot_drivers.connect("clicked", lambda b: self.confirm_reboot())
-        self.drv_progress_box.append(self.btn_reboot_drivers)
 
     def build_drivers_page(self):
         self.drv_checkboxes = []
@@ -6132,6 +6135,10 @@ stage {{
         # Persistent progress & live log container
         self._create_drv_progress_widgets(content)
 
+        # Automatically configured hardware container
+        self.drv_hw_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
+        content.append(self.drv_hw_box)
+
         # Launch non-blocking initial hardware scan
         self.start_hardware_scan()
         return scrolled
@@ -6174,6 +6181,10 @@ stage {{
         self.btn_drv_rescan.set_sensitive(True)
 
         self._clear_box(self.drv_dynamic_box)
+        self._clear_box(self.drv_hw_box)
+        if not self.drv_busy:
+            self.drv_progress_group.set_visible(False)
+            self.btn_reboot_drivers.set_visible(False)
         self.drv_checkboxes = []
         self.btn_install_selected = None
         self.btn_install_fw = None
@@ -6442,7 +6453,7 @@ stage {{
             title=t("drv_auto_hw_title"),
             description=t("drv_auto_hw_desc")
         )
-        self.drv_dynamic_box.append(hw_group)
+        self.drv_hw_box.append(hw_group)
 
         for cat_key, cat_tkey, cat_icons in HARDWARE_CATEGORIES:
             devs = devices_by_cat.get(cat_key, [])
@@ -6546,7 +6557,12 @@ stage {{
 
     def _start_drv_operation_ui(self, initial_status):
         self._set_drv_controls_sensitive(False)
+        for btn_name in ("btn_install_selected", "btn_install_fw", "btn_fix_kargs", "btn_uninstall_driver", "btn_enroll_mok"):
+            btn = getattr(self, btn_name, None)
+            if btn:
+                btn.set_visible(False)
         self.drv_progress_group.set_visible(True)
+        self.lbl_drv_note.set_visible(True)
         self.btn_reboot_drivers.set_visible(False)
         self.drv_text_buffer.set_text("")
         self.drv_progress_bar.set_fraction(0.05)
@@ -6564,6 +6580,11 @@ stage {{
             self.drv_progress_bar.set_fraction(1.0)
             self.drv_progress_bar.set_text("100%")
             self.lbl_drv_status.set_text(success_msg)
+            self.lbl_drv_note.set_visible(False)
+            for btn_name in ("btn_install_selected", "btn_install_fw", "btn_fix_kargs", "btn_uninstall_driver", "btn_enroll_mok"):
+                btn = getattr(self, btn_name, None)
+                if btn:
+                    btn.set_visible(False)
             if show_reboot:
                 self.btn_reboot_drivers.set_visible(True)
             toast = Adw.Toast.new(success_msg)
@@ -6572,6 +6593,12 @@ stage {{
             self.drv_progress_bar.set_fraction(0.0)
             self.drv_progress_bar.set_text("0%")
             self.lbl_drv_status.set_text(t("drv_auth_cancelled"))
+            self.lbl_drv_note.set_visible(False)
+            self.btn_reboot_drivers.set_visible(False)
+            for btn_name in ("btn_install_selected", "btn_install_fw", "btn_fix_kargs", "btn_uninstall_driver", "btn_enroll_mok"):
+                btn = getattr(self, btn_name, None)
+                if btn:
+                    btn.set_visible(True)
             self.append_drv_log(f"\n[{t('drv_auth_cancelled')}]\n")
             toast = Adw.Toast.new(t("drv_auth_cancelled"))
             self.toast_overlay.add_toast(toast)
@@ -6579,6 +6606,12 @@ stage {{
             self.drv_progress_bar.set_fraction(0.0)
             self.drv_progress_bar.set_text("0%")
             self.lbl_drv_status.set_text(t("drv_error"))
+            self.lbl_drv_note.set_visible(False)
+            self.btn_reboot_drivers.set_visible(False)
+            for btn_name in ("btn_install_selected", "btn_install_fw", "btn_fix_kargs", "btn_uninstall_driver", "btn_enroll_mok"):
+                btn = getattr(self, btn_name, None)
+                if btn:
+                    btn.set_visible(True)
             toast = Adw.Toast.new(t("drv_error"))
             self.toast_overlay.add_toast(toast)
         return False
@@ -6612,7 +6645,7 @@ stage {{
             "[Desktop Entry]\n"
             "Type=Application\n"
             "Name=Sadeem Driver Setup Resume\n"
-            "Exec=/usr/bin/saifdora-nvidia-manager\n"
+            "Exec=/usr/bin/sadeem-system --tab=drivers\n"
             "Hidden=false\n"
             "NoDisplay=true\n"
             "X-GNOME-Autostart-enabled=true\n"
