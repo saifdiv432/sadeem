@@ -37,7 +37,11 @@ const CaptureHelperIface = `
       <arg type="b" name="active" direction="in"/>
       <arg type="b" name="success" direction="out"/>
     </method>
+    <method name="FlashCameraIndicator">
+      <arg type="b" name="success" direction="out"/>
+    </method>
     <signal name="StopRecordingRequested"/>
+    <signal name="SilentScreenshotRequested"/>
   </interface>
 </node>`;
 
@@ -250,10 +254,27 @@ export class CaptureHelperService {
         return [false];
     }
 
+    FlashCameraIndicator() {
+        if (this._recordingIndicator && this._recordingIndicator.flashCameraIcon) {
+            this._recordingIndicator.flashCameraIcon();
+            return [true];
+        }
+        return [false];
+    }
+
     emitStopRecordingRequested() {
         if (this._dbusImpl) {
             this._dbusImpl.emit_signal(
                 'StopRecordingRequested',
+                null
+            );
+        }
+    }
+
+    emitSilentScreenshotRequested() {
+        if (this._dbusImpl) {
+            this._dbusImpl.emit_signal(
+                'SilentScreenshotRequested',
                 null
             );
         }

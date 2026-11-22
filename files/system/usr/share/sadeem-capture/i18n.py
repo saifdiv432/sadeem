@@ -62,6 +62,7 @@ STRINGS = {
         "rec_in_progress": "التسجيل جارٍ...",
         "stopping_rec": "جارٍ حفظ التسجيل...",
         "filename_video_prefix": "تسجيل_سديم",
+        "hint_recording_shortcuts": "Print: لقطة شاشة صامتة | Shift+Print: إيقاف وحفظ التسجيل",
     },
     "en": {
         "app_name": "Sadeem Capture",
@@ -97,6 +98,7 @@ STRINGS = {
         "rec_in_progress": "Recording in progress...",
         "stopping_rec": "Saving recording...",
         "filename_video_prefix": "Sadeem_Recording",
+        "hint_recording_shortcuts": "Print: Silent screenshot | Shift+Print: Stop & save recording",
     },
     "fr": {
         "app_name": "Sadeem Capture",
@@ -132,6 +134,7 @@ STRINGS = {
         "rec_in_progress": "Enregistrement en cours...",
         "stopping_rec": "Enregistrement en cours...",
         "filename_video_prefix": "Enregistrement_Sadeem",
+        "hint_recording_shortcuts": "Print : Capture silencieuse | Shift+Print : Arrêter l'enregistrement",
     },
     "es": {
         "app_name": "Sadeem Capture",
@@ -167,6 +170,7 @@ STRINGS = {
         "rec_in_progress": "Grabación en curso...",
         "stopping_rec": "Guardando grabación...",
         "filename_video_prefix": "Grabacion_Sadeem",
+        "hint_recording_shortcuts": "Print: Captura silenciosa | Shift+Print: Detener y guardar grabación",
     },
     "de": {
         "app_name": "Sadeem Capture",
@@ -202,6 +206,7 @@ STRINGS = {
         "rec_in_progress": "Aufnahme läuft...",
         "stopping_rec": "Aufnahme wird gespeichert...",
         "filename_video_prefix": "Sadeem_Aufnahme",
+        "hint_recording_shortcuts": "Druck: Stummer Screenshot | Umschalt+Druck: Aufnahme stoppen",
     },
     "tr": {
         "app_name": "Sadeem Yakalama",
@@ -237,6 +242,7 @@ STRINGS = {
         "rec_in_progress": "Kayıt devam ediyor...",
         "stopping_rec": "Kayıt kaydediliyor...",
         "filename_video_prefix": "Sadeem_Kayit",
+        "hint_recording_shortcuts": "Print: Sessiz ekran görüntüsü | Shift+Print: Kaydı durdur ve kaydet",
     },
     "ru": {
         "app_name": "Снимок Sadeem",
@@ -272,6 +278,7 @@ STRINGS = {
         "rec_in_progress": "Идет запись...",
         "stopping_rec": "Сохранение записи...",
         "filename_video_prefix": "Zapis_Sadeem",
+        "hint_recording_shortcuts": "Print: Бесшумный снимок | Shift+Print: Остановить запись",
     },
     "pt": {
         "app_name": "Captura Sadeem",
@@ -307,6 +314,7 @@ STRINGS = {
         "rec_in_progress": "Gravação em curso...",
         "stopping_rec": "A guardar gravação...",
         "filename_video_prefix": "Gravacao_Sadeem",
+        "hint_recording_shortcuts": "Print: Captura silenciosa | Shift+Print: Parar e salvar gravação",
     },
     "it": {
         "app_name": "Cattura Sadeem",
@@ -342,6 +350,7 @@ STRINGS = {
         "rec_in_progress": "Registrazione in corso...",
         "stopping_rec": "Salvataggio registrazione...",
         "filename_video_prefix": "Registrazione_Sadeem",
+        "hint_recording_shortcuts": "Stamp: Screenshot silenzioso | Shift+Stamp: Ferma registrazione",
     },
     "zh": {
         "app_name": "Sadeem 截图",
@@ -377,6 +386,7 @@ STRINGS = {
         "rec_in_progress": "正在录制...",
         "stopping_rec": "正在保存录像...",
         "filename_video_prefix": "Sadeem_Luping",
+        "hint_recording_shortcuts": "Print: 静音截屏 | Shift+Print: 停止并保存录屏",
     },
 }
 

@@ -468,6 +468,15 @@ class SadeemCaptureWindow(Gtk.Window):
             self.drop_mic.connect("notify::selected", self._on_mic_selected)
             box.append(self.drop_mic)
 
+        # 4. Keyboard Shortcuts Hint
+        lbl_hint = Gtk.Label(label=t("hint_recording_shortcuts"), halign=Gtk.Align.CENTER)
+        lbl_hint.set_wrap(True)
+        lbl_hint.set_justify(Gtk.Justification.CENTER)
+        lbl_hint.add_css_class("caption")
+        lbl_hint.add_css_class("dim-label")
+        lbl_hint.set_margin_top(6)
+        box.append(lbl_hint)
+
         popover.set_child(box)
         self.btn_video_settings.set_popover(popover)
 
@@ -947,9 +956,46 @@ class SadeemCaptureWindow(Gtk.Window):
 
         self.is_recording = True
 
-        # Subscribe to StopRecordingRequested from panel indicator
+        # Subscribe to StopRecordingRequested and SilentScreenshotRequested from panel indicator
         self._stop_sig_id = self.client.subscribe_stop_recording(self._on_stop_signal)
+        self._silent_sig_id = self.client.subscribe_silent_screenshot(self._on_silent_screenshot_signal)
         return GLib.SOURCE_REMOVE
+
+    def _on_silent_screenshot_signal(self):
+        GLib.idle_add(self._take_silent_screenshot)
+
+    def _take_silent_screenshot(self):
+        """Takes an instant silent screenshot without interrupting the active video recording."""
+        if not self.is_recording:
+            return
+
+        dest_path = generate_screenshot_path()
+        success = False
+
+        if self.mode == "selection" and self.sel_w > 4 and self.sel_h > 4:
+            success = self.client.capture_area(
+                int(self.sel_x),
+                int(self.sel_y),
+                int(self.sel_w),
+                int(self.sel_h),
+                self.cursor_enabled,
+                dest_path,
+            )
+        else:
+            success = self.client.capture_screen(self.cursor_enabled, dest_path)
+
+        if success and os.path.exists(dest_path) and os.path.getsize(dest_path) > 0:
+            copy_file_to_clipboard(dest_path)
+            self.client.flash_camera_indicator()
+            try:
+                subprocess.run(
+                    ["canberra-gtk-play", "-i", "camera-shutter"],
+                    check=False,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except Exception:
+                pass
 
     def _on_stop_signal(self):
         GLib.idle_add(self._stop_video_recording)
@@ -1017,9 +1063,9 @@ class SadeemCaptureApp(Adw.Application):
             )
 
     def do_activate(self):
-        # Smart re-invocation: if active recording is running, stop it
+        # If active recording is running, take a silent screenshot instead of stopping or opening UI
         if self.window and getattr(self.window, "is_recording", False):
-            self.window._stop_video_recording()
+            self.window._take_silent_screenshot()
             return
 
         self._load_styles()
@@ -1031,9 +1077,15 @@ class SadeemCaptureApp(Adw.Application):
     def do_command_line(self, command_line):
         args = command_line.get_arguments()[1:]
 
-        # Smart re-invocation: if active recording is running, stop it
+        # Dedicated stop recording argument
+        if "--stop-recording" in args:
+            if self.window and getattr(self.window, "is_recording", False):
+                self.window._stop_video_recording()
+            return 0
+
+        # If active recording is running and no --stop-recording was passed, take silent screenshot
         if self.window and getattr(self.window, "is_recording", False):
-            self.window._stop_video_recording()
+            self.window._take_silent_screenshot()
             return 0
 
         # Instant window capture flag

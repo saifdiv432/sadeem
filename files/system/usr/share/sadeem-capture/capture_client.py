@@ -99,6 +99,22 @@ class CaptureClient:
                 pass
         return False
 
+    def flash_camera_indicator(self) -> bool:
+        """Flashes the camera icon in the top panel recording indicator."""
+        if self._helper_proxy:
+            try:
+                res = self._helper_proxy.call_sync(
+                    "FlashCameraIndicator",
+                    None,
+                    Gio.DBusCallFlags.NONE,
+                    1000,
+                    None,
+                )
+                return bool(res.unpack()[0])
+            except Exception:
+                pass
+        return False
+
     def subscribe_stop_recording(self, callback):
         """Subscribes to StopRecordingRequested signal from CaptureHelper."""
         if self._bus:
@@ -114,6 +130,23 @@ class CaptureClient:
                 )
             except Exception as e:
                 print(f"[CaptureClient] Failed to subscribe StopRecordingRequested: {e}", file=sys.stderr)
+        return None
+
+    def subscribe_silent_screenshot(self, callback):
+        """Subscribes to SilentScreenshotRequested signal from CaptureHelper."""
+        if self._bus:
+            try:
+                return self._bus.signal_subscribe(
+                    "org.sadeem.CaptureHelper",
+                    "org.sadeem.CaptureHelper",
+                    "SilentScreenshotRequested",
+                    "/org/sadeem/CaptureHelper",
+                    None,
+                    Gio.DBusSignalFlags.NONE,
+                    lambda *args: callback(),
+                )
+            except Exception as e:
+                print(f"[CaptureClient] Failed to subscribe SilentScreenshotRequested: {e}", file=sys.stderr)
         return None
 
     def list_windows(self):

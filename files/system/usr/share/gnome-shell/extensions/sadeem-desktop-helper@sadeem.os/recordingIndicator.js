@@ -17,52 +17,91 @@ class RecordingIndicator extends PanelMenu.Button {
 
         this.y_align = Clutter.ActorAlign.CENTER;
 
-        // Container Pill Box
+        // Container Pill Box with two adjacent buttons
         this._box = new St.BoxLayout({
             style_class: 'sadeem-recording-pill',
             reactive: true,
-            can_focus: true,
             y_align: Clutter.ActorAlign.CENTER,
-            style: 'background-color: rgba(220, 38, 38, 0.95); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 9999px; padding: 2px 8px; margin: 2px 4px;',
+            style: 'background-color: rgba(220, 38, 38, 0.95); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 9999px; padding: 1px 3px; margin: 2px 4px;',
         });
 
-        // 1. Red Recording Dot (with pulse)
-        this._dot = new St.Icon({
-            icon_name: 'media-record-symbolic',
-            icon_size: 12,
+        // 1. Silent Camera Snapshot Button
+        this._camBtn = new St.Button({
+            style_class: 'button sadeem-cam-btn',
+            reactive: true,
+            can_focus: true,
+            track_hover: true,
+            y_align: Clutter.ActorAlign.CENTER,
+            style: 'padding: 3px 7px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.15); margin-right: 2px;',
+        });
+        this._camBtn.set_accessible_name('Silent Screenshot (Print)');
+        this._camIcon = new St.Icon({
+            icon_name: 'camera-photo-symbolic',
+            icon_size: 13,
             style: 'color: #ffffff;',
         });
-        this._box.add_child(this._dot);
+        this._camBtn.set_child(this._camIcon);
+        this._camBtn.connect('clicked', () => {
+            this._requestSnapshot();
+            return Clutter.EVENT_STOP;
+        });
+        this._box.add_child(this._camBtn);
 
-        // 2. Timer Label (00:00)
+        // Thin subtle divider
+        this._divider = new St.Widget({
+            style: 'width: 1px; height: 14px; background-color: rgba(255, 255, 255, 0.35); margin: 2px 2px;',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this._box.add_child(this._divider);
+
+        // 2. Stop Recording Pill Button (Dot + Timer + Stop Icon)
+        this._stopBtn = new St.Button({
+            style_class: 'button sadeem-stop-btn',
+            reactive: true,
+            can_focus: true,
+            track_hover: true,
+            y_align: Clutter.ActorAlign.CENTER,
+            style: 'padding: 3px 6px; border-radius: 9999px; background-color: transparent;',
+        });
+        this._stopBtn.set_accessible_name('Stop Recording (Shift+Print)');
+
+        const stopInnerBox = new St.BoxLayout({
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
+        // Red Recording Dot (with pulse)
+        this._dot = new St.Icon({
+            icon_name: 'media-record-symbolic',
+            icon_size: 11,
+            style: 'color: #ffffff; margin-right: 4px;',
+        });
+        stopInnerBox.add_child(this._dot);
+
+        // Timer Label (00:00)
         this._timerLabel = new St.Label({
             text: '00:00',
             y_align: Clutter.ActorAlign.CENTER,
-            style: 'font-weight: bold; font-size: 12px; color: #ffffff; padding: 0 6px;',
+            style: 'font-weight: bold; font-size: 12px; color: #ffffff; padding: 0 4px;',
         });
-        this._box.add_child(this._timerLabel);
+        stopInnerBox.add_child(this._timerLabel);
 
-        // 3. Stop Icon
+        // Stop Icon
         this._stopIcon = new St.Icon({
             icon_name: 'media-playback-stop-symbolic',
-            icon_size: 12,
-            style: 'color: #ffffff;',
+            icon_size: 11,
+            style: 'color: #ffffff; margin-left: 4px;',
         });
-        this._box.add_child(this._stopIcon);
+        stopInnerBox.add_child(this._stopIcon);
+
+        this._stopBtn.set_child(stopInnerBox);
+        this._stopBtn.connect('clicked', () => {
+            this._requestStop();
+            return Clutter.EVENT_STOP;
+        });
+        this._box.add_child(this._stopBtn);
 
         this.add_child(this._box);
         this.visible = false;
-
-        // Clicking the indicator emits stop signal
-        this.connect('button-press-event', () => {
-            this._requestStop();
-            return Clutter.EVENT_STOP;
-        });
-
-        this.connect('touch-event', () => {
-            this._requestStop();
-            return Clutter.EVENT_STOP;
-        });
     }
 
     enable() {
@@ -149,5 +188,29 @@ class RecordingIndicator extends PanelMenu.Button {
         if (this._captureHelper && this._captureHelper.emitStopRecordingRequested) {
             this._captureHelper.emitStopRecordingRequested();
         }
+    }
+
+    _requestSnapshot() {
+        this.flashCameraIcon();
+        if (this._captureHelper && this._captureHelper.emitSilentScreenshotRequested) {
+            this._captureHelper.emitSilentScreenshotRequested();
+        }
+    }
+
+    flashCameraIcon() {
+        if (!this._camIcon) return;
+        this._camIcon.opacity = 60;
+        if (this._camBtn) {
+            this._camBtn.style = 'padding: 3px 7px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.7); margin-right: 2px;';
+        }
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 220, () => {
+            if (this._camIcon) {
+                this._camIcon.opacity = 255;
+            }
+            if (this._camBtn) {
+                this._camBtn.style = 'padding: 3px 7px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.15); margin-right: 2px;';
+            }
+            return GLib.SOURCE_REMOVE;
+        });
     }
 });

@@ -30,6 +30,10 @@ from gi.repository import Gtk, Adw, GLib, Gio, Gdk, Pango, GObject
 
 TRANSLATIONS = {
     "en": {
+        "drv_system_busy_title": "System Setup in Progress",
+        "drv_system_busy_desc": "System setup is currently finalizing. Driver download and installation will proceed automatically once ready.",
+        "drv_reboot_needed_title": "System Restart Required First",
+        "drv_reboot_needed_body": "The system needs to restart to apply previous updates before installing drivers. After restart, this window will reopen automatically to complete setup.",
         "install_and_restart": "Install & Restart",
         "colors_banner_title": "Appearance & Accent Colors",
         "colors_banner_desc": "Personalize desktop accents, visual highlights, and system appearance.",
@@ -243,6 +247,10 @@ TRANSLATIONS = {
         "box_filter_all": "All Files (*)"
     },
     "ar": {
+        "drv_system_busy_title": "تجهيز النظام قيد التنفيذ",
+        "drv_system_busy_desc": "يجري استكمال تجهيز النظام حالياً، سيبدأ تنزيل وتثبيت التعريفات تلقائياً فور الجاهزية.",
+        "drv_reboot_needed_title": "يلزم إعادة التشغيل أولاً",
+        "drv_reboot_needed_body": "يحتاج النظام لإعادة التشغيل لتطبيق التحديثات السابقة قبل تنزيل وتثبيت التعريفات. بعد التشغيل ستُفتح هذه النافذة تلقائياً لإكمال التثبيت.",
         "install_and_restart": "تثبيت وإعادة التشغيل",
         "colors_banner_title": "المظهر والألوان",
         "colors_banner_desc": "خصص لون تمييز سطح المكتب ومظهر النظام وعناصر الواجهة التفاعلية.",
@@ -456,6 +464,78 @@ TRANSLATIONS = {
         "box_filter_all": "كافة الملفات (*)"
     },
     "fr": {
+        "cat_audio": "Audio",
+        "cat_bluetooth": "Bluetooth",
+        "cat_camera": "Caméra",
+        "cat_fingerprint": "Lecteur d'empreintes digitales",
+        "cat_gpu": "Carte graphique",
+        "cat_network": "Réseau et Wi-Fi",
+        "cat_other": "Autres périphériques",
+        "cat_sensors": "Capteurs et rotation d'écran",
+        "drv_active_driver": "Pilote actif : {driver}",
+        "drv_all_ok_desc": "Aucun pilote manquant ou mise à jour de micrologiciel en attente n'a été détecté pour votre matériel.",
+        "drv_all_ok_title": "Tous les pilotes et micrologiciels sont à jour",
+        "drv_auto_hw_desc": "Composants matériels détectés sur votre appareil et leurs pilotes de noyau actifs.",
+        "drv_auto_hw_title": "Matériel configuré automatiquement",
+        "drv_available_desc": "Sélectionnez les pilotes à installer, puis cliquez sur le bouton d'installation ci-dessous.",
+        "drv_available_title": "Pilotes et mises à jour disponibles",
+        "drv_cancel": "Annuler",
+        "drv_cat_summary": "{count} périphérique(s) — fonctionne automatiquement",
+        "drv_cat_summary_missing": "{count} périphérique(s) — {missing} sans pilote actif",
+        "drv_confirm": "Inscrire maintenant",
+        "drv_fw_done": "Mises à jour du micrologiciel installées avec succès ! Un redémarrage peut être nécessaire.",
+        "drv_fw_group_desc": "Mises à jour officielles du micrologiciel matériel fournies via LVFS / fwupd.",
+        "drv_fw_group_title": "Mises à jour du micrologiciel (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "Installer les mises à jour du micrologiciel",
+        "drv_fw_updating": "Installation des mises à jour du micrologiciel via fwupdmgr...",
+        "drv_install_selected": "Installer les pilotes sélectionnés",
+        "drv_install_selected_count": "Installer les pilotes sélectionnés ({count})",
+        "drv_mok_dialog_body": "Entrez un mot de passe temporaire (au moins 8 caractères). Vous saisirez ce même mot de passe une fois sur l'écran bleu MOK Manager après le redémarrage.",
+        "drv_mok_dialog_title": "Inscrire la clé MOK Secure Boot",
+        "drv_mok_done": "Inscription de la clé MOK en file d'attente ! Redémarrez votre appareil et choisissez 'Enroll MOK'.",
+        "drv_mok_enroll_btn": "Inscrire la clé MOK",
+        "drv_mok_enrolling": "Importation de la clé de signature MOK via mokutil...",
+        "drv_no_driver": "Aucun pilote de noyau actif",
+        "drv_optional_badge": "Optionnel",
+        "drv_packages_label": "Paquets : {pkgs}",
+        "drv_rec_amd_gpu_desc": "Codecs VA-API RPM Fusion optionnels (H.264/HEVC) pour graphiques AMD.",
+        "drv_rec_amd_gpu_title": "Codecs vidéo AMD Freeworld (Optionnel) — {name}",
+        "drv_rec_audio_sof_desc": "Micrologiciel DSP requis pour l'audio intégré moderne Intel et AMD.",
+        "drv_rec_audio_sof_title": "Audio Sound Open Firmware (SOF) — {name}",
+        "drv_rec_broadcom_desc": "Pilote de noyau sans fil Broadcom propriétaire (akmod-wl).",
+        "drv_rec_broadcom_title": "Pilote Wi-Fi Broadcom — {name}",
+        "drv_rec_fprint_desc": "Installe fprintd et l'intégration PAM pour la connexion et l'authentification par empreinte digitale.",
+        "drv_rec_fprint_title": "Prise en charge du lecteur d'empreintes — {name}",
+        "drv_rec_intel_gpu_desc": "Active le décodage et l'encodage vidéo matériel VA-API pour les graphiques Intel.",
+        "drv_rec_intel_gpu_title": "Accélération vidéo matérielle Intel — {name}",
+        "drv_rec_ipu6_desc": "Active les webcams intégrées d'ordinateurs portables Intel IPU6 / MIPI.",
+        "drv_rec_ipu6_title": "Pilote de caméra Intel IPU6 / MIPI — {name}",
+        "drv_rec_modalias_desc": "Détecté automatiquement via le modalias matériel dans les dépôts système.",
+        "drv_rec_modalias_title": "Paquet de pilote pour {name}",
+        "drv_rec_nvidia_desc": "Pilote propriétaire officiel avec accélération Wayland, Vulkan et CUDA.",
+        "drv_rec_nvidia_title": "Pilote graphique NVIDIA et CUDA — {name}",
+        "drv_recommended_badge": "Recommandé",
+        "drv_rescan_btn": "Réanalyser le matériel",
+        "drv_sb_enabled_title": "Secure Boot est activé",
+        "drv_sb_enrolled_desc": "Secure Boot est activé et la clé de signature akmods locale est déjà inscrite.",
+        "drv_sb_needs_mok_desc": "Les modules de noyau (tels que NVIDIA, Broadcom ou IPU6) nécessitent l'inscription de la clé de signature akmods (MOK) dans l'UEFI.",
+        "drv_scanning_desc": "Inspection du PCI, de l'USB, des modules du noyau, des dépôts et des mises à jour du micrologiciel",
+        "drv_scanning_title": "Analyse des composants matériels...",
+        "drv_select_one_warn": "Veuillez sélectionner au moins un pilote à installer.",
+        "drv_stage_akmods": "Compilation des modules du noyau (akmods)...",
+        "drv_stage_auth": "Demande des autorisations d'administrateur...",
+        "drv_stage_complete": "100% — Terminé avec succès",
+        "drv_stage_downloading": "Téléchargement des paquets de pilotes...",
+        "drv_stage_layering": "Intégration des paquets dans l'image système (rpm-ostree)...",
+        "status_sys_connecting": "Connexion au registre et vérification de la mise à jour...",
+        "status_sys_downloading_detail": "Téléchargement des fichiers système ({detail})...",
+        "status_sys_integrating": "Intégration des pilotes et mise à jour du noyau de démarrage...",
+        "status_sys_preparing": "Préparation des fichiers système...",
+        "status_sys_ready_reboot": "Mise à jour terminée — prêt à redémarrer",
+        "drv_system_busy_title": "Configuration du système en cours",
+        "drv_system_busy_desc": "La configuration du système est en cours. Le téléchargement et l'installation des pilotes débuteront automatiquement dès qu'il sera prêt.",
+        "drv_reboot_needed_title": "Redémarrage du système requis d'abord",
+        "drv_reboot_needed_body": "Le système doit redémarrer pour appliquer les mises à jour précédentes avant d'installer les pilotes. Après le redémarrage, cette fenêtre s'ouvrira automatiquement pour terminer.",
         "install_and_restart": "Installer et redémarrer",
         "colors_banner_title": "Apparence et couleurs d'accentuation",
         "colors_banner_desc": "Personnalisez les accents du bureau et l'apparence du système.",
@@ -601,6 +681,78 @@ TRANSLATIONS = {
         "box_filter_all": "Tous les fichiers (*)"
     },
     "es": {
+        "cat_audio": "Audio",
+        "cat_bluetooth": "Bluetooth",
+        "cat_camera": "Cámara",
+        "cat_fingerprint": "Lector de huellas dactilares",
+        "cat_gpu": "Tarjeta gráfica",
+        "cat_network": "Red y Wi-Fi",
+        "cat_other": "Otros dispositivos",
+        "cat_sensors": "Sensores y rotación de pantalla",
+        "drv_active_driver": "Controlador activo: {driver}",
+        "drv_all_ok_desc": "No se detectaron controladores faltantes ni actualizaciones de firmware pendientes para su hardware.",
+        "drv_all_ok_title": "Todos los controladores y firmware están actualizados",
+        "drv_auto_hw_desc": "Componentes de hardware detectados en su dispositivo y sus controladores de kernel activos.",
+        "drv_auto_hw_title": "Hardware configurado automáticamente",
+        "drv_available_desc": "Seleccione los controladores a instalar y luego haga clic en el botón de instalación a continuación.",
+        "drv_available_title": "Controladores y actualizaciones disponibles",
+        "drv_cancel": "Cancelar",
+        "drv_cat_summary": "{count} dispositivo(s) — funcionando automáticamente",
+        "drv_cat_summary_missing": "{count} dispositivo(s) — {missing} sin controlador activo",
+        "drv_confirm": "Inscribir ahora",
+        "drv_fw_done": "¡Actualizaciones de firmware instaladas con éxito! Puede ser necesario reiniciar.",
+        "drv_fw_group_desc": "Actualizaciones oficiales de firmware de hardware proporcionadas a través de LVFS / fwupd.",
+        "drv_fw_group_title": "Actualizaciones de firmware (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "Instalar actualizaciones de firmware",
+        "drv_fw_updating": "Instalando actualizaciones de firmware a través de fwupdmgr...",
+        "drv_install_selected": "Instalar controladores seleccionados",
+        "drv_install_selected_count": "Instalar controladores seleccionados ({count})",
+        "drv_mok_dialog_body": "Ingrese una contraseña temporal (al menos 8 caracteres). Ingresará esta misma contraseña una vez en la pantalla azul de MOK Manager después de reiniciar.",
+        "drv_mok_dialog_title": "Inscribir clave MOK de Secure Boot",
+        "drv_mok_done": "¡Inscripción de clave MOK en cola! Reinicie su dispositivo y elija 'Enroll MOK'.",
+        "drv_mok_enroll_btn": "Inscribir clave MOK",
+        "drv_mok_enrolling": "Importando clave de firma MOK a través de mokutil...",
+        "drv_no_driver": "Sin controlador de kernel activo",
+        "drv_optional_badge": "Opcional",
+        "drv_packages_label": "Paquetes: {pkgs}",
+        "drv_rec_amd_gpu_desc": "Códecs VA-API RPM Fusion opcionales (H.264/HEVC) para gráficos AMD.",
+        "drv_rec_amd_gpu_title": "Códecs de vídeo AMD Freeworld (Opcional) — {name}",
+        "drv_rec_audio_sof_desc": "Firmware DSP necesario para audio integrado moderno de Intel y AMD.",
+        "drv_rec_audio_sof_title": "Audio Sound Open Firmware (SOF) — {name}",
+        "drv_rec_broadcom_desc": "Controlador de kernel inalámbrico propietario de Broadcom (akmod-wl).",
+        "drv_rec_broadcom_title": "Controlador Wi-Fi Broadcom — {name}",
+        "drv_rec_fprint_desc": "Instala fprintd y la integración con PAM para inicio de sesión y autenticación por huella dactilar.",
+        "drv_rec_fprint_title": "Soporte para lector de huellas dactilares — {name}",
+        "drv_rec_intel_gpu_desc": "Permite la decodificación y codificación de vídeo por hardware VA-API para gráficos Intel.",
+        "drv_rec_intel_gpu_title": "Aceleración de vídeo por hardware Intel — {name}",
+        "drv_rec_ipu6_desc": "Permite el funcionamiento de cámaras web integradas Intel IPU6 / MIPI para portátiles.",
+        "drv_rec_ipu6_title": "Controlador de cámara Intel IPU6 / MIPI — {name}",
+        "drv_rec_modalias_desc": "Coincidencia automática a través de modalias de hardware en repositorios del sistema.",
+        "drv_rec_modalias_title": "Paquete de controlador para {name}",
+        "drv_rec_nvidia_desc": "Controlador propietario oficial con aceleración Wayland, Vulkan y CUDA.",
+        "drv_rec_nvidia_title": "Controlador de gráficos NVIDIA y CUDA — {name}",
+        "drv_recommended_badge": "Recomendado",
+        "drv_rescan_btn": "Volver a escanear hardware",
+        "drv_sb_enabled_title": "Secure Boot está activado",
+        "drv_sb_enrolled_desc": "Secure Boot está activado y la clave de firma akmods local ya está inscrita.",
+        "drv_sb_needs_mok_desc": "Los módulos de kernel (como NVIDIA, Broadcom o IPU6) requieren inscribir la clave de firma akmods (MOK) en UEFI.",
+        "drv_scanning_desc": "Inspeccionando PCI, USB, módulos de kernel, repositorios y actualizaciones de firmware",
+        "drv_scanning_title": "Escaneando componentes de hardware...",
+        "drv_select_one_warn": "Seleccione al menos un controlador para instalar.",
+        "drv_stage_akmods": "Compilando módulos de kernel (akmods)...",
+        "drv_stage_auth": "Solicitando permisos de administrador...",
+        "drv_stage_complete": "100% — Completado con éxito",
+        "drv_stage_downloading": "Descargando paquetes de controladores...",
+        "drv_stage_layering": "Integrando paquetes en la imagen del sistema (rpm-ostree)...",
+        "status_sys_connecting": "Conectando al registro y verificando actualización...",
+        "status_sys_downloading_detail": "Descargando archivos del sistema ({detail})...",
+        "status_sys_integrating": "Integrando controladores y actualizando el kernel de arranque...",
+        "status_sys_preparing": "Preparando archivos del sistema...",
+        "status_sys_ready_reboot": "Actualización completa — listo para reiniciar",
+        "drv_system_busy_title": "Configuración del sistema en curso",
+        "drv_system_busy_desc": "La configuración del sistema se está finalizando. La descarga e instalación de controladores comenzará automáticamente cuando esté listo.",
+        "drv_reboot_needed_title": "Se requiere reiniciar el sistema primero",
+        "drv_reboot_needed_body": "El sistema necesita reiniciar para aplicar las actualizaciones previas antes de instalar controladores. Tras el reinicio, esta ventana se abrirá automáticamente para completar.",
         "install_and_restart": "Instalar y reiniciar",
         "colors_banner_title": "Apariencia y colores de énfasis",
         "colors_banner_desc": "Personalice los colores de énfasis del escritorio y la apariencia del sistema.",
@@ -746,6 +898,78 @@ TRANSLATIONS = {
         "box_filter_all": "Todos los archivos (*)"
     },
     "de": {
+        "cat_audio": "Audio",
+        "cat_bluetooth": "Bluetooth",
+        "cat_camera": "Kamera",
+        "cat_fingerprint": "Fingerabdruckleser",
+        "cat_gpu": "Grafikkarte",
+        "cat_network": "Netzwerk & WLAN",
+        "cat_other": "Andere Geräte",
+        "cat_sensors": "Sensoren & Bildschirmdrehung",
+        "drv_active_driver": "Aktiver Treiber: {driver}",
+        "drv_all_ok_desc": "Keine fehlenden Treiber oder ausstehenden Firmware-Updates für Ihre Hardware erkannt.",
+        "drv_all_ok_title": "Alle Treiber und Firmware sind auf dem neuesten Stand",
+        "drv_auto_hw_desc": "Auf Ihrem Gerät erkannte Hardwarekomponenten und ihre aktiven Kernel-Treiber.",
+        "drv_auto_hw_title": "Automatisch konfigurierte Hardware",
+        "drv_available_desc": "Wählen Sie die zu installierenden Treiber aus und klicken Sie unten auf die Schaltfläche zur Installation.",
+        "drv_available_title": "Verfügbare Treiber & Updates",
+        "drv_cancel": "Abbrechen",
+        "drv_cat_summary": "{count} Gerät(e) — funktioniert automatisch",
+        "drv_cat_summary_missing": "{count} Gerät(e) — {missing} ohne aktiven Treiber",
+        "drv_confirm": "Jetzt registrieren",
+        "drv_fw_done": "Firmware-Updates erfolgreich installiert! Ein Neustart kann erforderlich sein.",
+        "drv_fw_group_desc": "Offizielle Hardware-Firmware-Updates über LVFS / fwupd bereitgestellt.",
+        "drv_fw_group_title": "Firmware-Updates (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "Firmware-Updates installieren",
+        "drv_fw_updating": "Hardware-Firmware-Updates werden über fwupdmgr installiert...",
+        "drv_install_selected": "Ausgewählte Treiber installieren",
+        "drv_install_selected_count": "Ausgewählte Treiber installieren ({count})",
+        "drv_mok_dialog_body": "Geben Sie ein temporäres Passwort ein (mindestens 8 Zeichen). Sie geben dasselbe Passwort nach dem Neustart einmal auf dem blauen MOK Manager-Bildschirm ein.",
+        "drv_mok_dialog_title": "Secure Boot MOK-Schlüssel registrieren",
+        "drv_mok_done": "MOK-Schlüssel-Registrierung eingereiht! Starten Sie Ihr Gerät neu und wählen Sie 'Enroll MOK'.",
+        "drv_mok_enroll_btn": "MOK-Schlüssel registrieren",
+        "drv_mok_enrolling": "MOK-Signaturschlüssel wird über mokutil importiert...",
+        "drv_no_driver": "Kein aktiver Kernel-Treiber",
+        "drv_optional_badge": "Optional",
+        "drv_packages_label": "Pakete: {pkgs}",
+        "drv_rec_amd_gpu_desc": "Optionale RPM Fusion VA-API-Codecs (H.264/HEVC) für AMD-Grafikkarten.",
+        "drv_rec_amd_gpu_title": "AMD Freeworld Video-Codecs (Optional) — {name}",
+        "drv_rec_audio_sof_desc": "Erforderliche DSP-Firmware für moderne integrierte Intel- und AMD-Audiolösungen.",
+        "drv_rec_audio_sof_title": "Sound Open Firmware (SOF) Audio — {name}",
+        "drv_rec_broadcom_desc": "Proprietärer Broadcom-WLAN-Kerneltreiber (akmod-wl).",
+        "drv_rec_broadcom_title": "Broadcom WLAN-Treiber — {name}",
+        "drv_rec_fprint_desc": "Installiert fprintd und PAM-Integration für Fingerabdruck-Anmeldung und Authentifizierung.",
+        "drv_rec_fprint_title": "Fingerabdruckleser-Unterstützung — {name}",
+        "drv_rec_intel_gpu_desc": "Aktiviert Hardware-VA-API-Videodekodierung und -kodierung für Intel-Grafikkarten.",
+        "drv_rec_intel_gpu_title": "Intel Hardware-Videobeschleunigung — {name}",
+        "drv_rec_ipu6_desc": "Aktiviert integrierte Intel IPU6 / MIPI-Laptop-Webcams.",
+        "drv_rec_ipu6_title": "Intel IPU6 / MIPI-Kameratreiber — {name}",
+        "drv_rec_modalias_desc": "Automatisch über Hardware-Modalias in System-Repositories abgeglichen.",
+        "drv_rec_modalias_title": "Treiberpaket für {name}",
+        "drv_rec_nvidia_desc": "Offizieller proprietärer Treiber mit Wayland-, Vulkan- und CUDA-Beschleunigung.",
+        "drv_rec_nvidia_title": "NVIDIA Grafik- & CUDA-Treiber — {name}",
+        "drv_recommended_badge": "Empfohlen",
+        "drv_rescan_btn": "Hardware erneut scannen",
+        "drv_sb_enabled_title": "Secure Boot ist aktiviert",
+        "drv_sb_enrolled_desc": "Secure Boot ist aktiviert und der lokale akmods-Signaturschlüssel ist bereits registriert.",
+        "drv_sb_needs_mok_desc": "Kernel-Module (wie NVIDIA, Broadcom oder IPU6) erfordern die Registrierung des akmods-Signaturschlüssels (MOK) im UEFI.",
+        "drv_scanning_desc": "Überprüfung von PCI, USB, Kernel-Modulen, Repositories und Firmware-Updates",
+        "drv_scanning_title": "Hardwarekomponenten werden gescannt...",
+        "drv_select_one_warn": "Bitte wählen Sie mindestens einen Treiber zur Installation aus.",
+        "drv_stage_akmods": "Kernel-Module werden kompiliert (akmods)...",
+        "drv_stage_auth": "Administratorrechte werden angefordert...",
+        "drv_stage_complete": "100% — Erfolgreich abgeschlossen",
+        "drv_stage_downloading": "Treiberpakete werden heruntergeladen...",
+        "drv_stage_layering": "Pakete werden in das Systemabbild geschichtet (rpm-ostree)...",
+        "status_sys_connecting": "Verbindung zur Registry herstellen und Update prüfen...",
+        "status_sys_downloading_detail": "Systemdateien werden heruntergeladen ({detail})...",
+        "status_sys_integrating": "Treiber integrieren und Boot-Kernel aktualisieren...",
+        "status_sys_preparing": "Systemdateien werden vorbereitet...",
+        "status_sys_ready_reboot": "Update abgeschlossen — bereit zum Neustart",
+        "drv_system_busy_title": "Systemeinrichtung läuft",
+        "drv_system_busy_desc": "Die Systemeinrichtung wird derzeit abgeschlossen. Download und Installation der Treiber starten automatisch, sobald das System bereit ist.",
+        "drv_reboot_needed_title": "Systemneustart zuerst erforderlich",
+        "drv_reboot_needed_body": "Das System muss neu gestartet werden, um vorherige Updates anzuwenden, bevor Treiber installiert werden. Nach dem Neustart öffnet sich dieses Fenster automatisch wieder.",
         "install_and_restart": "Installieren und neu starten",
         "colors_banner_title": "Erscheinungsbild & Akzentfarben",
         "colors_banner_desc": "Passen Sie Desktop-Akzente und das Systemerscheinungsbild an.",
@@ -891,6 +1115,78 @@ TRANSLATIONS = {
         "box_filter_all": "Alle Dateien (*)"
     },
     "tr": {
+        "cat_audio": "Ses",
+        "cat_bluetooth": "Bluetooth",
+        "cat_camera": "Kamera",
+        "cat_fingerprint": "Parmak İzi Okuyucu",
+        "cat_gpu": "Ekran Kartı",
+        "cat_network": "Ağ ve Wi-Fi",
+        "cat_other": "Diğer Aygıtlar",
+        "cat_sensors": "Sensörler ve Ekran Döndürme",
+        "drv_active_driver": "Aktif sürücü: {driver}",
+        "drv_all_ok_desc": "Donanımınız için eksik sürücü veya bekleyen ürün yazılımı güncellemesi algılanmadı.",
+        "drv_all_ok_title": "Tüm Sürücüler ve Ürün Yazılımları Güncel",
+        "drv_auto_hw_desc": "Cihazınızda algılanan donanım bileşenleri ve aktif çekirdek sürücüleri.",
+        "drv_auto_hw_title": "Otomatik Olarak Yapılandırılan Donanım",
+        "drv_available_desc": "Yüklenecek sürücüleri seçin ve ardından aşağıdaki yükle düğmesine tıklayın.",
+        "drv_available_title": "Kullanılabilir Sürücüler ve Güncellemeler",
+        "drv_cancel": "İptal",
+        "drv_cat_summary": "{count} aygıt — otomatik çalışıyor",
+        "drv_cat_summary_missing": "{count} aygıt — {missing} aktif sürücü yok",
+        "drv_confirm": "Şimdi Kaydet",
+        "drv_fw_done": "Ürün yazılımı güncellemeleri başarıyla yüklendi! Yeniden başlatma gerekebilir.",
+        "drv_fw_group_desc": "LVFS / fwupd aracılığıyla sağlanan resmi donanım ürün yazılımı güncellemeleri.",
+        "drv_fw_group_title": "Ürün Yazılımı Güncellemeleri (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "Ürün Yazılımı Güncellemelerini Yükle",
+        "drv_fw_updating": "Donanım ürün yazılımı güncellemeleri fwupdmgr aracılığıyla yükleniyor...",
+        "drv_install_selected": "Seçili Sürücüleri Yükle",
+        "drv_install_selected_count": "Seçili Sürücüleri Yükle ({count})",
+        "drv_mok_dialog_body": "Geçici bir parola girin (en az 8 karakter). Yeniden başlattıktan sonra mavi MOK Manager ekranında bu parolayı bir kez gireceksiniz.",
+        "drv_mok_dialog_title": "Secure Boot MOK Anahtarını Kaydet",
+        "drv_mok_done": "MOK anahtarı kaydı sıraya alındı! Cihazınızı yeniden başlatın ve 'Enroll MOK' seçeneğini seçin.",
+        "drv_mok_enroll_btn": "MOK Anahtarını Kaydet",
+        "drv_mok_enrolling": "MOK imzalama anahtarı mokutil aracılığıyla içe aktarılıyor...",
+        "drv_no_driver": "Aktif çekirdek sürücüsü yok",
+        "drv_optional_badge": "İsteğe Bağlı",
+        "drv_packages_label": "Paketler: {pkgs}",
+        "drv_rec_amd_gpu_desc": "AMD grafikleri için isteğe bağlı RPM Fusion VA-API codec bileşenleri (H.264/HEVC).",
+        "drv_rec_amd_gpu_title": "AMD Freeworld Video Codec'leri (İsteğe Bağlı) — {name}",
+        "drv_rec_audio_sof_desc": "Modern Intel ve AMD entegre ses donanımı için gerekli DSP ürün yazılımı.",
+        "drv_rec_audio_sof_title": "Sound Open Firmware (SOF) Ses — {name}",
+        "drv_rec_broadcom_desc": "Özel Broadcom kablosuz çekirdek sürücüsü (akmod-wl).",
+        "drv_rec_broadcom_title": "Broadcom Wi-Fi Sürücüsü — {name}",
+        "drv_rec_fprint_desc": "Parmak iziyle oturum açma ve kimlik doğrulama için fprintd ve PAM entegrasyonunu yükler.",
+        "drv_rec_fprint_title": "Parmak İzi Okuyucu Desteği — {name}",
+        "drv_rec_intel_gpu_desc": "Intel grafikleri için donanım VA-API video kod çözme ve kodlamayı etkinleştirir.",
+        "drv_rec_intel_gpu_title": "Intel Donanım Video Hızlandırması — {name}",
+        "drv_rec_ipu6_desc": "Dahili Intel IPU6 / MIPI dizüstü web kameralarını etkinleştirir.",
+        "drv_rec_ipu6_title": "Intel IPU6 / MIPI Kamera Sürücüsü — {name}",
+        "drv_rec_modalias_desc": "Sistem depolarındaki donanım modalias ile otomatik olarak eşleştirildi.",
+        "drv_rec_modalias_title": "{name} için Sürücü Paketi",
+        "drv_rec_nvidia_desc": "Wayland, Vulkan ve CUDA hızlandırmalı resmi tescilli sürücü.",
+        "drv_rec_nvidia_title": "NVIDIA Grafik ve CUDA Sürücüsü — {name}",
+        "drv_recommended_badge": "Önerilen",
+        "drv_rescan_btn": "Donanımı Yeniden Tara",
+        "drv_sb_enabled_title": "Secure Boot Etkin",
+        "drv_sb_enrolled_desc": "Secure Boot etkin ve yerel akmods imzalama anahtarı zaten kayıtlı.",
+        "drv_sb_needs_mok_desc": "Çekirdek modülleri (NVIDIA, Broadcom veya IPU6 gibi), akmods imzalama anahtarının (MOK) UEFI'ye kaydedilmesini gerektirir.",
+        "drv_scanning_desc": "PCI, USB, çekirdek modülleri, depolar ve ürün yazılımı güncellemeleri inceleniyor",
+        "drv_scanning_title": "Donanım bileşenleri taranıyor...",
+        "drv_select_one_warn": "Lütfen yüklemek için en az bir sürücü seçin.",
+        "drv_stage_akmods": "Çekirdek modülleri derleniyor (akmods)...",
+        "drv_stage_auth": "Yönetici izinleri isteniyor...",
+        "drv_stage_complete": "%100 — Başarıyla tamamlandı",
+        "drv_stage_downloading": "Sürücü paketleri indiriliyor...",
+        "drv_stage_layering": "Paketler sistem görüntüsüne katmanlanıyor (rpm-ostree)...",
+        "status_sys_connecting": "Kayıt defterine bağlanılıyor ve güncelleme kontrol ediliyor...",
+        "status_sys_downloading_detail": "Sistem dosyaları indiriliyor ({detail})...",
+        "status_sys_integrating": "Sürücüler entegre ediliyor ve önyükleme çekirdeği güncelleniyor...",
+        "status_sys_preparing": "Sistem dosyaları hazırlanıyor...",
+        "status_sys_ready_reboot": "Güncelleme tamamlandı — yeniden başlatmaya hazır",
+        "drv_system_busy_title": "Sistem Kurulumu Devam Ediyor",
+        "drv_system_busy_desc": "Sistem kurulumu şu anda tamamlanıyor. Sürücü indirme ve kurulumu hazır olduğunda otomatik olarak başlayacaktır.",
+        "drv_reboot_needed_title": "Önce Sistem Yeniden Başlatılmalıdır",
+        "drv_reboot_needed_body": "Sürücüleri yüklemeden önce önceki güncellemeleri uygulamak için sistemin yeniden başlatılması gerekir. Yeniden başlatmanın ardından bu pencere otomatik olarak açılacaktır.",
         "install_and_restart": "Yükle ve Yeniden Başlat",
         "colors_banner_title": "Görünüm ve Vurgu Renkleri",
         "colors_banner_desc": "Masaüstü vurgu renklerini ve sistem görünümünü kişiselleştirin.",
@@ -1036,6 +1332,78 @@ TRANSLATIONS = {
         "box_filter_all": "Tüm Dosyalar (*)"
     },
     "ru": {
+        "cat_audio": "Аудио",
+        "cat_bluetooth": "Bluetooth",
+        "cat_camera": "Камера",
+        "cat_fingerprint": "Сканер отпечатков пальцев",
+        "cat_gpu": "Видеокарта",
+        "cat_network": "Сеть и Wi-Fi",
+        "cat_other": "Другие устройства",
+        "cat_sensors": "Датчики и поворот экрана",
+        "drv_active_driver": "Активный драйвер: {driver}",
+        "drv_all_ok_desc": "Для вашего оборудования не обнаружено отсутствующих драйверов или ожидающих обновлений прошивки.",
+        "drv_all_ok_title": "Все драйверы и прошивки обновлены",
+        "drv_auto_hw_desc": "Аппаратные компоненты, обнаруженные на вашем устройстве, и их активные драйверы ядра.",
+        "drv_auto_hw_title": "Автоматически настроенное оборудование",
+        "drv_available_desc": "Выберите драйверы для установки и нажмите кнопку установки ниже.",
+        "drv_available_title": "Доступные драйверы и обновления",
+        "drv_cancel": "Отмена",
+        "drv_cat_summary": "{count} устр. — работают автоматически",
+        "drv_cat_summary_missing": "{count} устр. — {missing} без активного драйвера",
+        "drv_confirm": "Зарегистрировать сейчас",
+        "drv_fw_done": "Обновления прошивки успешно установлены! Может потребоваться перезагрузка.",
+        "drv_fw_group_desc": "Официальные обновления прошивки оборудования, предоставляемые через LVFS / fwupd.",
+        "drv_fw_group_title": "Обновления прошивки (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "Установить обновления прошивки",
+        "drv_fw_updating": "Установка обновлений прошивки через fwupdmgr...",
+        "drv_install_selected": "Установить выбранные драйверы",
+        "drv_install_selected_count": "Установить выбранные драйверы ({count})",
+        "drv_mok_dialog_body": "Введите временный пароль (не менее 8 символов). Вы введете этот же пароль один раз на синем экране MOK Manager после перезагрузки.",
+        "drv_mok_dialog_title": "Регистрация ключа MOK Secure Boot",
+        "drv_mok_done": "Регистрация ключа MOK поставлена в очередь! Перезагрузите устройство и выберите 'Enroll MOK'.",
+        "drv_mok_enroll_btn": "Зарегистрировать ключ MOK",
+        "drv_mok_enrolling": "Импорт ключа подписи MOK через mokutil...",
+        "drv_no_driver": "Нет активного драйвера ядра",
+        "drv_optional_badge": "Необязательно",
+        "drv_packages_label": "Пакеты: {pkgs}",
+        "drv_rec_amd_gpu_desc": "Дополнительные кодеки RPM Fusion VA-API (H.264/HEVC) для графики AMD.",
+        "drv_rec_amd_gpu_title": "Видеокодеки AMD Freeworld (необязательно) — {name}",
+        "drv_rec_audio_sof_desc": "Необходимая прошивка DSP для современного встроенного звука Intel и AMD.",
+        "drv_rec_audio_sof_title": "Аудио Sound Open Firmware (SOF) — {name}",
+        "drv_rec_broadcom_desc": "Проприетарный драйвер ядра беспроводной связи Broadcom (akmod-wl).",
+        "drv_rec_broadcom_title": "Драйвер Wi-Fi Broadcom — {name}",
+        "drv_rec_fprint_desc": "Устанавливает fprintd и интеграцию с PAM для входа и проверки подлинности по отпечатку пальца.",
+        "drv_rec_fprint_title": "Поддержка сканера отпечатков — {name}",
+        "drv_rec_intel_gpu_desc": "Включает аппаратное декодирование и кодирование видео VA-API для графики Intel.",
+        "drv_rec_intel_gpu_title": "Аппаратное ускорение видео Intel — {name}",
+        "drv_rec_ipu6_desc": "Включает встроенные веб-камеры ноутбуков Intel IPU6 / MIPI.",
+        "drv_rec_ipu6_title": "Драйвер камеры Intel IPU6 / MIPI — {name}",
+        "drv_rec_modalias_desc": "Автоматически сопоставлено через modalias оборудования в системных репозиториях.",
+        "drv_rec_modalias_title": "Пакет драйвера для {name}",
+        "drv_rec_nvidia_desc": "Официальный проприетарный драйвер с ускорением Wayland, Vulkan и CUDA.",
+        "drv_rec_nvidia_title": "Драйвер графики NVIDIA и CUDA — {name}",
+        "drv_recommended_badge": "Рекомендуется",
+        "drv_rescan_btn": "Повторить сканирование",
+        "drv_sb_enabled_title": "Secure Boot включен",
+        "drv_sb_enrolled_desc": "Secure Boot включен, локальный ключ подписи akmods уже зарегистрирован.",
+        "drv_sb_needs_mok_desc": "Модули ядра (такие как NVIDIA, Broadcom или IPU6) требуют регистрации ключа подписи akmods (MOK) в UEFI.",
+        "drv_scanning_desc": "Проверка PCI, USB, модулей ядра, репозиториев и обновлений прошивки",
+        "drv_scanning_title": "Сканирование аппаратных компонентов...",
+        "drv_select_one_warn": "Пожалуйста, выберите хотя бы один драйвер для установки.",
+        "drv_stage_akmods": "Компиляция модулей ядра (akmods)...",
+        "drv_stage_auth": "Запрос прав администратора...",
+        "drv_stage_complete": "100% — Успешно завершено",
+        "drv_stage_downloading": "Загрузка пакетов драйверов...",
+        "drv_stage_layering": "Наложение пакетов на образ системы (rpm-ostree)...",
+        "status_sys_connecting": "Подключение к реестру и проверка обновлений...",
+        "status_sys_downloading_detail": "Загрузка системных файлов ({detail})...",
+        "status_sys_integrating": "Интеграция драйверов и обновление загрузочного ядра...",
+        "status_sys_preparing": "Подготовка системных файлов...",
+        "status_sys_ready_reboot": "Обновление завершено — готово к перезагрузке",
+        "drv_system_busy_title": "Выполняется настройка системы",
+        "drv_system_busy_desc": "Завершается настройка системы. Загрузка и установка драйверов начнется автоматически по готовности.",
+        "drv_reboot_needed_title": "Сначала требуется перезагрузка системы",
+        "drv_reboot_needed_body": "Системе необходимо перезагрузиться для применения обновлений перед установкой драйверов. После перезагрузки это окно откроется автоматически.",
         "install_and_restart": "Установить и перезагрузить",
         "colors_banner_title": "Внешний вид и акцентные цвета",
         "colors_banner_desc": "Настройте акцентные цвета рабочего стола и оформление системы.",
@@ -1181,6 +1549,78 @@ TRANSLATIONS = {
         "box_filter_all": "Все файлы (*)"
     },
     "pt": {
+        "cat_audio": "Áudio",
+        "cat_bluetooth": "Bluetooth",
+        "cat_camera": "Câmara",
+        "cat_fingerprint": "Leitor de impressões digitais",
+        "cat_gpu": "Placa gráfica",
+        "cat_network": "Rede e Wi-Fi",
+        "cat_other": "Outros dispositivos",
+        "cat_sensors": "Sensores e rotação de ecrã",
+        "drv_active_driver": "Controlador ativo: {driver}",
+        "drv_all_ok_desc": "Nenhum controlador em falta ou atualização de firmware pendente detetada para o seu hardware.",
+        "drv_all_ok_title": "Todos os controladores e firmware estão atualizados",
+        "drv_auto_hw_desc": "Componentes de hardware detetados no seu dispositivo e os seus controladores de kernel ativos.",
+        "drv_auto_hw_title": "Hardware configurado automaticamente",
+        "drv_available_desc": "Selecione os controladores a instalar e clique no botão de instalação abaixo.",
+        "drv_available_title": "Controladores e atualizações disponíveis",
+        "drv_cancel": "Cancelar",
+        "drv_cat_summary": "{count} dispositivo(s) — a funcionar automaticamente",
+        "drv_cat_summary_missing": "{count} dispositivo(s) — {missing} sem controlador ativo",
+        "drv_confirm": "Registar agora",
+        "drv_fw_done": "Atualizações de firmware instaladas com sucesso! Poderá ser necessário reiniciar.",
+        "drv_fw_group_desc": "Atualizações oficiais de firmware fornecidas através de LVFS / fwupd.",
+        "drv_fw_group_title": "Atualizações de firmware (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "Instalar atualizações de firmware",
+        "drv_fw_updating": "A instalar atualizações de firmware através de fwupdmgr...",
+        "drv_install_selected": "Instalar controladores selecionados",
+        "drv_install_selected_count": "Instalar controladores selecionados ({count})",
+        "drv_mok_dialog_body": "Introduza uma palavra-passe temporária (pelo menos 8 caracteres). Irá introduzir esta mesma palavra-passe uma vez no ecrã azul do MOK Manager após reiniciar.",
+        "drv_mok_dialog_title": "Registar chave MOK do Secure Boot",
+        "drv_mok_done": "Registo da chave MOK em fila! Reinicie o seu dispositivo e escolha 'Enroll MOK'.",
+        "drv_mok_enroll_btn": "Registar chave MOK",
+        "drv_mok_enrolling": "A importar chave de assinatura MOK através de mokutil...",
+        "drv_no_driver": "Sem controlador de kernel ativo",
+        "drv_optional_badge": "Opcional",
+        "drv_packages_label": "Pacotes: {pkgs}",
+        "drv_rec_amd_gpu_desc": "Codecs VA-API RPM Fusion opcionais (H.264/HEVC) para gráficos AMD.",
+        "drv_rec_amd_gpu_title": "Codecs de vídeo AMD Freeworld (Opcional) — {name}",
+        "drv_rec_audio_sof_desc": "Firmware DSP necessário para áudio integrado moderno Intel e AMD.",
+        "drv_rec_audio_sof_title": "Áudio Sound Open Firmware (SOF) — {name}",
+        "drv_rec_broadcom_desc": "Controlador de kernel sem fios proprietário da Broadcom (akmod-wl).",
+        "drv_rec_broadcom_title": "Controlador Wi-Fi Broadcom — {name}",
+        "drv_rec_fprint_desc": "Instala fprintd e integração com PAM para início de sessão e autenticação por impressão digital.",
+        "drv_rec_fprint_title": "Suporte para leitor de impressões — {name}",
+        "drv_rec_intel_gpu_desc": "Ativa a descodificação e codificação de vídeo por hardware VA-API para gráficos Intel.",
+        "drv_rec_intel_gpu_title": "Aceleração de vídeo por hardware Intel — {name}",
+        "drv_rec_ipu6_desc": "Ativa webcams integradas de computadores portáteis Intel IPU6 / MIPI.",
+        "drv_rec_ipu6_title": "Controlador de câmara Intel IPU6 / MIPI — {name}",
+        "drv_rec_modalias_desc": "Correspondência automática através de modalias de hardware nos repositórios do sistema.",
+        "drv_rec_modalias_title": "Pacote de controlador para {name}",
+        "drv_rec_nvidia_desc": "Controlador proprietário oficial com aceleração Wayland, Vulkan e CUDA.",
+        "drv_rec_nvidia_title": "Controlador gráfico NVIDIA e CUDA — {name}",
+        "drv_recommended_badge": "Recomendado",
+        "drv_rescan_btn": "Reanalisar hardware",
+        "drv_sb_enabled_title": "O Secure Boot está ativado",
+        "drv_sb_enrolled_desc": "O Secure Boot está ativado e a chave de assinatura akmods local já está registada.",
+        "drv_sb_needs_mok_desc": "Módulos de kernel (como NVIDIA, Broadcom ou IPU6) exigem o registo da chave de assinatura akmods (MOK) no UEFI.",
+        "drv_scanning_desc": "A inspecionar PCI, USB, módulos de kernel, repositórios e atualizações de firmware",
+        "drv_scanning_title": "A analisar componentes de hardware...",
+        "drv_select_one_warn": "Por favor, selecione pelo menos um controlador para instalar.",
+        "drv_stage_akmods": "A compilar módulos de kernel (akmods)...",
+        "drv_stage_auth": "A solicitar permissões de administrador...",
+        "drv_stage_complete": "100% — Concluído com sucesso",
+        "drv_stage_downloading": "A descarregar pacotes de controladores...",
+        "drv_stage_layering": "A integrar pacotes na imagem do sistema (rpm-ostree)...",
+        "status_sys_connecting": "A ligar ao registo e a verificar atualização...",
+        "status_sys_downloading_detail": "A descarregar ficheiros do sistema ({detail})...",
+        "status_sys_integrating": "A integrar controladores e a atualizar o kernel de arranque...",
+        "status_sys_preparing": "A preparar ficheiros do sistema...",
+        "status_sys_ready_reboot": "Atualização concluída — pronto para reiniciar",
+        "drv_system_busy_title": "Configuração do sistema em curso",
+        "drv_system_busy_desc": "A configuração do sistema está a ser finalizada. O descarregamento e instalação dos controladores começará automaticamente assim que estiver pronto.",
+        "drv_reboot_needed_title": "É necessário reiniciar o sistema primeiro",
+        "drv_reboot_needed_body": "O sistema precisa de reiniciar para aplicar as atualizações anteriores antes de instalar os controladores. Após reiniciar, esta janela reabrirá automaticamente.",
         "install_and_restart": "Instalar e reiniciar",
         "colors_banner_title": "Aparência e Cores de Destaque",
         "colors_banner_desc": "Personalize as cores de destaque e a aparência geral do sistema.",
@@ -1326,6 +1766,78 @@ TRANSLATIONS = {
         "box_filter_all": "Todos os Ficheiros (*)"
     },
     "it": {
+        "cat_audio": "Audio",
+        "cat_bluetooth": "Bluetooth",
+        "cat_camera": "Fotocamera",
+        "cat_fingerprint": "Lettore di impronte digitali",
+        "cat_gpu": "Scheda grafica",
+        "cat_network": "Rete e Wi-Fi",
+        "cat_other": "Altri dispositivi",
+        "cat_sensors": "Sensori e rotazione schermo",
+        "drv_active_driver": "Driver attivo: {driver}",
+        "drv_all_ok_desc": "Nessun driver mancante o aggiornamento firmware in sospeso rilevato per il dispositivo.",
+        "drv_all_ok_title": "Tutti i driver e il firmware sono aggiornati",
+        "drv_auto_hw_desc": "Componenti hardware rilevati sul dispositivo e relativi driver del kernel attivi.",
+        "drv_auto_hw_title": "Hardware configurato automaticamente",
+        "drv_available_desc": "Seleziona i driver da installare, quindi fai clic sul pulsante di installazione in basso.",
+        "drv_available_title": "Driver e aggiornamenti disponibili",
+        "drv_cancel": "Annulla",
+        "drv_cat_summary": "{count} dispositivo/i — funzionante automaticamente",
+        "drv_cat_summary_missing": "{count} dispositivo/i — {missing} senza driver attivo",
+        "drv_confirm": "Registra ora",
+        "drv_fw_done": "Aggiornamenti firmware installati con successo! Potrebbe essere necessario riavviare.",
+        "drv_fw_group_desc": "Aggiornamenti firmware ufficiali forniti tramite LVFS / fwupd.",
+        "drv_fw_group_title": "Aggiornamenti firmware (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "Installa aggiornamenti firmware",
+        "drv_fw_updating": "Installazione aggiornamenti firmware tramite fwupdmgr...",
+        "drv_install_selected": "Installa i driver selezionati",
+        "drv_install_selected_count": "Installa driver selezionati ({count})",
+        "drv_mok_dialog_body": "Inserisci una password temporanea (almeno 8 caratteri). Inserirai questa stessa password nella schermata blu di MOK Manager al riavvio.",
+        "drv_mok_dialog_title": "Registra chiave MOK Secure Boot",
+        "drv_mok_done": "Registrazione della chiave MOK in coda! Riavvia il dispositivo e scegli 'Enroll MOK'.",
+        "drv_mok_enroll_btn": "Registra chiave MOK",
+        "drv_mok_enrolling": "Importazione della chiave di firma MOK tramite mokutil...",
+        "drv_no_driver": "Nessun driver del kernel attivo",
+        "drv_optional_badge": "Opzionale",
+        "drv_packages_label": "Pacchetti: {pkgs}",
+        "drv_rec_amd_gpu_desc": "Codec VA-API RPM Fusion opzionali (H.264/HEVC) per grafica AMD.",
+        "drv_rec_amd_gpu_title": "Codec video AMD Freeworld (Opzionale) — {name}",
+        "drv_rec_audio_sof_desc": "Firmware DSP richiesto per l'audio integrato moderno Intel e AMD.",
+        "drv_rec_audio_sof_title": "Audio Sound Open Firmware (SOF) — {name}",
+        "drv_rec_broadcom_desc": "Driver proprietario del kernel wireless Broadcom (akmod-wl).",
+        "drv_rec_broadcom_title": "Driver Wi-Fi Broadcom — {name}",
+        "drv_rec_fprint_desc": "Installa fprintd e l'integrazione PAM per l'accesso e l'autenticazione tramite impronte digitali.",
+        "drv_rec_fprint_title": "Supporto per lettore di impronte digitali — {name}",
+        "drv_rec_intel_gpu_desc": "Abilita la decodifica e la codifica video hardware VA-API per grafica Intel.",
+        "drv_rec_intel_gpu_title": "Accelerazione video hardware Intel — {name}",
+        "drv_rec_ipu6_desc": "Abilita le webcam per laptop Intel IPU6 / MIPI integrate.",
+        "drv_rec_ipu6_title": "Driver per fotocamera Intel IPU6 / MIPI — {name}",
+        "drv_rec_modalias_desc": "Corrispondenza automatica tramite modalias hardware nei repository di sistema.",
+        "drv_rec_modalias_title": "Pacchetto driver per {name}",
+        "drv_rec_nvidia_desc": "Driver proprietario ufficiale con accelerazione Wayland, Vulkan e CUDA.",
+        "drv_rec_nvidia_title": "Driver grafico e CUDA NVIDIA — {name}",
+        "drv_recommended_badge": "Consigliato",
+        "drv_rescan_btn": "Scansiona di nuovo hardware",
+        "drv_sb_enabled_title": "Secure Boot è abilitato",
+        "drv_sb_enrolled_desc": "Secure Boot è abilitato e la chiave di firma akmods locale è già registrata.",
+        "drv_sb_needs_mok_desc": "I moduli del kernel (come NVIDIA, Broadcom o IPU6) richiedono la registrazione della chiave di firma akmods (MOK) in UEFI.",
+        "drv_scanning_desc": "Ispezione di PCI, USB, moduli del kernel, repository e aggiornamenti del firmware",
+        "drv_scanning_title": "Scansione dei componenti hardware...",
+        "drv_select_one_warn": "Seleziona almeno un driver da installare.",
+        "drv_stage_akmods": "Compilazione dei moduli del kernel (akmods)...",
+        "drv_stage_auth": "Richiesta delle autorizzazioni di amministratore...",
+        "drv_stage_complete": "100% — Completato con successo",
+        "drv_stage_downloading": "Download dei pacchetti di driver...",
+        "drv_stage_layering": "Integrazione dei pacchetti nell'immagine di sistema (rpm-ostree)...",
+        "status_sys_connecting": "Connessione al registro e verifica dell'aggiornamento...",
+        "status_sys_downloading_detail": "Download dei file di sistema ({detail})...",
+        "status_sys_integrating": "Integrazione dei driver e aggiornamento del kernel di avvio...",
+        "status_sys_preparing": "Preparazione dei file di sistema...",
+        "status_sys_ready_reboot": "Aggiornamento completato — pronto per il riavvio",
+        "drv_system_busy_title": "Configurazione del sistema in corso",
+        "drv_system_busy_desc": "La configurazione del sistema è in fase di completamento. Il download e l'installazione dei driver inizieranno automaticamente non appena il sistema sarà pronto.",
+        "drv_reboot_needed_title": "È necessario prima riavviare il sistema",
+        "drv_reboot_needed_body": "Il sistema deve essere riavviato per applicare gli aggiornamenti precedenti prima di installare i driver. Al riavvio, questa finestra si riaprirà automaticamente.",
         "install_and_restart": "Installa e riavvia",
         "colors_banner_title": "Aspetto e colori di risalto",
         "colors_banner_desc": "Personalizza i colori di risalto del desktop e l'aspetto del sistema.",
@@ -1471,6 +1983,78 @@ TRANSLATIONS = {
         "box_filter_all": "Tutti i file (*)"
     },
     "zh": {
+        "cat_audio": "音频",
+        "cat_bluetooth": "蓝牙",
+        "cat_camera": "摄像头",
+        "cat_fingerprint": "指纹识别器",
+        "cat_gpu": "显卡",
+        "cat_network": "网络与无线网",
+        "cat_other": "其他设备",
+        "cat_sensors": "传感器与屏幕旋转",
+        "drv_active_driver": "当前驱动: {driver}",
+        "drv_all_ok_desc": "未检测到缺失的硬件驱动或待更新的固件。",
+        "drv_all_ok_title": "所有驱动程序与固件均已是最新",
+        "drv_auto_hw_desc": "检测到的设备硬件组件及其当前已加载的内核驱动程序。",
+        "drv_auto_hw_title": "已自动配置的硬件",
+        "drv_available_desc": "选择要安装的驱动程序，然后点击下方的安装按钮。",
+        "drv_available_title": "可用的驱动程序与更新",
+        "drv_cancel": "取消",
+        "drv_cat_summary": "{count} 个设备 — 自动正常运行",
+        "drv_cat_summary_missing": "{count} 个设备 — {missing} 个缺少有效驱动",
+        "drv_confirm": "立即注册",
+        "drv_fw_done": "固件更新已成功安装！可能需要重启系统以生效。",
+        "drv_fw_group_desc": "通过 LVFS / fwupd 提供的官方硬件固件更新。",
+        "drv_fw_group_title": "固件更新 (BIOS / UEFI / NVMe)",
+        "drv_fw_install_btn": "安装固件更新",
+        "drv_fw_updating": "正在通过 fwupdmgr 安装硬件固件更新...",
+        "drv_install_selected": "安装所选驱动程序",
+        "drv_install_selected_count": "安装所选驱动程序 ({count})",
+        "drv_mok_dialog_body": "输入一个临时密码（至少 8 个字符）。系统重启后，在蓝色 MOK Manager 界面中输入此密码即可完成签名证书的注册。",
+        "drv_mok_dialog_title": "注册安全启动 MOK 密钥",
+        "drv_mok_done": "MOK 密钥注册已就绪！请重启设备并在出现的界面中选择“Enroll MOK”。",
+        "drv_mok_enroll_btn": "注册 MOK 密钥",
+        "drv_mok_enrolling": "正在通过 mokutil 导入 MOK 签名密钥...",
+        "drv_no_driver": "无有效内核驱动",
+        "drv_optional_badge": "可选",
+        "drv_packages_label": "软件包: {pkgs}",
+        "drv_rec_amd_gpu_desc": "适用于 AMD 显卡的可选 RPM Fusion VA-API 视频编解码器 (H.264/HEVC)。",
+        "drv_rec_amd_gpu_title": "AMD Freeworld 硬件视频编解码包（可选）— {name}",
+        "drv_rec_audio_sof_desc": "现代 Intel 和 AMD 集成音频芯片所需的 DSP 固件。",
+        "drv_rec_audio_sof_title": "Sound Open Firmware (SOF) 音频驱动 — {name}",
+        "drv_rec_broadcom_desc": "Broadcom 专有无线网卡内核驱动程序 (akmod-wl)。",
+        "drv_rec_broadcom_title": "Broadcom 无线网卡驱动 — {name}",
+        "drv_rec_fprint_desc": "安装 fprintd 及 PAM 模块，以支持指纹登录和提权认证。",
+        "drv_rec_fprint_title": "指纹识别器驱动支持 — {name}",
+        "drv_rec_intel_gpu_desc": "为 Intel 显卡启用 VA-API 硬件视频加速编解码。",
+        "drv_rec_intel_gpu_title": "Intel 硬件视频加速 — {name}",
+        "drv_rec_ipu6_desc": "驱动笔记本内置的 Intel IPU6 / MIPI 摄像头。",
+        "drv_rec_ipu6_title": "Intel IPU6 / MIPI 摄像头驱动 — {name}",
+        "drv_rec_modalias_desc": "根据硬件 modalias 从系统软件源中自动匹配。",
+        "drv_rec_modalias_title": "{name} 的驱动软件包",
+        "drv_rec_nvidia_desc": "包含 Wayland、Vulkan 和 CUDA 加速的官方专有驱动程序。",
+        "drv_rec_nvidia_title": "NVIDIA 显卡与 CUDA 驱动程序 — {name}",
+        "drv_recommended_badge": "推荐",
+        "drv_rescan_btn": "重新扫描硬件",
+        "drv_sb_enabled_title": "安全启动已启用",
+        "drv_sb_enrolled_desc": "安全启动已启用，且本地 akmods 签名密钥已完成注册。",
+        "drv_sb_needs_mok_desc": "内核模块（例如 NVIDIA、Broadcom 或 IPU6）需要在 UEFI 中注册 akmods 签名密钥 (MOK)。",
+        "drv_scanning_desc": "正在检查 PCI、USB、内核模块、软件源及固件更新",
+        "drv_scanning_title": "正在扫描硬件组件...",
+        "drv_select_one_warn": "请至少选择一个驱动程序进行安装。",
+        "drv_stage_akmods": "正在编译内核模块 (akmods)...",
+        "drv_stage_auth": "正在请求管理员权限...",
+        "drv_stage_complete": "100% — 已成功完成",
+        "drv_stage_downloading": "正在下载驱动程序包...",
+        "drv_stage_layering": "正在将软件包层叠写入系统镜像 (rpm-ostree)...",
+        "status_sys_connecting": "正在连接镜像仓库并检查更新...",
+        "status_sys_downloading_detail": "正在下载系统文件 ({detail})...",
+        "status_sys_integrating": "正在集成驱动程序并更新启动内核...",
+        "status_sys_preparing": "正在准备系统文件...",
+        "status_sys_ready_reboot": "更新完成 — 可以立即重启",
+        "drv_system_busy_title": "系统准备正在进行中",
+        "drv_system_busy_desc": "系统正在完成初始化准备，就绪后将自动开始驱动程序的下载与安装。",
+        "drv_reboot_needed_title": "需要先重启系统",
+        "drv_reboot_needed_body": "系统需要先重启以应用之前的更新，然后再安装驱动程序。重启后将自动打开此窗口继续完成安装。",
         "install_and_restart": "安装并重启",
         "colors_banner_title": "外观与强调色",
         "colors_banner_desc": "个性化桌面强调色与系统视觉外观。",
@@ -1788,6 +2372,70 @@ def has_pending_reboot():
         pass
 
     return False
+
+
+def is_flatpak_background_setup_active():
+    """Check if initial background flatpak setup is actively running."""
+    try:
+        res = subprocess.run(["systemctl", "is-active", "sadeem-flatpak-setup.service"], capture_output=True, text=True, check=False)
+        if res.stdout.strip().lower() in ("active", "activating"):
+            return True
+    except Exception:
+        pass
+
+    try:
+        my_pid = os.getpid()
+        res_ps = subprocess.run(["ps", "-eo", "pid,args"], capture_output=True, text=True, check=False)
+        for line in res_ps.stdout.splitlines():
+            parts = line.strip().split(None, 1)
+            if len(parts) < 2:
+                continue
+            pid, cmd = parts[0], parts[1]
+            if not pid.isdigit() or int(pid) == my_pid:
+                continue
+            if "/usr/bin/sadeem-flatpak-setup" in cmd or ("flatpak" in cmd and "install" in cmd and "--system" in cmd):
+                return True
+    except Exception:
+        pass
+
+    return False
+
+
+def is_rpm_ostree_busy():
+    """Check if rpm-ostree has an active transaction running."""
+    try:
+        res = subprocess.run(["rpm-ostree", "status", "--json"], capture_output=True, text=True, timeout=5, check=False)
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            if data.get("transaction") is not None:
+                return True
+    except Exception:
+        pass
+
+    try:
+        res = subprocess.run(["rpm-ostree", "status"], capture_output=True, text=True, timeout=5, check=False)
+        if res.returncode == 0 and res.stdout:
+            low = res.stdout.lower()
+            if "transaction in progress" in low or "busy" in low:
+                return True
+    except Exception:
+        pass
+
+    return False
+
+
+def check_system_driver_readiness():
+    """
+    Returns:
+      'busy': Background setup or rpm-ostree transaction in progress.
+      'reboot_required': Pending rpm-ostree staged deployment awaiting reboot.
+      'ready': System is ready for driver installation.
+    """
+    if is_flatpak_background_setup_active() or is_rpm_ostree_busy():
+        return "busy"
+    if has_pending_reboot():
+        return "reboot_required"
+    return "ready"
 
 
 def get_current_booted_digest():
@@ -5542,6 +6190,76 @@ stage {{
 
         cat_icon_map = {k: icons for k, _, icons in HARDWARE_CATEGORIES}
 
+        # Check system readiness for driver installation
+        readiness = check_system_driver_readiness()
+
+        resume_desktop = os.path.expanduser("~/.config/autostart/sadeem-drivers-resume.desktop")
+        if readiness == "ready" and os.path.exists(resume_desktop):
+            try:
+                os.remove(resume_desktop)
+            except Exception:
+                pass
+
+        if readiness == "busy":
+            busy_group = Adw.PreferencesGroup()
+            self.drv_dynamic_box.append(busy_group)
+
+            busy_row = Adw.ActionRow()
+            busy_row.set_use_markup(False)
+            busy_row.set_title(t("drv_system_busy_title"))
+            busy_row.set_subtitle(t("drv_system_busy_desc"))
+            busy_row.set_subtitle_lines(4)
+
+            busy_spinner = Gtk.Spinner()
+            busy_spinner.set_spinning(True)
+            busy_spinner.set_size_request(24, 24)
+            busy_row.add_prefix(busy_spinner)
+            busy_group.add(busy_row)
+
+            busy_pbar_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            busy_pbar_box.set_margin_top(8)
+            self.drv_busy_pbar = Gtk.ProgressBar()
+            self.drv_busy_pbar.pulse()
+            busy_pbar_box.append(self.drv_busy_pbar)
+            busy_group.add(busy_pbar_box)
+
+            def _poll_driver_busy():
+                if getattr(self, "drv_busy_pbar", None):
+                    self.drv_busy_pbar.pulse()
+                new_state = check_system_driver_readiness()
+                if new_state == "busy":
+                    return GLib.SOURCE_CONTINUE
+                self._drv_busy_poll_id = None
+                self.start_hardware_scan()
+                return GLib.SOURCE_REMOVE
+
+            if getattr(self, "_drv_busy_poll_id", None):
+                GLib.source_remove(self._drv_busy_poll_id)
+            self._drv_busy_poll_id = GLib.timeout_add(2500, _poll_driver_busy)
+
+        elif readiness == "reboot_required":
+            reboot_group = Adw.PreferencesGroup()
+            self.drv_dynamic_box.append(reboot_group)
+
+            reboot_row = Adw.ActionRow()
+            reboot_row.set_use_markup(False)
+            reboot_row.set_title(t("drv_reboot_needed_title"))
+            reboot_row.set_subtitle(t("drv_reboot_needed_body"))
+            reboot_row.set_subtitle_lines(4)
+
+            warn_ico = Gtk.Image.new_from_icon_name(safe_icon(["system-reboot-symbolic", "dialog-warning-symbolic"]))
+            warn_ico.add_css_class("drv-status-warn")
+            reboot_row.add_prefix(warn_ico)
+
+            btn_reboot = Gtk.Button(label=t("btn_reboot_now"))
+            btn_reboot.add_css_class("suggested-action")
+            btn_reboot.add_css_class("pill")
+            btn_reboot.set_valign(Gtk.Align.CENTER)
+            btn_reboot.connect("clicked", self.on_driver_reboot_and_resume_clicked)
+            reboot_row.add_suffix(btn_reboot)
+
+            reboot_group.add(reboot_row)
+
         # 1. Secure Boot Alert Banner (when enabled)
         if sb_enabled:
             sb_group = Adw.PreferencesGroup(title=t("drv_sb_title"))
@@ -5762,13 +6480,28 @@ stage {{
 
             hw_group.add(exp)
 
+        if readiness != "ready":
+            self.btn_drv_rescan.set_sensitive(readiness != "busy")
+            if getattr(self, "btn_install_selected", None):
+                self.btn_install_selected.set_sensitive(False)
+            if getattr(self, "btn_install_fw", None):
+                self.btn_install_fw.set_sensitive(False)
+            if getattr(self, "btn_enroll_mok", None):
+                self.btn_enroll_mok.set_sensitive(False)
+            if getattr(self, "btn_fix_kargs", None):
+                self.btn_fix_kargs.set_sensitive(False)
+            if getattr(self, "btn_uninstall_driver", None):
+                self.btn_uninstall_driver.set_sensitive(False)
+
         return False
 
     def _update_install_selected_btn(self, *_args):
         if not getattr(self, "btn_install_selected", None):
             return
+        readiness = check_system_driver_readiness()
         selected_count = sum(1 for cb, _ in self.drv_checkboxes if cb.get_active())
-        self.btn_install_selected.set_sensitive((not self.drv_busy) and selected_count > 0)
+        is_ready = (readiness == "ready")
+        self.btn_install_selected.set_sensitive((not self.drv_busy) and is_ready and selected_count > 0)
         if selected_count > 0:
             self.btn_install_selected.set_label(t("drv_install_selected_count", count=selected_count))
         else:
@@ -5851,6 +6584,14 @@ stage {{
         return False
 
     def on_install_selected_clicked(self, *_args):
+        readiness = check_system_driver_readiness()
+        if readiness == "busy":
+            self.toast_overlay.add_toast(Adw.Toast.new(t("drv_system_busy_desc")))
+            return
+        elif readiness == "reboot_required":
+            self.toast_overlay.add_toast(Adw.Toast.new(t("drv_reboot_needed_title")))
+            return
+
         selected = [rec for cb, rec in self.drv_checkboxes if cb.get_active()]
         if not selected:
             self.toast_overlay.add_toast(Adw.Toast.new(t("drv_select_one_warn")))
@@ -5862,6 +6603,28 @@ stage {{
             args=(selected,),
             daemon=True
         ).start()
+
+    def on_driver_reboot_and_resume_clicked(self, *_args):
+        autostart_dir = os.path.expanduser("~/.config/autostart")
+        os.makedirs(autostart_dir, exist_ok=True)
+        resume_path = os.path.join(autostart_dir, "sadeem-drivers-resume.desktop")
+        content = (
+            "[Desktop Entry]\n"
+            "Type=Application\n"
+            "Name=Sadeem Driver Setup Resume\n"
+            "Exec=/usr/bin/saifdora-nvidia-manager\n"
+            "Hidden=false\n"
+            "NoDisplay=true\n"
+            "X-GNOME-Autostart-enabled=true\n"
+        )
+        try:
+            with open(resume_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            os.chmod(resume_path, 0o755)
+        except Exception as e:
+            print(f"[sadeem-system] Failed to write resume autostart: {e}", file=sys.stderr)
+
+        subprocess.run(["systemctl", "reboot"], check=False)
 
     def run_selected_drivers_thread(self, selected_recs):
         pkgs = []
@@ -6318,6 +7081,13 @@ class SadeemSystemApp(Adw.Application):
         self.window = None
 
     def do_command_line(self, command_line):
+        resume_desktop = os.path.expanduser("~/.config/autostart/sadeem-drivers-resume.desktop")
+        if os.path.exists(resume_desktop):
+            try:
+                os.remove(resume_desktop)
+            except Exception:
+                pass
+
         args = command_line.get_arguments()
         tab = "updates"
         autostart = False

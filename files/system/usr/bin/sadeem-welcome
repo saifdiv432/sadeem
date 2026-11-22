@@ -21,6 +21,11 @@ from gi.repository import Gtk, Adw, GLib, Gio, Gdk
 
 WELCOME_TRANSLATIONS = {
     "en": {
+        "welcome_reboot_needed_title": "System setup complete. Restart required to apply updates and drivers",
+        "welcome_reboot_status": "System setup is complete. Please restart now to ensure all applications and drivers function properly",
+        "welcome_reboot_notif_title": "Sadeem Setup Complete",
+        "welcome_reboot_notif_body": "Please restart your system to apply core updates and drivers.",
+        "btn_reboot_now": "Restart Now",
         "window_title": "Welcome to Sadeem",
         "banner_title": "NVIDIA graphics card detected! Official drivers are not installed.",
         "banner_btn": "Install NVIDIA & CUDA Driver",
@@ -101,6 +106,11 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Workspaces are created automatically as you open windows to keep your desktop organized.",
     },
     "ar": {
+        "welcome_reboot_needed_title": "اكتمل تجهيز النظام، يلزم إعادة التشغيل لتطبيق التحديثات والتعريفات",
+        "welcome_reboot_status": "اكتمل تجهيز النظام، يُرجى إعادة التشغيل الآن حتى تعمل جميع التطبيقات والتعريفات بشكل سليم",
+        "welcome_reboot_notif_title": "اكتمل تجهيز سديم",
+        "welcome_reboot_notif_body": "يُرجى إعادة تشغيل النظام لتطبيق التحديثات والتعريفات الأساسية.",
+        "btn_reboot_now": "إعادة التشغيل الآن",
         "window_title": "ترحيب سديم",
         "banner_title": "تم اكتشاف بطاقة رسوميات NVIDIA! التعريفات الرسمية غير مثبتة.",
         "banner_btn": "تثبيت تعريف NVIDIA و CUDA",
@@ -181,6 +191,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "يتم إنشاء مساحات العمل تلقائياً بمجرد فتح النوافذ للحفاظ على ترتيب سطح المكتب.",
     },
     "fr": {
+        "s0_title": "Préparation des applications essentielles",
+        "s0_sub": "Les environnements d'exécution et applications par défaut s'installent en arrière-plan pour garantir le bon fonctionnement du système.",
+        "s0_all_done": "Toutes les applications essentielles sont installées ✓",
+        "s0_all_done_sub": "Toutes les applications par défaut sont installées et prêtes à l'emploi.",
+        "s0_status_idle": "En attente du service d'installation ou de la connexion réseau...",
+        "s0_status_runtime": "Téléchargement de l'environnement essentiel : {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "Téléchargement et installation de l'environnement essentiel : {name}...",
+        "s0_status_app": "Téléchargement et installation de {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "Téléchargement et installation de {name}...",
+        "s0_status_verifying": "Vérification des applications installées...",
+        "s0_btn_retry": "Démarrer / Reprendre l'installation maintenant",
+        "s0_installed": "Installé",
+        "s0_installing": "Installation en cours...",
+        "s0_waiting": "En attente",
+        "welcome_reboot_needed_title": "Configuration du système terminée. Redémarrage requis pour appliquer les mises à jour et les pilotes",
+        "welcome_reboot_status": "Configuration terminée. Veuillez redémarrer maintenant pour que toutes les applications et pilotes fonctionnent correctement",
+        "welcome_reboot_notif_title": "Configuration de Sadeem terminée",
+        "welcome_reboot_notif_body": "Veuillez redémarrer votre système pour appliquer les mises à jour et pilotes essentiels.",
+        "btn_reboot_now": "Redémarrer maintenant",
         "window_title": "Bienvenue dans Sadeem",
         "banner_title": "Carte graphique NVIDIA détectée ! Les pilotes officiels ne sont pas installés.",
         "banner_btn": "Installer le pilote NVIDIA et CUDA",
@@ -246,6 +275,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Les espaces de travail sont créés automatiquement pour garder votre bureau organisé.",
     },
     "es": {
+        "s0_title": "Preparando aplicaciones esenciales",
+        "s0_sub": "Los entornos de ejecución y aplicaciones predeterminadas se están instalando en segundo plano para garantizar la funcionalidad del sistema.",
+        "s0_all_done": "Todas las aplicaciones esenciales están instaladas ✓",
+        "s0_all_done_sub": "Todas las aplicaciones predeterminadas están instaladas y listas para usar.",
+        "s0_status_idle": "Esperando al servicio de instalación o conexión de red...",
+        "s0_status_runtime": "Descargando entorno esencial: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "Descargando e instalando entorno esencial: {name}...",
+        "s0_status_app": "Descargando e instalando {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "Descargando e instalando {name}...",
+        "s0_status_verifying": "Verificando aplicaciones instaladas...",
+        "s0_btn_retry": "Iniciar / Reanudar instalación ahora",
+        "s0_installed": "Instalado",
+        "s0_installing": "Instalando...",
+        "s0_waiting": "En cola",
+        "welcome_reboot_needed_title": "Configuración del sistema completada. Se requiere reiniciar para aplicar actualizaciones y controladores",
+        "welcome_reboot_status": "Configuración completada. Reinicie ahora para que todas las aplicaciones y controladores funcionen correctamente",
+        "welcome_reboot_notif_title": "Configuración de Sadeem completada",
+        "welcome_reboot_notif_body": "Reinicie el sistema para aplicar las actualizaciones y controladores principales.",
+        "btn_reboot_now": "Reiniciar ahora",
         "window_title": "Bienvenido a Sadeem",
         "banner_title": "¡Tarjeta gráfica NVIDIA detectada! Los controladores oficiales no están instalados.",
         "banner_btn": "Instalar controlador NVIDIA y CUDA",
@@ -311,6 +359,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Los espacios de trabajo se crean automáticamente para mantener su escritorio organizado.",
     },
     "de": {
+        "s0_title": "Vorbereitung grundlegender Apps",
+        "s0_sub": "Standard-Laufzeitumgebungen und Anwendungen werden im Hintergrund installiert, um die volle Funktionalität des Systems sicherzustellen.",
+        "s0_all_done": "Alle grundlegenden Anwendungen sind installiert ✓",
+        "s0_all_done_sub": "Alle Standardanwendungen sind installiert und einsatzbereit.",
+        "s0_status_idle": "Warten auf Installationsdienst oder Netzwerkverbindung...",
+        "s0_status_runtime": "Laufzeitumgebung wird heruntergeladen: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "Laufzeitumgebung wird heruntergeladen und installiert: {name}...",
+        "s0_status_app": "{name} wird heruntergeladen und installiert ({size}) — {pct}%",
+        "s0_status_app_nosize": "{name} wird heruntergeladen und installiert...",
+        "s0_status_verifying": "Installierte Anwendungen werden überprüft...",
+        "s0_btn_retry": "Installation jetzt starten / fortsetzen",
+        "s0_installed": "Installiert",
+        "s0_installing": "Wird installiert...",
+        "s0_waiting": "In Warteschlange",
+        "welcome_reboot_needed_title": "Systemeinrichtung abgeschlossen. Neustart erforderlich, um Updates und Treiber anzuwenden",
+        "welcome_reboot_status": "Einrichtung abgeschlossen. Bitte jetzt neu starten, damit alle Anwendungen und Treiber ordnungsgemäß funktionieren",
+        "welcome_reboot_notif_title": "Sadeem-Einrichtung abgeschlossen",
+        "welcome_reboot_notif_body": "Bitte starten Sie das System neu, um die grundlegenden Updates und Treiber anzuwenden.",
+        "btn_reboot_now": "Jetzt neu starten",
         "window_title": "Willkommen bei Sadeem",
         "banner_title": "NVIDIA-Grafikkarte erkannt! Offizielle Treiber sind nicht installiert.",
         "banner_btn": "NVIDIA- und CUDA-Treiber installieren",
@@ -376,6 +443,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Arbeitsflächen werden beim Öffnen von Fenstern automatisch erstellt, um Übersicht zu behalten.",
     },
     "tr": {
+        "s0_title": "Temel Uygulamalar Hazırlanıyor",
+        "s0_sub": "Sistemin tam çalışmasını sağlamak için varsayılan çalışma ortamları ve uygulamalar arka planda yükleniyor.",
+        "s0_all_done": "Tüm temel uygulamalar yüklendi ✓",
+        "s0_all_done_sub": "Tüm varsayılan uygulamalar yüklendi ve kullanıma hazır.",
+        "s0_status_idle": "Arka plan kurulum hizmeti veya ağ bağlantısı bekleniyor...",
+        "s0_status_runtime": "Temel çalışma ortamı indiriliyor: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "Temel çalışma ortamı indiriliyor ve yükleniyor: {name}...",
+        "s0_status_app": "{name} indiriliyor ve yükleniyor ({size}) — {pct}%",
+        "s0_status_app_nosize": "{name} indiriliyor ve yükleniyor...",
+        "s0_status_verifying": "Yüklü uygulamalar doğrulanıyor...",
+        "s0_btn_retry": "Kurulumu Şimdi Başlat / Devam Ettir",
+        "s0_installed": "Yüklendi",
+        "s0_installing": "Yükleniyor...",
+        "s0_waiting": "Sırada",
+        "welcome_reboot_needed_title": "Sistem kurulumu tamamlandı. Güncellemeleri ve sürücüleri uygulamak için yeniden başlatma gerekiyor",
+        "welcome_reboot_status": "Kurulum tamamlandı. Tüm uygulama ve sürücülerin düzgün çalışması için lütfen şimdi yeniden başlatın",
+        "welcome_reboot_notif_title": "Sadeem Kurulumu Tamamlandı",
+        "welcome_reboot_notif_body": "Temel güncellemeleri ve sürücüleri uygulamak için lütfen sistemi yeniden başlatın.",
+        "btn_reboot_now": "Şimdi Yeniden Başlat",
         "window_title": "Sadeem'e Hoş Geldiniz",
         "banner_title": "NVIDIA grafik kartı algılandı! Resmi sürücüler yüklü değil.",
         "banner_btn": "NVIDIA ve CUDA Sürücüsünü Yükle",
@@ -441,6 +527,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Pencereler açıldıkça çalışma alanları masaüstünüzü düzenli tutmak için otomatik olarak oluşturulur.",
     },
     "ru": {
+        "s0_title": "Подготовка основных приложений",
+        "s0_sub": "Базовые среды выполнения и приложения устанавливаются в фоновом режиме для обеспечения полной функциональности системы.",
+        "s0_all_done": "Все основные приложения установлены ✓",
+        "s0_all_done_sub": "Все стандартные приложения установлены и готовы к использованию.",
+        "s0_status_idle": "Ожидание фоновой службы установки или сетевого подключения...",
+        "s0_status_runtime": "Загрузка среды выполнения: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "Загрузка и установка среды выполнения: {name}...",
+        "s0_status_app": "Загрузка и установка {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "Загрузка и установка {name}...",
+        "s0_status_verifying": "Проверка установленных приложений...",
+        "s0_btn_retry": "Начать / возобновить установку сейчас",
+        "s0_installed": "Установлено",
+        "s0_installing": "Установка...",
+        "s0_waiting": "В очереди",
+        "welcome_reboot_needed_title": "Настройка системы завершена. Требуется перезагрузка для применения обновлений и драйверов",
+        "welcome_reboot_status": "Настройка завершена. Пожалуйста, перезагрузите систему для корректной работы всех приложений и драйверов",
+        "welcome_reboot_notif_title": "Настройка Sadeem завершена",
+        "welcome_reboot_notif_body": "Пожалуйста, перезагрузите компьютер для применения обновлений и драйверов.",
+        "btn_reboot_now": "Перезагрузить сейчас",
         "window_title": "Добро пожаловать в Sadeem",
         "banner_title": "Обнаружена видеокарта NVIDIA! Официальные драйверы не установлены.",
         "banner_btn": "Установить драйвер NVIDIA и CUDA",
@@ -506,6 +611,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Рабочие места создаются автоматически по мере открытия окон для поддержания порядка.",
     },
     "pt": {
+        "s0_title": "A preparar aplicações essenciais",
+        "s0_sub": "Os ambientes de execução e aplicações predefinidas estão a ser instalados em segundo plano para garantir o funcionamento total do sistema.",
+        "s0_all_done": "Todas as aplicações essenciais estão instaladas ✓",
+        "s0_all_done_sub": "Todas as aplicações padrão estão instaladas e prontas a usar.",
+        "s0_status_idle": "A aguardar pelo serviço de instalação ou ligação à rede...",
+        "s0_status_runtime": "A descarregar ambiente essencial: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "A descarregar e instalar ambiente essencial: {name}...",
+        "s0_status_app": "A descarregar e instalar {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "A descarregar e instalar {name}...",
+        "s0_status_verifying": "A verificar aplicações instaladas...",
+        "s0_btn_retry": "Iniciar / Retomar instalação agora",
+        "s0_installed": "Instalado",
+        "s0_installing": "A instalar...",
+        "s0_waiting": "Em espera",
+        "welcome_reboot_needed_title": "Configuração do sistema concluída. Reinício necessário para aplicar atualizações e controladores",
+        "welcome_reboot_status": "Configuração concluída. Reinicie agora para que todas as aplicações e controladores funcionem corretamente",
+        "welcome_reboot_notif_title": "Configuração do Sadeem concluída",
+        "welcome_reboot_notif_body": "Por favor, reinicie o sistema para aplicar as atualizações e controladores essenciais.",
+        "btn_reboot_now": "Reiniciar agora",
         "window_title": "Bem-vindo ao Sadeem",
         "banner_title": "Placa gráfica NVIDIA detetada! Os controladores oficiais não estão instalados.",
         "banner_btn": "Instalar controlador NVIDIA e CUDA",
@@ -571,6 +695,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Os espaços de trabalho são criados automaticamente para manter o ambiente organizado.",
     },
     "it": {
+        "s0_title": "Preparazione applicazioni essenziali",
+        "s0_sub": "I runtime e le applicazioni predefinite vengono installati in background per garantire la piena funzionalità del sistema.",
+        "s0_all_done": "Tutte le applicazioni essenziali sono installate ✓",
+        "s0_all_done_sub": "Tutte le applicazioni predefinite sono installate e pronte all'uso.",
+        "s0_status_idle": "In attesa del servizio di installazione o della connessione di rete...",
+        "s0_status_runtime": "Download runtime essenziale: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "Download e installazione runtime essenziale: {name}...",
+        "s0_status_app": "Download e installazione {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "Download e installazione {name}...",
+        "s0_status_verifying": "Verifica delle applicazioni installate...",
+        "s0_btn_retry": "Avvia / Riprendi installazione ora",
+        "s0_installed": "Installato",
+        "s0_installing": "Installazione in corso...",
+        "s0_waiting": "In coda",
+        "welcome_reboot_needed_title": "Configurazione del sistema completata. È necessario riavviare per applicare aggiornamenti e driver",
+        "welcome_reboot_status": "Configurazione completata. Riavvia ora per assicurarti che tutte le applicazioni e i driver funzionino correttamente",
+        "welcome_reboot_notif_title": "Configurazione di Sadeem completata",
+        "welcome_reboot_notif_body": "Riavvia il sistema per applicare gli aggiornamenti e i driver principali.",
+        "btn_reboot_now": "Riavvia ora",
         "window_title": "Benvenuto in Sadeem",
         "banner_title": "Scheda grafica NVIDIA rilevata! I driver ufficiali non sono installati.",
         "banner_btn": "Installa driver NVIDIA e CUDA",
@@ -636,6 +779,25 @@ WELCOME_TRANSLATIONS = {
         "s5_r3_d": "Gli spazi di lavoro vengono creati automaticamente quando apri le finestre per tenere in ordine il desktop.",
     },
     "zh": {
+        "s0_title": "准备基础应用程序",
+        "s0_sub": "正在后台安装默认运行时和应用程序，以确保系统具备完整功能。",
+        "s0_all_done": "所有基础应用程序均已安装完成 ✓",
+        "s0_all_done_sub": "所有默认应用程序已安装完毕，随时可以使用。",
+        "s0_status_idle": "正在等待后台安装服务或网络连接...",
+        "s0_status_runtime": "正在下载基础运行时: {name} ({size}) — {pct}%",
+        "s0_status_runtime_nosize": "正在下载并安装基础运行时: {name}...",
+        "s0_status_app": "正在下载并安装 {name} ({size}) — {pct}%",
+        "s0_status_app_nosize": "正在下载并安装 {name}...",
+        "s0_status_verifying": "正在验证已安装的应用程序...",
+        "s0_btn_retry": "立即开始 / 恢复安装",
+        "s0_installed": "已安装",
+        "s0_installing": "正在安装...",
+        "s0_waiting": "等待中",
+        "welcome_reboot_needed_title": "系统准备已完成，需要重启以应用更新和驱动程序",
+        "welcome_reboot_status": "系统准备完成。请立即重启以确保所有应用程序和驱动程序正常工作",
+        "welcome_reboot_notif_title": "Sadeem 系统准备完成",
+        "welcome_reboot_notif_body": "请重启系统以应用核心更新和驱动程序。",
+        "btn_reboot_now": "立即重启",
         "window_title": "欢迎使用 Sadeem",
         "banner_title": "检测到 NVIDIA 显卡！尚未安装官方驱动程序。",
         "banner_btn": "安装 NVIDIA 和 CUDA 驱动程序",
@@ -1067,6 +1229,34 @@ def check_flatpaks_installed_sync():
     return all_done, installed, set(missing)
 
 
+def has_pending_reboot():
+    """Check rpm-ostree status --json for staged deployments awaiting reboot."""
+    try:
+        res = subprocess.run(["rpm-ostree", "status", "--json"], capture_output=True, text=True, check=False)
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            deployments = data.get("deployments", [])
+            if deployments:
+                if deployments[0].get("booted") is False:
+                    return True
+                for d in deployments:
+                    if d.get("staged") is True:
+                        return True
+    except Exception:
+        pass
+
+    try:
+        res = subprocess.run(["rpm-ostree", "status"], capture_output=True, text=True, check=False)
+        if res.returncode == 0 and res.stdout:
+            txt = res.stdout.lower()
+            if "changes queued for next boot" in txt or "staged" in txt:
+                return True
+    except Exception:
+        pass
+
+    return False
+
+
 def get_runtime_friendly_name(ref, lang="ar"):
     for prefix, names in RUNTIME_FRIENDLY_NAMES.items():
         if ref.startswith(prefix):
@@ -1273,6 +1463,13 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.banner.set_button_label(t("banner_btn"))
         self.banner.connect("button-clicked", self.on_install_nvidia)
         self.toolbar_view.add_top_bar(self.banner)
+
+        # Staged Update / Pending Reboot Banner
+        self.reboot_banner = Adw.Banner()
+        self.reboot_banner.set_title(t("welcome_reboot_needed_title"))
+        self.reboot_banner.set_button_label(t("btn_reboot_now"))
+        self.reboot_banner.connect("button-clicked", self.on_reboot_clicked)
+        self.toolbar_view.add_top_bar(self.reboot_banner)
 
         # Check NVIDIA status
         has_nvidia, driver_installed = check_nvidia_status()
@@ -1532,6 +1729,16 @@ class WelcomeWindow(Adw.ApplicationWindow):
         self.flatpak_retry_btn.set_visible(False)
         card_box.append(self.flatpak_retry_btn)
 
+        # Staged Reboot prompt button
+        self.flatpak_reboot_btn = Gtk.Button(label=t("btn_reboot_now"))
+        self.flatpak_reboot_btn.add_css_class("pill")
+        self.flatpak_reboot_btn.add_css_class("suggested-action")
+        self.flatpak_reboot_btn.set_halign(Gtk.Align.CENTER)
+        self.flatpak_reboot_btn.set_size_request(220, 36)
+        self.flatpak_reboot_btn.connect("clicked", self.on_reboot_clicked)
+        self.flatpak_reboot_btn.set_visible(False)
+        card_box.append(self.flatpak_reboot_btn)
+
         box.append(card_box)
 
         # Preferences Group with Apps List
@@ -1610,6 +1817,15 @@ class WelcomeWindow(Adw.ApplicationWindow):
             self.flatpak_retry_btn.set_visible(False)
         else:
             self.flatpak_retry_btn.set_visible(True)
+
+        # Pending reboot check when installation completes
+        if all_installed and has_pending_reboot():
+            self.flatpak_reboot_btn.set_visible(True)
+            self.flatpak_status_label.set_text(t("welcome_reboot_status"))
+            self.reboot_banner.set_revealed(True)
+            self._notify_reboot_required()
+        else:
+            self.flatpak_reboot_btn.set_visible(False)
 
         # Update each row
         for app_id, (row, lbl, icon_box) in self.flatpak_rows.items():
@@ -1692,6 +1908,33 @@ class WelcomeWindow(Adw.ApplicationWindow):
             GLib.idle_add(lambda: button.set_sensitive(True))
 
         threading.Thread(target=run_start, daemon=True).start()
+
+    def on_reboot_clicked(self, *_a):
+        subprocess.run(["systemctl", "reboot"], check=False)
+
+    def _notify_reboot_required(self):
+        if getattr(self, "_reboot_notified", False):
+            return
+        self._reboot_notified = True
+        title = t("welcome_reboot_notif_title")
+        body = t("welcome_reboot_notif_body")
+        try:
+            notif = Gio.Notification.new(title)
+            notif.set_body(body)
+            notif.set_icon(Gio.ThemedIcon.new("system-reboot-symbolic"))
+            app = self.get_application()
+            if app:
+                app.send_notification("sadeem-reboot-needed", notif)
+        except Exception:
+            pass
+        if shutil.which("notify-send"):
+            try:
+                subprocess.run(
+                    ["notify-send", "-a", "Sadeem", "-i", "system-reboot-symbolic", title, body],
+                    check=False,
+                )
+            except Exception:
+                pass
 
     def build_slide_ready(self):
         """Slide 1: Out-of-the-box readiness (3 rows)."""
