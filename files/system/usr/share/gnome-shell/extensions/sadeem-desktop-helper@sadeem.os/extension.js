@@ -9,6 +9,7 @@ import { AppMenu } from 'resource:///org/gnome/shell/ui/appMenu.js';
 import { CursorHaloManager } from './cursorHalo.js';
 import { CaptureHelperService } from './captureHelper.js';
 import { WindowMenuHelper } from './windowMenuHelper.js';
+import { RecordingIndicator } from './recordingIndicator.js';
 
 const RTL_ELEMENTS = [
     { element: 'desktopButton', visible: true, position: 'stackedTL' },
@@ -69,12 +70,16 @@ export default class SadeemDesktopHelperExtension extends Extension {
         // 4. Hook AppMenu for context menu "Uninstall" option
         this._hookAppMenu();
 
-        // 5. Wayland screen capture bridge, cursor halo, and window menu capture
+        // 5. Wayland screen capture bridge, cursor halo, recording indicator, and window menu capture
         this._cursorHalo = new CursorHaloManager();
         this._cursorHalo.enable();
 
-        this._captureHelper = new CaptureHelperService(this._cursorHalo);
+        this._recordingIndicator = new RecordingIndicator();
+        this._recordingIndicator.enable();
+
+        this._captureHelper = new CaptureHelperService(this._cursorHalo, this._recordingIndicator);
         this._captureHelper.enable();
+        this._recordingIndicator._captureHelper = this._captureHelper;
 
         this._windowMenuHelper = new WindowMenuHelper();
         this._windowMenuHelper.enable();
@@ -115,7 +120,7 @@ export default class SadeemDesktopHelperExtension extends Extension {
             this._origAppMenuOpen = null;
         }
 
-        // 5. Disable Capture Helper, Cursor Halo, and Window Menu
+        // 5. Disable Capture Helper, Recording Indicator, Cursor Halo, and Window Menu
         if (this._windowMenuHelper) {
             this._windowMenuHelper.disable();
             this._windowMenuHelper = null;
@@ -124,6 +129,11 @@ export default class SadeemDesktopHelperExtension extends Extension {
         if (this._captureHelper) {
             this._captureHelper.disable();
             this._captureHelper = null;
+        }
+
+        if (this._recordingIndicator) {
+            this._recordingIndicator.disable();
+            this._recordingIndicator = null;
         }
 
         if (this._cursorHalo) {

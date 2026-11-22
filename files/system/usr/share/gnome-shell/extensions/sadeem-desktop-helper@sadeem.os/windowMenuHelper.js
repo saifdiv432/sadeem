@@ -36,15 +36,26 @@ export class WindowMenuHelper {
 
     enable() {
         // 1. Reroute Main.screenshotUI.open to launch sadeem-capture
-        if (Main.screenshotUI && !this._origScreenshotOpen) {
-            this._origScreenshotOpen = Main.screenshotUI.open;
-            Main.screenshotUI.open = function() {
-                try {
-                    GLib.spawn_command_line_async('sadeem-capture');
-                } catch (e) {
-                    console.error('[WindowMenuHelper] Failed to launch sadeem-capture: ' + e);
-                }
-            };
+        const hookScreenshot = () => {
+            if (Main.screenshotUI && !this._origScreenshotOpen) {
+                this._origScreenshotOpen = Main.screenshotUI.open;
+                this._origScreenshotOpenObj = Main.screenshotUI;
+                Main.screenshotUI.open = function(...args) {
+                    try {
+                        GLib.spawn_command_line_async('sadeem-capture');
+                    } catch (e) {
+                        console.error('[WindowMenuHelper] Failed to launch sadeem-capture: ' + e);
+                    }
+                };
+            }
+        };
+
+        hookScreenshot();
+        if (!this._origScreenshotOpen) {
+            this._idleHookId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                hookScreenshot();
+                return GLib.SOURCE_REMOVE;
+            });
         }
 
         // 2. Intercept WindowMenu._buildMenu
@@ -60,10 +71,20 @@ export class WindowMenuHelper {
     }
 
     disable() {
+        if (this._idleHookId) {
+            GLib.source_remove(this._idleHookId);
+            this._idleHookId = null;
+        }
+
         // Restore Main.screenshotUI.open
-        if (Main.screenshotUI && this._origScreenshotOpen) {
-            Main.screenshotUI.open = this._origScreenshotOpen;
+        if (this._origScreenshotOpen) {
+            if (this._origScreenshotOpenObj) {
+                this._origScreenshotOpenObj.open = this._origScreenshotOpen;
+            } else if (Main.screenshotUI) {
+                Main.screenshotUI.open = this._origScreenshotOpen;
+            }
             this._origScreenshotOpen = null;
+            this._origScreenshotOpenObj = null;
         }
 
         // Restore WindowMenu.prototype._buildMenu

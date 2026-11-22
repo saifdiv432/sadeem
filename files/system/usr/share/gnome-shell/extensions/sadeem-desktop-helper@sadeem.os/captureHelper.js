@@ -33,15 +33,25 @@ const CaptureHelperIface = `
       <arg type="b" name="active" direction="in"/>
       <arg type="b" name="success" direction="out"/>
     </method>
+    <method name="SetRecordingState">
+      <arg type="b" name="active" direction="in"/>
+      <arg type="b" name="success" direction="out"/>
+    </method>
+    <signal name="StopRecordingRequested"/>
   </interface>
 </node>`;
 
 export class CaptureHelperService {
-    constructor(haloManager) {
+    constructor(haloManager, recordingIndicator = null) {
         this._haloManager = haloManager;
+        this._recordingIndicator = recordingIndicator;
         this._screenshotService = new Shell.Screenshot();
         this._dbusImpl = null;
         this._nameOwnerId = null;
+    }
+
+    setRecordingIndicator(indicator) {
+        this._recordingIndicator = indicator;
     }
 
     enable() {
@@ -230,5 +240,22 @@ export class CaptureHelperService {
             return [true];
         }
         return [false];
+    }
+
+    SetRecordingState(active) {
+        if (this._recordingIndicator) {
+            this._recordingIndicator.setRecordingActive(active);
+            return [true];
+        }
+        return [false];
+    }
+
+    emitStopRecordingRequested() {
+        if (this._dbusImpl) {
+            this._dbusImpl.emit_signal(
+                'StopRecordingRequested',
+                null
+            );
+        }
     }
 }

@@ -31,6 +31,8 @@ modules:
       - gstreamer1-plugins-bad-freeworld
       - gstreamer1-plugins-ugly
       - gstreamer1-plugin-libav
+      - gstreamer1-vaapi
+      - pipewire-gstreamer
       - intel-media-driver
 
       # Image formats & thumbnails
