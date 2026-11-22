@@ -985,6 +985,9 @@ class SadeemCaptureWindow(Gtk.Window):
                 except Exception:
                     pass
 
+            # 2. Handoff to Sadeem Gallery video editor
+            launch_gallery_editor(path)
+
         self.app.quit()
 
 

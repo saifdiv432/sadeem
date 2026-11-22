@@ -38,7 +38,10 @@ RAW_EXTS = {
     ".raf", ".orf", ".rw2", ".raw", ".pef", ".srw",
 }
 
+VIDEO_EXTS = {".mp4", ".mkv", ".webm", ".mov", ".avi"}
+
 ALL_IMAGE_EXTS = STANDARD_EXTS | RAW_EXTS
+ALL_MEDIA_EXTS = ALL_IMAGE_EXTS | VIDEO_EXTS
 MAGICK_PREFERRED_EXTS = RAW_EXTS | {".heif", ".heic", ".avif", ".jxl", ".svg"}
 
 # Reverse map EXIF tag names -> IDs
@@ -142,6 +145,16 @@ def is_supported_image(path):
     return ext in ALL_IMAGE_EXTS
 
 
+def is_video_file(path):
+    ext = os.path.splitext(path)[1].lower()
+    return ext in VIDEO_EXTS
+
+
+def is_supported_media(path):
+    ext = os.path.splitext(path)[1].lower()
+    return ext in ALL_MEDIA_EXTS
+
+
 def is_raw_file(path):
     ext = os.path.splitext(path)[1].lower()
     return ext in RAW_EXTS
@@ -208,14 +221,26 @@ def _probe_raw_dimensions(path):
 
 def _probe_fast_metadata(path, ext, st):
     """
-    Fast lazy header probe returning (dt, width, height, is_animated).
+    Fast lazy header probe returning (dt, width, height, is_animated, duration, duration_str).
     Avoids pixel decoding so directory scans stay instantaneous.
     """
     dt = None
     w, h = 0, 0
     animated = (ext == ".gif")
+    duration = 0.0
+    duration_str = "00:00"
 
-    if ext == ".svg":
+    if ext in VIDEO_EXTS:
+        try:
+            import video_utils
+            vmeta = video_utils.get_video_metadata(path)
+            w = vmeta.get("width", 0)
+            h = vmeta.get("height", 0)
+            duration = vmeta.get("duration", 0.0)
+            duration_str = vmeta.get("duration_str", "00:00")
+        except Exception:
+            pass
+    elif ext == ".svg":
         w, h = _probe_svg_dimensions(path)
     else:
         try:
@@ -255,7 +280,7 @@ def _probe_fast_metadata(path, ext, st):
         except Exception:
             dt = datetime.datetime.now()
 
-    return dt, w, h, animated
+    return dt, w, h, animated, duration, duration_str
 
 
 def is_screenshot_item(path, name):
@@ -271,10 +296,12 @@ def is_screenshot_item(path, name):
 
 
 def matches_format(item, fmt):
-    """Match image format category."""
+    """Match media format category."""
     if not fmt or fmt == "all":
         return True
     ext = (item.get("ext") or "").lower()
+    if fmt == "video":
+        return bool(item.get("is_video", False)) or ext in VIDEO_EXTS
     if fmt == "jpeg":
         return ext in (".jpg", ".jpeg")
     if fmt == "png":
@@ -394,7 +421,7 @@ def scan_directories(directories):
                 if fname.startswith("."):
                     continue
                 full = os.path.join(dirpath, fname)
-                if not is_supported_image(full):
+                if not is_supported_media(full):
                     continue
                 try:
                     real = os.path.realpath(full)
@@ -417,6 +444,8 @@ def scan_directories(directories):
                     w = int(cached.get("width") or 0)
                     h = int(cached.get("height") or 0)
                     animated = bool(cached.get("is_animated", False))
+                    duration = float(cached.get("duration", 0.0) or 0.0)
+                    duration_str = cached.get("duration_str", "00:00")
                     dt_str = cached.get("dt")
                     dt = None
                     if dt_str:
@@ -427,13 +456,16 @@ def scan_directories(directories):
                     if dt is None:
                         dt = datetime.datetime.fromtimestamp(st.st_mtime)
                 else:
-                    dt, w, h, animated = _probe_fast_metadata(full, ext, st)
+                    dt, w, h, animated, duration, duration_str = _probe_fast_metadata(full, ext, st)
                     meta_cache[real] = {
                         "mtime": st.st_mtime,
                         "dt": dt.isoformat() if dt else None,
                         "width": w,
                         "height": h,
                         "is_animated": animated,
+                        "is_video": (ext in VIDEO_EXTS),
+                        "duration": duration,
+                        "duration_str": duration_str,
                     }
                     dirty = True
 
@@ -448,6 +480,9 @@ def scan_directories(directories):
                     "height": h,
                     "is_raw": ext in RAW_EXTS,
                     "is_animated": animated,
+                    "is_video": ext in VIDEO_EXTS,
+                    "duration": duration,
+                    "duration_str": duration_str,
                     "is_screenshot": is_screenshot_item(full, fname),
                 })
 
@@ -459,7 +494,7 @@ def scan_directories(directories):
 
 
 def list_sibling_images(file_path):
-    """List supported images in the same folder sorted newest-first, plus active index."""
+    """List supported media in the same folder sorted newest-first, plus active index."""
     folder = os.path.dirname(os.path.abspath(file_path))
     target_real = os.path.realpath(file_path)
     items = []
@@ -468,13 +503,24 @@ def list_sibling_images(file_path):
             if fname.startswith("."):
                 continue
             full = os.path.join(folder, fname)
-            if not os.path.isfile(full) or not is_supported_image(full):
+            if not os.path.isfile(full) or not is_supported_media(full):
                 continue
             try:
                 st = os.stat(full)
             except OSError:
                 continue
             ext = os.path.splitext(full)[1].lower()
+            is_vid = ext in VIDEO_EXTS
+            dur = 0.0
+            dur_str = "00:00"
+            if is_vid:
+                try:
+                    import video_utils
+                    vmeta = video_utils.get_video_metadata(full)
+                    dur = vmeta.get("duration", 0.0)
+                    dur_str = vmeta.get("duration_str", "00:00")
+                except Exception:
+                    pass
             items.append({
                 "path": full,
                 "name": fname,
@@ -484,6 +530,9 @@ def list_sibling_images(file_path):
                 "dt": datetime.datetime.fromtimestamp(st.st_mtime),
                 "is_raw": ext in RAW_EXTS,
                 "is_animated": ext == ".gif" or (ext == ".webp" and is_animated_file(full)),
+                "is_video": is_vid,
+                "duration": dur,
+                "duration_str": dur_str,
             })
     except OSError:
         pass
@@ -499,6 +548,17 @@ def list_sibling_images(file_path):
     if not found and os.path.isfile(file_path):
         st = os.stat(file_path)
         ext = os.path.splitext(file_path)[1].lower()
+        is_vid = ext in VIDEO_EXTS
+        dur = 0.0
+        dur_str = "00:00"
+        if is_vid:
+            try:
+                import video_utils
+                vmeta = video_utils.get_video_metadata(file_path)
+                dur = vmeta.get("duration", 0.0)
+                dur_str = vmeta.get("duration_str", "00:00")
+            except Exception:
+                pass
         items.insert(0, {
             "path": os.path.abspath(file_path),
             "name": os.path.basename(file_path),
@@ -508,6 +568,9 @@ def list_sibling_images(file_path):
             "dt": datetime.datetime.fromtimestamp(st.st_mtime),
             "is_raw": ext in RAW_EXTS,
             "is_animated": is_animated_file(file_path),
+            "is_video": is_vid,
+            "duration": dur,
+            "duration_str": dur_str,
         })
         idx = 0
     return items, idx
@@ -621,6 +684,18 @@ def get_or_create_thumbnail(item):
         return cache_path
 
     ext = item.get("ext", os.path.splitext(path)[1].lower())
+
+    # Video thumbnail extraction via ffmpeg
+    if ext in VIDEO_EXTS or item.get("is_video"):
+        try:
+            import video_utils
+            ok = video_utils.generate_video_thumbnail(path, cache_path, duration=item.get("duration"))
+            if ok and os.path.isfile(cache_path):
+                return cache_path
+        except Exception:
+            pass
+        return None
+
     thumb_img = None
 
     # 1. Fast embedded JPEG preview for RAW files

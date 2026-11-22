@@ -15,12 +15,15 @@ class RecordingIndicator extends PanelMenu.Button {
         this._elapsedSeconds = 0;
         this._watchId = null;
 
+        this.y_align = Clutter.ActorAlign.CENTER;
+
         // Container Pill Box
         this._box = new St.BoxLayout({
             style_class: 'sadeem-recording-pill',
             reactive: true,
             can_focus: true,
-            style: 'background-color: rgba(220, 38, 38, 0.9); border: 1.5px solid rgba(255, 255, 255, 0.35); border-radius: 9999px; padding: 2px 10px; margin: 3px;',
+            y_align: Clutter.ActorAlign.CENTER,
+            style: 'background-color: rgba(220, 38, 38, 0.95); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 9999px; padding: 2px 8px; margin: 2px 4px;',
         });
 
         // 1. Red Recording Dot (with pulse)

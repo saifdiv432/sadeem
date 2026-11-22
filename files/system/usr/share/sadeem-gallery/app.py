@@ -41,6 +41,7 @@ MARKUP_COLORS = [
 
 FORMAT_FILTER_OPTIONS = [
     ("all", "fmt_all", "fmt_short_all", ["view-grid-symbolic"]),
+    ("video", "fmt_video", "fmt_short_video", ["video-x-generic-symbolic"]),
     ("jpeg", "fmt_jpeg", "fmt_short_jpeg", ["image-x-generic-symbolic"]),
     ("png", "fmt_png", "fmt_short_png", ["image-x-generic-symbolic"]),
     ("webp", "fmt_webp", "fmt_short_webp", ["image-x-generic-symbolic"]),
@@ -257,6 +258,55 @@ SADEEM_CSS = """
     font-size: 10px;
     font-weight: 700;
 }
+.thumb-badge-video {
+    background-color: rgba(15, 23, 42, 0.88);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.video-ctrl-bar {
+    background-color: rgba(24, 24, 28, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 4px 14px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+}
+.video-time-lbl {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+.video-btn-play {
+    background-color: #7a1c33;
+    color: #ffffff;
+    border-radius: 9999px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
+    border: none;
+}
+.video-btn-play:hover {
+    background-color: #92223e;
+}
+.video-seek-scale trough {
+    min-height: 6px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.18);
+}
+.video-seek-scale highlight {
+    background-color: #7a1c33;
+    border-radius: 3px;
+}
+.video-seek-scale slider {
+    min-width: 14px;
+    min-height: 14px;
+    border-radius: 9999px;
+    background-color: #f1f5f9;
+    border: 2px solid #7a1c33;
+}
 .viewer-bottom-bar {
     background-color: #1e1e23;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -345,6 +395,11 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.slideshow_timer = None
         self._load_generation = 0
 
+        # Video state
+        self.video_player_widget = None
+        self.video_editor_view = None
+        self.is_current_video = False
+
         # Editor state
         self.edit_mode = False
         self.active_rail_section = "crop"
@@ -384,6 +439,10 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def _on_close_request(self, *_args):
         self._stop_slideshow()
         self.canvas.stop_animation()
+        if self.video_player_widget:
+            self.video_player_widget.stop()
+        if self.video_editor_view:
+            self.video_editor_view._stop_poll_timer()
         self.thumb_pool.shutdown(wait=False, cancel_futures=True)
         return False
 
@@ -437,14 +496,42 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.root_stack.add_named(self.gallery_page, "gallery")
         self.root_stack.add_named(self.viewer_page, "viewer")
 
+        self.video_editor_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.root_stack.add_named(self.video_editor_container, "video_editor")
+
     def _setup_shortcuts(self):
         key_ctrl = Gtk.EventControllerKey()
         key_ctrl.connect("key-pressed", self._on_key_pressed)
         self.add_controller(key_ctrl)
 
     def _on_key_pressed(self, _ctrl, keyval, _keycode, state):
-        if self.root_stack.get_visible_child_name() != "viewer":
+        cur_child = self.root_stack.get_visible_child_name()
+        if cur_child == "video_editor":
+            if keyval == Gdk.KEY_Escape:
+                if self.video_editor_view:
+                    self.video_editor_view._request_close()
+                return True
             return False
+
+        if cur_child != "viewer":
+            return False
+
+        if self.is_current_video and self.video_player_widget:
+            if keyval == Gdk.KEY_space:
+                self.video_player_widget.toggle_play()
+                return True
+            elif keyval == Gdk.KEY_Left:
+                self.video_player_widget.seek_relative(-5.0)
+                return True
+            elif keyval == Gdk.KEY_Right:
+                self.video_player_widget.seek_relative(5.0)
+                return True
+            elif keyval in (Gdk.KEY_m, Gdk.KEY_M):
+                self.video_player_widget.toggle_mute()
+                return True
+            elif keyval == Gdk.KEY_Escape:
+                self.open_gallery_mode()
+                return True
 
         ctrl_down = bool(state & Gdk.ModifierType.CONTROL_MASK)
         if ctrl_down:
@@ -656,6 +743,8 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def open_gallery_mode(self):
         self._stop_slideshow()
         self.canvas.stop_animation()
+        if self.video_player_widget:
+            self.video_player_widget.stop()
         self._set_edit_mode(False)
         self.root_stack.set_visible_child_name("gallery")
         if not self.all_gallery_items:
@@ -906,7 +995,20 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         pic.set_can_shrink(True)
         ov.set_child(pic)
 
-        if item["is_raw"]:
+        if item.get("is_video"):
+            v_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+            v_box.add_css_class("thumb-badge-video")
+            v_box.set_halign(Gtk.Align.END)
+            v_box.set_valign(Gtk.Align.END)
+            v_box.set_margin_bottom(6)
+            v_box.set_margin_end(6)
+            ico = Gtk.Image.new_from_icon_name(safe_icon(["media-playback-start-symbolic"]))
+            ico.set_pixel_size(10)
+            v_box.append(ico)
+            v_lbl = Gtk.Label(label=item.get("duration_str", "00:00"))
+            v_box.append(v_lbl)
+            ov.add_overlay(v_box)
+        elif item.get("is_raw"):
             b = Gtk.Label(label=item["ext"].lstrip(".").upper())
             b.add_css_class("thumb-badge-raw")
             b.set_halign(Gtk.Align.END)
@@ -914,7 +1016,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             b.set_margin_top(6)
             b.set_margin_end(6)
             ov.add_overlay(b)
-        elif item["is_animated"]:
+        elif item.get("is_animated"):
             b = Gtk.Label(label="GIF" if item["ext"] == ".gif" else "ANIM")
             b.add_css_class("thumb-badge-anim")
             b.set_halign(Gtk.Align.END)
@@ -1108,7 +1210,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         self.btn_edit_toggle = Gtk.Button(label=t("btn_edit"))
         self.btn_edit_toggle.add_css_class("sadeem-btn-compact")
-        self.btn_edit_toggle.connect("clicked", lambda _b: self._set_edit_mode(True))
+        self.btn_edit_toggle.connect("clicked", lambda _b: self._on_edit_toggle_clicked())
         self.viewer_end_box.append(self.btn_edit_toggle)
 
         hb.pack_end(self.viewer_end_box)
@@ -1126,12 +1228,23 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         canvas_overlay.add_css_class("sadeem-canvas-bg")
         main_row.append(canvas_overlay)
 
+        self.viewer_content_stack = Gtk.Stack()
+        self.viewer_content_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.viewer_content_stack.set_transition_duration(120)
+
         self.canvas = canvas_mod.ImageCanvas(
             on_zoom_changed=self._on_canvas_zoom_changed,
             on_stroke_finished=self._on_canvas_stroke_finished,
             on_text_click=self._on_canvas_text_click,
         )
-        canvas_overlay.set_child(self.canvas)
+        self.viewer_content_stack.add_named(self.canvas, "image")
+
+        self.video_container_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.video_container_box.set_hexpand(True)
+        self.video_container_box.set_vexpand(True)
+        self.viewer_content_stack.add_named(self.video_container_box, "video")
+
+        canvas_overlay.set_child(self.viewer_content_stack)
 
         self.viewer_spinner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         self.viewer_spinner_box.set_halign(Gtk.Align.CENTER)
@@ -1154,6 +1267,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         # --- Bottom Status & Unified Compact Zoom Bar ---
         bottom_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         bottom_bar.add_css_class("viewer-bottom-bar")
+        self.viewer_bottom_bar = bottom_bar
 
         self.lbl_viewer_meta = Gtk.Label(label="")
         self.lbl_viewer_meta.add_css_class("caption")
@@ -1582,6 +1696,57 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.viewer_index = (self.viewer_index + delta) % len(self.viewer_items)
         self._load_viewer_index(self.viewer_index)
 
+    def _ensure_video_player(self):
+        if self.video_player_widget is None:
+            import video_player
+            self.video_player_widget = video_player.VideoPlayerWidget(
+                on_edit_requested=lambda p: self._open_video_editor(p)
+            )
+            self.video_container_box.append(self.video_player_widget)
+        return self.video_player_widget
+
+    def _open_video_editor(self, video_path):
+        import video_editor_ui
+        if self.video_player_widget:
+            self.video_player_widget.stop()
+        self._clear_box(self.video_editor_container)
+        self.video_editor_view = video_editor_ui.VideoEditorView(
+            window=self,
+            video_path=video_path,
+            on_close=self._on_video_editor_closed,
+            on_saved=self._on_video_editor_saved,
+        )
+        self.video_editor_container.append(self.video_editor_view)
+        self.root_stack.set_visible_child_name("video_editor")
+
+    def _on_video_editor_closed(self):
+        self._clear_box(self.video_editor_container)
+        self.video_editor_view = None
+        self.root_stack.set_visible_child_name("viewer")
+        if self.is_current_video and self.video_player_widget and self.current_path:
+            self.video_player_widget.load_video(self.current_path)
+
+    def _on_video_editor_saved(self, saved_path):
+        self.all_gallery_items = []
+        if os.path.realpath(saved_path) == os.path.realpath(self.current_path):
+            self._load_viewer_index(self.viewer_index)
+        else:
+            self.open_file_directly(saved_path)
+
+    def open_video_editor_directly(self, video_path):
+        items, idx = media.list_sibling_images(video_path)
+        self.viewer_items = items
+        self.viewer_index = idx
+        self.current_path = video_path
+        self.is_current_video = True
+        self._open_video_editor(video_path)
+
+    def _on_edit_toggle_clicked(self):
+        if self.is_current_video:
+            self._open_video_editor(self.current_path)
+        else:
+            self._set_edit_mode(True)
+
     def _load_viewer_index(self, idx):
         if not self.viewer_items:
             return
@@ -1598,6 +1763,37 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         )
         self.btn_prev_img.set_sensitive(len(self.viewer_items) > 1)
         self.btn_next_img.set_sensitive(len(self.viewer_items) > 1)
+
+        # Video mode branch
+        self.is_current_video = item.get("is_video", False) or media.is_video_file(path)
+        if self.is_current_video:
+            self.viewer_spinner_box.set_visible(False)
+            self.canvas.stop_animation()
+            self._set_edit_mode(False)
+            self._ensure_video_player()
+            self.viewer_content_stack.set_visible_child_name("video")
+            self.video_player_widget.load_video(path)
+            if hasattr(self, "viewer_bottom_bar"):
+                self.viewer_bottom_bar.set_visible(False)
+
+            self.btn_slideshow.set_visible(False)
+            self.btn_wall.set_visible(False)
+            self.btn_exif.set_visible(False)
+            self.btn_edit_toggle.set_visible(True)
+            self.btn_edit_toggle.set_label(t("video_edit_btn"))
+            return
+
+        # Photo mode branch
+        if self.video_player_widget:
+            self.video_player_widget.stop()
+        self.viewer_content_stack.set_visible_child_name("image")
+        if hasattr(self, "viewer_bottom_bar"):
+            self.viewer_bottom_bar.set_visible(True)
+        self.btn_slideshow.set_visible(True)
+        self.btn_wall.set_visible(True)
+        self.btn_exif.set_visible(True)
+        self.btn_edit_toggle.set_visible(True)
+        self.btn_edit_toggle.set_label(t("btn_edit"))
 
         # Reset editor state for newly loaded image
         self._set_edit_mode(False)
@@ -2334,11 +2530,16 @@ class SadeemGalleryApp(Adw.Application):
                     break
 
         if edit_path and os.path.isfile(edit_path):
-            win.opened_in_edit_mode = True
-            win.open_file_directly(edit_path)
-            win._set_edit_mode(True)
-            win.present()
-            return 0
+            if media.is_video_file(edit_path):
+                win.open_video_editor_directly(edit_path)
+                win.present()
+                return 0
+            else:
+                win.opened_in_edit_mode = True
+                win.open_file_directly(edit_path)
+                win._set_edit_mode(True)
+                win.present()
+                return 0
 
         for a in args:
             if not a.startswith("-") and os.path.isfile(a):

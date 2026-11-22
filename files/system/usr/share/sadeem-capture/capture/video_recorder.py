@@ -163,16 +163,29 @@ class VideoRecorder:
 
             crop_elem = f"videocrop top={crop_top} left={crop_left} right={crop_right} bottom={crop_bottom} !"
 
-        # Scaling and stabilization element
-        scale_elem = "videoscale add-borders=true !"
+        # Video encoder probe
+        if self.codec == "h265":
+            v_enc = probe_h265_encoder()
+        else:
+            v_enc = probe_h264_encoder()
+
+        # Check if vapostproc is available for VA GPU zero-copy path
+        has_vapostproc = Gst.ElementFactory.find("vapostproc") is not None
+        is_native_screen = (self.mode == "screen" and self.resolution == "native")
+        use_va_gpu = (
+            v_enc.get("is_hardware", False)
+            and v_enc.get("name", "").startswith("va")
+            and has_vapostproc
+            and not crop_elem
+        )
+
+        # Determine target caps
         if self.resolution == "1080p":
             caps_str = f"video/x-raw,width=1920,height=1080,framerate={self.framerate}/1"
         elif self.resolution == "720p":
             caps_str = f"video/x-raw,width=1280,height=720,framerate={self.framerate}/1"
         else:
-            # Native resolution
             if self.mode == "window" and self.crop_box:
-                # Window mode: stabilize to initial even dimensions to prevent crash on resize
                 init_w = max(4, int(self.crop_box[2]) - (int(self.crop_box[2]) % 2))
                 init_h = max(4, int(self.crop_box[3]) - (int(self.crop_box[3]) % 2))
                 caps_str = f"video/x-raw,width={init_w},height={init_h},framerate={self.framerate}/1"
@@ -185,15 +198,22 @@ class VideoRecorder:
             else:
                 caps_str = f"video/x-raw,framerate={self.framerate}/1"
 
-        # Video encoder probe
-        if self.codec == "h265":
-            v_enc = probe_h265_encoder()
+        # Performance optimizations:
+        # 1. In native screen mode: skip videoscale entirely to eliminate unnecessary copies
+        # 2. In VA hardware mode: use vapostproc directly in GPU memory when available
+        if is_native_screen:
+            conv_scale_elem = "vapostproc !" if use_va_gpu else "videoconvert !"
+        elif use_va_gpu:
+            conv_scale_elem = "vapostproc !"
         else:
-            v_enc = probe_h264_encoder()
+            conv_scale_elem = "videoconvert ! videoscale add-borders=true !"
+
+        # 3. Anti-stutter safety valve: drop excess frames downstream if GPU/CPU is overwhelmed
+        leaky_queue = "queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 !"
 
         v_pipeline = (
-            f"{v_src} ! {crop_elem} videoconvert ! {scale_elem} videorate ! {caps_str} ! "
-            f"{v_enc['pipeline_str']} ! {v_enc['parser']} ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! mux."
+            f"{v_src} ! {crop_elem} {conv_scale_elem} videorate ! {caps_str} ! "
+            f"{leaky_queue} {v_enc['pipeline_str']} ! {v_enc['parser']} ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! mux."
         )
 
         # Audio Pipeline
