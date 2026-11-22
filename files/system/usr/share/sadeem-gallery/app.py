@@ -488,9 +488,39 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 return True
         else:
             if keyval == Gdk.KEY_Escape:
-                self._set_edit_mode(False)
+                self._handle_escape_in_editor()
                 return True
         return False
+
+    def _handle_escape_in_editor(self):
+        has_changes = (self.history and self.history.can_undo()) or bool(self.strokes)
+        if has_changes:
+            responses = [
+                ("discard", t("btn_discard"), Adw.ResponseAppearance.DESTRUCTIVE),
+                ("cancel", t("btn_cancel"), Adw.ResponseAppearance.DEFAULT),
+            ]
+
+            def _on_resp(rid):
+                if rid == "discard":
+                    if self.history:
+                        self.history.clear()
+                    self.strokes = []
+                    if getattr(self, "opened_in_edit_mode", False):
+                        self.close()
+                    else:
+                        self._set_edit_mode(False)
+
+            self._present_alert(
+                t("discard_title"),
+                t("discard_body"),
+                responses,
+                _on_resp,
+            )
+        else:
+            if getattr(self, "opened_in_edit_mode", False):
+                self.close()
+            else:
+                self._set_edit_mode(False)
 
     # =========================================================================
     # MODE 1: CHRONOLOGICAL GALLERY
@@ -2113,6 +2143,21 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         except Exception as exc:
             self._toast(t("toast_copy_err", err=str(exc)))
 
+    def _copy_image_to_clipboard(self, file_path, pil_img=None):
+        if pil_img is not None:
+            try:
+                editor.copy_pil_to_clipboard(pil_img, Gdk.Display.get_default())
+            except Exception:
+                pass
+        if file_path and os.path.isfile(file_path):
+            try:
+                import shutil, subprocess
+                if shutil.which("wl-copy"):
+                    with open(file_path, "rb") as f:
+                        subprocess.run(["wl-copy", "--type", "image/png"], input=f.read(), check=False)
+            except Exception:
+                pass
+
     def _open_save_copy_dialog(self):
         final_img = self._build_final_edited_image()
         if final_img is None or not self.current_path:
@@ -2198,6 +2243,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             dlg.close()
             try:
                 editor.save_pil_image(final_img, dest, fmt=fmt_name)
+                self._copy_image_to_clipboard(dest, final_img)
                 self._toast(t("toast_saved", name=os.path.basename(dest)))
                 self.all_gallery_items = []
             except Exception as exc:
@@ -2230,6 +2276,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 return
             try:
                 editor.save_pil_image(final_img, self.current_path)
+                self._copy_image_to_clipboard(self.current_path, final_img)
                 self.base_image = final_img
                 self.strokes = []
                 self.adjustments = editor.default_adjustments()
@@ -2251,7 +2298,7 @@ class SadeemGalleryApp(Adw.Application):
     def __init__(self):
         super().__init__(
             application_id=APP_ID,
-            flags=Gio.ApplicationFlags.HANDLES_OPEN,
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
         )
         self.window = None
 
@@ -2269,19 +2316,44 @@ class SadeemGalleryApp(Adw.Application):
         win.open_gallery_mode()
         win.present()
 
-    def do_open(self, files, n_files, _hint):
+    def do_command_line(self, command_line):
+        args = command_line.get_arguments()[1:]
         win = self._ensure_window()
-        target = None
-        for gfile in files:
-            p = gfile.get_path()
-            if p and os.path.isfile(p):
-                target = p
-                break
-        if target:
-            win.open_file_directly(target)
+
+        edit_path = None
+        open_path = None
+
+        if "--edit" in args:
+            idx = args.index("--edit")
+            if idx + 1 < len(args):
+                edit_path = args[idx + 1]
         else:
-            win.open_gallery_mode()
+            for a in args:
+                if a.startswith("--edit="):
+                    edit_path = a.split("=", 1)[1]
+                    break
+
+        if edit_path and os.path.isfile(edit_path):
+            win.opened_in_edit_mode = True
+            win.open_file_directly(edit_path)
+            win._set_edit_mode(True)
+            win.present()
+            return 0
+
+        for a in args:
+            if not a.startswith("-") and os.path.isfile(a):
+                open_path = a
+                break
+
+        if open_path:
+            win.opened_in_edit_mode = False
+            win.open_file_directly(open_path)
+            win.present()
+            return 0
+
+        win.open_gallery_mode()
         win.present()
+        return 0
 
 
 def main():

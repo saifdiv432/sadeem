@@ -220,6 +220,9 @@ STRINGS = {
         "toast_crop_applied": "تم تطبيق القص.",
         "toast_resize_applied": "تم تغيير الأبعاد إلى {w}×{h} بكسل.",
         "toast_text_hint": "انقر فوق الصورة في المكان المطلوب لإدراج النص.",
+        "discard_title": "تجاهل التعديلات؟",
+        "discard_body": "لديك تعديلات غير محفوظة. هل تريد تجاهلها والخروج من وضع التعديل؟",
+        "btn_discard": "تجاهل التعديلات",
     },
     "en": {
         "app_title": "Sadeem Gallery",
@@ -399,6 +402,9 @@ STRINGS = {
         "toast_crop_applied": "Crop applied.",
         "toast_resize_applied": "Resized to {w}×{h} px.",
         "toast_text_hint": "Click on the image to place text.",
+        "discard_title": "Discard Changes?",
+        "discard_body": "You have unsaved changes. Do you want to discard them and exit edit mode?",
+        "btn_discard": "Discard Changes",
     },
 }
 

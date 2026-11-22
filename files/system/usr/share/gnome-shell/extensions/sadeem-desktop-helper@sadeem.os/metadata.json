@@ -1,6 +1,6 @@
 {
   "name": "Sadeem Desktop Helper",
-  "description": "Desktop integration helper for Sadeem OS (RTL Dash to Panel, cursor shortcuts, uninstaller context menu)",
+  "description": "Desktop integration helper for Sadeem OS (RTL Dash to Panel, cursor shortcuts, uninstaller context menu, screen capture bridge)",
   "uuid": "sadeem-desktop-helper@sadeem.os",
   "shell-version": [
     "50",

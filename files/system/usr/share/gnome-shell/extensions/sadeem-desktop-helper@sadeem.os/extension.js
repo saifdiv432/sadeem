@@ -6,6 +6,9 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { AppMenu } from 'resource:///org/gnome/shell/ui/appMenu.js';
+import { CursorHaloManager } from './cursorHalo.js';
+import { CaptureHelperService } from './captureHelper.js';
+import { WindowMenuHelper } from './windowMenuHelper.js';
 
 const RTL_ELEMENTS = [
     { element: 'desktopButton', visible: true, position: 'stackedTL' },
@@ -65,6 +68,16 @@ export default class SadeemDesktopHelperExtension extends Extension {
 
         // 4. Hook AppMenu for context menu "Uninstall" option
         this._hookAppMenu();
+
+        // 5. Wayland screen capture bridge, cursor halo, and window menu capture
+        this._cursorHalo = new CursorHaloManager();
+        this._cursorHalo.enable();
+
+        this._captureHelper = new CaptureHelperService(this._cursorHalo);
+        this._captureHelper.enable();
+
+        this._windowMenuHelper = new WindowMenuHelper();
+        this._windowMenuHelper.enable();
     }
 
     disable() {
@@ -100,6 +113,22 @@ export default class SadeemDesktopHelperExtension extends Extension {
         if (this._origAppMenuOpen) {
             AppMenu.prototype.open = this._origAppMenuOpen;
             this._origAppMenuOpen = null;
+        }
+
+        // 5. Disable Capture Helper, Cursor Halo, and Window Menu
+        if (this._windowMenuHelper) {
+            this._windowMenuHelper.disable();
+            this._windowMenuHelper = null;
+        }
+
+        if (this._captureHelper) {
+            this._captureHelper.disable();
+            this._captureHelper = null;
+        }
+
+        if (this._cursorHalo) {
+            this._cursorHalo.disable();
+            this._cursorHalo = null;
         }
 
         this._interfaceSettings = null;

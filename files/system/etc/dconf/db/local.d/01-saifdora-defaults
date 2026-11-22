@@ -30,3 +30,4 @@ button-layout=':minimize,maximize,close'
 
 [org/gnome/shell/keybindings]
 toggle-message-tray=['<Super>m']
+show-screenshot-ui=['Print']

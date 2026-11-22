@@ -1,0 +1,25 @@
+[Desktop Entry]
+Name=Sadeem Capture
+Name[ar]=لقطة سديم
+Name[fr]=Sadeem Capture
+Name[es]=Sadeem Capture
+Name[de]=Sadeem Capture
+Name[tr]=Sadeem Yakalama
+Name[ru]=Снимок Sadeem
+Name[pt]=Captura Sadeem
+Name[it]=Cattura Sadeem
+Name[zh]=Sadeem 截图
+GenericName=Screen Capture & Recording
+GenericName[ar]=التقاط وتسجيل الشاشة
+GenericName[en]=Screen Capture & Recording
+Comment=Unified screen capture and recording tool for Sadeem OS
+Comment[ar]=أداة التقاط وتسجيل الشاشة الموحدة لتوزيعة سديم
+Exec=/usr/bin/sadeem-capture %U
+Icon=org.sadeem.Capture
+Terminal=false
+Type=Application
+Categories=Utility;Graphics;AudioVideo;
+Keywords=screenshot;capture;screen;snip;record;لقطة;شاشة;تصوير;سديم;
+StartupNotify=true
+StartupWMClass=org.sadeem.Capture
+X-Purism-FormFactor=Workstation;Mobile;
