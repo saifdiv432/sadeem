@@ -1,0 +1,740 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Sadeem Windows App Runner (sadeem-windows-exe-handler)
+Seamless, automatic launcher for Windows executables (.exe and .msi) in Sadeem OS.
+Built with Python 3, GTK 4, and Libadwaita following GNOME Human Interface Guidelines.
+"""
+
+import os
+import sys
+import subprocess
+import threading
+import urllib.parse
+import shutil
+import time
+import gi
+
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
+from gi.repository import Gtk, Adw, GLib, Gio, Gdk
+
+BOTTLE_NAME = "Sadeem-Windows"
+BOTTLE_DIR = os.path.expanduser(f"~/.var/app/com.usebottles.bottles/data/bottles/bottles/{BOTTLE_NAME}")
+
+TRANSLATIONS = {
+    "en": {
+        "app_title": "Windows App Runner (Sadeem)",
+        "preparing_title": "Preparing Windows Compatibility Environment",
+        "preparing_desc": "This one-time setup prepares the Sadeem environment to run Windows apps and games automatically with optimal performance...",
+        "creating_bottle": "Setting up Windows compatibility container (Sadeem-Windows)...",
+        "launching_app": "Launching application via Sadeem environment...",
+        "btn_cancel": "Cancel",
+        "btn_close": "Close",
+        "btn_open_bottles": "Open Bottles",
+        "btn_open_welcome": "Open Sadeem Welcome",
+        "btn_details": "Log Details",
+        "err_no_file_title": "No File Specified",
+        "err_no_file_desc": "Please double-click a Windows executable (.exe or .msi) to launch it.",
+        "err_file_not_found_title": "File Not Found",
+        "err_file_not_found_desc": "Could not find the specified file:\n{path}",
+        "err_bottles_missing_title": "Compatibility Engine Installing",
+        "err_bottles_missing_desc": "Bottles is currently being installed or set up in the background as part of Sadeem's essential apps. Please wait a moment for setup to finish, or check progress in Sadeem Welcome.",
+        "err_create_failed_title": "Failed to Prepare Environment",
+        "err_create_failed_desc": "Could not create the Sadeem-Windows compatibility container in Bottles.",
+        "err_launch_failed_title": "Unable to Launch Executable",
+        "err_launch_failed_desc": "An error occurred while attempting to launch {file} inside the Sadeem bottle.",
+    },
+    "ar": {
+        "app_title": "مشغّل برامج ويندوز — سديم",
+        "preparing_title": "تجهيز بيئة تشغيل برامج ويندوز",
+        "preparing_desc": "تحدث هذه الخطوة لمرة واحدة فقط لتهيئة بيئة سديم لتشغيل برامج وألعاب ويندوز تلقائياً وبأفضل أداء...",
+        "creating_bottle": "جارٍ إنشاء وتهيئة بيئة التشغيل المخصصة (Sadeem-Windows)...",
+        "launching_app": "جارٍ تشغيل التطبيق عبر بيئة سديم...",
+        "btn_cancel": "إلغاء",
+        "btn_close": "إغلاق",
+        "btn_open_bottles": "فتح القوارير (Bottles)",
+        "btn_open_welcome": "فتح ترحيب سديم",
+        "btn_details": "تفاصيل السجل",
+        "err_no_file_title": "لم يتم تحديد ملف",
+        "err_no_file_desc": "الرجاء النقر المزدوج على ملف ويندوز (.exe أو .msi) لتشغيله.",
+        "err_file_not_found_title": "الملف غير موجود",
+        "err_file_not_found_desc": "تعذّر العثور على الملف المحدد:\n{path}",
+        "err_bottles_missing_title": "بيئة التشغيل قيد التثبيت",
+        "err_bottles_missing_desc": "تطبيق Bottles قيد التثبيت أو التجهيز حالياً في الخلفية ضمن تطبيقات سديم الأساسية. يرجى الانتظار قليلاً حتى يكتمل تجهيز النظام، أو متابعة التثبيت من تطبيق «ترحيب سديم».",
+        "err_create_failed_title": "فشل تجهيز بيئة التشغيل",
+        "err_create_failed_desc": "تعذّر إنشاء بيئة التشغيل Sadeem-Windows داخل تطبيق Bottles.",
+        "err_launch_failed_title": "تعذّر تشغيل الملف",
+        "err_launch_failed_desc": "حدث خطأ أثناء محاولة تشغيل الملف:\n{file}",
+    },
+    "fr": {
+        "app_title": "Exécuteur d'applications Windows (Sadeem)",
+        "preparing_title": "Préparation de l'environnement de compatibilité Windows",
+        "preparing_desc": "Cette étape unique prépare l'environnement Sadeem pour exécuter automatiquement les applications et jeux Windows avec des performances optimales...",
+        "creating_bottle": "Configuration du conteneur de compatibilité Windows (Sadeem-Windows)...",
+        "launching_app": "Lancement de l'application via l'environnement Sadeem...",
+        "btn_cancel": "Annuler",
+        "btn_close": "Fermer",
+        "btn_open_bottles": "Ouvrir Bottles",
+        "btn_open_welcome": "Ouvrir Bienvenue à Sadeem",
+        "btn_details": "Détails du journal",
+        "err_no_file_title": "Aucun fichier spécifié",
+        "err_no_file_desc": "Veuillez double-cliquer sur un exécutable Windows (.exe ou .msi) pour le lancer.",
+        "err_file_not_found_title": "Fichier introuvable",
+        "err_file_not_found_desc": "Impossible de trouver le fichier spécifié :\n{path}",
+        "err_bottles_missing_title": "Moteur de compatibilité en cours d'installation",
+        "err_bottles_missing_desc": "Bottles est actuellement en cours d'installation en arrière-plan parmi les applications essentielles de Sadeem. Veuillez patienter ou vérifier l'état dans Bienvenue à Sadeem.",
+        "err_create_failed_title": "Échec de la préparation de l'environnement",
+        "err_create_failed_desc": "Impossible de créer le conteneur de compatibilité Sadeem-Windows dans Bottles.",
+        "err_launch_failed_title": "Impossible de lancer l'exécutable",
+        "err_launch_failed_desc": "Une erreur est survenue lors de la tentative de lancement de {file} dans la bouteille Sadeem.",
+    },
+    "es": {
+        "app_title": "Lanzador de aplicaciones Windows (Sadeem)",
+        "preparing_title": "Preparando el entorno de compatibilidad de Windows",
+        "preparing_desc": "Este paso único prepara el entorno de Sadeem para ejecutar aplicaciones y juegos de Windows automáticamente con un rendimiento óptimo...",
+        "creating_bottle": "Configurando el contenedor de compatibilidad con Windows (Sadeem-Windows)...",
+        "launching_app": "Iniciando la aplicación a través del entorno Sadeem...",
+        "btn_cancel": "Cancelar",
+        "btn_close": "Cerrar",
+        "btn_open_bottles": "Abrir Bottles",
+        "btn_open_welcome": "Abrir Bienvenida de Sadeem",
+        "btn_details": "Detalles del registro",
+        "err_no_file_title": "Ningún archivo especificado",
+        "err_no_file_desc": "Haga doble clic en un ejecutable de Windows (.exe o .msi) para iniciarlo.",
+        "err_file_not_found_title": "Archivo no encontrado",
+        "err_file_not_found_desc": "No se pudo encontrar el archivo especificado:\n{path}",
+        "err_bottles_missing_title": "Instalando motor de compatibilidad",
+        "err_bottles_missing_desc": "Bottles se está instalando en segundo plano como parte de las aplicaciones esenciales de Sadeem. Espere un momento o revise el progreso en Bienvenida de Sadeem.",
+        "err_create_failed_title": "Error al preparar el entorno",
+        "err_create_failed_desc": "No se pudo crear el contenedor de compatibilidad Sadeem-Windows en Bottles.",
+        "err_launch_failed_title": "No se pudo iniciar el ejecutable",
+        "err_launch_failed_desc": "Ocurrió un error al intentar iniciar {file} dentro de la botella de Sadeem.",
+    },
+    "de": {
+        "app_title": "Windows-App-Starter (Sadeem)",
+        "preparing_title": "Windows-Kompatibilitätsumgebung wird vorbereitet",
+        "preparing_desc": "Dieser einmalige Schritt bereitet die Sadeem-Umgebung vor, um Windows-Apps und -Spiele automatisch mit optimaler Leistung auszuführen...",
+        "creating_bottle": "Windows-Kompatibilitätscontainer (Sadeem-Windows) wird eingerichtet...",
+        "launching_app": "Anwendung wird über die Sadeem-Umgebung gestartet...",
+        "btn_cancel": "Abbrechen",
+        "btn_close": "Schließen",
+        "btn_open_bottles": "Bottles öffnen",
+        "btn_open_welcome": "Sadeem-Willkommen öffnen",
+        "btn_details": "Protokolldetails",
+        "err_no_file_title": "Keine Datei angegeben",
+        "err_no_file_desc": "Bitte doppelklicken Sie auf eine Windows-Datei (.exe oder .msi), um sie zu starten.",
+        "err_file_not_found_title": "Datei nicht gefunden",
+        "err_file_not_found_desc": "Die angegebene Datei konnte nicht gefunden werden:\n{path}",
+        "err_bottles_missing_title": "Kompatibilitäts-Engine wird installiert",
+        "err_bottles_missing_desc": "Bottles wird derzeit im Hintergrund als Teil der Basisanwendungen von Sadeem installiert. Bitte warten Sie kurz oder prüfen Sie den Fortschritt in Sadeem-Willkommen.",
+        "err_create_failed_title": "Fehler beim Vorbereiten der Umgebung",
+        "err_create_failed_desc": "Der Kompatibilitätscontainer Sadeem-Windows konnte in Bottles nicht erstellt werden.",
+        "err_launch_failed_title": "Ausführbare Datei konnte nicht gestartet werden",
+        "err_launch_failed_desc": "Beim Starten von {file} in der Sadeem-Flasche ist ein Fehler aufgetreten.",
+    },
+    "tr": {
+        "app_title": "Windows Uygulama Başlatıcısı (Sadeem)",
+        "preparing_title": "Windows Uyumluluk Ortamı Hazırlanıyor",
+        "preparing_desc": "Bu tek seferlik adım, Windows uygulamalarını ve oyunlarını optimum performansla otomatik olarak çalıştırmak için Sadeem ortamını hazırlar...",
+        "creating_bottle": "Windows uyumluluk kapsayıcısı (Sadeem-Windows) yapılandırılıyor...",
+        "launching_app": "Uygulama Sadeem ortamı üzerinden başlatılıyor...",
+        "btn_cancel": "İptal",
+        "btn_close": "Kapat",
+        "btn_open_bottles": "Bottles'ı Aç",
+        "btn_open_welcome": "Sadeem Hoş Geldiniz'i Aç",
+        "btn_details": "Günlük Detayları",
+        "err_no_file_title": "Dosya Belirtilmedi",
+        "err_no_file_desc": "Başlatmak için lütfen bir Windows yürütülebilir dosyasına (.exe veya .msi) çift tıklayın.",
+        "err_file_not_found_title": "Dosya Bulunamadı",
+        "err_file_not_found_desc": "Belirtilen dosya bulunamadı:\n{path}",
+        "err_bottles_missing_title": "Uyumluluk Motoru Yükleniyor",
+        "err_bottles_missing_desc": "Bottles, Sadeem'in temel uygulamalarının bir parçası olarak arka planda yükleniyor. Lütfen kurulumun tamamlanmasını bekleyin veya Sadeem Hoş Geldiniz'den takip edin.",
+        "err_create_failed_title": "Ortam Hazırlanamadı",
+        "err_create_failed_desc": "Bottles içinde Sadeem-Windows uyumluluk kapsayıcısı oluşturulamadı.",
+        "err_launch_failed_title": "Yürütülebilir Dosya Başlatılamadı",
+        "err_launch_failed_desc": "{file} dosyasını Sadeem şişesinde başlatırken bir hata oluştu.",
+    },
+    "ru": {
+        "app_title": "Запуск приложений Windows (Sadeem)",
+        "preparing_title": "Подготовка среды совместимости с Windows",
+        "preparing_desc": "Этот разовый шаг подготавливает среду Sadeem для автоматического запуска приложений и игр Windows с оптимальной производительностью...",
+        "creating_bottle": "Настройка контейнера совместимости с Windows (Sadeem-Windows)...",
+        "launching_app": "Запуск приложения через среду Sadeem...",
+        "btn_cancel": "Отмена",
+        "btn_close": "Закрыть",
+        "btn_open_bottles": "Открыть Bottles",
+        "btn_open_welcome": "Открыть «Добро пожаловать в Sadeem»",
+        "btn_details": "Детали журнала",
+        "err_no_file_title": "Файл не указан",
+        "err_no_file_desc": "Дважды щелкните исполняемый файл Windows (.exe или .msi), чтобы запустить его.",
+        "err_file_not_found_title": "Файл не найден",
+        "err_file_not_found_desc": "Не удалось найти указанный файл:\n{path}",
+        "err_bottles_missing_title": "Установка среды совместимости",
+        "err_bottles_missing_desc": "Bottles устанавливается в фоновом режиме как часть базовых приложений Sadeem. Пожалуйста, подождите завершения или проверьте статус в приложении «Добро пожаловать в Sadeem».",
+        "err_create_failed_title": "Сбой подготовки среды",
+        "err_create_failed_desc": "Не удалось создать контейнер совместимости Sadeem-Windows в Bottles.",
+        "err_launch_failed_title": "Не удалось запустить файл",
+        "err_launch_failed_desc": "Произошла ошибка при попытке запуска {file} в бутылке Sadeem.",
+    },
+    "pt": {
+        "app_title": "Executor de Aplicações Windows (Sadeem)",
+        "preparing_title": "A preparar o ambiente de compatibilidade do Windows",
+        "preparing_desc": "Esta etapa única prepara o ambiente do Sadeem para executar aplicações e jogos do Windows automaticamente com o melhor desempenho...",
+        "creating_bottle": "A configurar o contentor de compatibilidade do Windows (Sadeem-Windows)...",
+        "launching_app": "A iniciar a aplicação através do ambiente Sadeem...",
+        "btn_cancel": "Cancelar",
+        "btn_close": "Fechar",
+        "btn_open_bottles": "Abrir Bottles",
+        "btn_open_welcome": "Abrir Sadeem Boas-Vindas",
+        "btn_details": "Detalhes do registo",
+        "err_no_file_title": "Nenhum ficheiro especificado",
+        "err_no_file_desc": "Faça duplo clique num executável do Windows (.exe ou .msi) para o iniciar.",
+        "err_file_not_found_title": "Ficheiro não encontrado",
+        "err_file_not_found_desc": "Não foi possível encontrar o ficheiro especificado:\n{path}",
+        "err_bottles_missing_title": "A instalar motor de compatibilidade",
+        "err_bottles_missing_desc": "O Bottles está a ser instalado em segundo plano como parte das aplicações essenciais do Sadeem. Aguarde a conclusão ou acompanhe no Sadeem Boas-Vindas.",
+        "err_create_failed_title": "Falha ao preparar o ambiente",
+        "err_create_failed_desc": "Não foi possível criar o contentor de compatibilidade Sadeem-Windows no Bottles.",
+        "err_launch_failed_title": "Não foi possível iniciar o executável",
+        "err_launch_failed_desc": "Ocorreu um erro ao tentar iniciar {file} na garrafa Sadeem.",
+    },
+    "it": {
+        "app_title": "Avviatore applicazioni Windows (Sadeem)",
+        "preparing_title": "Preparazione dell'ambiente di compatibilità Windows",
+        "preparing_desc": "Questo passaggio unico prepara l'ambiente Sadeem per eseguire automaticamente app e giochi Windows con prestazioni ottimali...",
+        "creating_bottle": "Configurazione del contenitore di compatibilità Windows (Sadeem-Windows)...",
+        "launching_app": "Avvio dell'applicazione tramite l'ambiente Sadeem...",
+        "btn_cancel": "Annulla",
+        "btn_close": "Chiudi",
+        "btn_open_bottles": "Apri Bottles",
+        "btn_open_welcome": "Apri Benvenuto in Sadeem",
+        "btn_details": "Dettagli registro",
+        "err_no_file_title": "Nessun file specificato",
+        "err_no_file_desc": "Fai doppio clic su un eseguibile Windows (.exe o .msi) per avviarlo.",
+        "err_file_not_found_title": "File non trovato",
+        "err_file_not_found_desc": "Impossibile trovare il file specificato:\n{path}",
+        "err_bottles_missing_title": "Installazione motore di compatibilità",
+        "err_bottles_missing_desc": "Bottles è attualmente in fase di installazione in background tra le app essenziali di Sadeem. Attendi o controlla lo stato in Benvenuto in Sadeem.",
+        "err_create_failed_title": "Impossibile preparare l'ambiente",
+        "err_create_failed_desc": "Impossibile creare il contenitore di compatibilità Sadeem-Windows in Bottles.",
+        "err_launch_failed_title": "Impossibile avviare l'eseguibile",
+        "err_launch_failed_desc": "Si è verificato un errore durante l'avvio di {file} nella bottiglia Sadeem.",
+    },
+    "zh": {
+        "app_title": "Windows 应用程序运行器 (Sadeem)",
+        "preparing_title": "正在准备 Windows 兼容环境",
+        "preparing_desc": "此一次性设置正在准备 Sadeem 环境，以最佳性能自动运行 Windows 应用程序和游戏...",
+        "creating_bottle": "正在配置 Windows 兼容容器 (Sadeem-Windows)...",
+        "launching_app": "正在通过 Sadeem 环境启动应用程序...",
+        "btn_cancel": "取消",
+        "btn_close": "关闭",
+        "btn_open_bottles": "打开 Bottles",
+        "btn_open_welcome": "打开 Sadeem 欢迎程序",
+        "btn_details": "日志详情",
+        "err_no_file_title": "未指定文件",
+        "err_no_file_desc": "请双击 Windows 可执行文件 (.exe 或 .msi) 进行启动。",
+        "err_file_not_found_title": "文件未找到",
+        "err_file_not_found_desc": "找不到指定的文件：\n{path}",
+        "err_bottles_missing_title": "兼容性引擎正在安装",
+        "err_bottles_missing_desc": "Bottles 正在后台安装，作为 Sadeem 基础应用的一部分。请稍候或在 Sadeem 欢迎程序中查看进度。",
+        "err_create_failed_title": "环境准备失败",
+        "err_create_failed_desc": "无法在 Bottles 中创建 Sadeem-Windows 兼容容器。",
+        "err_launch_failed_title": "无法启动可执行文件",
+        "err_launch_failed_desc": "尝试在 Sadeem 容器中启动 {file} 时发生错误。",
+    },
+}
+
+def get_language():
+    for var in ("LC_ALL", "LC_MESSAGES", "LANGUAGE", "LANG"):
+        val = os.environ.get(var, "")
+        if val:
+            code = val.split(":")[0].split(".")[0].split("_")[0].split("@")[0].lower()
+            if code in TRANSLATIONS:
+                return code
+    return "en"
+
+LANG = get_language()
+T = TRANSLATIONS[LANG]
+
+def _t(key):
+    return T.get(key, TRANSLATIONS["en"].get(key, key))
+
+def decode_target_path(arg):
+    if not arg:
+        return None
+    if arg.startswith("file://"):
+        parsed = urllib.parse.urlparse(arg)
+        path = urllib.parse.unquote(parsed.path)
+    else:
+        path = arg
+    return os.path.abspath(os.path.expanduser(path))
+
+def is_bottles_installed():
+    try:
+        res = subprocess.run(
+            ["flatpak", "info", "com.usebottles.bottles"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False
+        )
+        return res.returncode == 0
+    except Exception:
+        return False
+
+def is_bottle_present():
+    if os.path.isdir(BOTTLE_DIR):
+        return True
+    try:
+        res = subprocess.run(
+            ["flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles", "-j", "list", "bottles"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False
+        )
+        if BOTTLE_NAME.lower() in res.stdout.lower():
+            return True
+    except Exception:
+        pass
+    return False
+
+
+class SadeemWindowsRunnerWindow(Adw.ApplicationWindow):
+    def __init__(self, app, target_path=None):
+        super().__init__(application=app)
+        self.app = app
+        self.target_path = target_path
+        self._is_cancelled = False
+        self._current_proc = None
+        self._pulse_timeout_id = None
+
+        if LANG == "ar":
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
+
+        self.set_title(_t("app_title"))
+        self.set_default_size(480, 380)
+        self.set_resizable(False)
+
+        self._apply_css()
+        self._build_ui()
+
+        # Connect destroy / close to cleanup
+        self.connect("close-request", self._on_close_request)
+
+        # Start execution
+        GLib.idle_add(self._start_workflow)
+
+    def _apply_css(self):
+        css = """
+        .sadeem-badge {
+            background-color: alpha(#7a1c33, 0.12);
+            border: 1px solid alpha(#7a1c33, 0.30);
+            border-radius: 9999px;
+            padding: 16px;
+        }
+        .sadeem-error-badge {
+            background-color: alpha(#c01c28, 0.12);
+            border: 1px solid alpha(#c01c28, 0.30);
+            border-radius: 9999px;
+            padding: 16px;
+        }
+        .dim-label {
+            opacity: 0.75;
+        }
+        .mono-view {
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        """
+        provider = Gtk.CssProvider()
+        provider.load_from_string(css)
+        display = Gdk.Display.get_default()
+        if display:
+            Gtk.StyleContext.add_provider_for_display(
+                display,
+                provider,
+                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+
+    def _build_ui(self):
+        self.toolbar_view = Adw.ToolbarView()
+        self.set_content(self.toolbar_view)
+
+        # HeaderBar
+        self.header_bar = Adw.HeaderBar()
+        self.header_bar.set_title_widget(Adw.WindowTitle(title=_t("app_title")))
+        self.toolbar_view.add_top_bar(self.header_bar)
+
+        # Stack for Progress vs Error states
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.toolbar_view.set_content(self.stack)
+
+        # ---------------- Page 1: Progress / Provisioning ----------------
+        progress_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=12,
+            margin_top=20,
+            margin_bottom=20,
+            margin_start=28,
+            margin_end=28,
+            valign=Gtk.Align.CENTER
+        )
+
+        # Icon Badge
+        badge_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            halign=Gtk.Align.CENTER,
+            valign=Gtk.Align.CENTER
+        )
+        badge_box.set_size_request(72, 72)
+        badge_box.add_css_class("sadeem-badge")
+
+        icon_img = Gtk.Image.new_from_icon_name("application-x-ms-dos-executable")
+        icon_img.set_pixel_size(40)
+        badge_box.append(icon_img)
+        progress_box.append(badge_box)
+
+        # Filename label
+        self.file_label = Gtk.Label()
+        self.file_label.add_css_class("title-3")
+        self.file_label.set_ellipsize(3) # PANGO_ELLIPSIZE_END
+        self.file_label.set_justify(Gtk.Justification.CENTER)
+        filename = os.path.basename(self.target_path) if self.target_path else ""
+        self.file_label.set_text(filename)
+        progress_box.append(self.file_label)
+
+        # Title Label
+        self.title_label = Gtk.Label(label=_t("preparing_title"))
+        self.title_label.add_css_class("heading")
+        self.title_label.set_wrap(True)
+        self.title_label.set_justify(Gtk.Justification.CENTER)
+        progress_box.append(self.title_label)
+
+        # Description Label
+        self.desc_label = Gtk.Label(label=_t("preparing_desc"))
+        self.desc_label.add_css_class("body")
+        self.desc_label.add_css_class("dim-label")
+        self.desc_label.set_wrap(True)
+        self.desc_label.set_justify(Gtk.Justification.CENTER)
+        progress_box.append(self.desc_label)
+
+        # Progress bar
+        self.progress_bar = Gtk.ProgressBar()
+        self.progress_bar.set_hexpand(True)
+        self.progress_bar.set_margin_top(8)
+        self.progress_bar.set_margin_bottom(4)
+        progress_box.append(self.progress_bar)
+
+        # Status text
+        self.status_label = Gtk.Label(label=_t("creating_bottle"))
+        self.status_label.add_css_class("caption")
+        self.status_label.add_css_class("dim-label")
+        self.status_label.set_wrap(True)
+        self.status_label.set_justify(Gtk.Justification.CENTER)
+        progress_box.append(self.status_label)
+
+        # Cancel button
+        self.cancel_btn = Gtk.Button(label=_t("btn_cancel"))
+        self.cancel_btn.set_halign(Gtk.Align.CENTER)
+        self.cancel_btn.set_size_request(120, 36)
+        self.cancel_btn.set_margin_top(8)
+        self.cancel_btn.connect("clicked", self._on_cancel_clicked)
+        progress_box.append(self.cancel_btn)
+
+        self.stack.add_named(progress_box, "progress")
+
+        # ---------------- Page 2: Error View ----------------
+        error_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=12,
+            margin_top=18,
+            margin_bottom=18,
+            margin_start=24,
+            margin_end=24,
+            valign=Gtk.Align.CENTER
+        )
+
+        err_badge_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            halign=Gtk.Align.CENTER,
+            valign=Gtk.Align.CENTER
+        )
+        err_badge_box.set_size_request(68, 68)
+        err_badge_box.add_css_class("sadeem-error-badge")
+
+        err_icon = Gtk.Image.new_from_icon_name("dialog-error-symbolic")
+        err_icon.set_pixel_size(36)
+        err_badge_box.append(err_icon)
+        error_box.append(err_badge_box)
+
+        self.err_title_label = Gtk.Label()
+        self.err_title_label.add_css_class("title-3")
+        self.err_title_label.set_wrap(True)
+        self.err_title_label.set_justify(Gtk.Justification.CENTER)
+        error_box.append(self.err_title_label)
+
+        self.err_desc_label = Gtk.Label()
+        self.err_desc_label.add_css_class("body")
+        self.err_desc_label.add_css_class("dim-label")
+        self.err_desc_label.set_wrap(True)
+        self.err_desc_label.set_justify(Gtk.Justification.CENTER)
+        error_box.append(self.err_desc_label)
+
+        # Expander for error details
+        self.expander = Adw.ExpanderRow()
+        self.expander.set_title(_t("btn_details"))
+        self.expander.set_visible(False)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_min_content_height(100)
+        scrolled.set_max_content_height(140)
+        scrolled.set_hexpand(True)
+
+        self.err_text_view = Gtk.TextView()
+        self.err_text_view.set_editable(False)
+        self.err_text_view.set_cursor_visible(False)
+        self.err_text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        self.err_text_view.add_css_class("mono-view")
+        scrolled.set_child(self.err_text_view)
+        self.expander.add_row(scrolled)
+
+        expander_group = Adw.PreferencesGroup()
+        expander_group.add(self.expander)
+        error_box.append(expander_group)
+
+        # Action Buttons Box
+        self.error_btn_box = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=10,
+            halign=Gtk.Align.CENTER,
+            margin_top=8
+        )
+
+        self.btn_open_bottles = Gtk.Button(label=_t("btn_open_bottles"))
+        self.btn_open_bottles.connect("clicked", self._on_open_bottles_clicked)
+        self.error_btn_box.append(self.btn_open_bottles)
+
+        self.btn_open_welcome = Gtk.Button(label=_t("btn_open_welcome"))
+        self.btn_open_welcome.connect("clicked", self._on_open_welcome_clicked)
+        self.btn_open_welcome.set_visible(False)
+        self.error_btn_box.append(self.btn_open_welcome)
+
+        self.btn_close = Gtk.Button(label=_t("btn_close"))
+        self.btn_close.add_css_class("suggested-action")
+        self.btn_close.connect("clicked", lambda b: self.close())
+        self.error_btn_box.append(self.btn_close)
+
+        error_box.append(self.error_btn_box)
+
+        self.stack.add_named(error_box, "error")
+        self.stack.set_visible_child_name("progress")
+
+    def _start_pulse(self):
+        if not self._pulse_timeout_id:
+            self._pulse_timeout_id = GLib.timeout_add(100, self._on_pulse_tick)
+
+    def _stop_pulse(self):
+        if self._pulse_timeout_id:
+            GLib.source_remove(self._pulse_timeout_id)
+            self._pulse_timeout_id = None
+
+    def _on_pulse_tick(self):
+        if not self._is_cancelled:
+            self.progress_bar.pulse()
+            return True
+        return False
+
+    def _on_close_request(self, window):
+        self._is_cancelled = True
+        self._stop_pulse()
+        if self._current_proc and self._current_proc.poll() is None:
+            try:
+                self._current_proc.terminate()
+            except Exception:
+                pass
+        return False
+
+    def _on_cancel_clicked(self, btn):
+        self.close()
+
+    def _on_open_bottles_clicked(self, btn):
+        try:
+            subprocess.Popen(["flatpak", "run", "com.usebottles.bottles"])
+        except Exception:
+            pass
+        self.close()
+
+    def _on_open_welcome_clicked(self, btn):
+        try:
+            if shutil.which("sadeem-welcome"):
+                subprocess.Popen(["sadeem-welcome"])
+        except Exception:
+            pass
+        self.close()
+
+    def show_error(self, title, desc, details=None, show_welcome=False, show_bottles=True):
+        self._stop_pulse()
+        self.err_title_label.set_text(title)
+        self.err_desc_label.set_text(desc)
+        self.btn_open_welcome.set_visible(show_welcome)
+        self.btn_open_bottles.set_visible(show_bottles)
+
+        if details and details.strip():
+            buf = self.err_text_view.get_buffer()
+            buf.set_text(details.strip())
+            self.expander.set_visible(True)
+        else:
+            self.expander.set_visible(False)
+
+        self.stack.set_visible_child_name("error")
+
+    def _start_workflow(self):
+        # 1. Check target file argument
+        if not self.target_path:
+            self.show_error(
+                _t("err_no_file_title"),
+                _t("err_no_file_desc"),
+                show_bottles=False
+            )
+            return
+
+        if not os.path.isfile(self.target_path):
+            self.show_error(
+                _t("err_file_not_found_title"),
+                _t("err_file_not_found_desc").format(path=self.target_path),
+                show_bottles=False
+            )
+            return
+
+        # 2. Check if Bottles Flatpak is installed
+        if not is_bottles_installed():
+            self.show_error(
+                _t("err_bottles_missing_title"),
+                _t("err_bottles_missing_desc"),
+                show_welcome=True,
+                show_bottles=False
+            )
+            return
+
+        # 3. Check bottle and start runner thread
+        threading.Thread(target=self._worker_thread, daemon=True).start()
+
+    def _worker_thread(self):
+        self._start_pulse()
+
+        # Step 3a: Provision bottle if not present
+        if not is_bottle_present():
+            GLib.idle_add(self.title_label.set_text, _t("preparing_title"))
+            GLib.idle_add(self.desc_label.set_text, _t("preparing_desc"))
+            GLib.idle_add(self.status_label.set_text, _t("creating_bottle"))
+
+            cmd_new = [
+                "flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles",
+                "new", "--bottle-name", BOTTLE_NAME, "--environment", "gaming"
+            ]
+            try:
+                self._current_proc = subprocess.Popen(
+                    cmd_new,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                out, err = self._current_proc.communicate()
+            except Exception as e:
+                if not self._is_cancelled:
+                    GLib.idle_add(
+                        self.show_error,
+                        _t("err_create_failed_title"),
+                        _t("err_create_failed_desc"),
+                        str(e)
+                    )
+                return
+
+            if self._is_cancelled:
+                return
+
+            if self._current_proc.returncode != 0 and not is_bottle_present():
+                details = f"{out}\n{err}".strip()
+                GLib.idle_add(
+                    self.show_error,
+                    _t("err_create_failed_title"),
+                    _t("err_create_failed_desc"),
+                    details
+                )
+                return
+
+        if self._is_cancelled:
+            return
+
+        # Step 3b: Launch executable inside Sadeem-Windows bottle
+        GLib.idle_add(self.title_label.set_text, _t("launching_app"))
+        GLib.idle_add(self.status_label.set_text, _t("launching_app"))
+
+        cmd_run = [
+            "flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles",
+            "run", "-b", BOTTLE_NAME, "-e", self.target_path
+        ]
+        try:
+            self._current_proc = subprocess.Popen(
+                cmd_run,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+        except Exception as e:
+            if not self._is_cancelled:
+                GLib.idle_add(
+                    self.show_error,
+                    _t("err_launch_failed_title"),
+                    _t("err_launch_failed_desc").format(file=os.path.basename(self.target_path)),
+                    str(e)
+                )
+            return
+
+        # Wait a short interval to ensure it didn't exit immediately with an error
+        time.sleep(1.8)
+
+        if self._is_cancelled:
+            return
+
+        ret = self._current_proc.poll()
+        if ret is not None and ret != 0:
+            out, err = self._current_proc.communicate()
+            details = f"{out}\n{err}".strip()
+            GLib.idle_add(
+                self.show_error,
+                _t("err_launch_failed_title"),
+                _t("err_launch_failed_desc").format(file=os.path.basename(self.target_path)),
+                details
+            )
+        else:
+            # Launched successfully! Dismiss runner window cleanly
+            GLib.idle_add(self.close)
+
+
+class SadeemWindowsRunnerApp(Adw.Application):
+    def __init__(self, target_path=None):
+        super().__init__(
+            application_id="org.sadeem.WindowsAppRunner",
+            flags=Gio.ApplicationFlags.DEFAULT_FLAGS
+        )
+        self.target_path = target_path
+
+    def do_activate(self):
+        win = SadeemWindowsRunnerWindow(self, self.target_path)
+        win.present()
+
+
+def main():
+    target = None
+    if len(sys.argv) > 1:
+        target = decode_target_path(sys.argv[1])
+
+    app = SadeemWindowsRunnerApp(target)
+    sys.exit(app.run([]))
+
+
+if __name__ == "__main__":
+    main()

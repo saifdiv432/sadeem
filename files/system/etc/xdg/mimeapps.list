@@ -1,4 +1,8 @@
 [Default Applications]
+application/x-ms-dos-executable=sadeem-windows-exe-handler.desktop
+application/vnd.microsoft.portable-executable=sadeem-windows-exe-handler.desktop
+application/x-msdownload=sadeem-windows-exe-handler.desktop
+application/x-msi=sadeem-windows-exe-handler.desktop
 image/jpeg=sadeem-gallery.desktop
 image/png=sadeem-gallery.desktop
 image/webp=sadeem-gallery.desktop
@@ -22,6 +26,10 @@ image/x-olympus-orf=sadeem-gallery.desktop
 image/x-panasonic-rw2=sadeem-gallery.desktop
 
 [Added Associations]
+application/x-ms-dos-executable=sadeem-windows-exe-handler.desktop;
+application/vnd.microsoft.portable-executable=sadeem-windows-exe-handler.desktop;
+application/x-msdownload=sadeem-windows-exe-handler.desktop;
+application/x-msi=sadeem-windows-exe-handler.desktop;
 image/jpeg=sadeem-gallery.desktop;
 image/png=sadeem-gallery.desktop;
 image/webp=sadeem-gallery.desktop;

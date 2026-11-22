@@ -8,6 +8,7 @@ Built with Python 3, GTK 4, and Libadwaita following GNOME Human Interface Guide
 
 import sys
 import os
+import shutil
 import subprocess
 import json
 import re

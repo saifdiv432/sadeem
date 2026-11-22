@@ -8,7 +8,7 @@ Type=oneshot
 RemainAfterExit=yes
 ExecStart=-/usr/bin/flatpak override --system --filesystem=xdg-config/gtk-4.0:ro
 ExecStart=-/usr/bin/flatpak override --system --filesystem=xdg-config/gtk-3.0:ro
-ExecStart=-/usr/bin/flatpak override --system com.usebottles.bottles --filesystem=xdg-data/applications
+ExecStart=-/usr/bin/flatpak override --system com.usebottles.bottles --filesystem=host --filesystem=xdg-data/applications
 ExecStart=-/usr/bin/flatpak override --system --talk-name=org.freedesktop.portal.WebExtensions --talk-name=org.freedesktop.Flatpak org.mozilla.firefox
 
 [Install]

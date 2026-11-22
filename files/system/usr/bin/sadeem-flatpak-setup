@@ -18,7 +18,7 @@ flatpak config --system --set languages "ar;en;fr;es;de;tr;ru;pt;it;zh_CN;ur;hi"
 # Apply necessary theme and desktop filesystem overrides
 flatpak override --system --filesystem=xdg-config/gtk-4.0:ro 2>/dev/null || true
 flatpak override --system --filesystem=xdg-config/gtk-3.0:ro 2>/dev/null || true
-flatpak override --system com.usebottles.bottles --filesystem=xdg-data/applications 2>/dev/null || true
+flatpak override --system com.usebottles.bottles --filesystem=host --filesystem=xdg-data/applications 2>/dev/null || true
 flatpak override --system --talk-name=org.freedesktop.portal.WebExtensions --talk-name=org.freedesktop.Flatpak org.mozilla.firefox 2>/dev/null || true
 
 # If already installed, setup is complete

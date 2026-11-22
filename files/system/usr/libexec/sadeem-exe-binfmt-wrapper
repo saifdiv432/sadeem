@@ -1,0 +1,23 @@
+#!/bin/bash
+set -euo pipefail
+
+# Prevent infinite loop recursion
+if [ "${SADEEM_EXE_WRAPPER_ACTIVE:-0}" = "1" ]; then
+    echo "Error: Recursive execution detected in sadeem-exe-binfmt-wrapper" >&2
+    exit 1
+fi
+
+# Security check: do not execute Windows binaries directly as root
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Error: Refusing to execute Windows executable as root for security reasons." >&2
+    exit 1
+fi
+
+# Check for active graphical session
+if [ -z "${WAYLAND_DISPLAY:-}" ] && [ -z "${DISPLAY:-}" ]; then
+    echo "Error: No graphical display detected. Windows executable requires a GUI session." >&2
+    exit 1
+fi
+
+export SADEEM_EXE_WRAPPER_ACTIVE=1
+exec /usr/bin/sadeem-windows-exe-handler "$1" "$@"
