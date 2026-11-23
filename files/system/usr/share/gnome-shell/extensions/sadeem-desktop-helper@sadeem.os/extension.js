@@ -61,13 +61,23 @@ function getUninstallLabel() {
     return 'Uninstall';
 }
 
-const SYSTEM_CORE_EXCLUSIONS = [
-    'org.gnome.',
-    'org.sadeem.',
-    'sadeem-',
+const CORE_CRITICAL_EXCLUSIONS = new Set([
+    'org.gnome.Settings',
+    'org.gnome.Nautilus',
+    'org.gnome.Software',
+    'org.gnome.Shell.Extensions',
+    'org.gnome.Ptyxis',
+    'gnome-initial-setup',
     'rumman',
-    'fedora-',
-];
+]);
+
+function isCoreExcluded(cleanId) {
+    if (!cleanId) return true;
+    if (cleanId.startsWith('org.sadeem.') || cleanId.startsWith('sadeem-')) return true;
+    if (CORE_CRITICAL_EXCLUSIONS.has(cleanId)) return true;
+    if (CORE_CRITICAL_EXCLUSIONS.has(cleanId.toLowerCase())) return true;
+    return false;
+}
 
 export default class SadeemDesktopHelperExtension extends Extension {
     enable() {
@@ -95,8 +105,11 @@ export default class SadeemDesktopHelperExtension extends Extension {
         this._setupCursorPopups();
 
         if (Main.extensionManager) {
-            const extSig = Main.extensionManager.connect('extension-state-changed', () => {
+            const extSig = Main.extensionManager.connect('extension-state-changed', (mgr, ext) => {
                 this._setupCursorPopups();
+                if (ext && ext.uuid === 'arcmenu@arcmenu.com') {
+                    this._hookArcMenu();
+                }
             });
             this._signals.push({ obj: Main.extensionManager, id: extSig });
         }
@@ -105,10 +118,13 @@ export default class SadeemDesktopHelperExtension extends Extension {
         this._layeredPackages = new Set();
         this._queryLayeredPackagesAsync();
 
-        // 5. Hook AppMenu for context menu "Uninstall" option
+        // 5. Hook AppMenu and ArcMenu for context menu "Uninstall" option
         this._hookAppMenu();
 
-        // 6. Wayland screen capture bridge, cursor halo, recording indicator, and window menu capture
+        // 6. Hook Quick Settings screenshot button to launch sadeem-capture
+        this._hookQuickSettingsScreenshot();
+
+        // 7. Wayland screen capture bridge, cursor halo, recording indicator, and window menu capture
         this._cursorHalo = new CursorHaloManager();
         this._cursorHalo.enable();
 
@@ -156,6 +172,21 @@ export default class SadeemDesktopHelperExtension extends Extension {
         if (this._origAppMenuOpen) {
             AppMenu.prototype.open = this._origAppMenuOpen;
             this._origAppMenuOpen = null;
+        }
+
+        // Restore ArcMenu AppContextMenu.prototype.open
+        if (this._origArcMenuOpen && this._arcMenuClass) {
+            try {
+                this._arcMenuClass.prototype.open = this._origArcMenuOpen;
+            } catch (e) {}
+            this._origArcMenuOpen = null;
+            this._arcMenuClass = null;
+        }
+
+        // Restore Main.screenshotUI.open
+        if (this._origScreenshotUIOpen && Main.screenshotUI) {
+            Main.screenshotUI.open = this._origScreenshotUIOpen;
+            this._origScreenshotUIOpen = null;
         }
 
         this._layeredPackages = null;
@@ -282,19 +313,87 @@ export default class SadeemDesktopHelperExtension extends Extension {
     }
 
     _hookAppMenu() {
-        if (this._origAppMenuOpen) return;
+        if (!this._origAppMenuOpen) {
+            this._origAppMenuOpen = AppMenu.prototype.open;
+            const self = this;
 
-        this._origAppMenuOpen = AppMenu.prototype.open;
-        const self = this;
+            AppMenu.prototype.open = function(animate) {
+                try {
+                    self._injectUninstallerItem(this);
+                } catch (e) {
+                    console.error('[SadeemDesktopHelper] Error injecting uninstaller item in AppMenu: ' + e);
+                }
+                return self._origAppMenuOpen.call(this, animate);
+            };
+        }
 
-        AppMenu.prototype.open = function(animate) {
-            try {
-                self._injectUninstallerItem(this);
-            } catch (e) {
-                console.error('[SadeemDesktopHelper] Error injecting uninstaller item: ' + e);
+        this._hookArcMenu();
+    }
+
+    async _hookArcMenu() {
+        if (this._origArcMenuOpen) return;
+        try {
+            let modulePath = null;
+            const arcMenuExt = Main.extensionManager?.lookup ? Main.extensionManager.lookup('arcmenu@arcmenu.com') : null;
+            if (arcMenuExt?.dir) {
+                const appMenuFile = arcMenuExt.dir.get_child('appMenu.js');
+                if (appMenuFile.query_exists(null)) {
+                    modulePath = appMenuFile.get_uri();
+                }
             }
-            return self._origAppMenuOpen.call(this, animate);
-        };
+            if (!modulePath) {
+                const defaultFile = Gio.File.new_for_path('/usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/appMenu.js');
+                if (defaultFile.query_exists(null)) {
+                    modulePath = defaultFile.get_uri();
+                }
+            }
+
+            if (modulePath) {
+                const arcModule = await import(modulePath);
+                if (arcModule?.AppContextMenu && !this._origArcMenuOpen) {
+                    const AppContextMenu = arcModule.AppContextMenu;
+                    this._origArcMenuOpen = AppContextMenu.prototype.open;
+                    this._arcMenuClass = AppContextMenu;
+                    const self = this;
+                    AppContextMenu.prototype.open = function(animate) {
+                        try {
+                            self._injectUninstallerItem(this);
+                        } catch (e) {
+                            console.error('[SadeemDesktopHelper] Error injecting uninstaller item in ArcMenu: ' + e);
+                        }
+                        return self._origArcMenuOpen.call(this, animate);
+                    };
+                }
+            }
+        } catch (err) {
+            console.error('[SadeemDesktopHelper] Failed to hook ArcMenu: ' + err);
+        }
+    }
+
+    _hookQuickSettingsScreenshot() {
+        if (this._origScreenshotUIOpen) return;
+
+        if (Main.screenshotUI && Main.screenshotUI.open) {
+            this._origScreenshotUIOpen = Main.screenshotUI.open;
+            const self = this;
+            Main.screenshotUI.open = async function(mode) {
+                try {
+                    if (Main.panel.closeQuickSettings) {
+                        Main.panel.closeQuickSettings();
+                    } else if (Main.panel.statusArea.quickSettings?.menu) {
+                        Main.panel.statusArea.quickSettings.menu.close({animate: false});
+                    }
+                } catch (e) {}
+
+                try {
+                    GLib.spawn_command_line_async('/usr/bin/sadeem-capture');
+                    return;
+                } catch (err) {
+                    console.error('[SadeemDesktopHelper] Failed to launch sadeem-capture: ' + err);
+                }
+                return self._origScreenshotUIOpen.call(this, mode);
+            };
+        }
     }
 
     _queryLayeredPackagesAsync() {
@@ -330,15 +429,12 @@ export default class SadeemDesktopHelperExtension extends Extension {
         try {
             const cleanId = appId.endsWith('.desktop') ? appId.slice(0, -8) : appId;
 
-            // Instant core system exclusions
-            for (const prefix of SYSTEM_CORE_EXCLUSIONS) {
-                if (cleanId.startsWith(prefix)) return false;
-            }
-            if (cleanId === 'gnome-initial-setup' || cleanId === 'nautilus' || cleanId === 'yelp' || cleanId === 'baobab') {
+            // 1. Instant core system exclusions
+            if (isCoreExcluded(cleanId)) {
                 return false;
             }
 
-            // Instant directory check for Flatpak (system or user)
+            // 2. Instant directory check for Flatpak (system or user)
             const home = GLib.get_home_dir();
             if (GLib.file_test(`/var/lib/flatpak/app/${cleanId}`, GLib.FileTest.IS_DIR) ||
                 GLib.file_test(`${home}/.local/share/flatpak/app/${cleanId}`, GLib.FileTest.IS_DIR) ||
@@ -347,12 +443,12 @@ export default class SadeemDesktopHelperExtension extends Extension {
                 return true;
             }
 
-            // Instant check for user desktop files
+            // 3. Instant check for user desktop files
             if (GLib.file_test(`${home}/.local/share/applications/${cleanId}.desktop`, GLib.FileTest.EXISTS)) {
                 return true;
             }
 
-            // In-memory check for layered rpm-ostree packages from background query
+            // 4. In-memory check for layered rpm-ostree packages from background query
             if (this._layeredPackages && this._layeredPackages.has(cleanId)) {
                 return true;
             }
@@ -401,7 +497,11 @@ export default class SadeemDesktopHelperExtension extends Extension {
 
             const item = menu.addAction(labelText, () => {
                 try {
-                    menu.close();
+                    if (typeof menu.closeMenus === 'function') {
+                        menu.closeMenus();
+                    } else {
+                        menu.close();
+                    }
                 } catch (ce) {}
                 try {
                     GLib.spawn_command_line_async(`sadeem-uninstaller ${GLib.shell_quote(appId)}`);

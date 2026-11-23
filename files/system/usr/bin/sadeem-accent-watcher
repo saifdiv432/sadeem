@@ -1,10 +1,38 @@
 #!/bin/bash
-# One-time migration to v2 (Sadeem Desktop Helper, capture shortcuts, dash-to-panel sync)
-if [ ! -f "$HOME/.config/sadeem/migration-v2.done" ]; then
+# One-time migration to v3 (Ensure Sadeem Desktop Helper enabled, clean disabled-extensions, capture shortcuts)
+if [ ! -f "$HOME/.config/sadeem/migration-v3.done" ]; then
     mkdir -p "$HOME/.config/sadeem"
 
-    # 1. Enable sadeem-desktop-helper@sadeem.os
     EXT="sadeem-desktop-helper@sadeem.os"
+
+    # Wait up to 20 seconds for GNOME Shell D-Bus / gsettings to be responsive
+    for i in $(seq 1 20); do
+        if gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.freedesktop.DBus.Peer.Ping >/dev/null 2>&1 || \
+           gdbus call --session --dest org.gnome.Shell.Extensions --object-path /org/gnome/Shell/Extensions --method org.freedesktop.DBus.Peer.Ping >/dev/null 2>&1 || \
+           gsettings get org.gnome.shell enabled-extensions >/dev/null 2>&1; then
+            break
+        fi
+        sleep 1
+    done
+
+    # 1. Remove EXT from disabled-extensions if present
+    DISABLED_EXTS=$(gsettings get org.gnome.shell disabled-extensions 2>/dev/null || echo "[]")
+    if echo "$DISABLED_EXTS" | grep -q "$EXT"; then
+        NEW_DISABLED=$(python3 -c "
+import ast
+try:
+    arr = ast.literal_eval('''$DISABLED_EXTS''')
+    arr = [x for x in arr if x != '$EXT']
+    print(str(arr))
+except Exception:
+    pass
+" 2>/dev/null)
+        if [ -n "$NEW_DISABLED" ]; then
+            gsettings set org.gnome.shell disabled-extensions "$NEW_DISABLED" 2>/dev/null || true
+        fi
+    fi
+
+    # 2. Add EXT to enabled-extensions
     CURRENT_EXTS=$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || echo "[]")
     if ! echo "$CURRENT_EXTS" | grep -q "$EXT"; then
         NEW_EXTS=$(python3 -c "
@@ -22,11 +50,14 @@ except Exception:
         fi
     fi
 
-    # 2. Disable default GNOME Shell screenshot shortcuts
+    # 3. Call gnome-extensions enable directly
+    gnome-extensions enable "$EXT" 2>/dev/null || true
+
+    # 4. Disable default GNOME Shell screenshot shortcuts
     gsettings set org.gnome.shell.keybindings show-screenshot-ui "@as []" 2>/dev/null || true
     gsettings set org.gnome.shell.keybindings screenshot "@as []" 2>/dev/null || true
 
-    # 3. Add custom shortcuts for Sadeem Capture and Stop Recording
+    # 5. Add custom shortcuts for Sadeem Capture and Stop Recording
     gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']" 2>/dev/null || true
     gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ name "Sadeem Capture" 2>/dev/null || true
     gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ command "/usr/bin/sadeem-capture" 2>/dev/null || true
@@ -36,11 +67,11 @@ except Exception:
     gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ command "/usr/bin/sadeem-capture --stop-recording" 2>/dev/null || true
     gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ binding "<Shift>Print" 2>/dev/null || true
 
-    # 4. Sync dash-to-panel monitor positions and hide 9-dots button
+    # 6. Sync dash-to-panel monitor positions and hide 9-dots button
     gsettings set org.gnome.shell.extensions.dash-to-panel panel-element-positions-monitors-sync true 2>/dev/null || true
     gsettings set org.gnome.shell.extensions.dash-to-panel show-apps-icon-file "" 2>/dev/null || true
 
-    touch "$HOME/.config/sadeem/migration-v2.done"
+    touch "$HOME/.config/sadeem/migration-v3.done"
 fi
 
 gsettings set org.gnome.desktop.interface accent-color 'red' 2>/dev/null || true

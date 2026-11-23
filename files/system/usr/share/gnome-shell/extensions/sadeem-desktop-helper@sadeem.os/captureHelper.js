@@ -5,6 +5,9 @@ import Shell from 'gi://Shell';
 const CaptureHelperIface = `
 <node>
   <interface name="org.sadeem.CaptureHelper">
+    <method name="Ping">
+      <arg type="s" name="reply" direction="out"/>
+    </method>
     <method name="CaptureScreen">
       <arg type="b" name="include_cursor" direction="in"/>
       <arg type="s" name="file_path" direction="in"/>
@@ -27,6 +30,9 @@ const CaptureHelperIface = `
       <arg type="b" name="success" direction="out"/>
     </method>
     <method name="ListWindows">
+      <arg type="s" name="windows_json" direction="out"/>
+    </method>
+    <method name="GetWindowList">
       <arg type="s" name="windows_json" direction="out"/>
     </method>
     <method name="SetHaloActive">
@@ -81,122 +87,124 @@ export class CaptureHelperService {
         }
     }
 
-    CaptureScreen(includeCursor, filePath) {
-        return new Promise((resolve) => {
-            try {
-                const file = Gio.File.new_for_path(filePath);
-                const parent = file.get_parent();
-                if (parent && !parent.query_exists(null)) {
-                    parent.make_directory_with_parents(null);
-                }
-                const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
-                this._screenshotService.screenshot(includeCursor, stream, (obj, res) => {
-                    try {
-                        this._screenshotService.screenshot_finish(res);
-                        stream.close(null);
-                        resolve(true);
-                    } catch (e) {
-                        console.error('[CaptureHelper] screenshot_finish error: ' + e);
-                        try { stream.close(null); } catch (ce) {}
-                        resolve(false);
-                    }
-                });
-            } catch (err) {
-                console.error('[CaptureHelper] CaptureScreen error: ' + err);
-                resolve(false);
-            }
-        });
+    Ping() {
+        return 'pong';
     }
 
-    CaptureArea(x, y, width, height, includeCursor, filePath) {
-        return new Promise((resolve) => {
-            try {
-                const file = Gio.File.new_for_path(filePath);
-                const parent = file.get_parent();
-                if (parent && !parent.query_exists(null)) {
-                    parent.make_directory_with_parents(null);
-                }
-                const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
-                this._screenshotService.screenshot_area(x, y, width, height, stream, (obj, res) => {
-                    try {
-                        this._screenshotService.screenshot_area_finish(res);
-                        stream.close(null);
-                        resolve(true);
-                    } catch (e) {
-                        console.error('[CaptureHelper] screenshot_area_finish error: ' + e);
-                        try { stream.close(null); } catch (ce) {}
-                        resolve(false);
-                    }
-                });
-            } catch (err) {
-                console.error('[CaptureHelper] CaptureArea error: ' + err);
-                resolve(false);
+    CaptureScreenAsync([includeCursor, filePath], invocation) {
+        try {
+            const file = Gio.File.new_for_path(filePath);
+            const parent = file.get_parent();
+            if (parent && !parent.query_exists(null)) {
+                parent.make_directory_with_parents(null);
             }
-        });
+            const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
+            this._screenshotService.screenshot(includeCursor, stream, (obj, res) => {
+                try {
+                    this._screenshotService.screenshot_finish(res);
+                    stream.close(null);
+                    invocation.return_value(new GLib.Variant('(b)', [true]));
+                } catch (e) {
+                    console.error('[CaptureHelper] screenshot_finish error: ' + e);
+                    try { stream.close(null); } catch (ce) {}
+                    invocation.return_value(new GLib.Variant('(b)', [false]));
+                }
+            });
+        } catch (err) {
+            console.error('[CaptureHelper] CaptureScreen error: ' + err);
+            invocation.return_value(new GLib.Variant('(b)', [false]));
+        }
     }
 
-    CaptureWindow(windowId, includeFrame, includeCursor, filePath) {
-        return new Promise((resolve) => {
-            try {
-                let targetWin = null;
-                if (global.get_window_actors) {
-                    for (const actor of global.get_window_actors()) {
-                        const win = actor.meta_window;
-                        if (!win) continue;
-                        const wid = win.get_id ? win.get_id() : win.get_stable_sequence();
-                        if (Number(wid) === Number(windowId)) {
-                            targetWin = win;
-                            break;
+    CaptureAreaAsync([x, y, width, height, includeCursor, filePath], invocation) {
+        try {
+            const file = Gio.File.new_for_path(filePath);
+            const parent = file.get_parent();
+            if (parent && !parent.query_exists(null)) {
+                parent.make_directory_with_parents(null);
+            }
+            const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
+            this._screenshotService.screenshot_area(x, y, width, height, stream, (obj, res) => {
+                try {
+                    this._screenshotService.screenshot_area_finish(res);
+                    stream.close(null);
+                    invocation.return_value(new GLib.Variant('(b)', [true]));
+                } catch (e) {
+                    console.error('[CaptureHelper] screenshot_area_finish error: ' + e);
+                    try { stream.close(null); } catch (ce) {}
+                    invocation.return_value(new GLib.Variant('(b)', [false]));
+                }
+            });
+        } catch (err) {
+            console.error('[CaptureHelper] CaptureArea error: ' + err);
+            invocation.return_value(new GLib.Variant('(b)', [false]));
+        }
+    }
+
+    CaptureWindowAsync([windowId, includeFrame, includeCursor, filePath], invocation) {
+        try {
+            let targetWin = null;
+            if (typeof global !== 'undefined' && global.get_window_actors) {
+                for (const actor of global.get_window_actors()) {
+                    const win = actor.meta_window;
+                    if (!win) continue;
+                    const wid = win.get_id ? win.get_id() : win.get_stable_sequence();
+                    if (Number(wid) === Number(windowId)) {
+                        targetWin = win;
+                        break;
+                    }
+                }
+            }
+
+            if (!targetWin) {
+                console.error('[CaptureHelper] Window ID not found: ' + windowId);
+                invocation.return_value(new GLib.Variant('(b)', [false]));
+                return;
+            }
+
+            targetWin.activate(global.get_current_time());
+
+            const file = Gio.File.new_for_path(filePath);
+            const parent = file.get_parent();
+            if (parent && !parent.query_exists(null)) {
+                parent.make_directory_with_parents(null);
+            }
+            const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
+
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 60, () => {
+                try {
+                    this._screenshotService.screenshot_window(includeFrame, includeCursor, stream, (obj, res) => {
+                        try {
+                            this._screenshotService.screenshot_window_finish(res);
+                            stream.close(null);
+                            invocation.return_value(new GLib.Variant('(b)', [true]));
+                        } catch (e) {
+                            console.error('[CaptureHelper] screenshot_window_finish error: ' + e);
+                            try { stream.close(null); } catch (ce) {}
+                            invocation.return_value(new GLib.Variant('(b)', [false]));
                         }
-                    }
+                    });
+                } catch (we) {
+                    console.error('[CaptureHelper] screenshot_window error: ' + we);
+                    try { stream.close(null); } catch (ce) {}
+                    invocation.return_value(new GLib.Variant('(b)', [false]));
                 }
+                return GLib.SOURCE_REMOVE;
+            });
+        } catch (err) {
+            console.error('[CaptureHelper] CaptureWindow error: ' + err);
+            invocation.return_value(new GLib.Variant('(b)', [false]));
+        }
+    }
 
-                if (!targetWin) {
-                    console.error('[CaptureHelper] Window ID not found: ' + windowId);
-                    resolve(false);
-                    return;
-                }
-
-                targetWin.activate(global.get_current_time());
-
-                const file = Gio.File.new_for_path(filePath);
-                const parent = file.get_parent();
-                if (parent && !parent.query_exists(null)) {
-                    parent.make_directory_with_parents(null);
-                }
-                const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
-
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 60, () => {
-                    try {
-                        this._screenshotService.screenshot_window(includeFrame, includeCursor, stream, (obj, res) => {
-                            try {
-                                this._screenshotService.screenshot_window_finish(res);
-                                stream.close(null);
-                                resolve(true);
-                            } catch (e) {
-                                console.error('[CaptureHelper] screenshot_window_finish error: ' + e);
-                                try { stream.close(null); } catch (ce) {}
-                                resolve(false);
-                            }
-                        });
-                    } catch (we) {
-                        console.error('[CaptureHelper] screenshot_window error: ' + we);
-                        try { stream.close(null); } catch (ce) {}
-                        resolve(false);
-                    }
-                    return GLib.SOURCE_REMOVE;
-                });
-            } catch (err) {
-                console.error('[CaptureHelper] CaptureWindow error: ' + err);
-                resolve(false);
-            }
-        });
+    GetWindowList() {
+        return this.ListWindows();
     }
 
     ListWindows() {
         try {
             const list = [];
-            if (global.get_window_actors) {
+            if (typeof global !== 'undefined' && global.get_window_actors) {
                 for (const actor of global.get_window_actors()) {
                     const win = actor.meta_window;
                     if (!win || win.is_hidden() || win.is_override_redirect()) continue;
@@ -231,35 +239,35 @@ export class CaptureHelperService {
                     });
                 }
             }
-            return [JSON.stringify(list)];
+            return JSON.stringify(list);
         } catch (e) {
             console.error('[CaptureHelper] ListWindows error: ' + e);
-            return ['[]'];
+            return '[]';
         }
     }
 
     SetHaloActive(active) {
         if (this._haloManager) {
             this._haloManager.setActive(active);
-            return [true];
+            return true;
         }
-        return [false];
+        return false;
     }
 
     SetRecordingState(active) {
         if (this._recordingIndicator) {
             this._recordingIndicator.setRecordingActive(active);
-            return [true];
+            return true;
         }
-        return [false];
+        return false;
     }
 
     FlashCameraIndicator() {
         if (this._recordingIndicator && this._recordingIndicator.flashCameraIcon) {
             this._recordingIndicator.flashCameraIcon();
-            return [true];
+            return true;
         }
-        return [false];
+        return false;
     }
 
     emitStopRecordingRequested() {

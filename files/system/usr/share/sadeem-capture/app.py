@@ -106,8 +106,6 @@ window.sadeem-capture-window {
     color: #cbd5e1;
     min-width: 38px;
     min-height: 38px;
-    max-width: 38px;
-    max-height: 38px;
     padding: 0;
     margin: 0;
 }
@@ -138,8 +136,6 @@ window.sadeem-capture-window {
     border: 2.5px solid #ffffff;
     min-width: 48px;
     min-height: 48px;
-    max-width: 48px;
-    max-height: 48px;
     color: #ffffff;
     box-shadow: 0 0 14px rgba(122, 28, 51, 0.7);
     padding: 0;
@@ -158,8 +154,6 @@ window.sadeem-capture-window {
     border: 2.5px solid #ffffff;
     min-width: 48px;
     min-height: 48px;
-    max-width: 48px;
-    max-height: 48px;
     color: #ffffff;
     box-shadow: 0 0 16px rgba(220, 38, 38, 0.85);
     padding: 0;
@@ -179,8 +173,6 @@ window.sadeem-capture-window {
     color: #cbd5e1;
     min-width: 38px;
     min-height: 38px;
-    max-width: 38px;
-    max-height: 38px;
     padding: 0;
     margin: 0;
 }
@@ -188,6 +180,19 @@ window.sadeem-capture-window {
     background-color: rgba(239, 68, 68, 0.75);
     color: #ffffff;
     border-color: rgba(239, 68, 68, 0.9);
+}
+.sadeem-warning-banner {
+    background-color: rgba(180, 83, 9, 0.95);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    padding: 8px 18px;
+}
+.sadeem-warning-label {
+    color: #fef3c7;
+    font-size: 13px;
+    font-weight: 500;
 }
 .sadeem-media-toggle {
     background-color: rgba(0, 0, 0, 0.4);
@@ -290,7 +295,6 @@ class SadeemCaptureWindow(Gtk.Window):
 
     def _build_ui(self):
         self.overlay = Gtk.Overlay()
-        self.set_child(self.overlay)
 
         # 1. Canvas drawing area
         self.drawing_area = Gtk.DrawingArea()
@@ -299,17 +303,17 @@ class SadeemCaptureWindow(Gtk.Window):
         self.drawing_area.set_draw_func(self._on_draw)
         self.overlay.set_child(self.drawing_area)
 
-        # 2. Toast overlay for user feedback
+        # 2. Toast overlay wraps overlay from the outside (never blocks child clicks)
         self.toast_overlay = Adw.ToastOverlay()
-        self.toast_overlay.set_hexpand(True)
-        self.toast_overlay.set_vexpand(True)
-        self.toast_overlay.set_child(Gtk.Box())
+        self.toast_overlay.set_child(self.overlay)
+        self.set_child(self.toast_overlay)
 
         # Top Floating Instruction Pill
         self.top_pill = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.top_pill.set_halign(Gtk.Align.CENTER)
         self.top_pill.set_valign(Gtk.Align.START)
         self.top_pill.set_margin_top(42)
+        self.top_pill.set_can_target(False)
         self.top_pill.add_css_class("sadeem-top-pill")
 
         self.top_pill_icon = Gtk.Image.new_from_icon_name("dialog-information-symbolic")
@@ -320,6 +324,24 @@ class SadeemCaptureWindow(Gtk.Window):
         self.top_pill.append(self.top_pill_label)
 
         self.overlay.add_overlay(self.top_pill)
+
+        # Prominent warning banner if background capture failed / extension disabled
+        if not self.bg_surface:
+            self.warning_banner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            self.warning_banner.set_halign(Gtk.Align.CENTER)
+            self.warning_banner.set_valign(Gtk.Align.START)
+            self.warning_banner.set_margin_top(92)
+            self.warning_banner.set_can_target(False)
+            self.warning_banner.add_css_class("sadeem-warning-banner")
+
+            warn_icon = Gtk.Image.new_from_icon_name("dialog-warning-symbolic")
+            self.warning_banner.append(warn_icon)
+
+            warn_lbl = Gtk.Label(label=t("helper_disabled_warning"))
+            warn_lbl.add_css_class("sadeem-warning-label")
+            self.warning_banner.append(warn_lbl)
+
+            self.overlay.add_overlay(self.warning_banner)
 
         # 3. Floating Bottom Toolbar
         self.toolbar_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -363,6 +385,11 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_cursor.set_tooltip_text(t("tooltip_cursor"))
         self.btn_cursor.add_css_class("sadeem-tool-btn")
         self.btn_cursor.add_css_class("active")
+        self.btn_cursor.set_size_request(38, 38)
+        self.btn_cursor.set_halign(Gtk.Align.CENTER)
+        self.btn_cursor.set_valign(Gtk.Align.CENTER)
+        self.btn_cursor.set_hexpand(False)
+        self.btn_cursor.set_vexpand(False)
         self.btn_cursor.connect("clicked", self._toggle_cursor)
         row_controls.append(self.btn_cursor)
 
@@ -371,6 +398,11 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_halo.set_icon_name("weather-clear-symbolic")
         self.btn_halo.set_tooltip_text(t("tooltip_halo"))
         self.btn_halo.add_css_class("sadeem-tool-btn")
+        self.btn_halo.set_size_request(38, 38)
+        self.btn_halo.set_halign(Gtk.Align.CENTER)
+        self.btn_halo.set_valign(Gtk.Align.CENTER)
+        self.btn_halo.set_hexpand(False)
+        self.btn_halo.set_vexpand(False)
         self.btn_halo.connect("clicked", self._toggle_halo)
         row_controls.append(self.btn_halo)
 
@@ -379,6 +411,11 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_quick_mic.set_icon_name("audio-input-microphone-symbolic")
         self.btn_quick_mic.set_tooltip_text(t("audio_mic"))
         self.btn_quick_mic.add_css_class("sadeem-tool-btn")
+        self.btn_quick_mic.set_size_request(38, 38)
+        self.btn_quick_mic.set_halign(Gtk.Align.CENTER)
+        self.btn_quick_mic.set_valign(Gtk.Align.CENTER)
+        self.btn_quick_mic.set_hexpand(False)
+        self.btn_quick_mic.set_vexpand(False)
         self.btn_quick_mic.set_visible(False)
         self.btn_quick_mic.connect("clicked", self._toggle_quick_mic)
         row_controls.append(self.btn_quick_mic)
@@ -388,6 +425,11 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_quick_sys_audio.set_tooltip_text(t("audio_system"))
         self.btn_quick_sys_audio.add_css_class("sadeem-tool-btn")
         self.btn_quick_sys_audio.add_css_class("active-blue")
+        self.btn_quick_sys_audio.set_size_request(38, 38)
+        self.btn_quick_sys_audio.set_halign(Gtk.Align.CENTER)
+        self.btn_quick_sys_audio.set_valign(Gtk.Align.CENTER)
+        self.btn_quick_sys_audio.set_hexpand(False)
+        self.btn_quick_sys_audio.set_vexpand(False)
         self.btn_quick_sys_audio.set_visible(False)
         self.btn_quick_sys_audio.connect("clicked", self._toggle_quick_sys_audio)
         row_controls.append(self.btn_quick_sys_audio)
@@ -396,6 +438,11 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_video_settings = Gtk.MenuButton()
         self.btn_video_settings.set_icon_name("emblem-system-symbolic")
         self.btn_video_settings.add_css_class("sadeem-tool-btn")
+        self.btn_video_settings.set_size_request(38, 38)
+        self.btn_video_settings.set_halign(Gtk.Align.CENTER)
+        self.btn_video_settings.set_valign(Gtk.Align.CENTER)
+        self.btn_video_settings.set_hexpand(False)
+        self.btn_video_settings.set_vexpand(False)
         self.btn_video_settings.set_visible(False)
         self._build_video_settings_popover()
         row_controls.append(self.btn_video_settings)
@@ -405,6 +452,11 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_shutter.set_icon_name("camera-photo-symbolic")
         self.btn_shutter.set_tooltip_text(t("btn_capture"))
         self.btn_shutter.add_css_class("sadeem-shutter-btn")
+        self.btn_shutter.set_size_request(48, 48)
+        self.btn_shutter.set_halign(Gtk.Align.CENTER)
+        self.btn_shutter.set_valign(Gtk.Align.CENTER)
+        self.btn_shutter.set_hexpand(False)
+        self.btn_shutter.set_vexpand(False)
         self.btn_shutter.connect("clicked", lambda _b: self._trigger_action())
         row_controls.append(self.btn_shutter)
 
@@ -430,6 +482,11 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_close.set_icon_name("window-close-symbolic")
         self.btn_close.set_tooltip_text(t("tooltip_close"))
         self.btn_close.add_css_class("sadeem-close-btn")
+        self.btn_close.set_size_request(38, 38)
+        self.btn_close.set_halign(Gtk.Align.CENTER)
+        self.btn_close.set_valign(Gtk.Align.CENTER)
+        self.btn_close.set_hexpand(False)
+        self.btn_close.set_vexpand(False)
         self.btn_close.connect("clicked", lambda _b: (self._cleanup_bg(), self.app.quit()))
         row_controls.append(self.btn_close)
 
@@ -437,7 +494,6 @@ class SadeemCaptureWindow(Gtk.Window):
 
         # Add toolbar to overlay
         self.overlay.add_overlay(self.toolbar_box)
-        self.overlay.add_overlay(self.toast_overlay)
 
         self._update_mode_ui()
 
@@ -1155,6 +1211,26 @@ class SadeemCaptureApp(Adw.Application):
         self.window = None
 
     def _take_background_snapshot(self):
+        # If helper proxy is not active, attempt to enable the extension and wait up to 1 second
+        if not self.client._helper_proxy or not self.client._helper_proxy.get_name_owner():
+            try:
+                subprocess.run(
+                    ["gnome-extensions", "enable", "sadeem-desktop-helper@sadeem.os"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                )
+            except Exception:
+                pass
+
+            import time
+            start = time.time()
+            while time.time() - start < 1.0:
+                self.client._init_proxies()
+                if self.client._helper_proxy and self.client._helper_proxy.get_name_owner():
+                    break
+                time.sleep(0.08)
+
         tmp_dir = GLib.get_user_cache_dir()
         bg_path = os.path.join(tmp_dir, f"sadeem_capture_bg_{os.getpid()}.png")
         try:

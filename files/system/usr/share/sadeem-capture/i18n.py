@@ -64,6 +64,7 @@ STRINGS = {
         "stopping_rec": "جارٍ حفظ التسجيل...",
         "filename_video_prefix": "تسجيل_سديم",
         "hint_recording_shortcuts": "Print: لقطة شاشة صامتة | Shift+Print: إيقاف وحفظ التسجيل",
+        "helper_disabled_warning": "إضافة «مساعد سطح مكتب سديم» غير مفعّلة. يرجى تفعيلها لالتقاط الشاشة بدقة.",
     },
     "en": {
         "app_name": "Sadeem Capture",
@@ -101,6 +102,7 @@ STRINGS = {
         "stopping_rec": "Saving recording...",
         "filename_video_prefix": "Sadeem_Recording",
         "hint_recording_shortcuts": "Print: Silent screenshot | Shift+Print: Stop & save recording",
+        "helper_disabled_warning": "Sadeem Desktop Helper extension is disabled. Please enable it for screen capture.",
     },
     "fr": {
         "app_name": "Sadeem Capture",
@@ -138,6 +140,7 @@ STRINGS = {
         "stopping_rec": "Enregistrement en cours...",
         "filename_video_prefix": "Enregistrement_Sadeem",
         "hint_recording_shortcuts": "Print : Capture silencieuse | Shift+Print : Arrêter l'enregistrement",
+        "helper_disabled_warning": "L'extension Sadeem Desktop Helper est désactivée. Veuillez l'activer.",
     },
     "es": {
         "app_name": "Sadeem Capture",
@@ -175,6 +178,7 @@ STRINGS = {
         "stopping_rec": "Guardando grabación...",
         "filename_video_prefix": "Grabacion_Sadeem",
         "hint_recording_shortcuts": "Print: Captura silenciosa | Shift+Print: Detener y guardar grabación",
+        "helper_disabled_warning": "La extensión Sadeem Desktop Helper está deshabilitada. Actívela.",
     },
     "de": {
         "app_name": "Sadeem Capture",
@@ -212,6 +216,7 @@ STRINGS = {
         "stopping_rec": "Aufnahme wird gespeichert...",
         "filename_video_prefix": "Sadeem_Aufnahme",
         "hint_recording_shortcuts": "Druck: Stummer Screenshot | Umschalt+Druck: Aufnahme stoppen",
+        "helper_disabled_warning": "Die Erweiterung Sadeem Desktop Helper ist deaktiviert. Bitte aktivieren.",
     },
     "tr": {
         "app_name": "Sadeem Yakalama",
@@ -249,6 +254,7 @@ STRINGS = {
         "stopping_rec": "Kayıt kaydediliyor...",
         "filename_video_prefix": "Sadeem_Kayit",
         "hint_recording_shortcuts": "Print: Sessiz ekran görüntüsü | Shift+Print: Kaydı durdur ve kaydet",
+        "helper_disabled_warning": "Sadeem Masaüstü Yardımcısı uzantısı devre dışı. Lütfen etkinleştirin.",
     },
     "ru": {
         "app_name": "Снимок Sadeem",
@@ -286,6 +292,7 @@ STRINGS = {
         "stopping_rec": "Сохранение записи...",
         "filename_video_prefix": "Zapis_Sadeem",
         "hint_recording_shortcuts": "Print: Бесшумный снимок | Shift+Print: Остановить запись",
+        "helper_disabled_warning": "Расширение Sadeem Desktop Helper отключено. Пожалуйста, включите его.",
     },
     "pt": {
         "app_name": "Captura Sadeem",
@@ -323,6 +330,7 @@ STRINGS = {
         "stopping_rec": "A guardar gravação...",
         "filename_video_prefix": "Gravacao_Sadeem",
         "hint_recording_shortcuts": "Print: Captura silenciosa | Shift+Print: Parar e salvar gravação",
+        "helper_disabled_warning": "A extensão Sadeem Desktop Helper está desativada. Ative-a.",
     },
     "it": {
         "app_name": "Cattura Sadeem",
@@ -360,6 +368,7 @@ STRINGS = {
         "stopping_rec": "Salvataggio registrazione...",
         "filename_video_prefix": "Registrazione_Sadeem",
         "hint_recording_shortcuts": "Stamp: Screenshot silenzioso | Shift+Stamp: Ferma registrazione",
+        "helper_disabled_warning": "L'estensione Sadeem Desktop Helper è disabilitata. Si prega di abilitarla.",
     },
     "zh": {
         "app_name": "Sadeem 截图",
@@ -397,6 +406,7 @@ STRINGS = {
         "stopping_rec": "正在保存录像...",
         "filename_video_prefix": "Sadeem_Luping",
         "hint_recording_shortcuts": "Print: 静音截屏 | Shift+Print: 停止并保存录屏",
+        "helper_disabled_warning": "Sadeem 桌面助手扩展已禁用。请启用它以正常截屏。",
     },
 }
 
