@@ -8,13 +8,25 @@ picture-uri='file:///usr/share/backgrounds/sadeem/sadeem-dark.jpg'
 [org.gnome.desktop.wm.preferences]
 button-layout=':minimize,maximize,close'
 
+[org.gnome.shell]
+enabled-extensions=['adwaita-lock-clock@saifeldin.osama', 'rumman-helper@rumman.app', 'arcmenu@arcmenu.com', 'clipboard-indicator@tudmotu.com', 'dash-to-panel@jderose9.github.com', 'emoji-copy@felipeftn', 'sadeem-desktop-helper@sadeem.os', 'user-theme@gnome-shell-extensions.gcampax.github.com', 'light-style@gnome-shell-extensions.gcampax.github.com']
+
+[org.gnome.shell.extensions.dash-to-panel]
+panel-element-positions-monitors-sync=true
+show-apps-icon-file=''
+
 [org.gnome.shell.keybindings]
 toggle-message-tray=['<Super>m']
-show-screenshot-ui=['Print']
+show-screenshot-ui=@as []
 screenshot=@as []
 
 [org.gnome.settings-daemon.plugins.media-keys]
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']
+
+[org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/]
+name='Sadeem Capture'
+command='/usr/bin/sadeem-capture'
+binding='Print'
 
 [org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/]
 name='Stop Screen Recording'

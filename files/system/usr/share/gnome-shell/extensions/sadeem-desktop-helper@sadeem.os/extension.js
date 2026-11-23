@@ -24,6 +24,7 @@ const RTL_ELEMENTS = [
 ];
 
 const LTR_ELEMENTS = [
+    { element: 'desktopButton', visible: true, position: 'stackedTL' },
     { element: 'showAppsButton', visible: false, position: 'stackedTL' },
     { element: 'activitiesButton', visible: false, position: 'stackedTL' },
     { element: 'leftBox', visible: true, position: 'stackedTL' },
@@ -32,7 +33,40 @@ const LTR_ELEMENTS = [
     { element: 'rightBox', visible: true, position: 'stackedBR' },
     { element: 'dateMenu', visible: true, position: 'stackedBR' },
     { element: 'systemMenu', visible: true, position: 'stackedBR' },
-    { element: 'desktopButton', visible: true, position: 'stackedBR' },
+];
+
+const UNINSTALL_LABELS = {
+    ar: 'إلغاء التثبيت',
+    en: 'Uninstall',
+    fr: 'Désinstaller',
+    es: 'Desinstalar',
+    de: 'Deinstallieren',
+    tr: 'Kaldır',
+    ru: 'Удалить',
+    pt: 'Desinstalar',
+    it: 'Disinstalla',
+    zh: '卸载',
+};
+
+function getUninstallLabel() {
+    try {
+        const langs = GLib.get_language_names();
+        for (const l of langs) {
+            const code = l.split('.')[0].split('_')[0].toLowerCase();
+            if (UNINSTALL_LABELS[code]) {
+                return UNINSTALL_LABELS[code];
+            }
+        }
+    } catch (e) {}
+    return 'Uninstall';
+}
+
+const SYSTEM_CORE_EXCLUSIONS = [
+    'org.gnome.',
+    'org.sadeem.',
+    'sadeem-',
+    'rumman',
+    'fedora-',
 ];
 
 export default class SadeemDesktopHelperExtension extends Extension {
@@ -67,10 +101,14 @@ export default class SadeemDesktopHelperExtension extends Extension {
             this._signals.push({ obj: Main.extensionManager, id: extSig });
         }
 
-        // 4. Hook AppMenu for context menu "Uninstall" option
+        // 4. Layered packages async cache
+        this._layeredPackages = new Set();
+        this._queryLayeredPackagesAsync();
+
+        // 5. Hook AppMenu for context menu "Uninstall" option
         this._hookAppMenu();
 
-        // 5. Wayland screen capture bridge, cursor halo, recording indicator, and window menu capture
+        // 6. Wayland screen capture bridge, cursor halo, recording indicator, and window menu capture
         this._cursorHalo = new CursorHaloManager();
         this._cursorHalo.enable();
 
@@ -120,6 +158,8 @@ export default class SadeemDesktopHelperExtension extends Extension {
             this._origAppMenuOpen = null;
         }
 
+        this._layeredPackages = null;
+
         // 5. Disable Capture Helper, Recording Indicator, Cursor Halo, and Window Menu
         if (this._windowMenuHelper) {
             this._windowMenuHelper.disable();
@@ -164,6 +204,25 @@ export default class SadeemDesktopHelperExtension extends Extension {
             }
 
             let changed = false;
+
+            // Ensure monitors sync setting
+            try {
+                if (!dtpSettings.get_boolean('panel-element-positions-monitors-sync')) {
+                    dtpSettings.set_boolean('panel-element-positions-monitors-sync', true);
+                }
+            } catch (e) {}
+
+            // Update all existing monitor keys (connectors or IDs)
+            for (const key of Object.keys(currentObj)) {
+                const existingStr = JSON.stringify(currentObj[key] || []);
+                const newStr = JSON.stringify(elements);
+                if (existingStr !== newStr) {
+                    currentObj[key] = elements;
+                    changed = true;
+                }
+            }
+
+            // Also guarantee monitors 0 through 7
             for (let i = 0; i < 8; i++) {
                 const key = String(i);
                 const existingStr = JSON.stringify(currentObj[key] || []);
@@ -238,89 +297,138 @@ export default class SadeemDesktopHelperExtension extends Extension {
         };
     }
 
-    _canUninstallApp(appId) {
-        if (!appId) return false;
-        const cleanId = appId.endsWith('.desktop') ? appId.slice(0, -8) : appId;
-
-        // Instant directory check for Flatpak
-        if (GLib.file_test(`/var/lib/flatpak/app/${cleanId}`, GLib.FileTest.IS_DIR) ||
-            GLib.file_test(`${GLib.get_home_dir()}/.local/share/flatpak/app/${cleanId}`, GLib.FileTest.IS_DIR)) {
-            return true;
-        }
-
-        // Instant check for user desktop files
-        if (GLib.file_test(`${GLib.get_home_dir()}/.local/share/applications/${cleanId}.desktop`, GLib.FileTest.EXISTS)) {
-            return true;
-        }
-
-        // Fast query via sadeem-uninstaller --can-uninstall
+    _queryLayeredPackagesAsync() {
         try {
-            const [res, stdout, stderr, status] = GLib.spawn_command_line_sync(
-                `sadeem-uninstaller --can-uninstall ${GLib.shell_quote(cleanId)}`
-            );
-            return status === 0;
+            const proc = new Gio.Subprocess({
+                argv: ['rpm-ostree', 'status', '--json'],
+                flags: Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE,
+            });
+            proc.init(null);
+            proc.communicate_utf8_async(null, null, (obj, res) => {
+                try {
+                    const [ok, stdout] = obj.communicate_utf8_finish(res);
+                    if (ok && stdout) {
+                        const data = JSON.parse(stdout);
+                        const deployments = data?.deployments || [];
+                        if (deployments.length > 0) {
+                            const req = deployments[0]['requested-packages'] || [];
+                            const layered = deployments[0]['layered-packages'] || [];
+                            this._layeredPackages = new Set([...req, ...layered]);
+                        }
+                    }
+                } catch (e) {
+                    // Silently ignore background status parse error
+                }
+            });
         } catch (e) {
-            return false;
+            // Silently ignore if rpm-ostree is unavailable
         }
     }
 
-    _injectUninstallerItem(menu) {
-        const app = menu._app || menu.sourceActor?.app || menu.sourceActor?._app;
-        if (!app) return;
-
-        const appId = app.get_id ? app.get_id() : (app.id || '');
-        if (!appId) return;
-
-        const canUninstall = this._canUninstallApp(appId);
-
-        if (!canUninstall) {
-            if (menu._sadeemUninstallItem) {
-                menu._sadeemUninstallItem.visible = false;
-            }
-            if (menu._sadeemUninstallSep) {
-                menu._sadeemUninstallSep.visible = false;
-            }
-            return;
-        }
-
-        if (menu._sadeemUninstallItem) {
-            menu._sadeemUninstallItem.visible = true;
-            if (menu._sadeemUninstallSep) {
-                menu._sadeemUninstallSep.visible = true;
-            }
-            return;
-        }
-
-        // Create separator and uninstaller action item
-        const sep = new PopupMenu.PopupSeparatorMenuItem();
-        menu.addMenuItem(sep);
-
-        const item = menu.addAction('إلغاء التثبيت', () => {
-            menu.close();
-            try {
-                GLib.spawn_command_line_async(`sadeem-uninstaller ${GLib.shell_quote(appId)}`);
-            } catch (err) {
-                console.error('[SadeemDesktopHelper] Failed to launch uninstaller: ' + err);
-            }
-        });
-
-        const trashIcon = new St.Icon({
-            icon_name: 'user-trash-symbolic',
-            style_class: 'popup-menu-icon',
-        });
-
+    _canUninstallApp(appId) {
+        if (!appId) return false;
         try {
-            item.insert_child_at_index(trashIcon, 0);
+            const cleanId = appId.endsWith('.desktop') ? appId.slice(0, -8) : appId;
+
+            // Instant core system exclusions
+            for (const prefix of SYSTEM_CORE_EXCLUSIONS) {
+                if (cleanId.startsWith(prefix)) return false;
+            }
+            if (cleanId === 'gnome-initial-setup' || cleanId === 'nautilus' || cleanId === 'yelp' || cleanId === 'baobab') {
+                return false;
+            }
+
+            // Instant directory check for Flatpak (system or user)
+            const home = GLib.get_home_dir();
+            if (GLib.file_test(`/var/lib/flatpak/app/${cleanId}`, GLib.FileTest.IS_DIR) ||
+                GLib.file_test(`${home}/.local/share/flatpak/app/${cleanId}`, GLib.FileTest.IS_DIR) ||
+                GLib.file_test(`/var/lib/flatpak/exports/share/applications/${cleanId}.desktop`, GLib.FileTest.EXISTS) ||
+                GLib.file_test(`${home}/.local/share/flatpak/exports/share/applications/${cleanId}.desktop`, GLib.FileTest.EXISTS)) {
+                return true;
+            }
+
+            // Instant check for user desktop files
+            if (GLib.file_test(`${home}/.local/share/applications/${cleanId}.desktop`, GLib.FileTest.EXISTS)) {
+                return true;
+            }
+
+            // In-memory check for layered rpm-ostree packages from background query
+            if (this._layeredPackages && this._layeredPackages.has(cleanId)) {
+                return true;
+            }
         } catch (e) {
-            // Fallback if insert_child_at_index is unavailable
-            item.add_child(trashIcon);
+            console.error('[SadeemDesktopHelper] _canUninstallApp error: ' + e);
         }
+        return false;
+    }
 
-        item.add_style_class_name('destructive-action');
-        item.style = 'color: #e01b24;';
-        trashIcon.style = 'color: #e01b24;';
+    _injectUninstallerItem(menu) {
+        try {
+            const app = menu._app || menu.sourceActor?.app || menu.sourceActor?._app;
+            if (!app) return;
 
-        menu._sadeemUninstallItem = item;
-        menu._sadeemUninstallSep = sep;
+            const appId = app.get_id ? app.get_id() : (app.id || '');
+            if (!appId) return;
+
+            const canUninstall = this._canUninstallApp(appId);
+
+            if (!canUninstall) {
+                if (menu._sadeemUninstallItem) {
+                    menu._sadeemUninstallItem.visible = false;
+                }
+                if (menu._sadeemUninstallSep) {
+                    menu._sadeemUninstallSep.visible = false;
+                }
+                return;
+            }
+
+            const labelText = getUninstallLabel();
+
+            if (menu._sadeemUninstallItem) {
+                if (menu._sadeemUninstallItem.label) {
+                    menu._sadeemUninstallItem.label.text = labelText;
+                }
+                menu._sadeemUninstallItem.visible = true;
+                if (menu._sadeemUninstallSep) {
+                    menu._sadeemUninstallSep.visible = true;
+                }
+                return;
+            }
+
+            // Create separator and uninstaller action item
+            const sep = new PopupMenu.PopupSeparatorMenuItem();
+            menu.addMenuItem(sep);
+
+            const item = menu.addAction(labelText, () => {
+                try {
+                    menu.close();
+                } catch (ce) {}
+                try {
+                    GLib.spawn_command_line_async(`sadeem-uninstaller ${GLib.shell_quote(appId)}`);
+                } catch (err) {
+                    console.error('[SadeemDesktopHelper] Failed to launch uninstaller: ' + err);
+                }
+            });
+
+            const trashIcon = new St.Icon({
+                icon_name: 'user-trash-symbolic',
+                style_class: 'popup-menu-icon',
+            });
+
+            try {
+                item.insert_child_at_index(trashIcon, 0);
+            } catch (e) {
+                item.add_child(trashIcon);
+            }
+
+            item.add_style_class_name('destructive-action');
+            item.style = 'color: #e01b24;';
+            trashIcon.style = 'color: #e01b24;';
+
+            menu._sadeemUninstallItem = item;
+            menu._sadeemUninstallSep = sep;
+        } catch (err) {
+            console.error('[SadeemDesktopHelper] Error in _injectUninstallerItem: ' + err);
+        }
     }
 }

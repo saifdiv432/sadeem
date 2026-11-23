@@ -1,4 +1,48 @@
 #!/bin/bash
+# One-time migration to v2 (Sadeem Desktop Helper, capture shortcuts, dash-to-panel sync)
+if [ ! -f "$HOME/.config/sadeem/migration-v2.done" ]; then
+    mkdir -p "$HOME/.config/sadeem"
+
+    # 1. Enable sadeem-desktop-helper@sadeem.os
+    EXT="sadeem-desktop-helper@sadeem.os"
+    CURRENT_EXTS=$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || echo "[]")
+    if ! echo "$CURRENT_EXTS" | grep -q "$EXT"; then
+        NEW_EXTS=$(python3 -c "
+import ast
+try:
+    arr = ast.literal_eval('''$CURRENT_EXTS''')
+    if '$EXT' not in arr:
+        arr.append('$EXT')
+    print(str(arr))
+except Exception:
+    pass
+" 2>/dev/null)
+        if [ -n "$NEW_EXTS" ]; then
+            gsettings set org.gnome.shell enabled-extensions "$NEW_EXTS" 2>/dev/null || true
+        fi
+    fi
+
+    # 2. Disable default GNOME Shell screenshot shortcuts
+    gsettings set org.gnome.shell.keybindings show-screenshot-ui "@as []" 2>/dev/null || true
+    gsettings set org.gnome.shell.keybindings screenshot "@as []" 2>/dev/null || true
+
+    # 3. Add custom shortcuts for Sadeem Capture and Stop Recording
+    gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']" 2>/dev/null || true
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ name "Sadeem Capture" 2>/dev/null || true
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ command "/usr/bin/sadeem-capture" 2>/dev/null || true
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ binding "Print" 2>/dev/null || true
+
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ name "Stop Screen Recording" 2>/dev/null || true
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ command "/usr/bin/sadeem-capture --stop-recording" 2>/dev/null || true
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ binding "<Shift>Print" 2>/dev/null || true
+
+    # 4. Sync dash-to-panel monitor positions and hide 9-dots button
+    gsettings set org.gnome.shell.extensions.dash-to-panel panel-element-positions-monitors-sync true 2>/dev/null || true
+    gsettings set org.gnome.shell.extensions.dash-to-panel show-apps-icon-file "" 2>/dev/null || true
+
+    touch "$HOME/.config/sadeem/migration-v2.done"
+fi
+
 gsettings set org.gnome.desktop.interface accent-color 'red' 2>/dev/null || true
 gsettings monitor org.gnome.desktop.interface accent-color | while read -r line; do
     val=$(echo "$line" | awk '{print $NF}' | tr -d "'")

@@ -17,9 +17,9 @@ export class CursorHaloManager {
             visible: false,
             width: 48,
             height: 48,
-            pivot_point: new Clutter.Point({ x: 0.5, y: 0.5 }),
             style: 'background-color: rgba(6, 182, 212, 0.3); border: 2.5px solid rgba(6, 182, 212, 0.85); border-radius: 9999px;',
         });
+        this._actor.set_pivot_point(0.5, 0.5);
         if (Main.layoutManager && Main.layoutManager.uiGroup) {
             Main.layoutManager.uiGroup.add_child(this._actor);
         }

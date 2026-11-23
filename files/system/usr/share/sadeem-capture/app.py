@@ -18,8 +18,10 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
 gi.require_version("Gio", "2.0")
+gi.require_version("Pango", "1.0")
+gi.require_version("PangoCairo", "1.0")
 import cairo
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango, PangoCairo
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 if APP_DIR not in sys.path:
@@ -47,12 +49,25 @@ CAPTURE_CSS = """
 window.sadeem-capture-window {
     background-color: transparent;
 }
+.sadeem-top-pill {
+    background-color: rgba(28, 28, 35, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 9999px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    padding: 8px 18px;
+    margin-top: 36px;
+}
+.sadeem-top-pill-label {
+    color: #f1f5f9;
+    font-size: 13px;
+    font-weight: 500;
+}
 .sadeem-toolbar-card {
     background-color: rgba(28, 28, 35, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 9999px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-    padding: 6px 14px;
+    padding: 8px 16px;
     margin-bottom: 32px;
 }
 .sadeem-pill-group {
@@ -91,7 +106,10 @@ window.sadeem-capture-window {
     color: #cbd5e1;
     min-width: 38px;
     min-height: 38px;
+    max-width: 38px;
+    max-height: 38px;
     padding: 0;
+    margin: 0;
 }
 .sadeem-tool-btn:hover {
     background-color: rgba(255, 255, 255, 0.12);
@@ -120,9 +138,12 @@ window.sadeem-capture-window {
     border: 2.5px solid #ffffff;
     min-width: 48px;
     min-height: 48px;
+    max-width: 48px;
+    max-height: 48px;
     color: #ffffff;
     box-shadow: 0 0 14px rgba(122, 28, 51, 0.7);
     padding: 0;
+    margin: 0;
 }
 .sadeem-shutter-btn:hover {
     background-color: #8c223c;
@@ -137,9 +158,12 @@ window.sadeem-capture-window {
     border: 2.5px solid #ffffff;
     min-width: 48px;
     min-height: 48px;
+    max-width: 48px;
+    max-height: 48px;
     color: #ffffff;
     box-shadow: 0 0 16px rgba(220, 38, 38, 0.85);
     padding: 0;
+    margin: 0;
 }
 .sadeem-shutter-btn-record:hover {
     background-color: #ef4444;
@@ -155,7 +179,10 @@ window.sadeem-capture-window {
     color: #cbd5e1;
     min-width: 38px;
     min-height: 38px;
+    max-width: 38px;
+    max-height: 38px;
     padding: 0;
+    margin: 0;
 }
 .sadeem-close-btn:hover {
     background-color: rgba(239, 68, 68, 0.75);
@@ -165,7 +192,7 @@ window.sadeem-capture-window {
 .sadeem-media-toggle {
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 9999px;
-    padding: 2px;
+    padding: 3px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .sadeem-media-btn {
@@ -174,11 +201,12 @@ window.sadeem-capture-window {
     border-radius: 9999px;
     border: 1px solid transparent;
     color: #cbd5e1;
-    padding: 4px 10px;
+    padding: 4px 12px;
     font-size: 12px;
+    font-weight: 500;
 }
 .sadeem-media-btn.active {
-    background-color: #2e2e38;
+    background-color: #7a1c33;
     color: #ffffff;
 }
 .sadeem-popover-box {
@@ -202,7 +230,7 @@ def format_file_size(num_bytes: int) -> str:
 
 
 class SadeemCaptureWindow(Gtk.Window):
-    def __init__(self, app, initial_mode="selection"):
+    def __init__(self, app, initial_mode="selection", bg_path=None):
         super().__init__(application=app)
         self.app = app
         self.client = app.client
@@ -210,6 +238,17 @@ class SadeemCaptureWindow(Gtk.Window):
         self.cursor_enabled = True
         self.halo_enabled = False
         self.media_type = "photo"  # "photo" or "video"
+
+        # Background snapshot for frozen desktop presentation on Wayland
+        self.bg_path = bg_path
+        self.bg_surface = None
+        if self.bg_path and os.path.exists(self.bg_path):
+            try:
+                self.bg_surface = cairo.ImageSurface.create_from_png(self.bg_path)
+            except Exception as e:
+                print(f"[sadeem-capture] Error loading background surface: {e}", file=sys.stderr)
+
+        self.connect("destroy", lambda _w: self._cleanup_bg())
 
         # Video recording settings
         self.video_resolution = "native"  # "native", "1080p", "720p"
@@ -265,6 +304,22 @@ class SadeemCaptureWindow(Gtk.Window):
         self.toast_overlay.set_hexpand(True)
         self.toast_overlay.set_vexpand(True)
         self.toast_overlay.set_child(Gtk.Box())
+
+        # Top Floating Instruction Pill
+        self.top_pill = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        self.top_pill.set_halign(Gtk.Align.CENTER)
+        self.top_pill.set_valign(Gtk.Align.START)
+        self.top_pill.set_margin_top(42)
+        self.top_pill.add_css_class("sadeem-top-pill")
+
+        self.top_pill_icon = Gtk.Image.new_from_icon_name("dialog-information-symbolic")
+        self.top_pill.append(self.top_pill_icon)
+
+        self.top_pill_label = Gtk.Label()
+        self.top_pill_label.add_css_class("sadeem-top-pill-label")
+        self.top_pill.append(self.top_pill_label)
+
+        self.overlay.add_overlay(self.top_pill)
 
         # 3. Floating Bottom Toolbar
         self.toolbar_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -375,7 +430,7 @@ class SadeemCaptureWindow(Gtk.Window):
         self.btn_close.set_icon_name("window-close-symbolic")
         self.btn_close.set_tooltip_text(t("tooltip_close"))
         self.btn_close.add_css_class("sadeem-close-btn")
-        self.btn_close.connect("clicked", lambda _b: self.app.quit())
+        self.btn_close.connect("clicked", lambda _b: (self._cleanup_bg(), self.app.quit()))
         row_controls.append(self.btn_close)
 
         self.toolbar_box.append(row_controls)
@@ -534,6 +589,37 @@ class SadeemCaptureWindow(Gtk.Window):
             self.windows = self.client.list_windows()
         self.drawing_area.queue_draw()
 
+    def _cleanup_bg(self):
+        self.bg_surface = None
+        if self.bg_path and os.path.exists(self.bg_path):
+            try:
+                os.remove(self.bg_path)
+            except Exception:
+                pass
+        self.bg_path = None
+
+    def _update_top_pill(self):
+        if not hasattr(self, "top_pill") or not self.top_pill:
+            return
+        if self.mode == "selection":
+            if self.sel_w > 4 and self.sel_h > 4:
+                self.top_pill_label.set_text(f"{t('mode_selection')} — {int(self.sel_w)} × {int(self.sel_h)} px")
+                self.top_pill_icon.set_from_icon_name("edit-select-all-symbolic")
+            else:
+                self.top_pill_label.set_text(t("select_hint"))
+                self.top_pill_icon.set_from_icon_name("edit-select-all-symbolic")
+        elif self.mode == "screen":
+            screen_txt = t("screen_hint") if "screen_hint" in i18n.STRINGS.get(i18n.LANG, {}) else t("mode_screen")
+            self.top_pill_label.set_text(screen_txt)
+            self.top_pill_icon.set_from_icon_name("video-display-symbolic")
+        elif self.mode == "window":
+            if self.hovered_window:
+                title = self.hovered_window.get("title") or self.hovered_window.get("appName") or ""
+                self.top_pill_label.set_text(title if len(title) <= 50 else title[:47] + "...")
+            else:
+                self.top_pill_label.set_text(t("window_hint"))
+            self.top_pill_icon.set_from_icon_name("preferences-system-windows-symbolic")
+
     def _update_mode_ui(self):
         self.btn_mode_sel.remove_css_class("active")
         self.btn_mode_screen.remove_css_class("active")
@@ -553,6 +639,8 @@ class SadeemCaptureWindow(Gtk.Window):
             self.btn_halo.remove_css_class("active")
         else:
             self.btn_halo.set_sensitive(True)
+
+        self._update_top_pill()
 
     def _toggle_cursor(self, *_a):
         self.cursor_enabled = not self.cursor_enabled
@@ -661,6 +749,7 @@ class SadeemCaptureWindow(Gtk.Window):
                     break
             if found != self.hovered_window:
                 self.hovered_window = found
+                self._update_top_pill()
                 self.drawing_area.queue_draw()
 
     def _on_drag_begin(self, _gesture, start_x, start_y):
@@ -673,6 +762,7 @@ class SadeemCaptureWindow(Gtk.Window):
         self.sel_y = start_y
         self.sel_w = 0
         self.sel_h = 0
+        self._update_top_pill()
         self.drawing_area.queue_draw()
 
     def _on_drag_update(self, _gesture, offset_x, offset_y):
@@ -684,12 +774,14 @@ class SadeemCaptureWindow(Gtk.Window):
         self.sel_y = min(self.drag_start_y, cur_y)
         self.sel_w = abs(offset_x)
         self.sel_h = abs(offset_y)
+        self._update_top_pill()
         self.drawing_area.queue_draw()
 
     def _on_drag_end(self, _gesture, _offset_x, _offset_y):
         if self.mode != "selection":
             return
         self.is_dragging = False
+        self._update_top_pill()
         self.drawing_area.queue_draw()
 
     def _on_click_released(self, _gesture, n_press, x, y):
@@ -707,8 +799,17 @@ class SadeemCaptureWindow(Gtk.Window):
 
     # --- Cairo Canvas Drawing ---
     def _on_draw(self, _area, cr, width, height):
-        cr.set_source_rgba(0.0, 0.0, 0.0, 0.35)
-        cr.paint()
+        if self.bg_surface:
+            cr.save()
+            cr.set_source_surface(self.bg_surface, 0, 0)
+            cr.paint()
+            # Translucent dimming overlay
+            cr.set_source_rgba(0.0, 0.0, 0.0, 0.40)
+            cr.paint()
+            cr.restore()
+        else:
+            cr.set_source_rgba(0.08, 0.08, 0.12, 0.70)
+            cr.paint()
 
         if self.mode == "selection":
             self._draw_selection(cr, width, height)
@@ -719,11 +820,19 @@ class SadeemCaptureWindow(Gtk.Window):
 
     def _draw_selection(self, cr, width, height):
         if self.sel_w > 4 and self.sel_h > 4:
-            cr.save()
-            cr.rectangle(self.sel_x, self.sel_y, self.sel_w, self.sel_h)
-            cr.set_operator(cairo.OPERATOR_CLEAR)
-            cr.fill()
-            cr.restore()
+            if self.bg_surface:
+                cr.save()
+                cr.rectangle(self.sel_x, self.sel_y, self.sel_w, self.sel_h)
+                cr.clip()
+                cr.set_source_surface(self.bg_surface, 0, 0)
+                cr.paint()
+                cr.restore()
+            else:
+                cr.save()
+                cr.rectangle(self.sel_x, self.sel_y, self.sel_w, self.sel_h)
+                cr.set_operator(cairo.OPERATOR_CLEAR)
+                cr.fill()
+                cr.restore()
 
             accent_color = (0.86, 0.15, 0.15, 0.95) if self.media_type == "video" else (0.024, 0.714, 0.831, 0.95)
             cr.set_source_rgba(*accent_color)
@@ -751,11 +860,11 @@ class SadeemCaptureWindow(Gtk.Window):
                 cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
 
             dim_str = f"{int(self.sel_w)} × {int(self.sel_h)}"
-            cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-            cr.set_font_size(12.0)
-            extents = cr.text_extents(dim_str)
+            layout = self.create_pango_layout(dim_str)
+            layout.set_font_description(Pango.FontDescription.from_string("Sans Bold 10"))
+            _, log_rect = layout.get_pixel_extents()
 
-            badge_w = extents.width + 16
+            badge_w = log_rect.width + 16
             badge_h = 24
             badge_x = self.sel_x + 8
             badge_y = self.sel_y - 30 if self.sel_y > 36 else self.sel_y + self.sel_h + 8
@@ -768,18 +877,15 @@ class SadeemCaptureWindow(Gtk.Window):
             cr.stroke()
 
             cr.set_source_rgba(0.95, 0.96, 0.98, 1.0)
-            cr.move_to(badge_x + 8, badge_y + 16)
-            cr.show_text(dim_str)
-        else:
-            hint = t("select_hint")
-            cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-            cr.set_font_size(14.0)
-            extents = cr.text_extents(hint)
-            cr.set_source_rgba(0.9, 0.92, 0.96, 0.85)
-            cr.move_to((width - extents.width) / 2, 80)
-            cr.show_text(hint)
+            cr.move_to(badge_x + 8, badge_y + (badge_h - log_rect.height) / 2)
+            PangoCairo.show_layout(cr, layout)
 
     def _draw_screen_highlight(self, cr, width, height):
+        if self.bg_surface:
+            cr.save()
+            cr.set_source_surface(self.bg_surface, 0, 0)
+            cr.paint()
+            cr.restore()
         accent = (0.86, 0.15, 0.15, 0.85) if self.media_type == "video" else (0.024, 0.714, 0.831, 0.85)
         cr.set_source_rgba(*accent)
         cr.set_line_width(3.0)
@@ -794,11 +900,19 @@ class SadeemCaptureWindow(Gtk.Window):
             wh = self.hovered_window.get("height", 0)
             title = self.hovered_window.get("title") or self.hovered_window.get("appName") or ""
 
-            cr.save()
-            cr.rectangle(wx, wy, ww, wh)
-            cr.set_operator(cairo.OPERATOR_CLEAR)
-            cr.fill()
-            cr.restore()
+            if self.bg_surface:
+                cr.save()
+                cr.rectangle(wx, wy, ww, wh)
+                cr.clip()
+                cr.set_source_surface(self.bg_surface, 0, 0)
+                cr.paint()
+                cr.restore()
+            else:
+                cr.save()
+                cr.rectangle(wx, wy, ww, wh)
+                cr.set_operator(cairo.OPERATOR_CLEAR)
+                cr.fill()
+                cr.restore()
 
             accent = (0.86, 0.15, 0.15, 0.95) if self.media_type == "video" else (0.024, 0.714, 0.831, 0.95)
             cr.set_source_rgba(*accent)
@@ -807,12 +921,12 @@ class SadeemCaptureWindow(Gtk.Window):
             cr.stroke()
 
             if title:
-                cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-                cr.set_font_size(12.0)
                 display_title = title if len(title) <= 45 else title[:42] + "..."
-                extents = cr.text_extents(display_title)
+                layout = self.create_pango_layout(display_title)
+                layout.set_font_description(Pango.FontDescription.from_string("Sans Bold 10"))
+                _, log_rect = layout.get_pixel_extents()
 
-                badge_w = extents.width + 18
+                badge_w = log_rect.width + 18
                 badge_h = 26
                 badge_x = wx + 12
                 badge_y = wy + 12
@@ -825,16 +939,8 @@ class SadeemCaptureWindow(Gtk.Window):
                 cr.stroke()
 
                 cr.set_source_rgba(0.95, 0.96, 0.98, 1.0)
-                cr.move_to(badge_x + 9, badge_y + 17)
-                cr.show_text(display_title)
-        else:
-            hint = t("window_hint")
-            cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-            cr.set_font_size(14.0)
-            extents = cr.text_extents(hint)
-            cr.set_source_rgba(0.9, 0.92, 0.96, 0.85)
-            cr.move_to((width - extents.width) / 2, 80)
-            cr.show_text(hint)
+                cr.move_to(badge_x + 9, badge_y + (badge_h - log_rect.height) / 2)
+                PangoCairo.show_layout(cr, layout)
 
     def _draw_rounded_rect(self, cr, x, y, w, h, r):
         deg = math.pi / 180.0
@@ -900,6 +1006,7 @@ class SadeemCaptureWindow(Gtk.Window):
             copy_file_to_clipboard(dest_path)
             launch_gallery_editor(dest_path)
 
+        self._cleanup_bg()
         self.app.quit()
         return GLib.SOURCE_REMOVE
 
@@ -1034,6 +1141,7 @@ class SadeemCaptureWindow(Gtk.Window):
             # 2. Handoff to Sadeem Gallery video editor
             launch_gallery_editor(path)
 
+        self._cleanup_bg()
         self.app.quit()
 
 
@@ -1045,6 +1153,16 @@ class SadeemCaptureApp(Adw.Application):
         )
         self.client = CaptureClient()
         self.window = None
+
+    def _take_background_snapshot(self):
+        tmp_dir = GLib.get_user_cache_dir()
+        bg_path = os.path.join(tmp_dir, f"sadeem_capture_bg_{os.getpid()}.png")
+        try:
+            if self.client.capture_screen(False, bg_path):
+                return bg_path
+        except Exception as e:
+            print(f"[sadeem-capture] Background snapshot failed: {e}", file=sys.stderr)
+        return None
 
     def _load_styles(self):
         if i18n.is_rtl():
@@ -1069,8 +1187,8 @@ class SadeemCaptureApp(Adw.Application):
             return
 
         self._load_styles()
-        if not self.window:
-            self.window = SadeemCaptureWindow(self)
+        bg_path = self._take_background_snapshot()
+        self.window = SadeemCaptureWindow(self, bg_path=bg_path)
         self.window.fullscreen()
         self.window.present()
 
@@ -1115,7 +1233,8 @@ class SadeemCaptureApp(Adw.Application):
             initial_mode = "selection"
 
         self._load_styles()
-        self.window = SadeemCaptureWindow(self, initial_mode=initial_mode)
+        bg_path = self._take_background_snapshot()
+        self.window = SadeemCaptureWindow(self, initial_mode=initial_mode, bg_path=bg_path)
         if initial_media == "video":
             self.window._set_media_type("video")
         self.window.fullscreen()

@@ -94,16 +94,16 @@ export class CaptureHelperService {
                     try {
                         this._screenshotService.screenshot_finish(res);
                         stream.close(null);
-                        resolve([true]);
+                        resolve(true);
                     } catch (e) {
                         console.error('[CaptureHelper] screenshot_finish error: ' + e);
                         try { stream.close(null); } catch (ce) {}
-                        resolve([false]);
+                        resolve(false);
                     }
                 });
             } catch (err) {
                 console.error('[CaptureHelper] CaptureScreen error: ' + err);
-                resolve([false]);
+                resolve(false);
             }
         });
     }
@@ -121,16 +121,16 @@ export class CaptureHelperService {
                     try {
                         this._screenshotService.screenshot_area_finish(res);
                         stream.close(null);
-                        resolve([true]);
+                        resolve(true);
                     } catch (e) {
                         console.error('[CaptureHelper] screenshot_area_finish error: ' + e);
                         try { stream.close(null); } catch (ce) {}
-                        resolve([false]);
+                        resolve(false);
                     }
                 });
             } catch (err) {
                 console.error('[CaptureHelper] CaptureArea error: ' + err);
-                resolve([false]);
+                resolve(false);
             }
         });
     }
@@ -153,7 +153,7 @@ export class CaptureHelperService {
 
                 if (!targetWin) {
                     console.error('[CaptureHelper] Window ID not found: ' + windowId);
-                    resolve([false]);
+                    resolve(false);
                     return;
                 }
 
@@ -172,23 +172,23 @@ export class CaptureHelperService {
                             try {
                                 this._screenshotService.screenshot_window_finish(res);
                                 stream.close(null);
-                                resolve([true]);
+                                resolve(true);
                             } catch (e) {
                                 console.error('[CaptureHelper] screenshot_window_finish error: ' + e);
                                 try { stream.close(null); } catch (ce) {}
-                                resolve([false]);
+                                resolve(false);
                             }
                         });
                     } catch (we) {
                         console.error('[CaptureHelper] screenshot_window error: ' + we);
                         try { stream.close(null); } catch (ce) {}
-                        resolve([false]);
+                        resolve(false);
                     }
                     return GLib.SOURCE_REMOVE;
                 });
             } catch (err) {
                 console.error('[CaptureHelper] CaptureWindow error: ' + err);
-                resolve([false]);
+                resolve(false);
             }
         });
     }

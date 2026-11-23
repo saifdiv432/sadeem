@@ -11,6 +11,7 @@ search-entry-border-radius=(true, 25)
 [org/gnome/shell/extensions/dash-to-panel]
 click-action='CYCLE-MIN'
 panel-element-positions='{"0":[{"element":"desktopButton","visible":true,"position":"stackedTL"},{"element":"systemMenu","visible":true,"position":"stackedTL"},{"element":"dateMenu","visible":true,"position":"stackedTL"},{"element":"rightBox","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedBR"},{"element":"leftBox","visible":true,"position":"stackedBR"},{"element":"showAppsButton","visible":false,"position":"stackedBR"},{"element":"activitiesButton","visible":false,"position":"stackedBR"}]}'
+panel-element-positions-monitors-sync=true
 panel-position='BOTTOM'
 panel-side-margins=0
 panel-side-padding=0
