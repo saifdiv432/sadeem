@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Sadeem Capture — أداة لقطة وتسجيل سديم الموحدة
-GTK 4 / Libadwaita screen capture & video recording tool for Sadeem OS.
-Integrates ScreenCast Portal + PipeWire + GStreamer with hardware acceleration,
-cursor halo highlights, top panel live recording status, and sadeem-gallery handoff.
+Clean, fast GTK 4 / Libadwaita screen capture & recording utility
+following GNOME Screenshot UI / HIG geometry and proportions.
 """
 
 import math
@@ -19,6 +18,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
 gi.require_version("Gio", "2.0")
+gi.require_version("GLib", "2.0")
 gi.require_version("Pango", "1.0")
 gi.require_version("PangoCairo", "1.0")
 import cairo
@@ -43,514 +43,574 @@ CAPTURE_CSS = """
 window.sadeem-capture-window {
     background-color: transparent;
 }
+
 .sadeem-top-pill {
-    background-color: rgba(28, 28, 35, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    background-color: rgba(28, 28, 33, 0.90);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 9999px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-    padding: 8px 18px;
-    margin-top: 36px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.42);
+    padding: 7px 16px;
 }
+
 .sadeem-top-pill-label {
     color: #f1f5f9;
     font-size: 13px;
     font-weight: 500;
 }
-.sadeem-toolbar-card {
-    background-color: rgba(30, 30, 35, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 24px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.60);
-    padding: 14px 18px;
-    margin-bottom: 32px;
+
+.sadeem-panel {
+    background-color: rgba(36, 36, 40, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 20px;
+    padding: 14px 16px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
 }
-.sadeem-pill-group {
-    background-color: rgba(0, 0, 0, 0.4);
-    border-radius: 9999px;
-    padding: 3px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.sadeem-mode-btn {
-    background-color: transparent;
-    background-image: none;
-    border-radius: 14px;
-    border: 1px solid transparent;
-    color: #94a3b8;
-    padding: 8px 18px;
-    font-size: 12px;
-    font-weight: 500;
-}
-.sadeem-mode-btn:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-.sadeem-mode-btn.active {
-    background-color: rgba(255, 255, 255, 0.16);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-.sadeem-mode-btn.active:hover {
-    background-color: rgba(255, 255, 255, 0.20);
-}
-.sadeem-tool-btn {
-    background-color: rgba(255, 255, 255, 0.08);
-    background-image: none;
-    border-radius: 9999px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    color: #cbd5e1;
-    min-width: 36px;
-    min-height: 36px;
-    padding: 0;
-    margin: 0;
-}
-.sadeem-tool-btn:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-}
-.sadeem-tool-btn.active {
-    background-color: rgba(255, 255, 255, 0.22);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.25);
-}
-.sadeem-tool-btn.active:hover {
-    background-color: rgba(255, 255, 255, 0.28);
-}
-.sadeem-tool-btn.active-blue {
-    background-color: #0284c7;
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.3);
-}
-.sadeem-tool-btn:disabled {
-    opacity: 0.3;
-}
-.sadeem-shutter-btn {
-    background-color: #7a1c33;
-    background-image: none;
-    border-radius: 9999px;
-    border: 3px solid #ffffff;
-    min-width: 52px;
-    min-height: 52px;
-    color: #ffffff;
-    box-shadow: 0 0 14px rgba(122, 28, 51, 0.6);
-    padding: 0;
-    margin: 0;
-}
-.sadeem-shutter-btn:hover {
-    background-color: #8c223c;
-}
-.sadeem-shutter-btn:active {
-    background-color: #631528;
-}
-.sadeem-shutter-btn-record {
-    background-color: #e01b24;
-    background-image: none;
-    border-radius: 9999px;
-    border: 3px solid #ffffff;
-    min-width: 52px;
-    min-height: 52px;
-    color: #ffffff;
-    box-shadow: 0 0 16px rgba(224, 27, 36, 0.7);
-    padding: 0;
-    margin: 0;
-}
-.sadeem-shutter-btn-record:hover {
-    background-color: #ef4444;
-}
-.sadeem-shutter-btn-record:active {
-    background-color: #b91c1c;
-}
+
 .sadeem-close-btn {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: #35353b;
     background-image: none;
     border-radius: 9999px;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     color: #cbd5e1;
     min-width: 28px;
     min-height: 28px;
     padding: 0;
-    margin: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
+
 .sadeem-close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(224, 27, 36, 0.85);
+    border-color: rgba(255, 255, 255, 0.25);
     color: #ffffff;
 }
-.sadeem-warning-banner {
-    background-color: rgba(180, 83, 9, 0.95);
+
+.sadeem-mode-btn {
+    background-color: transparent;
+    background-image: none;
+    border-radius: 12px;
+    border: none;
+    color: #d4d4d8;
+    min-width: 86px;
+    min-height: 54px;
+    padding: 8px 10px;
+    transition: background-color 140ms ease;
+}
+
+.sadeem-mode-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 9999px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    padding: 8px 18px;
 }
-.sadeem-warning-label {
-    color: #fef3c7;
-    font-size: 13px;
-    font-weight: 500;
+
+.sadeem-mode-btn.active {
+    background-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
 }
-.sadeem-media-toggle {
-    background-color: rgba(255, 255, 255, 0.07);
+
+.sadeem-mode-btn.active:hover {
+    background-color: rgba(255, 255, 255, 0.20);
+}
+
+.sadeem-mode-label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sadeem-pill-group {
+    background-color: rgba(255, 255, 255, 0.08);
     border-radius: 9999px;
     padding: 3px;
 }
-.sadeem-media-btn {
+
+.sadeem-pill-btn {
     background-color: transparent;
+    background-image: none;
+    border: none;
+    border-radius: 9999px;
+    color: #cbd5e1;
+    min-width: 40px;
+    min-height: 32px;
+    padding: 0;
+    transition: background-color 140ms ease;
+}
+
+.sadeem-pill-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sadeem-pill-btn.active {
+    background-color: rgba(255, 255, 255, 0.20);
+    color: #ffffff;
+}
+
+.sadeem-pill-btn:disabled {
+    opacity: 0.35;
+}
+
+.sadeem-shutter-ring {
+    background-color: transparent;
+    background-image: none;
+    border-radius: 9999px;
+    border: 2.5px solid rgba(255, 255, 255, 0.92);
+    padding: 4px;
+    min-width: 44px;
+    min-height: 44px;
+    transition: border-color 140ms ease;
+}
+
+.sadeem-shutter-ring:hover {
+    border-color: #ffffff;
+}
+
+.sadeem-shutter-core {
+    border-radius: 9999px;
+    background-color: #7a1c33;
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(122, 28, 51, 0.55);
+    transition: background-color 140ms ease;
+}
+
+.sadeem-shutter-core:hover {
+    background-color: #91243f;
+}
+
+.sadeem-shutter-core.record-mode {
+    background-color: #e01b24;
+    box-shadow: 0 2px 10px rgba(224, 27, 36, 0.60);
+}
+
+.sadeem-shutter-core.record-mode:hover {
+    background-color: #f63b44;
+}
+
+.sadeem-video-bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    padding-top: 10px;
+    margin-top: 2px;
+}
+
+.sadeem-chip-btn {
+    background-color: rgba(255, 255, 255, 0.07);
     background-image: none;
     border-radius: 9999px;
     border: none;
     color: #cbd5e1;
-    padding: 6px 14px;
+    padding: 5px 12px;
     font-size: 12px;
     font-weight: 500;
 }
-.sadeem-media-btn:hover {
+
+.sadeem-chip-btn:hover {
+    background-color: rgba(255, 255, 255, 0.14);
     color: #ffffff;
 }
-.sadeem-media-btn.active {
-    background-color: rgba(255, 255, 255, 0.18);
+
+.sadeem-chip-btn.active {
+    background-color: rgba(255, 255, 255, 0.20);
     color: #ffffff;
 }
+
 .sadeem-popover-box {
-    background-color: #1e1e24;
     padding: 12px;
-    border-radius: 12px;
-    color: #f1f5f9;
 }
 """
 
 
 def format_file_size(num_bytes: int) -> str:
-    """Formats file size into human-readable string."""
     if num_bytes >= 1024 * 1024 * 1024:
         return f"{num_bytes / (1024 * 1024 * 1024):.2f} GB"
-    elif num_bytes >= 1024 * 1024:
+    if num_bytes >= 1024 * 1024:
         return f"{num_bytes / (1024 * 1024):.1f} MB"
-    elif num_bytes >= 1024:
+    if num_bytes >= 1024:
         return f"{num_bytes / 1024:.1f} KB"
     return f"{num_bytes} B"
 
 
+def _send_notification(app, notif_id: str, title: str, body: str, icon_name: str):
+    try:
+        notif = Gio.Notification.new(title)
+        notif.set_body(body)
+        notif.set_icon(Gio.ThemedIcon.new(icon_name))
+        app.send_notification(notif_id, notif)
+    except Exception:
+        pass
+    if shutil.which("notify-send"):
+        try:
+            subprocess.Popen(
+                ["notify-send", "-a", t("app_name"), "-i", icon_name, title, body],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except Exception:
+            pass
+
+
+def _make_mode_button(icon_name: str, label_text: str) -> Gtk.Button:
+    btn = Gtk.Button()
+    btn.add_css_class("flat")
+    btn.add_css_class("sadeem-mode-btn")
+    box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+    box.set_halign(Gtk.Align.CENTER)
+    box.set_valign(Gtk.Align.CENTER)
+    img = Gtk.Image.new_from_icon_name(icon_name)
+    img.set_pixel_size(20)
+    lbl = Gtk.Label(label=label_text)
+    lbl.add_css_class("sadeem-mode-label")
+    box.append(img)
+    box.append(lbl)
+    btn.set_child(box)
+    return btn
+
+
+def _make_pill_button(icon_name: str, tooltip: str) -> Gtk.Button:
+    btn = Gtk.Button()
+    btn.add_css_class("flat")
+    btn.add_css_class("sadeem-pill-btn")
+    img = Gtk.Image.new_from_icon_name(icon_name)
+    img.set_pixel_size(18)
+    btn.set_child(img)
+    btn.set_size_request(40, 32)
+    btn.set_halign(Gtk.Align.CENTER)
+    btn.set_valign(Gtk.Align.CENTER)
+    if tooltip:
+        btn.set_tooltip_text(tooltip)
+    return btn
+
+
+def _make_inline_button(icon_name: str, label_text: str, css_class: str) -> Gtk.Button:
+    btn = Gtk.Button()
+    btn.add_css_class("flat")
+    box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    box.set_halign(Gtk.Align.CENTER)
+    box.set_valign(Gtk.Align.CENTER)
+    img = Gtk.Image.new_from_icon_name(icon_name)
+    img.set_pixel_size(15)
+    lbl = Gtk.Label(label=label_text)
+    box.append(img)
+    box.append(lbl)
+    btn.set_child(box)
+    btn.add_css_class(css_class)
+    return btn
+
+
+def _make_circle_button(icon_name: str, tooltip: str, css_class: str, size: int = 36, icon_size: int = 16) -> Gtk.Button:
+    btn = Gtk.Button()
+    img = Gtk.Image.new_from_icon_name(icon_name)
+    img.set_pixel_size(icon_size)
+    btn.set_child(img)
+    btn.set_size_request(size, size)
+    btn.set_halign(Gtk.Align.CENTER)
+    btn.set_valign(Gtk.Align.CENTER)
+    btn.set_hexpand(False)
+    btn.set_vexpand(False)
+    if tooltip:
+        btn.set_tooltip_text(tooltip)
+    btn.add_css_class(css_class)
+    return btn
+
+
 class SadeemCaptureWindow(Gtk.Window):
-    def __init__(self, app, initial_mode="selection", bg_path=None):
+    def __init__(self, app, initial_mode="selection", initial_media="photo", bg_path=None):
         super().__init__(application=app)
         self.app = app
         self.client = app.client
-        self.mode = initial_mode  # "selection", "screen", "window"
+        self.mode = initial_mode
+        self.media_type = initial_media
         self.cursor_enabled = True
         self.halo_enabled = False
-        self.media_type = "photo"  # "photo" or "video"
 
-        # Background snapshot for frozen desktop presentation on Wayland
         self.bg_path = bg_path
+        self.bg_texture = None
+        if self.bg_path and os.path.isfile(self.bg_path):
+            try:
+                self.bg_texture = Gdk.Texture.new_from_filename(self.bg_path)
+            except Exception as e:
+                print(f"[sadeem-capture] Failed to load bg texture: {e}", file=sys.stderr)
 
-        self.connect("destroy", lambda _w: self._cleanup_bg())
-
-        # Video recording settings
-        self.video_resolution = "native"  # "native", "1080p", "720p"
-        self.video_framerate = 30  # 30 or 60
-        self.video_codec = "h264"  # "h264" or "h265"
+        # Video settings (lazy-loaded microphones on demand)
+        self.video_resolution = "native"
+        self.video_framerate = 30
+        self.video_codec = "h264"
         self.audio_system_enabled = True
         self.audio_mic_enabled = False
-
-        # Lazy microphone initialization
         self.available_mics = []
         self.selected_mic_id = "@DEFAULT_SOURCE@"
         self._mics_loaded = False
 
-        # Active recorder instance
         self.recorder = None
         self.is_recording = False
         self._stop_sig_id = None
         self._silent_sig_id = None
 
-        # Coordinates for selection box
-        self.sel_x = 0
-        self.sel_y = 0
-        self.sel_w = 0
-        self.sel_h = 0
-        self.is_dragging = False
-        self.drag_start_x = 0
-        self.drag_start_y = 0
+        # Selection state
+        self.sel_x = 0.0
+        self.sel_y = 0.0
+        self.sel_w = 0.0
+        self.sel_h = 0.0
+        self._drag_action = None  # "new", "move", "tl", "tr", "bl", "br"
+        self._drag_origin_x = 0.0
+        self._drag_origin_y = 0.0
+        self._drag_init_rect = (0.0, 0.0, 0.0, 0.0)
 
-        # Window list for window mode
         self.windows = []
         self.hovered_window = None
-
-        # Pointer position
-        self.pointer_x = 0
-        self.pointer_y = 0
+        self._action_in_progress = False
 
         self.set_title(t("app_name"))
         self.add_css_class("sadeem-capture-window")
         self.set_decorated(False)
+        self.connect("destroy", self._on_destroy)
 
         self._build_ui()
         self._setup_events()
 
-    def _build_ui(self):
-        self.overlay = Gtk.Overlay()
+        if self.mode == "window":
+            self.windows = self.client.list_windows()
+        if self.media_type == "video":
+            self._set_media_type("video")
+        if not self.bg_texture and not self.client.is_helper_available():
+            self.toast_overlay.add_toast(Adw.Toast.new(t("helper_disabled_warning")))
 
-        # 1. Background Picture layer (GPU-accelerated via Gdk.Texture)
-        self.bg_picture = Gtk.Picture()
-        self.bg_picture.set_content_fit(Gtk.ContentFit.FILL)
-        self.bg_picture.set_can_target(False)
+    def _on_destroy(self, _w):
+        if not self.is_recording:
+            self._cleanup_bg()
+
+    def _cleanup_bg(self):
+        self.bg_texture = None
         if self.bg_path and os.path.exists(self.bg_path):
             try:
-                texture = Gdk.Texture.new_from_filename(self.bg_path)
-                self.bg_picture.set_paintable(texture)
-            except Exception as e:
-                print(f"[sadeem-capture] Error loading background texture: {e}", file=sys.stderr)
+                os.remove(self.bg_path)
+            except Exception:
+                pass
+        self.bg_path = None
+
+    def _finish_session(self):
+        self.app.close_capture_session(self)
+
+    def _build_ui(self):
+        self.toast_overlay = Adw.ToastOverlay()
+        self.overlay = Gtk.Overlay()
+        self.toast_overlay.set_child(self.overlay)
+        self.set_child(self.toast_overlay)
+
+        # Layer 0: GPU-accelerated frozen desktop snapshot
+        self.bg_picture = Gtk.Picture()
+        self.bg_picture.set_hexpand(True)
+        self.bg_picture.set_vexpand(True)
+        self.bg_picture.set_content_fit(Gtk.ContentFit.FILL)
+        self.bg_picture.set_can_target(False)
+        if self.bg_texture:
+            self.bg_picture.set_paintable(self.bg_texture)
         self.overlay.set_child(self.bg_picture)
 
-        # 2. Canvas drawing area overlay layer
+        # Layer 1: Interactive Cairo canvas for dimming, selection & window highlight
         self.drawing_area = Gtk.DrawingArea()
         self.drawing_area.set_hexpand(True)
         self.drawing_area.set_vexpand(True)
         self.drawing_area.set_draw_func(self._on_draw)
         self.overlay.add_overlay(self.drawing_area)
 
-        # 3. Toast overlay wraps overlay from the outside (never blocks child clicks)
-        self.toast_overlay = Adw.ToastOverlay()
-        self.toast_overlay.set_child(self.overlay)
-        self.set_child(self.toast_overlay)
-
-        # Top Floating Instruction Pill
+        # Layer 2: Top floating hint pill (non-interactive so it never steals drags)
         self.top_pill = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.top_pill.set_halign(Gtk.Align.CENTER)
         self.top_pill.set_valign(Gtk.Align.START)
-        self.top_pill.set_margin_top(42)
+        self.top_pill.set_margin_top(28)
         self.top_pill.set_can_target(False)
         self.top_pill.add_css_class("sadeem-top-pill")
 
-        self.top_pill_icon = Gtk.Image.new_from_icon_name("dialog-information-symbolic")
+        self.top_pill_icon = Gtk.Image.new_from_icon_name("edit-select-all-symbolic")
+        self.top_pill_icon.set_pixel_size(15)
         self.top_pill.append(self.top_pill_icon)
 
         self.top_pill_label = Gtk.Label()
         self.top_pill_label.add_css_class("sadeem-top-pill-label")
         self.top_pill.append(self.top_pill_label)
-
         self.overlay.add_overlay(self.top_pill)
 
-        # Prominent warning banner if background capture failed / extension disabled
-        if not self.bg_path or not os.path.exists(self.bg_path):
-            self.warning_banner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            self.warning_banner.set_halign(Gtk.Align.CENTER)
-            self.warning_banner.set_valign(Gtk.Align.START)
-            self.warning_banner.set_margin_top(92)
-            self.warning_banner.set_can_target(False)
-            self.warning_banner.add_css_class("sadeem-warning-banner")
+        # Layer 3: GNOME-HIG Bottom Floating Control Panel
+        self.panel_wrapper = Gtk.Overlay()
+        self.panel_wrapper.set_halign(Gtk.Align.CENTER)
+        self.panel_wrapper.set_valign(Gtk.Align.END)
+        self.panel_wrapper.set_margin_bottom(32)
 
-            warn_icon = Gtk.Image.new_from_icon_name("dialog-warning-symbolic")
-            self.warning_banner.append(warn_icon)
+        self.toolbar_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        self.toolbar_card.add_css_class("sadeem-panel")
+        self.toolbar_card.set_margin_top(12)
+        self.toolbar_card.set_margin_start(12)
+        self.toolbar_card.set_margin_end(12)
+        self.toolbar_card.set_margin_bottom(0)
 
-            warn_lbl = Gtk.Label(label=t("helper_disabled_warning"))
-            warn_lbl.add_css_class("sadeem-warning-label")
-            self.warning_banner.append(warn_lbl)
-
-            self.overlay.add_overlay(self.warning_banner)
-
-        # 4. Floating Bottom Toolbar Card
-        self.toolbar_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.toolbar_box.set_halign(Gtk.Align.CENTER)
-        self.toolbar_box.set_valign(Gtk.Align.END)
-        self.toolbar_box.set_margin_bottom(32)
-        self.toolbar_box.add_css_class("sadeem-toolbar-card")
-
-        # Card Overlay to place close button in corner
-        self.card_overlay = Gtk.Overlay()
-
-        # Vertical content container
-        card_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-
-        # Row 1: Mode Switcher (Selection, Screen, Window)
-        row_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        # Row 1: Mode switcher (Selection / Screen / Window)
+        row_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         row_modes.set_homogeneous(True)
         row_modes.set_halign(Gtk.Align.CENTER)
-        row_modes.set_margin_start(28)
-        row_modes.set_margin_end(28)
 
-        def make_mode_btn(icon_name, text_label, mode_id):
-            btn = Gtk.Button()
-            btn.add_css_class("sadeem-mode-btn")
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-            vbox.set_halign(Gtk.Align.CENTER)
-            vbox.set_valign(Gtk.Align.CENTER)
-            img = Gtk.Image.new_from_icon_name(icon_name)
-            img.set_pixel_size(20)
-            lbl = Gtk.Label(label=text_label)
-            vbox.append(img)
-            vbox.append(lbl)
-            btn.set_child(vbox)
-            btn.connect("clicked", lambda _b: self._set_mode(mode_id))
-            return btn
+        self.btn_mode_sel = _make_mode_button("edit-select-all-symbolic", t("mode_selection"))
+        self.btn_mode_sel.connect("clicked", lambda _b: self._set_mode("selection"))
 
-        self.btn_mode_sel = make_mode_btn("edit-select-all-symbolic", t("mode_selection"), "selection")
-        self.btn_mode_screen = make_mode_btn("video-display-symbolic", t("mode_screen"), "screen")
-        self.btn_mode_win = make_mode_btn("preferences-system-windows-symbolic", t("mode_window"), "window")
+        self.btn_mode_screen = _make_mode_button("video-display-symbolic", t("mode_screen"))
+        self.btn_mode_screen.connect("clicked", lambda _b: self._set_mode("screen"))
+
+        self.btn_mode_win = _make_mode_button("preferences-system-windows-symbolic", t("mode_window"))
+        self.btn_mode_win.connect("clicked", lambda _b: self._set_mode("window"))
 
         row_modes.append(self.btn_mode_sel)
         row_modes.append(self.btn_mode_screen)
         row_modes.append(self.btn_mode_win)
-        card_content.append(row_modes)
+        self.toolbar_card.append(row_modes)
 
-        # Row 2: Controls with mathematically centered shutter button
-        row_controls = Gtk.CenterBox()
-        row_controls.set_halign(Gtk.Align.FILL)
-        row_controls.set_valign(Gtk.Align.CENTER)
+        # Row 2: Balanced CenterBox (Photo/Video | Centered Shutter | Cursor & Halo)
+        row_actions = Gtk.CenterBox()
+        row_actions.set_margin_top(2)
 
-        # Start widget: Photo / Video pill switch
-        media_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-        media_box.add_css_class("sadeem-media-toggle")
-        media_box.set_halign(Gtk.Align.START)
-        media_box.set_valign(Gtk.Align.CENTER)
+        # Start: Photo / Video pill capsule
+        media_capsule = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        media_capsule.set_valign(Gtk.Align.CENTER)
+        media_capsule.add_css_class("sadeem-pill-group")
 
-        def make_media_btn(icon_name, text_label):
-            btn = Gtk.Button()
-            btn.add_css_class("sadeem-media-btn")
-            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-            hbox.set_halign(Gtk.Align.CENTER)
-            hbox.set_valign(Gtk.Align.CENTER)
-            img = Gtk.Image.new_from_icon_name(icon_name)
-            img.set_pixel_size(16)
-            lbl = Gtk.Label(label=text_label)
-            hbox.append(img)
-            hbox.append(lbl)
-            btn.set_child(hbox)
-            return btn
-
-        self.btn_photo = make_media_btn("camera-photo-symbolic", t("tab_photo"))
+        self.btn_photo = _make_pill_button("camera-photo-symbolic", t("tab_photo"))
         self.btn_photo.add_css_class("active")
         self.btn_photo.connect("clicked", lambda _b: self._set_media_type("photo"))
 
-        self.btn_video = make_media_btn("media-record-symbolic", t("tab_video"))
+        self.btn_video = _make_pill_button("camera-video-symbolic", t("tab_video"))
         self.btn_video.connect("clicked", lambda _b: self._set_media_type("video"))
 
-        media_box.append(self.btn_photo)
-        media_box.append(self.btn_video)
-        row_controls.set_start_widget(media_box)
+        media_capsule.append(self.btn_photo)
+        media_capsule.append(self.btn_video)
+        row_actions.set_start_widget(media_capsule)
 
-        # Center widget: Circular Shutter Button
+        # Center: GNOME double-ring shutter button
         self.btn_shutter = Gtk.Button()
-        self.btn_shutter.set_icon_name("camera-photo-symbolic")
-        self.btn_shutter.set_tooltip_text(t("btn_capture"))
-        self.btn_shutter.add_css_class("sadeem-shutter-btn")
-        self.btn_shutter.set_size_request(52, 52)
+        self.btn_shutter.add_css_class("flat")
+        self.btn_shutter.add_css_class("sadeem-shutter-ring")
+        self.btn_shutter.set_size_request(56, 56)
+        self.btn_shutter.set_margin_start(18)
+        self.btn_shutter.set_margin_end(18)
         self.btn_shutter.set_halign(Gtk.Align.CENTER)
         self.btn_shutter.set_valign(Gtk.Align.CENTER)
-        self.btn_shutter.set_hexpand(False)
-        self.btn_shutter.set_vexpand(False)
+        self.btn_shutter.set_tooltip_text(t("btn_capture"))
+
+        self.shutter_core = Gtk.Box()
+        self.shutter_core.add_css_class("sadeem-shutter-core")
+        self.shutter_core.set_hexpand(True)
+        self.shutter_core.set_vexpand(True)
+        self.shutter_core.set_halign(Gtk.Align.FILL)
+        self.shutter_core.set_valign(Gtk.Align.FILL)
+
+        self.shutter_image = Gtk.Image.new_from_icon_name("camera-photo-symbolic")
+        self.shutter_image.set_pixel_size(18)
+        self.shutter_image.set_halign(Gtk.Align.CENTER)
+        self.shutter_image.set_valign(Gtk.Align.CENTER)
+        self.shutter_image.set_hexpand(True)
+        self.shutter_image.set_vexpand(True)
+        self.shutter_core.append(self.shutter_image)
+        self.btn_shutter.set_child(self.shutter_core)
         self.btn_shutter.connect("clicked", lambda _b: self._trigger_action())
-        row_controls.set_center_widget(self.btn_shutter)
+        row_actions.set_center_widget(self.btn_shutter)
 
-        # End widget: Secondary Tool Buttons
-        tools_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        tools_box.set_halign(Gtk.Align.END)
-        tools_box.set_valign(Gtk.Align.CENTER)
+        # End: Cursor & Halo pill capsule
+        util_capsule = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        util_capsule.set_valign(Gtk.Align.CENTER)
+        util_capsule.add_css_class("sadeem-pill-group")
 
-        # Cursor Toggle
-        self.btn_cursor = Gtk.Button()
-        self.btn_cursor.set_icon_name("input-mouse-symbolic")
-        self.btn_cursor.set_tooltip_text(t("tooltip_cursor"))
-        self.btn_cursor.add_css_class("sadeem-tool-btn")
+        self.btn_cursor = _make_pill_button("input-mouse-symbolic", t("tooltip_cursor"))
         self.btn_cursor.add_css_class("active")
-        self.btn_cursor.set_size_request(36, 36)
-        self.btn_cursor.set_halign(Gtk.Align.CENTER)
-        self.btn_cursor.set_valign(Gtk.Align.CENTER)
         self.btn_cursor.connect("clicked", self._toggle_cursor)
-        tools_box.append(self.btn_cursor)
 
-        # Cursor Halo Toggle
-        self.btn_halo = Gtk.Button()
-        self.btn_halo.set_icon_name("find-location-symbolic")
-        self.btn_halo.set_tooltip_text(t("tooltip_halo"))
-        self.btn_halo.add_css_class("sadeem-tool-btn")
-        self.btn_halo.set_size_request(36, 36)
-        self.btn_halo.set_halign(Gtk.Align.CENTER)
-        self.btn_halo.set_valign(Gtk.Align.CENTER)
+        self.btn_halo = _make_pill_button("find-location-symbolic", t("tooltip_halo"))
         self.btn_halo.connect("clicked", self._toggle_halo)
-        tools_box.append(self.btn_halo)
 
-        # Video-specific quick toggles (Mic, System Audio, Settings popover)
-        self.btn_quick_sys_audio = Gtk.Button()
-        self.btn_quick_sys_audio.set_icon_name("audio-volume-high-symbolic")
-        self.btn_quick_sys_audio.set_tooltip_text(t("audio_system"))
-        self.btn_quick_sys_audio.add_css_class("sadeem-tool-btn")
-        self.btn_quick_sys_audio.add_css_class("active-blue")
-        self.btn_quick_sys_audio.set_size_request(36, 36)
-        self.btn_quick_sys_audio.set_halign(Gtk.Align.CENTER)
-        self.btn_quick_sys_audio.set_valign(Gtk.Align.CENTER)
-        self.btn_quick_sys_audio.set_visible(False)
+        util_capsule.append(self.btn_cursor)
+        util_capsule.append(self.btn_halo)
+        row_actions.set_end_widget(util_capsule)
+
+        # Equalize width of both wings for strict geometric symmetry
+        wings_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
+        wings_group.add_widget(media_capsule)
+        wings_group.add_widget(util_capsule)
+
+        self.toolbar_card.append(row_actions)
+
+        # Row 3 (Revealed smoothly in Video mode only): Audio & Video Settings
+        self.video_revealer = Gtk.Revealer()
+        self.video_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self.video_revealer.set_transition_duration(180)
+        self.video_revealer.set_reveal_child(False)
+
+        video_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        video_bar.set_halign(Gtk.Align.CENTER)
+        video_bar.add_css_class("sadeem-video-bar")
+
+        self.btn_quick_sys_audio = _make_inline_button(
+            "audio-volume-high-symbolic", t("audio_system"), "sadeem-chip-btn"
+        )
+        self.btn_quick_sys_audio.add_css_class("active")
         self.btn_quick_sys_audio.connect("clicked", self._toggle_quick_sys_audio)
-        tools_box.append(self.btn_quick_sys_audio)
+        video_bar.append(self.btn_quick_sys_audio)
 
-        self.btn_quick_mic = Gtk.Button()
-        self.btn_quick_mic.set_icon_name("audio-input-microphone-symbolic")
-        self.btn_quick_mic.set_tooltip_text(t("audio_mic"))
-        self.btn_quick_mic.add_css_class("sadeem-tool-btn")
-        self.btn_quick_mic.set_size_request(36, 36)
-        self.btn_quick_mic.set_halign(Gtk.Align.CENTER)
-        self.btn_quick_mic.set_valign(Gtk.Align.CENTER)
-        self.btn_quick_mic.set_visible(False)
+        self.btn_quick_mic = _make_inline_button(
+            "audio-input-microphone-symbolic", t("audio_mic"), "sadeem-chip-btn"
+        )
         self.btn_quick_mic.connect("clicked", self._toggle_quick_mic)
-        tools_box.append(self.btn_quick_mic)
+        video_bar.append(self.btn_quick_mic)
 
         self.btn_video_settings = Gtk.MenuButton()
-        self.btn_video_settings.set_icon_name("emblem-system-symbolic")
-        self.btn_video_settings.add_css_class("sadeem-tool-btn")
-        self.btn_video_settings.set_size_request(36, 36)
-        self.btn_video_settings.set_halign(Gtk.Align.CENTER)
+        self.btn_video_settings.add_css_class("flat")
+        self.btn_video_settings.add_css_class("sadeem-chip-btn")
+        settings_img = Gtk.Image.new_from_icon_name("emblem-system-symbolic")
+        settings_img.set_pixel_size(16)
+        self.btn_video_settings.set_child(settings_img)
+        self.btn_video_settings.set_size_request(34, 34)
         self.btn_video_settings.set_valign(Gtk.Align.CENTER)
-        self.btn_video_settings.set_visible(False)
         self._build_video_settings_popover()
-        tools_box.append(self.btn_video_settings)
+        video_bar.append(self.btn_video_settings)
 
-        row_controls.set_end_widget(tools_box)
-        card_content.append(row_controls)
+        self.video_revealer.set_child(video_bar)
+        self.toolbar_card.append(self.video_revealer)
 
-        self.card_overlay.set_child(card_content)
+        self.panel_wrapper.set_child(self.toolbar_card)
 
-        # Close button in top-end corner
+        # Corner close button (top-left in RTL, top-right in LTR)
         self.btn_close = Gtk.Button()
-        self.btn_close.set_icon_name("window-close-symbolic")
-        self.btn_close.set_tooltip_text(t("tooltip_close"))
+        self.btn_close.add_css_class("flat")
         self.btn_close.add_css_class("sadeem-close-btn")
+        img_close = Gtk.Image.new_from_icon_name("window-close-symbolic")
+        img_close.set_pixel_size(14)
+        self.btn_close.set_child(img_close)
         self.btn_close.set_size_request(28, 28)
         self.btn_close.set_halign(Gtk.Align.END)
         self.btn_close.set_valign(Gtk.Align.START)
-        self.btn_close.set_margin_top(2)
-        self.btn_close.set_margin_end(2)
-        self.btn_close.connect("clicked", lambda _b: self._close_or_quit())
-        self.card_overlay.add_overlay(self.btn_close)
+        self.btn_close.set_margin_top(0)
+        self.btn_close.set_margin_end(0)
+        self.btn_close.set_margin_start(0)
+        self.btn_close.set_margin_bottom(0)
+        self.btn_close.set_tooltip_text(t("tooltip_close"))
+        self.btn_close.connect("clicked", lambda _b: self._finish_session())
+        self.panel_wrapper.add_overlay(self.btn_close)
 
-        self.toolbar_box.append(self.card_overlay)
-        self.overlay.add_overlay(self.toolbar_box)
-
+        self.overlay.add_overlay(self.panel_wrapper)
         self._update_mode_ui()
 
     def _build_video_settings_popover(self):
-        """Constructs compact video recording settings popover."""
         popover = Gtk.Popover()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         box.add_css_class("sadeem-popover-box")
 
-        # 1. Resolution row
-        lbl_res = Gtk.Label(label=t("res_native"), halign=Gtk.Align.START)
-        lbl_res.add_css_class("caption-heading")
-        box.append(lbl_res)
-
-        res_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        res_box.add_css_class("sadeem-pill-group")
-
+        # Resolution
+        res_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        res_box.add_css_class("sadeem-segmented")
         self.btn_res_native = Gtk.Button(label=t("res_native"))
-        self.btn_res_native.add_css_class("sadeem-mode-btn")
+        self.btn_res_native.add_css_class("sadeem-seg-btn")
         self.btn_res_native.add_css_class("active")
         self.btn_res_native.connect("clicked", lambda _b: self._set_resolution("native"))
 
-        self.btn_res_1080p = Gtk.Button(label="1080p")
-        self.btn_res_1080p.add_css_class("sadeem-mode-btn")
+        self.btn_res_1080p = Gtk.Button(label=t("res_1080p"))
+        self.btn_res_1080p.add_css_class("sadeem-seg-btn")
         self.btn_res_1080p.connect("clicked", lambda _b: self._set_resolution("1080p"))
 
-        self.btn_res_720p = Gtk.Button(label="720p")
-        self.btn_res_720p.add_css_class("sadeem-mode-btn")
+        self.btn_res_720p = Gtk.Button(label=t("res_720p"))
+        self.btn_res_720p.add_css_class("sadeem-seg-btn")
         self.btn_res_720p.connect("clicked", lambda _b: self._set_resolution("720p"))
 
         res_box.append(self.btn_res_native)
@@ -558,100 +618,92 @@ class SadeemCaptureWindow(Gtk.Window):
         res_box.append(self.btn_res_720p)
         box.append(res_box)
 
-        # 2. Framerate & Codec row
+        # FPS & Codec
         row_fc = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        row_fc.set_halign(Gtk.Align.CENTER)
 
-        # Framerate
         fps_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-        fps_box.add_css_class("sadeem-pill-group")
-
+        fps_box.add_css_class("sadeem-segmented")
         self.btn_fps_30 = Gtk.Button(label=t("fps_30"))
-        self.btn_fps_30.add_css_class("sadeem-mode-btn")
+        self.btn_fps_30.add_css_class("sadeem-seg-btn")
         self.btn_fps_30.add_css_class("active")
         self.btn_fps_30.connect("clicked", lambda _b: self._set_fps(30))
 
         self.btn_fps_60 = Gtk.Button(label=t("fps_60"))
-        self.btn_fps_60.add_css_class("sadeem-mode-btn")
+        self.btn_fps_60.add_css_class("sadeem-seg-btn")
         self.btn_fps_60.connect("clicked", lambda _b: self._set_fps(60))
 
         fps_box.append(self.btn_fps_30)
         fps_box.append(self.btn_fps_60)
         row_fc.append(fps_box)
 
-        # Codec
         codec_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-        codec_box.add_css_class("sadeem-pill-group")
-
+        codec_box.add_css_class("sadeem-segmented")
         self.btn_codec_h264 = Gtk.Button(label="H.264")
-        self.btn_codec_h264.add_css_class("sadeem-mode-btn")
+        self.btn_codec_h264.add_css_class("sadeem-seg-btn")
         self.btn_codec_h264.add_css_class("active")
         self.btn_codec_h264.connect("clicked", lambda _b: self._set_codec("h264"))
 
         self.btn_codec_h265 = Gtk.Button(label="H.265")
-        self.btn_codec_h265.add_css_class("sadeem-mode-btn")
+        self.btn_codec_h265.add_css_class("sadeem-seg-btn")
         self.btn_codec_h265.connect("clicked", lambda _b: self._set_codec("h265"))
 
         codec_box.append(self.btn_codec_h264)
         codec_box.append(self.btn_codec_h265)
         row_fc.append(codec_box)
-
         box.append(row_fc)
 
-        # 3. Audio Device Dropdown container
-        self.mic_dropdown_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        box.append(self.mic_dropdown_box)
-        self._update_mic_dropdown()
+        # Dynamic microphone container (populated lazily in background thread)
+        self.mic_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        self.mic_box.set_visible(False)
+        lbl_mic = Gtk.Label(label=t("audio_device"), halign=Gtk.Align.START)
+        lbl_mic.add_css_class("caption-heading")
+        self.mic_box.append(lbl_mic)
+        self.mic_dropdown_slot = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.mic_box.append(self.mic_dropdown_slot)
+        box.append(self.mic_box)
 
-        # 4. Keyboard Shortcuts Hint
         lbl_hint = Gtk.Label(label=t("hint_recording_shortcuts"), halign=Gtk.Align.CENTER)
         lbl_hint.set_wrap(True)
+        lbl_hint.set_max_width_chars(38)
         lbl_hint.set_justify(Gtk.Justification.CENTER)
         lbl_hint.add_css_class("caption")
         lbl_hint.add_css_class("dim-label")
-        lbl_hint.set_margin_top(6)
         box.append(lbl_hint)
 
         popover.set_child(box)
         self.btn_video_settings.set_popover(popover)
 
-    def _async_load_microphones(self):
-        """Asynchronously probes connected microphones in background thread."""
-        threading.Thread(target=self._probe_mics_thread, daemon=True).start()
-
-    def _probe_mics_thread(self):
-        try:
-            from capture.media_probe import get_connected_microphones
-            mics = get_connected_microphones()
-            GLib.idle_add(self._on_microphones_loaded, mics)
-        except Exception as e:
-            print(f"[sadeem-capture] Failed to probe microphones: {e}", file=sys.stderr)
-
-    def _on_microphones_loaded(self, mics):
-        self.available_mics = mics or []
-        if self.available_mics and (not self.selected_mic_id or self.selected_mic_id == "@DEFAULT_SOURCE@"):
-            self.selected_mic_id = self.available_mics[0]["id"]
-        self._update_mic_dropdown()
-        return GLib.SOURCE_REMOVE
-
-    def _update_mic_dropdown(self):
-        if not hasattr(self, "mic_dropdown_box"):
+    def _load_mics_async(self):
+        if self._mics_loaded:
             return
-        child = self.mic_dropdown_box.get_first_child()
+        self._mics_loaded = True
+
+        def _worker():
+            try:
+                from capture.media_probe import get_connected_microphones
+                mics = get_connected_microphones()
+            except Exception:
+                mics = []
+            GLib.idle_add(self._apply_loaded_mics, mics)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _apply_loaded_mics(self, mics):
+        self.available_mics = mics or []
+        if not self.available_mics:
+            return False
+        self.selected_mic_id = self.available_mics[0]["id"]
+        child = self.mic_dropdown_slot.get_first_child()
         while child:
-            next_child = child.get_next_sibling()
-            self.mic_dropdown_box.remove(child)
-            child = next_child
-
-        if self.available_mics:
-            lbl_mic_dev = Gtk.Label(label=t("audio_device"), halign=Gtk.Align.START)
-            lbl_mic_dev.add_css_class("caption-heading")
-            self.mic_dropdown_box.append(lbl_mic_dev)
-
-            names = [m["name"] for m in self.available_mics]
-            str_list = Gtk.StringList.new(names)
-            drop_mic = Gtk.DropDown.new(str_list, None)
-            drop_mic.connect("notify::selected", self._on_mic_selected)
-            self.mic_dropdown_box.append(drop_mic)
+            self.mic_dropdown_slot.remove(child)
+            child = self.mic_dropdown_slot.get_first_child()
+        names = [m["name"] for m in self.available_mics]
+        dropdown = Gtk.DropDown.new(Gtk.StringList.new(names), None)
+        dropdown.connect("notify::selected", self._on_mic_selected)
+        self.mic_dropdown_slot.append(dropdown)
+        self.mic_box.set_visible(True)
+        return False
 
     def _on_mic_selected(self, dropdown, _param):
         idx = dropdown.get_selected()
@@ -667,11 +719,11 @@ class SadeemCaptureWindow(Gtk.Window):
         motion_ctrl.connect("motion", self._on_motion)
         self.drawing_area.add_controller(motion_ctrl)
 
-        self.drag_gesture = Gtk.GestureDrag()
-        self.drag_gesture.connect("drag-begin", self._on_drag_begin)
-        self.drag_gesture.connect("drag-update", self._on_drag_update)
-        self.drag_gesture.connect("drag-end", self._on_drag_end)
-        self.drawing_area.add_controller(self.drag_gesture)
+        drag_gesture = Gtk.GestureDrag()
+        drag_gesture.connect("drag-begin", self._on_drag_begin)
+        drag_gesture.connect("drag-update", self._on_drag_update)
+        drag_gesture.connect("drag-end", self._on_drag_end)
+        self.drawing_area.add_controller(drag_gesture)
 
         click_gesture = Gtk.GestureClick()
         click_gesture.connect("released", self._on_click_released)
@@ -682,84 +734,47 @@ class SadeemCaptureWindow(Gtk.Window):
             if self.is_recording:
                 self._stop_video_recording()
             else:
-                self._close_or_quit()
+                self._finish_session()
             return True
-        elif keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
+        if keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter):
             self._trigger_action()
             return True
-        elif keyval in (Gdk.KEY_1, Gdk.KEY_KP_1):
+        if keyval in (Gdk.KEY_1, Gdk.KEY_KP_1):
             self._set_mode("selection")
             return True
-        elif keyval in (Gdk.KEY_2, Gdk.KEY_KP_2):
+        if keyval in (Gdk.KEY_2, Gdk.KEY_KP_2):
             self._set_mode("screen")
             return True
-        elif keyval in (Gdk.KEY_3, Gdk.KEY_KP_3):
+        if keyval in (Gdk.KEY_3, Gdk.KEY_KP_3):
             self._set_mode("window")
             return True
-        elif keyval in (Gdk.KEY_c, Gdk.KEY_C):
+        if keyval in (Gdk.KEY_c, Gdk.KEY_C):
             self._toggle_cursor()
             return True
-        elif keyval in (Gdk.KEY_h, Gdk.KEY_H):
-            if self.btn_halo.get_sensitive():
-                self._toggle_halo()
+        if keyval in (Gdk.KEY_h, Gdk.KEY_H) and self.btn_halo.get_sensitive():
+            self._toggle_halo()
+            return True
+        if keyval in (Gdk.KEY_v, Gdk.KEY_V):
+            self._set_media_type("video" if self.media_type == "photo" else "photo")
             return True
         return False
 
-    def _set_mode(self, new_mode):
+    def _set_mode(self, new_mode: str):
         self.mode = new_mode
         self._update_mode_ui()
         if self.mode == "window":
             self.windows = self.client.list_windows()
         self.drawing_area.queue_draw()
 
-    def _cleanup_bg(self):
-        if hasattr(self, "bg_picture") and self.bg_picture:
-            self.bg_picture.set_paintable(None)
-        if self.bg_path and os.path.exists(self.bg_path):
-            try:
-                os.remove(self.bg_path)
-            except Exception:
-                pass
-        self.bg_path = None
-
-    def _close_or_quit(self):
-        self.set_visible(False)
-        self._cleanup_bg()
-        self.close()
-        self.app.window = None
-        if not getattr(self.app, "is_daemon", False):
-            self.app.quit()
-
-    def _send_error_notification(self, title, msg):
-        try:
-            notif = Gio.Notification.new(title)
-            notif.set_body(msg)
-            notif.set_icon(Gio.ThemedIcon.new("dialog-error-symbolic"))
-            self.app.send_notification("sadeem-capture-error", notif)
-        except Exception:
-            pass
-        if shutil.which("notify-send"):
-            try:
-                subprocess.run(
-                    ["notify-send", "-a", "Sadeem Capture", "-i", "dialog-error-symbolic", title, msg],
-                    check=False,
-                )
-            except Exception:
-                pass
-
     def _update_top_pill(self):
-        if not hasattr(self, "top_pill") or not self.top_pill:
-            return
         if self.mode == "selection":
             if self.sel_w > 4 and self.sel_h > 4:
-                self.top_pill_label.set_text(f"{t('mode_selection')} — {int(self.sel_w)} × {int(self.sel_h)} px")
-                self.top_pill_icon.set_from_icon_name("edit-select-all-symbolic")
+                self.top_pill_label.set_text(f"{t('mode_selection')} — {int(round(self.sel_w))} × {int(round(self.sel_h))} px")
             else:
                 self.top_pill_label.set_text(t("select_hint"))
-                self.top_pill_icon.set_from_icon_name("edit-select-all-symbolic")
+            self.top_pill_icon.set_from_icon_name("edit-select-all-symbolic")
         elif self.mode == "screen":
-            screen_txt = t("screen_hint") if "screen_hint" in i18n.STRINGS.get(i18n.LANG, {}) else t("mode_screen")
-            self.top_pill_label.set_text(screen_txt)
+            self.top_pill_label.set_text(t("screen_hint"))
             self.top_pill_icon.set_from_icon_name("video-display-symbolic")
         elif self.mode == "window":
             if self.hovered_window:
@@ -770,18 +785,16 @@ class SadeemCaptureWindow(Gtk.Window):
             self.top_pill_icon.set_from_icon_name("preferences-system-windows-symbolic")
 
     def _update_mode_ui(self):
-        self.btn_mode_sel.remove_css_class("active")
-        self.btn_mode_screen.remove_css_class("active")
-        self.btn_mode_win.remove_css_class("active")
+        for btn, key in (
+            (self.btn_mode_sel, "selection"),
+            (self.btn_mode_screen, "screen"),
+            (self.btn_mode_win, "window"),
+        ):
+            if self.mode == key:
+                btn.add_css_class("active")
+            else:
+                btn.remove_css_class("active")
 
-        if self.mode == "selection":
-            self.btn_mode_sel.add_css_class("active")
-        elif self.mode == "screen":
-            self.btn_mode_screen.add_css_class("active")
-        elif self.mode == "window":
-            self.btn_mode_win.add_css_class("active")
-
-        # Halo rule: disabled in window mode or if cursor is disabled
         if self.mode == "window" or not self.cursor_enabled:
             self.btn_halo.set_sensitive(False)
             self.halo_enabled = False
@@ -790,6 +803,29 @@ class SadeemCaptureWindow(Gtk.Window):
             self.btn_halo.set_sensitive(True)
 
         self._update_top_pill()
+
+    def _set_media_type(self, mtype: str):
+        self.media_type = mtype
+        if mtype == "video":
+            self.btn_photo.remove_css_class("active")
+            self.btn_video.add_css_class("active")
+            if hasattr(self, "shutter_core"):
+                self.shutter_core.add_css_class("record-mode")
+            if hasattr(self, "shutter_image"):
+                self.shutter_image.set_from_icon_name("media-record-symbolic")
+            self.btn_shutter.set_tooltip_text(t("btn_record"))
+            self.video_revealer.set_reveal_child(True)
+            self._load_mics_async()
+        else:
+            self.btn_photo.add_css_class("active")
+            self.btn_video.remove_css_class("active")
+            if hasattr(self, "shutter_core"):
+                self.shutter_core.remove_css_class("record-mode")
+            if hasattr(self, "shutter_image"):
+                self.shutter_image.set_from_icon_name("camera-photo-symbolic")
+            self.btn_shutter.set_tooltip_text(t("btn_capture"))
+            self.video_revealer.set_reveal_child(False)
+        self.drawing_area.queue_draw()
 
     def _toggle_cursor(self, *_a):
         self.cursor_enabled = not self.cursor_enabled
@@ -811,90 +847,83 @@ class SadeemCaptureWindow(Gtk.Window):
     def _toggle_quick_mic(self, *_a):
         self.audio_mic_enabled = not self.audio_mic_enabled
         if self.audio_mic_enabled:
-            self.btn_quick_mic.add_css_class("active-blue")
+            self.btn_quick_mic.add_css_class("active")
         else:
-            self.btn_quick_mic.remove_css_class("active-blue")
+            self.btn_quick_mic.remove_css_class("active")
 
     def _toggle_quick_sys_audio(self, *_a):
         self.audio_system_enabled = not self.audio_system_enabled
         if self.audio_system_enabled:
-            self.btn_quick_sys_audio.add_css_class("active-blue")
+            self.btn_quick_sys_audio.add_css_class("active")
         else:
-            self.btn_quick_sys_audio.remove_css_class("active-blue")
+            self.btn_quick_sys_audio.remove_css_class("active")
 
-    def _set_resolution(self, res):
+    def _set_resolution(self, res: str):
         self.video_resolution = res
-        self.btn_res_native.remove_css_class("active")
-        self.btn_res_1080p.remove_css_class("active")
-        self.btn_res_720p.remove_css_class("active")
-        if res == "native":
-            self.btn_res_native.add_css_class("active")
-        elif res == "1080p":
-            self.btn_res_1080p.add_css_class("active")
-        elif res == "720p":
-            self.btn_res_720p.add_css_class("active")
+        for btn, key in (
+            (self.btn_res_native, "native"),
+            (self.btn_res_1080p, "1080p"),
+            (self.btn_res_720p, "720p"),
+        ):
+            if res == key:
+                btn.add_css_class("active")
+            else:
+                btn.remove_css_class("active")
 
-    def _set_fps(self, fps):
+    def _set_fps(self, fps: int):
         self.video_framerate = fps
-        self.btn_fps_30.remove_css_class("active")
-        self.btn_fps_60.remove_css_class("active")
         if fps == 30:
             self.btn_fps_30.add_css_class("active")
+            self.btn_fps_60.remove_css_class("active")
         else:
+            self.btn_fps_30.remove_css_class("active")
             self.btn_fps_60.add_css_class("active")
 
-    def _set_codec(self, codec):
+    def _set_codec(self, codec: str):
         self.video_codec = codec
-        self.btn_codec_h264.remove_css_class("active")
-        self.btn_codec_h265.remove_css_class("active")
         if codec == "h264":
             self.btn_codec_h264.add_css_class("active")
+            self.btn_codec_h265.remove_css_class("active")
         else:
+            self.btn_codec_h264.remove_css_class("active")
             self.btn_codec_h265.add_css_class("active")
 
-    def _set_media_type(self, mtype):
-        self.media_type = mtype
-        if mtype == "video":
-            self.btn_photo.remove_css_class("active")
-            self.btn_video.add_css_class("active")
-            self.btn_quick_mic.set_visible(True)
-            self.btn_quick_sys_audio.set_visible(True)
-            self.btn_video_settings.set_visible(True)
+    # --- Pointer & Selection Interaction ---
+    def _point_in_panel(self, x: float, y: float) -> bool:
+        try:
+            ok, rect = self.panel_wrapper.compute_bounds(self.overlay)
+            if ok:
+                return (
+                    rect.origin.x <= x <= rect.origin.x + rect.size.width
+                    and rect.origin.y <= y <= rect.origin.y + rect.size.height
+                )
+        except Exception:
+            pass
+        return False
 
-            self.btn_shutter.remove_css_class("sadeem-shutter-btn")
-            self.btn_shutter.add_css_class("sadeem-shutter-btn-record")
-            self.btn_shutter.set_icon_name("media-record-symbolic")
-            self.btn_shutter.set_tooltip_text(t("btn_record"))
+    def _hit_test_selection(self, x: float, y: float) -> str:
+        if self.sel_w <= 8 or self.sel_h <= 8:
+            return "new"
+        r = 16.0
+        corners = (
+            ("tl", self.sel_x, self.sel_y),
+            ("tr", self.sel_x + self.sel_w, self.sel_y),
+            ("bl", self.sel_x, self.sel_y + self.sel_h),
+            ("br", self.sel_x + self.sel_w, self.sel_y + self.sel_h),
+        )
+        for name, cx, cy in corners:
+            if math.hypot(x - cx, y - cy) <= r:
+                return name
+        if self.sel_x <= x <= self.sel_x + self.sel_w and self.sel_y <= y <= self.sel_y + self.sel_h:
+            return "move"
+        return "new"
 
-            # Lazy load microphones on first switch to video mode
-            if not self._mics_loaded:
-                self._mics_loaded = True
-                self._async_load_microphones()
-        else:
-            self.btn_photo.add_css_class("active")
-            self.btn_video.remove_css_class("active")
-            self.btn_quick_mic.set_visible(False)
-            self.btn_quick_sys_audio.set_visible(False)
-            self.btn_video_settings.set_visible(False)
-
-            self.btn_shutter.remove_css_class("sadeem-shutter-btn-record")
-            self.btn_shutter.add_css_class("sadeem-shutter-btn")
-            self.btn_shutter.set_icon_name("camera-photo-symbolic")
-            self.btn_shutter.set_tooltip_text(t("btn_capture"))
-
-        self.drawing_area.queue_draw()
-
-    # --- Mouse & Gestures Handling ---
     def _on_motion(self, _ctrl, x, y):
-        self.pointer_x = x
-        self.pointer_y = y
         if self.mode == "window":
             found = None
             for w in self.windows:
-                wx = w.get("x", 0)
-                wy = w.get("y", 0)
-                ww = w.get("width", 0)
-                wh = w.get("height", 0)
+                wx, wy = w.get("x", 0), w.get("y", 0)
+                ww, wh = w.get("width", 0), w.get("height", 0)
                 if wx <= x <= wx + ww and wy <= y <= wy + wh:
                     found = w
                     break
@@ -904,188 +933,191 @@ class SadeemCaptureWindow(Gtk.Window):
                 self.drawing_area.queue_draw()
 
     def _on_drag_begin(self, _gesture, start_x, start_y):
-        if self.mode != "selection":
+        if self.mode != "selection" or self._point_in_panel(start_x, start_y):
+            self._drag_action = None
             return
-        self.is_dragging = True
-        self.drag_start_x = start_x
-        self.drag_start_y = start_y
-        self.sel_x = start_x
-        self.sel_y = start_y
-        self.sel_w = 0
-        self.sel_h = 0
-        self._update_top_pill()
-        self.drawing_area.queue_draw()
+        self._drag_origin_x = start_x
+        self._drag_origin_y = start_y
+        self._drag_init_rect = (self.sel_x, self.sel_y, self.sel_w, self.sel_h)
+        self._drag_action = self._hit_test_selection(start_x, start_y)
+        if self._drag_action == "new":
+            self.sel_x = start_x
+            self.sel_y = start_y
+            self.sel_w = 0.0
+            self.sel_h = 0.0
+            self._update_top_pill()
+            self.drawing_area.queue_draw()
 
     def _on_drag_update(self, _gesture, offset_x, offset_y):
-        if self.mode != "selection" or not self.is_dragging:
+        if self.mode != "selection" or not self._drag_action:
             return
-        cur_x = self.drag_start_x + offset_x
-        cur_y = self.drag_start_y + offset_y
-        self.sel_x = min(self.drag_start_x, cur_x)
-        self.sel_y = min(self.drag_start_y, cur_y)
-        self.sel_w = abs(offset_x)
-        self.sel_h = abs(offset_y)
+        win_w = float(self.drawing_area.get_width() or 1920)
+        win_h = float(self.drawing_area.get_height() or 1080)
+        ix, iy, iw, ih = self._drag_init_rect
+
+        if self._drag_action == "new":
+            cur_x = max(0.0, min(win_w, self._drag_origin_x + offset_x))
+            cur_y = max(0.0, min(win_h, self._drag_origin_y + offset_y))
+            self.sel_x = min(self._drag_origin_x, cur_x)
+            self.sel_y = min(self._drag_origin_y, cur_y)
+            self.sel_w = abs(cur_x - self._drag_origin_x)
+            self.sel_h = abs(cur_y - self._drag_origin_y)
+        elif self._drag_action == "move":
+            self.sel_x = max(0.0, min(win_w - iw, ix + offset_x))
+            self.sel_y = max(0.0, min(win_h - ih, iy + offset_y))
+        else:
+            x1, y1, x2, y2 = ix, iy, ix + iw, iy + ih
+            if "l" in self._drag_action:
+                x1 = max(0.0, min(win_w, ix + offset_x))
+            if "r" in self._drag_action:
+                x2 = max(0.0, min(win_w, ix + iw + offset_x))
+            if "t" in self._drag_action:
+                y1 = max(0.0, min(win_h, iy + offset_y))
+            if "b" in self._drag_action:
+                y2 = max(0.0, min(win_h, iy + ih + offset_y))
+            self.sel_x = min(x1, x2)
+            self.sel_y = min(y1, y2)
+            self.sel_w = abs(x2 - x1)
+            self.sel_h = abs(y2 - y1)
+
         self._update_top_pill()
         self.drawing_area.queue_draw()
 
-    def _on_drag_end(self, _gesture, _offset_x, _offset_y):
-        if self.mode != "selection":
-            return
-        self.is_dragging = False
+    def _on_drag_end(self, _gesture, _ox, _oy):
+        self._drag_action = None
         self._update_top_pill()
         self.drawing_area.queue_draw()
 
     def _on_click_released(self, _gesture, n_press, x, y):
-        tb_alloc = self.toolbar_box.get_allocation()
-        if (
-            tb_alloc.x <= x <= tb_alloc.x + tb_alloc.width
-            and tb_alloc.y <= y <= tb_alloc.y + tb_alloc.height
-        ):
+        if self._point_in_panel(x, y):
             return
-
         if self.mode == "window" and self.hovered_window:
             self._trigger_action(target_win=self.hovered_window)
         elif self.mode == "screen":
             self._trigger_action()
+        elif self.mode == "selection" and n_press == 2 and self.sel_w > 8 and self.sel_h > 8:
+            if self.sel_x <= x <= self.sel_x + self.sel_w and self.sel_y <= y <= self.sel_y + self.sel_h:
+                self._trigger_action()
 
-    # --- Cairo Canvas Drawing (Zero Full-Screen CPU Blit) ---
-    def _on_draw(self, _area, cr, width, height):
-        # 1. Base translucent dimming layer
-        if self.bg_path:
-            cr.set_source_rgba(0.0, 0.0, 0.0, 0.42)
-        else:
-            cr.set_source_rgba(0.08, 0.08, 0.12, 0.70)
-        cr.paint()
-
-        # 2. Cutouts & highlights according to active mode
-        if self.mode == "selection":
-            self._draw_selection(cr, width, height)
-        elif self.mode == "screen":
-            self._draw_screen_highlight(cr, width, height)
-        elif self.mode == "window":
-            self._draw_window_highlight(cr, width, height)
-
-    def _draw_selection(self, cr, width, height):
-        if self.sel_w > 4 and self.sel_h > 4:
-            # Cut out selection rectangle to reveal crystal-clear bg_picture beneath
-            cr.save()
-            cr.rectangle(self.sel_x, self.sel_y, self.sel_w, self.sel_h)
-            cr.set_operator(cairo.OPERATOR_CLEAR)
+    # --- Drawing (4-rect dimming around focus area — zero OPERATOR_CLEAR artifacts) ---
+    def _dim_around(self, cr, width, height, rx, ry, rw, rh):
+        cr.set_source_rgba(0.0, 0.0, 0.0, 0.45)
+        if ry > 0:
+            cr.rectangle(0, 0, width, ry)
             cr.fill()
-            cr.restore()
+        bottom_y = ry + rh
+        if bottom_y < height:
+            cr.rectangle(0, bottom_y, width, height - bottom_y)
+            cr.fill()
+        if rx > 0:
+            cr.rectangle(0, ry, rx, rh)
+            cr.fill()
+        right_x = rx + rw
+        if right_x < width:
+            cr.rectangle(right_x, ry, width - right_x, rh)
+            cr.fill()
 
-            accent_color = (0.88, 0.11, 0.14, 0.95) if self.media_type == "video" else (1.0, 1.0, 1.0, 0.90)
-            cr.set_source_rgba(*accent_color)
-            cr.set_line_width(2.0)
-            cr.rectangle(self.sel_x, self.sel_y, self.sel_w, self.sel_h)
-            cr.stroke()
+    def _on_draw(self, _area, cr, width, height):
+        if not self.bg_texture:
+            cr.set_source_rgba(0.08, 0.08, 0.11, 0.85)
+            cr.paint()
 
-            handles = [
-                (self.sel_x, self.sel_y),
-                (self.sel_x + self.sel_w / 2, self.sel_y),
-                (self.sel_x + self.sel_w, self.sel_y),
-                (self.sel_x, self.sel_y + self.sel_h / 2),
-                (self.sel_x + self.sel_w, self.sel_y + self.sel_h / 2),
-                (self.sel_x, self.sel_y + self.sel_h),
-                (self.sel_x + self.sel_w / 2, self.sel_y + self.sel_h),
-                (self.sel_x + self.sel_w, self.sel_y + self.sel_h),
-            ]
-            cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-            for hx, hy in handles:
-                cr.rectangle(hx - 3.5, hy - 3.5, 7.0, 7.0)
-                cr.fill_preserve()
-                cr.set_source_rgba(0.1, 0.1, 0.14, 0.9)
-                cr.set_line_width(1.0)
+        accent = (0.88, 0.11, 0.14, 0.95) if self.media_type == "video" else (1.0, 1.0, 1.0, 0.92)
+
+        if self.mode == "selection":
+            if self.sel_w > 4 and self.sel_h > 4:
+                self._dim_around(cr, width, height, self.sel_x, self.sel_y, self.sel_w, self.sel_h)
+
+                # Crisp dashed/solid border like GNOME Screenshot UI
+                cr.set_source_rgba(*accent)
+                cr.set_line_width(2.0)
+                cr.rectangle(self.sel_x, self.sel_y, self.sel_w, self.sel_h)
                 cr.stroke()
-                cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
 
-            dim_str = f"{int(self.sel_w)} × {int(self.sel_h)}"
-            layout = self.create_pango_layout(dim_str)
-            layout.set_font_description(Pango.FontDescription.from_string("Sans Bold 10"))
-            _, log_rect = layout.get_pixel_extents()
+                # Clean circular corner handles
+                for hx, hy in (
+                    (self.sel_x, self.sel_y),
+                    (self.sel_x + self.sel_w, self.sel_y),
+                    (self.sel_x, self.sel_y + self.sel_h),
+                    (self.sel_x + self.sel_w, self.sel_y + self.sel_h),
+                ):
+                    cr.arc(hx, hy, 6.0, 0, 2 * math.pi)
+                    cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
+                    cr.fill_preserve()
+                    cr.set_source_rgba(0.12, 0.12, 0.16, 0.85)
+                    cr.set_line_width(1.5)
+                    cr.stroke()
 
-            badge_w = log_rect.width + 16
-            badge_h = 24
-            badge_x = self.sel_x + 8
-            badge_y = self.sel_y - 30 if self.sel_y > 36 else self.sel_y + self.sel_h + 8
+                # Dimensions badge via PangoCairo
+                self._draw_badge(
+                    cr,
+                    f"{int(round(self.sel_w))} × {int(round(self.sel_h))}",
+                    self.sel_x + 8,
+                    self.sel_y - 32 if self.sel_y > 40 else self.sel_y + 8,
+                )
+            else:
+                cr.set_source_rgba(0.0, 0.0, 0.0, 0.36)
+                cr.paint()
 
-            cr.set_source_rgba(0.09, 0.09, 0.12, 0.90)
-            self._draw_rounded_rect(cr, badge_x, badge_y, badge_w, badge_h, 6)
-            cr.fill_preserve()
-            cr.set_source_rgba(1.0, 1.0, 1.0, 0.20)
-            cr.set_line_width(1.0)
+        elif self.mode == "screen":
+            cr.set_source_rgba(*accent)
+            cr.set_line_width(3.0)
+            cr.rectangle(2, 2, width - 4, height - 4)
             cr.stroke()
 
-            cr.set_source_rgba(0.95, 0.96, 0.98, 1.0)
-            cr.move_to(badge_x + 8, badge_y + (badge_h - log_rect.height) / 2)
-            PangoCairo.show_layout(cr, layout)
+        elif self.mode == "window":
+            if self.hovered_window:
+                wx = float(self.hovered_window.get("x", 0))
+                wy = float(self.hovered_window.get("y", 0))
+                ww = float(self.hovered_window.get("width", 0))
+                wh = float(self.hovered_window.get("height", 0))
+                self._dim_around(cr, width, height, wx, wy, ww, wh)
 
-    def _draw_screen_highlight(self, cr, width, height):
-        cr.save()
-        cr.rectangle(0, 0, width, height)
-        cr.set_operator(cairo.OPERATOR_CLEAR)
-        cr.fill()
-        cr.restore()
+                cr.set_source_rgba(*accent)
+                cr.set_line_width(2.5)
+                self._rounded_rect(cr, wx, wy, ww, wh, 10)
+                cr.stroke()
 
-        accent = (0.88, 0.11, 0.14, 0.85) if self.media_type == "video" else (1.0, 1.0, 1.0, 0.85)
-        cr.set_source_rgba(*accent)
-        cr.set_line_width(3.0)
-        cr.rectangle(3, 3, width - 6, height - 6)
+                title = self.hovered_window.get("title") or self.hovered_window.get("appName") or ""
+                if title:
+                    display = title if len(title) <= 45 else title[:42] + "..."
+                    self._draw_badge(cr, display, wx + 12, wy + 12)
+            else:
+                cr.set_source_rgba(0.0, 0.0, 0.0, 0.36)
+                cr.paint()
+
+    def _draw_badge(self, cr, text: str, x: float, y: float):
+        layout = self.create_pango_layout(text)
+        layout.set_font_description(Pango.FontDescription.from_string("Sans Bold 10"))
+        _, log_rect = layout.get_pixel_extents()
+        bw = log_rect.width + 18
+        bh = 26
+        cr.set_source_rgba(0.11, 0.11, 0.14, 0.90)
+        self._rounded_rect(cr, x, y, bw, bh, 8)
+        cr.fill_preserve()
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.16)
+        cr.set_line_width(1.0)
         cr.stroke()
 
-    def _draw_window_highlight(self, cr, width, height):
-        if self.hovered_window:
-            wx = self.hovered_window.get("x", 0)
-            wy = self.hovered_window.get("y", 0)
-            ww = self.hovered_window.get("width", 0)
-            wh = self.hovered_window.get("height", 0)
-            title = self.hovered_window.get("title") or self.hovered_window.get("appName") or ""
+        cr.set_source_rgba(0.96, 0.97, 0.99, 1.0)
+        cr.move_to(x + 9, y + (bh - log_rect.height) / 2.0)
+        PangoCairo.show_layout(cr, layout)
 
-            cr.save()
-            self._draw_rounded_rect(cr, wx, wy, ww, wh, 8)
-            cr.set_operator(cairo.OPERATOR_CLEAR)
-            cr.fill()
-            cr.restore()
-
-            accent = (0.88, 0.11, 0.14, 0.95) if self.media_type == "video" else (1.0, 1.0, 1.0, 0.95)
-            cr.set_source_rgba(*accent)
-            cr.set_line_width(2.5)
-            self._draw_rounded_rect(cr, wx, wy, ww, wh, 8)
-            cr.stroke()
-
-            if title:
-                display_title = title if len(title) <= 45 else title[:42] + "..."
-                layout = self.create_pango_layout(display_title)
-                layout.set_font_description(Pango.FontDescription.from_string("Sans Bold 10"))
-                _, log_rect = layout.get_pixel_extents()
-
-                badge_w = log_rect.width + 18
-                badge_h = 26
-                badge_x = wx + 12
-                badge_y = wy + 12
-
-                cr.set_source_rgba(0.09, 0.09, 0.12, 0.92)
-                self._draw_rounded_rect(cr, badge_x, badge_y, badge_w, badge_h, 6)
-                cr.fill_preserve()
-                cr.set_source_rgba(*accent)
-                cr.set_line_width(1.0)
-                cr.stroke()
-
-                cr.set_source_rgba(0.95, 0.96, 0.98, 1.0)
-                cr.move_to(badge_x + 9, badge_y + (badge_h - log_rect.height) / 2)
-                PangoCairo.show_layout(cr, layout)
-
-    def _draw_rounded_rect(self, cr, x, y, w, h, r):
+    def _rounded_rect(self, cr, x, y, w, h, r):
+        r = min(r, w / 2.0, h / 2.0)
         deg = math.pi / 180.0
         cr.new_sub_path()
-        cr.arc(x + w - r, y + r, r, -90 * deg, 0 * deg)
-        cr.arc(x + w - r, y + h - r, r, 0 * deg, 90 * deg)
+        cr.arc(x + w - r, y + r, r, -90 * deg, 0)
+        cr.arc(x + w - r, y + h - r, r, 0, 90 * deg)
         cr.arc(x + r, y + h - r, r, 90 * deg, 180 * deg)
         cr.arc(x + r, y + r, r, 180 * deg, 270 * deg)
         cr.close_path()
 
-    # --- Trigger Action: Photo vs Video ---
+    # --- Actions ---
     def _trigger_action(self, target_win=None):
+        if self._action_in_progress:
+            return
+        self._action_in_progress = True
         if self.media_type == "video":
             if self.is_recording:
                 self._stop_video_recording()
@@ -1094,74 +1126,126 @@ class SadeemCaptureWindow(Gtk.Window):
         else:
             self._trigger_photo_capture(target_win)
 
-    # --- Photo Pipeline ---
+    def _crop_from_bg(self, rect, dest_path: str) -> bool:
+        if not self.bg_path or not os.path.isfile(self.bg_path):
+            return False
+        try:
+            src = cairo.ImageSurface.create_from_png(self.bg_path)
+            img_w, img_h = src.get_width(), src.get_height()
+            if rect is None:
+                shutil.copyfile(self.bg_path, dest_path)
+                return os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0
+
+            win_w = float(self.get_width() or img_w)
+            win_h = float(self.get_height() or img_h)
+            sx = img_w / win_w
+            sy = img_h / win_h
+            rx, ry, rw, rh = rect
+            ix = max(0, min(img_w - 1, int(round(rx * sx))))
+            iy = max(0, min(img_h - 1, int(round(ry * sy))))
+            iw = max(1, min(img_w - ix, int(round(rw * sx))))
+            ih = max(1, min(img_h - iy, int(round(rh * sy))))
+
+            out = cairo.ImageSurface(cairo.FORMAT_ARGB32, iw, ih)
+            ctx = cairo.Context(out)
+            ctx.set_source_surface(src, -ix, -iy)
+            ctx.paint()
+            out.write_to_png(dest_path)
+            return os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0
+        except Exception as e:
+            print(f"[sadeem-capture] Background crop fallback failed: {e}", file=sys.stderr)
+            return False
+
     def _trigger_photo_capture(self, target_win=None):
+        # Fast path: when cursor & halo are disabled and we already froze the screen
+        if (
+            not self.cursor_enabled
+            and not self.halo_enabled
+            and self.bg_path
+            and os.path.isfile(self.bg_path)
+            and self.mode in ("selection", "screen")
+            and target_win is None
+        ):
+            dest_path = generate_screenshot_path()
+            rect = (self.sel_x, self.sel_y, self.sel_w, self.sel_h) if (self.mode == "selection" and self.sel_w > 4 and self.sel_h > 4) else None
+            self.set_visible(False)
+            if self._crop_from_bg(rect, dest_path):
+                copy_file_to_clipboard(dest_path)
+                launch_gallery_editor(dest_path)
+                self._finish_session()
+                return
+
         self.set_visible(False)
-        GLib.timeout_add(80, self._do_execute_photo_capture, target_win)
+        GLib.timeout_add(80, self._execute_photo_capture, target_win)
 
-    def _do_execute_photo_capture(self, target_win=None):
+    def _execute_photo_capture(self, target_win=None):
         dest_path = generate_screenshot_path()
-
-        if self.halo_enabled:
-            try:
-                self.client.set_halo_active(True)
-            except Exception:
-                pass
-
         success = False
         try:
+            if self.halo_enabled:
+                self.client.set_halo_active(True)
+
             if target_win:
-                win_id = target_win.get("id", 0)
-                success = self.client.capture_window(win_id, True, self.cursor_enabled, dest_path)
-            elif self.mode == "selection":
-                if self.sel_w > 4 and self.sel_h > 4:
-                    success = self.client.capture_area(
-                        int(self.sel_x),
-                        int(self.sel_y),
-                        int(self.sel_w),
-                        int(self.sel_h),
-                        self.cursor_enabled,
-                        dest_path,
+                wid = target_win.get("id", 0)
+                success = self.client.capture_window(wid, True, self.cursor_enabled, dest_path)
+                if not success:
+                    rect = (
+                        target_win.get("x", 0),
+                        target_win.get("y", 0),
+                        target_win.get("width", 0),
+                        target_win.get("height", 0),
                     )
-                else:
-                    success = self.client.capture_screen(self.cursor_enabled, dest_path)
-            elif self.mode == "screen":
+                    success = self._crop_from_bg(rect, dest_path)
+            elif self.mode == "selection" and self.sel_w > 4 and self.sel_h > 4:
+                success = self.client.capture_area(
+                    int(round(self.sel_x)),
+                    int(round(self.sel_y)),
+                    int(round(self.sel_w)),
+                    int(round(self.sel_h)),
+                    self.cursor_enabled,
+                    dest_path,
+                )
+                if not success:
+                    success = self._crop_from_bg((self.sel_x, self.sel_y, self.sel_w, self.sel_h), dest_path)
+            elif self.mode == "window" and self.hovered_window:
+                wid = self.hovered_window.get("id", 0)
+                success = self.client.capture_window(wid, True, self.cursor_enabled, dest_path)
+                if not success:
+                    rect = (
+                        self.hovered_window.get("x", 0),
+                        self.hovered_window.get("y", 0),
+                        self.hovered_window.get("width", 0),
+                        self.hovered_window.get("height", 0),
+                    )
+                    success = self._crop_from_bg(rect, dest_path)
+            else:
                 success = self.client.capture_screen(self.cursor_enabled, dest_path)
-            elif self.mode == "window":
-                if self.hovered_window:
-                    win_id = self.hovered_window.get("id", 0)
-                    success = self.client.capture_window(win_id, True, self.cursor_enabled, dest_path)
-                else:
-                    success = self.client.capture_screen(self.cursor_enabled, dest_path)
+                if not success:
+                    success = self._crop_from_bg(None, dest_path)
         except Exception as e:
             print(f"[sadeem-capture] Photo capture error: {e}", file=sys.stderr)
-            import traceback
-            traceback.print_exc(file=sys.stderr)
-            self._send_error_notification(t("error_capture_failed"), str(e))
         finally:
             if self.halo_enabled:
-                try:
-                    self.client.set_halo_active(False)
-                except Exception:
-                    pass
+                self.client.set_halo_active(False)
 
-        if success and os.path.exists(dest_path) and os.path.getsize(dest_path) > 0:
+        if success and os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0:
             copy_file_to_clipboard(dest_path)
             launch_gallery_editor(dest_path)
-        elif not success:
-            self._send_error_notification(t("error_capture_failed"), "Failed to save screenshot file")
+        else:
+            _send_notification(self.app, "sadeem-capture-err", t("app_name"), t("error_capture_failed"), "dialog-error-symbolic")
 
-        self._close_or_quit()
+        self._finish_session()
         return GLib.SOURCE_REMOVE
 
-    # --- Video Recording Pipeline ---
+    # --- Video Pipeline (Lazy-loaded GStreamer) ---
     def _start_video_recording(self, target_win=None):
         self.set_visible(False)
-        GLib.timeout_add(80, self._do_start_video, target_win)
+        GLib.timeout_add(90, self._do_start_video, target_win)
 
     def _do_start_video(self, target_win=None):
         try:
-            # Determine audio mode
+            from capture.video_recorder import VideoRecorder
+
             if self.audio_system_enabled and self.audio_mic_enabled:
                 a_mode = "both"
             elif self.audio_system_enabled:
@@ -1171,20 +1255,22 @@ class SadeemCaptureWindow(Gtk.Window):
             else:
                 a_mode = "none"
 
-            # Determine crop box and window rect
             crop_box = None
             if self.mode == "selection" and self.sel_w > 4 and self.sel_h > 4:
                 crop_box = (self.sel_x, self.sel_y, self.sel_w, self.sel_h)
             elif self.mode == "window":
                 win = target_win or self.hovered_window
                 if win:
-                    crop_box = (win.get("x", 0), win.get("y", 0), win.get("width", 1280), win.get("height", 720))
+                    crop_box = (
+                        win.get("x", 0),
+                        win.get("y", 0),
+                        win.get("width", 1280),
+                        win.get("height", 720),
+                    )
 
             scale = self.get_scale_factor() or 1.0
             width = self.get_width() or 1920
             height = self.get_height() or 1080
-
-            from capture.video_recorder import VideoRecorder
 
             self.recorder = VideoRecorder(
                 mode=self.mode,
@@ -1199,153 +1285,102 @@ class SadeemCaptureWindow(Gtk.Window):
                 cursor_enabled=self.cursor_enabled,
                 halo_enabled=self.halo_enabled,
                 capture_client=self.client,
+                on_stream_ended=self._on_recorder_stream_ended,
             )
-
-            success = self.recorder.start()
-            if not success:
-                print("[sadeem-capture] Failed to start recorder.", file=sys.stderr)
-                self._send_error_notification(t("error_rec_start_failed"), "Recorder start returned false")
-                self._close_or_quit()
+            if not self.recorder.start():
+                _send_notification(self.app, "sadeem-rec-err", t("app_name"), t("error_rec_start_failed"), "dialog-error-symbolic")
+                self._finish_session()
                 return GLib.SOURCE_REMOVE
 
+            self._cleanup_bg()
             self.is_recording = True
-
-            # Subscribe to StopRecordingRequested and SilentScreenshotRequested from panel indicator
-            self._stop_sig_id = self.client.subscribe_stop_recording(self._on_stop_signal)
-            self._silent_sig_id = self.client.subscribe_silent_screenshot(self._on_silent_screenshot_signal)
+            self._action_in_progress = False
+            self._stop_sig_id = self.client.subscribe_stop_recording(lambda: GLib.idle_add(self._stop_video_recording))
+            self._silent_sig_id = self.client.subscribe_silent_screenshot(lambda: GLib.idle_add(self._take_silent_screenshot))
         except Exception as e:
-            print(f"[sadeem-capture] Video recording start error: {e}", file=sys.stderr)
-            import traceback
-            traceback.print_exc(file=sys.stderr)
-            self._send_error_notification(t("error_rec_start_failed"), str(e))
-            self._close_or_quit()
-            return GLib.SOURCE_REMOVE
-
+            print(f"[sadeem-capture] Video start error: {e}", file=sys.stderr)
+            _send_notification(self.app, "sadeem-rec-err", t("app_name"), t("error_rec_start_failed"), "dialog-error-symbolic")
+            self._finish_session()
         return GLib.SOURCE_REMOVE
 
-    def _on_silent_screenshot_signal(self):
-        GLib.idle_add(self._take_silent_screenshot)
+    def _on_recorder_stream_ended(self, err=None):
+        if self.is_recording:
+            GLib.idle_add(self._stop_video_recording)
 
     def _take_silent_screenshot(self):
-        """Takes an instant silent screenshot without interrupting the active video recording."""
         if not self.is_recording:
-            return
-
+            return False
         dest_path = generate_screenshot_path()
-        success = False
-
         if self.mode == "selection" and self.sel_w > 4 and self.sel_h > 4:
-            success = self.client.capture_area(
-                int(self.sel_x),
-                int(self.sel_y),
-                int(self.sel_w),
-                int(self.sel_h),
+            ok = self.client.capture_area(
+                int(round(self.sel_x)),
+                int(round(self.sel_y)),
+                int(round(self.sel_w)),
+                int(round(self.sel_h)),
                 self.cursor_enabled,
                 dest_path,
             )
         else:
-            success = self.client.capture_screen(self.cursor_enabled, dest_path)
+            ok = self.client.capture_screen(self.cursor_enabled, dest_path)
 
-        if success and os.path.exists(dest_path) and os.path.getsize(dest_path) > 0:
+        if ok and os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0:
             copy_file_to_clipboard(dest_path)
             self.client.flash_camera_indicator()
-            try:
-                subprocess.run(
-                    ["canberra-gtk-play", "-i", "camera-shutter"],
-                    check=False,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-            except Exception:
-                pass
-
-    def _on_stop_signal(self):
-        GLib.idle_add(self._stop_video_recording)
-
-    def _stop_video_recording(self):
-        if not self.is_recording or not self.recorder:
-            self._close_or_quit()
-            return
-
-        success, path, size, duration = self.recorder.stop()
-        self.is_recording = False
-
-        if success and os.path.isfile(path) and size > 0:
-            formatted_size = format_file_size(size)
-            # 1. Desktop Notification
-            title = t("notif_recorded_title")
-            body = t("notif_recorded_body", size=formatted_size, path=path)
-
-            try:
-                notif = Gio.Notification.new(title)
-                notif.set_body(body)
-                notif.set_icon(Gio.ThemedIcon.new("video-x-generic"))
-                self.app.send_notification("sadeem-video-saved", notif)
-            except Exception:
-                pass
-
-            if shutil.which("notify-send"):
+            if shutil.which("canberra-gtk-play"):
                 try:
-                    subprocess.run(
-                        ["notify-send", "-a", "Sadeem Capture", "-i", "video-x-generic", title, body],
-                        check=False,
+                    subprocess.Popen(
+                        ["canberra-gtk-play", "-i", "camera-shutter"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        start_new_session=True,
                     )
                 except Exception:
                     pass
+        return False
 
-            # 2. Handoff to Sadeem Gallery video editor
+    def _stop_video_recording(self):
+        if not self.is_recording or not self.recorder:
+            self._finish_session()
+            return False
+
+        self.client.unsubscribe(self._stop_sig_id)
+        self.client.unsubscribe(self._silent_sig_id)
+        self._stop_sig_id = None
+        self._silent_sig_id = None
+
+        success, path, size, _duration = self.recorder.stop()
+        self.recorder = None
+        self.is_recording = False
+
+        if success and os.path.isfile(path) and size > 0:
+            body = t("notif_recorded_body", size=format_file_size(size), path=path)
+            _send_notification(self.app, "sadeem-video-saved", t("notif_recorded_title"), body, "video-x-generic")
             launch_gallery_editor(path)
-        else:
-            self._send_error_notification(t("error_rec_start_failed"), "Video recording failed or output file is empty")
 
-        self._close_or_quit()
+        self._finish_session()
+        return False
 
 
 class SadeemCaptureApp(Adw.Application):
-    def __init__(self):
-        super().__init__(
-            application_id=APP_ID,
-            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
-        )
+    def __init__(self, daemon_mode=False, standalone=False):
+        flags = Gio.ApplicationFlags.HANDLES_COMMAND_LINE
+        if standalone:
+            flags |= Gio.ApplicationFlags.NON_UNIQUE
+        super().__init__(application_id=APP_ID, flags=flags)
+        self._daemon_mode = daemon_mode
+        self._styles_loaded = False
         self.client = CaptureClient()
         self.window = None
-        self.is_daemon = False
-        self._css_loaded = False
 
-    def _take_background_snapshot(self):
-        # If helper proxy is not active, attempt to enable the extension and wait up to 1 second
-        if not self.client._helper_proxy or not self.client._helper_proxy.get_name_owner():
-            try:
-                subprocess.run(
-                    ["gnome-extensions", "enable", "sadeem-desktop-helper@sadeem.os"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    check=False,
-                )
-            except Exception:
-                pass
-
-            import time
-            start = time.time()
-            while time.time() - start < 1.0:
-                self.client._init_proxies()
-                if self.client._helper_proxy and self.client._helper_proxy.get_name_owner():
-                    break
-                time.sleep(0.08)
-
-        tmp_dir = GLib.get_user_runtime_dir()
-        bg_path = os.path.join(tmp_dir, f"sadeem_capture_bg_{os.getpid()}_{int(GLib.get_real_time())}.png")
-        try:
-            if self.client.capture_screen(False, bg_path):
-                return bg_path
-        except Exception as e:
-            print(f"[sadeem-capture] Background snapshot failed: {e}", file=sys.stderr)
-        return None
+    def do_startup(self):
+        Adw.Application.do_startup(self)
+        self._load_styles()
+        if self._daemon_mode:
+            self.hold()
 
     def _load_styles(self):
-        if self._css_loaded:
+        if self._styles_loaded:
             return
-
         if i18n.is_rtl():
             Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
         else:
@@ -1360,45 +1395,67 @@ class SadeemCaptureApp(Adw.Application):
                 provider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
             )
-            self._css_loaded = True
+            self._styles_loaded = True
 
-    def do_activate(self):
-        # If active recording is running, take a silent screenshot instead of opening UI
-        if self.window is not None:
-            if getattr(self.window, "is_recording", False):
-                self.window._take_silent_screenshot()
-            else:
-                self.window.present()
+    def _take_background_snapshot(self):
+        runtime_dir = GLib.get_user_runtime_dir() or GLib.get_user_cache_dir()
+        bg_path = os.path.join(runtime_dir, f"sadeem_capture_bg_{os.getpid()}.png")
+        try:
+            if self.client.capture_screen(False, bg_path):
+                return bg_path
+        except Exception as e:
+            print(f"[sadeem-capture] Background snapshot failed: {e}", file=sys.stderr)
+        return None
+
+    def close_capture_session(self, win):
+        if win is not None:
+            win._cleanup_bg()
+            try:
+                win.close()
+            except Exception:
+                pass
+        if self.window is win:
+            self.window = None
+        if not self._daemon_mode:
+            self.quit()
+
+    def _open_window(self, initial_mode="selection", initial_media="photo"):
+        if self.window and getattr(self.window, "is_recording", False):
+            self.window._take_silent_screenshot()
             return
+
+        if self.window is not None:
+            self.close_capture_session(self.window)
 
         self._load_styles()
         bg_path = self._take_background_snapshot()
-        self.window = SadeemCaptureWindow(self, bg_path=bg_path)
+        self.window = SadeemCaptureWindow(
+            self,
+            initial_mode=initial_mode,
+            initial_media=initial_media,
+            bg_path=bg_path,
+        )
         self.window.fullscreen()
         self.window.present()
+
+    def do_activate(self):
+        self._open_window()
 
     def do_command_line(self, command_line):
         args = command_line.get_arguments()[1:]
 
-        # Resident pre-warmed daemon mode
         if "--daemon" in args:
-            self.is_daemon = True
-            self.hold()
-            print("[sadeem-capture] Resident pre-warmed daemon initialized and holding in RAM.", file=sys.stderr)
             return 0
 
-        # Dedicated stop recording argument
         if "--stop-recording" in args:
             if self.window and getattr(self.window, "is_recording", False):
                 self.window._stop_video_recording()
             return 0
 
-        # If active recording is running and no --stop-recording was passed, take silent screenshot
         if self.window and getattr(self.window, "is_recording", False):
             self.window._take_silent_screenshot()
             return 0
 
-        # Instant window capture flag
         if "--window-id" in args:
             idx = args.index("--window-id")
             if idx + 1 < len(args):
@@ -1410,12 +1467,8 @@ class SadeemCaptureApp(Adw.Application):
                         launch_gallery_editor(dest)
                         return 0
                 except Exception as e:
-                    print(f"[sadeem-capture] Error in --window-id capture: {e}", file=sys.stderr)
+                    print(f"[sadeem-capture] --window-id error: {e}", file=sys.stderr)
                     return 1
-
-        if self.window is not None:
-            self.window.present()
-            return 0
 
         initial_mode = "selection"
         initial_media = "photo"
@@ -1428,13 +1481,7 @@ class SadeemCaptureApp(Adw.Application):
         elif "--area" in args or "--selection" in args:
             initial_mode = "selection"
 
-        self._load_styles()
-        bg_path = self._take_background_snapshot()
-        self.window = SadeemCaptureWindow(self, initial_mode=initial_mode, bg_path=bg_path)
-        if initial_media == "video":
-            self.window._set_media_type("video")
-        self.window.fullscreen()
-        self.window.present()
+        self._open_window(initial_mode=initial_mode, initial_media=initial_media)
         return 0
 
 
@@ -1449,15 +1496,22 @@ def main():
                 if client.capture_window(wid, True, False, dest):
                     copy_file_to_clipboard(dest)
                     launch_gallery_editor(dest)
-                    sys.exit(0)
-                else:
-                    sys.exit(1)
+                    return 0
+                return 1
         except Exception as exc:
-            print(f"[sadeem-capture] CLI capture error: {exc}", file=sys.stderr)
-            sys.exit(1)
+            print(f"[sadeem-capture] CLI error: {exc}", file=sys.stderr)
+            return 1
+
+    daemon_mode = "--daemon" in sys.argv
+    standalone = "--standalone" in sys.argv or "--test" in sys.argv
+
+    # Never claim the D-Bus name in daemon mode if the graphical display isn't ready yet
+    if daemon_mode and not Gtk.init_check():
+        print("[sadeem-capture] Graphical display not ready; exiting daemon for retry.", file=sys.stderr)
+        return 1
 
     GLib.set_prgname(APP_ID)
-    app = SadeemCaptureApp()
+    app = SadeemCaptureApp(daemon_mode=daemon_mode, standalone=standalone)
     return app.run(sys.argv)
 
 

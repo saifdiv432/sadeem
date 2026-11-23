@@ -57,6 +57,7 @@ class VideoRecorder:
         halo_enabled=False,
         output_path=None,
         capture_client=None,
+        on_stream_ended=None,
     ):
         self.mode = mode  # "screen", "selection", "window"
         self.crop_box = crop_box  # (x, y, w, h)
@@ -71,10 +72,14 @@ class VideoRecorder:
         self.halo_enabled = halo_enabled
         self.output_path = output_path or generate_recording_path()
         self.client = capture_client
+        self.on_stream_ended = on_stream_ended
 
         self.portal = None
         self.pipeline = None
+        self._bus = None
+        self._bus_watch_id = None
         self.is_recording = False
+        self._stopping = False
         self.start_time = 0.0
 
     def start(self) -> bool:
@@ -114,7 +119,11 @@ class VideoRecorder:
             if self.client:
                 self.client.set_halo_active(True)
 
-        # 4. Start Pipeline
+        # 4. Activate bus watch before PLAYING
+        self._bus = self.pipeline.get_bus()
+        self._bus.add_signal_watch()
+        self._bus_watch_id = self._bus.connect("message", self._on_bus_message)
+
         ret = self.pipeline.set_state(Gst.State.PLAYING)
         if ret == Gst.StateChangeReturn.FAILURE:
             print("[VideoRecorder] GStreamer failed to transition to PLAYING.", file=sys.stderr)
@@ -241,15 +250,31 @@ class VideoRecorder:
 
         return f"{mux_str} {v_pipeline} {a_pipeline}"
 
+    def _on_bus_message(self, bus, message):
+        if not self.is_recording or self._stopping:
+            return
+        mtype = message.type
+        if mtype == Gst.MessageType.EOS:
+            print("[VideoRecorder] Stream EOS received from bus.", file=sys.stderr)
+            if callable(self.on_stream_ended):
+                GLib.idle_add(self.on_stream_ended, None)
+        elif mtype == Gst.MessageType.ERROR:
+            err, debug = message.parse_error()
+            err_str = f"{err} ({debug})"
+            print(f"[VideoRecorder] Stream ERROR received from bus: {err_str}", file=sys.stderr)
+            if callable(self.on_stream_ended):
+                GLib.idle_add(self.on_stream_ended, err_str)
+
     def stop(self):
         """
         Stops the recording cleanly by sending EOS, flushing headers,
         and shutting down GStreamer and Portal.
         Returns: (success: bool, output_path: str, file_size: int, duration_sec: float)
         """
-        if not self.is_recording or not self.pipeline:
+        if self._stopping or not self.is_recording or not self.pipeline:
             return False, "", 0, 0.0
 
+        self._stopping = True
         duration_sec = max(0.1, time.time() - self.start_time)
 
         try:
@@ -261,10 +286,23 @@ class VideoRecorder:
                 except Exception:
                     pass
 
-            # 2. Send EOS event to flush MP4 moov atom & finalize file
+            # 2. Disconnect bus watch before sending EOS so internal bus watch doesn't double-fire
+            if self._bus and self._bus_watch_id:
+                try:
+                    self._bus.disconnect(self._bus_watch_id)
+                except Exception:
+                    pass
+                try:
+                    self._bus.remove_signal_watch()
+                except Exception:
+                    pass
+                self._bus_watch_id = None
+                self._bus = None
+
+            # 3. Send EOS event to flush MP4 moov atom & finalize file
             self.pipeline.send_event(Gst.Event.new_eos())
 
-            # 3. Wait on bus for EOS (up to 5 seconds timeout)
+            # 4. Wait on bus for EOS (up to 5 seconds timeout)
             bus = self.pipeline.get_bus()
             msg = bus.timed_pop_filtered(
                 5 * Gst.SECOND,
@@ -275,18 +313,18 @@ class VideoRecorder:
                 err, debug = msg.parse_error()
                 print(f"[VideoRecorder] Error during stop EOS flush: {err} ({debug})", file=sys.stderr)
 
-            # 4. Set state to NULL
+            # 5. Set state to NULL
             self.pipeline.set_state(Gst.State.NULL)
             self.pipeline = None
 
-            # 5. Close portal session
+            # 6. Close portal session
             if self.portal:
                 self.portal.close()
                 self.portal = None
 
             self.is_recording = False
 
-            # 6. Verify file output
+            # 7. Verify file output
             file_size = os.path.getsize(self.output_path) if os.path.isfile(self.output_path) else 0
             success = file_size > 0
             return success, self.output_path, file_size, duration_sec
@@ -296,6 +334,17 @@ class VideoRecorder:
 
     def _cleanup_on_failure(self):
         self.is_recording = False
+        if self._bus and self._bus_watch_id:
+            try:
+                self._bus.disconnect(self._bus_watch_id)
+            except Exception:
+                pass
+            try:
+                self._bus.remove_signal_watch()
+            except Exception:
+                pass
+            self._bus_watch_id = None
+            self._bus = None
         if self.client:
             try:
                 self.client.set_recording_state(False)

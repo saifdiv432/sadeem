@@ -213,8 +213,9 @@ export class CaptureHelperService {
 
                     let appName = win.get_wm_class() || '';
                     let iconName = 'application-x-executable';
-                    if (Shell.AppSystem) {
-                        const app = Shell.AppSystem.get_default().get_window_app(win);
+                    const tracker = Shell.WindowTracker ? Shell.WindowTracker.get_default() : null;
+                    if (tracker) {
+                        const app = tracker.get_window_app(win);
                         if (app) {
                             appName = app.get_name();
                             const gicon = app.get_app_info()?.get_icon();

@@ -9,18 +9,21 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 export const RecordingIndicator = GObject.registerClass(
 class RecordingIndicator extends PanelMenu.Button {
     _init(captureHelper) {
-        super._init(0.5, 'Sadeem Recording Indicator', false);
+        super._init(0.5, 'Sadeem Recording Indicator', true);
         this._captureHelper = captureHelper;
         this._timerSourceId = null;
         this._elapsedSeconds = 0;
         this._watchId = null;
 
+        this.reactive = false;
+        this.can_focus = false;
+        this.track_hover = false;
         this.y_align = Clutter.ActorAlign.CENTER;
 
         // Container Pill Box with two adjacent buttons
         this._box = new St.BoxLayout({
             style_class: 'sadeem-recording-pill',
-            reactive: true,
+            reactive: false,
             y_align: Clutter.ActorAlign.CENTER,
             style: 'background-color: rgba(220, 38, 38, 0.95); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 9999px; padding: 1px 3px; margin: 2px 4px;',
         });
@@ -188,6 +191,16 @@ class RecordingIndicator extends PanelMenu.Button {
         if (this._captureHelper && this._captureHelper.emitStopRecordingRequested) {
             this._captureHelper.emitStopRecordingRequested();
         }
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, () => {
+            if (this.visible) {
+                try {
+                    GLib.spawn_command_line_async('/usr/bin/sadeem-capture --stop-recording');
+                } catch (e) {
+                    console.error(`[SadeemIndicator] Fallback stop spawn failed: ${e}`);
+                }
+            }
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _requestSnapshot() {

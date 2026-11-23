@@ -1,13 +1,14 @@
 [Unit]
 Description=Sadeem Capture Resident Pre-warmed Daemon
-After=graphical-session.target
 PartOf=graphical-session.target
+After=graphical-session.target
+ConditionEnvironment=WAYLAND_DISPLAY
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/sadeem-capture --daemon
+ExecStart=/usr/bin/python3 /usr/share/sadeem-capture/app.py --daemon
 Restart=on-failure
 RestartSec=2
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target

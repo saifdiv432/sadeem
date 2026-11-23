@@ -124,8 +124,8 @@ def probe_audio_encoder():
 
 
 def get_muxer_element():
-    """Returns universal MP4 container muxer with faststart for instant streaming/playback."""
-    return "mp4mux faststart=true"
+    """Returns universal MP4 container muxer with fragment-duration for streaming resilience."""
+    return "mp4mux fragment-duration=1000"
 
 
 # ============================================================================
