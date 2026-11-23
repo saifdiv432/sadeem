@@ -242,7 +242,7 @@ class ScreenCastPortalSession:
                     loop.quit()
                 return GLib.SOURCE_REMOVE
 
-            timeout_id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, timeout_ms, on_timeout)
+            timeout_id = GLib.timeout_add(timeout_ms, on_timeout)
             loop.run()
         except Exception as exc:
             print(f"[Portal] Call {method_name} failed: {exc}", file=sys.stderr)

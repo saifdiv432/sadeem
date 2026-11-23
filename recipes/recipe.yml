@@ -139,6 +139,7 @@ modules:
         - sadeem-accent-watcher.service
         - sadeem-init-sandbox.service
         - sadeem-updater-check.timer
+        - sadeem-capture.service
 
   # Static system branding, sound theme generation, and Plymouth defaults
   - type: script

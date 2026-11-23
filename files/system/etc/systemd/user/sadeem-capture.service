@@ -1,0 +1,13 @@
+[Unit]
+Description=Sadeem Capture Resident Pre-warmed Daemon
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sadeem-capture --daemon
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
