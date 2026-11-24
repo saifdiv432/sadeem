@@ -39,10 +39,29 @@ def format_duration(seconds):
     return f"{m:02d}:{sec:02d}"
 
 
+def has_audio_stream(path):
+    """Check if the video has at least one valid audio stream."""
+    if not _FFPROBE_BIN or not os.path.isfile(path):
+        return False
+    cmd = [
+        _FFPROBE_BIN,
+        "-v", "error",
+        "-select_streams", "a",
+        "-show_entries", "stream=index",
+        "-of", "csv=p=0",
+        path,
+    ]
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=3.0, check=False)
+        return bool(res.stdout.strip())
+    except Exception:
+        return False
+
+
 def get_video_metadata(path):
     """
-    Extract video width, height, duration (seconds float), framerate, and codec
-    via ffprobe. Returns a dict.
+    Extract video width, height, duration (seconds float), framerate, codec,
+    and audio presence via ffprobe. Returns a dict.
     """
     res = {
         "width": 0,
@@ -51,6 +70,7 @@ def get_video_metadata(path):
         "duration_str": "00:00",
         "framerate": 30.0,
         "codec": "",
+        "has_audio": False,
     }
     if not _FFPROBE_BIN or not os.path.isfile(path):
         return res
@@ -103,6 +123,7 @@ def get_video_metadata(path):
     except Exception:
         pass
 
+    res["has_audio"] = has_audio_stream(path)
     return res
 
 

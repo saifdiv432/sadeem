@@ -15,6 +15,7 @@ import cairo
 import gi
 
 gi.require_version("Gtk", "4.0")
+gi.require_version("Gdk", "4.0")
 gi.require_version("PangoCairo", "1.0")
 from gi.repository import Gdk, GLib, Pango, PangoCairo
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
@@ -328,7 +329,7 @@ def draw_stroke_on_cairo(ctx, stroke, scale_factor=1.0):
         txt = stroke.get("text", "")
         if txt:
             x, y = stroke.get("x1", 0.0), stroke.get("y1", 0.0)
-            font_px = max(18, int(round(width * 3.8)))
+            font_px = int(stroke.get("font_size") or max(18, int(round(width * 3.8))))
             layout = PangoCairo.create_layout(ctx)
             desc = Pango.FontDescription.from_string(f"Sans Bold {font_px}px")
             layout.set_font_description(desc)

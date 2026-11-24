@@ -44,6 +44,7 @@ class VideoPlayerWidget(Gtk.Overlay):
         self.on_fullscreen_toggle = on_fullscreen_toggle
 
         self.current_path = None
+        self.media_file = None
         self.media_stream = None
         self.duration_sec = 0.0
         self.is_seeking = False
@@ -55,21 +56,27 @@ class VideoPlayerWidget(Gtk.Overlay):
         self._setup_events()
 
     def _build_ui(self):
-        # 1. Video display widget
-        self.video_widget = Gtk.Video()
-        self.video_widget.set_hexpand(True)
-        self.video_widget.set_vexpand(True)
-        self.video_widget.set_autoplay(False)
-        self.video_widget.set_loop(False)
-        self.set_child(self.video_widget)
+        # 1. Video display widget (Gtk.Picture + Gtk.MediaFile)
+        self.picture = Gtk.Picture()
+        self.picture.set_content_fit(Gtk.ContentFit.CONTAIN)
+        self.picture.set_can_shrink(True)
+        self.picture.set_hexpand(True)
+        self.picture.set_vexpand(True)
+        self.set_child(self.picture)
 
-        # 2. Bottom Floating Control Bar
+        # 2. Bottom Floating Control Bar with Adw.Clamp
+        self.ctrl_clamp = Adw.Clamp()
+        self.ctrl_clamp.set_maximum_size(680)
+        self.ctrl_clamp.set_tightening_threshold(500)
+        self.ctrl_clamp.set_halign(Gtk.Align.FILL)
+        self.ctrl_clamp.set_valign(Gtk.Align.END)
+        self.ctrl_clamp.set_margin_bottom(18)
+        self.ctrl_clamp.set_margin_start(24)
+        self.ctrl_clamp.set_margin_end(24)
+
         self.ctrl_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.ctrl_box.add_css_class("video-ctrl-bar")
-        self.ctrl_box.set_halign(Gtk.Align.CENTER)
-        self.ctrl_box.set_valign(Gtk.Align.END)
-        self.ctrl_box.set_margin_bottom(18)
-        self.ctrl_box.set_size_request(620, 48)
+        self.ctrl_clamp.set_child(self.ctrl_box)
 
         # Play / Pause button
         self.btn_play = Gtk.Button()
@@ -84,19 +91,15 @@ class VideoPlayerWidget(Gtk.Overlay):
         self.lbl_cur_time.add_css_class("video-time-lbl")
         self.ctrl_box.append(self.lbl_cur_time)
 
-        # Seekbar (Gtk.Scale)
+        # Seekbar (Gtk.Scale) - Always LTR text direction so time advances L -> R
         self.seek_adj = Gtk.Adjustment(value=0.0, lower=0.0, upper=100.0, step_increment=1.0, page_increment=5.0)
         self.seek_scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=self.seek_adj)
+        self.seek_scale.set_direction(Gtk.TextDirection.LTR)
         self.seek_scale.set_hexpand(True)
         self.seek_scale.set_draw_value(False)
         self.seek_scale.add_css_class("video-seek-scale")
 
-        # Gestures for seek scale to prevent fighting notify::timestamp during user drag
-        seek_click = Gtk.GestureClick()
-        seek_click.connect("pressed", self._on_seek_pressed)
-        seek_click.connect("released", self._on_seek_released)
-        self.seek_scale.add_controller(seek_click)
-        self.seek_adj.connect("value-changed", self._on_seek_value_changed)
+        self.seek_scale.connect("change-value", self._on_seek_change_value)
         self.ctrl_box.append(self.seek_scale)
 
         # Duration label
@@ -141,13 +144,13 @@ class VideoPlayerWidget(Gtk.Overlay):
             self.btn_edit.connect("clicked", lambda _b: self.on_edit_requested(self.current_path))
             self.ctrl_box.append(self.btn_edit)
 
-        self.add_overlay(self.ctrl_box)
+        self.add_overlay(self.ctrl_clamp)
 
     def _setup_events(self):
-        # Click on video viewport to toggle play/pause
+        # Click on video viewport picture to toggle play/pause
         click = Gtk.GestureClick()
         click.connect("released", self._on_viewport_clicked)
-        self.video_widget.add_controller(click)
+        self.picture.add_controller(click)
 
     def _on_viewport_clicked(self, gesture, n_press, x, y):
         if n_press == 1:
@@ -156,7 +159,7 @@ class VideoPlayerWidget(Gtk.Overlay):
             self.on_fullscreen_toggle()
 
     def load_video(self, video_path):
-        """Load and prepare video file for playback."""
+        """Load and prepare video file for playback via Gtk.MediaFile."""
         self.stop()
         self.current_path = video_path
 
@@ -172,16 +175,27 @@ class VideoPlayerWidget(Gtk.Overlay):
         self.seek_adj.set_upper(max(1.0, self.duration_sec))
         self.seek_adj.set_value(0.0)
 
-        # Load into Gtk.Video
-        self.video_widget.set_filename(video_path)
-        self.media_stream = self.video_widget.get_media_stream()
+        # Load into Gtk.MediaFile
+        try:
+            self.media_file = Gtk.MediaFile.new_for_filename(video_path)
+            self.picture.set_paintable(self.media_file)
+            self.media_stream = self.media_file
 
-        if self.media_stream:
-            # Connect signals
-            sig1 = self.media_stream.connect("notify::playing", self._on_notify_playing)
-            sig2 = self.media_stream.connect("notify::ended", self._on_notify_ended)
-            sig3 = self.media_stream.connect("notify::duration", self._on_notify_duration)
-            self._sig_ids = [sig1, sig2, sig3]
+            sig1 = self.media_file.connect("notify::playing", self._on_notify_playing)
+            sig2 = self.media_file.connect("notify::ended", self._on_notify_ended)
+            sig3 = self.media_file.connect("notify::duration", self._on_notify_duration)
+            sig4 = self.media_file.connect("notify::prepared", self._on_notify_prepared)
+            sig5 = self.media_file.connect("notify::error", self._on_notify_error)
+            self._sig_ids = [sig1, sig2, sig3, sig4, sig5]
+
+            # Apply loop preference
+            self.media_file.set_loop(self.btn_loop.get_active())
+
+            if hasattr(self.media_file, "is_prepared") and self.media_file.is_prepared():
+                self._on_notify_prepared(self.media_file, None)
+        except Exception as e:
+            print(f"[VideoPlayer] Failed to load media file: {e}")
+            return False
 
         self._update_play_icon(False)
         self._start_periodic_timer()
@@ -211,6 +225,26 @@ class VideoPlayerWidget(Gtk.Overlay):
 
         return True
 
+    def _on_notify_prepared(self, mf, _pspec):
+        is_prep = mf.is_prepared() if hasattr(mf, "is_prepared") else mf.props.prepared
+        if not is_prep:
+            return
+        dur_us = mf.get_duration()
+        if dur_us > 0:
+            self.duration_sec = dur_us / 1_000_000.0
+            self.seek_adj.set_upper(self.duration_sec)
+            self.lbl_duration.set_text(video_utils.format_duration(self.duration_sec))
+        # Fetch first frame immediately to prevent black screen
+        try:
+            mf.seek(0)
+        except Exception:
+            pass
+
+    def _on_notify_error(self, mf, _pspec):
+        err = mf.get_error()
+        if err:
+            print(f"[VideoPlayer] Playback error: {err}")
+
     def _on_notify_playing(self, stream, _pspec):
         is_playing = stream.get_playing()
         self._update_play_icon(is_playing)
@@ -218,7 +252,7 @@ class VideoPlayerWidget(Gtk.Overlay):
     def _on_notify_ended(self, stream, _pspec):
         if stream.get_ended():
             self._update_play_icon(False)
-            if self.video_widget.get_loop():
+            if self.media_file and self.media_file.get_loop():
                 self.seek_to_sec(0.0)
                 self.play()
 
@@ -268,20 +302,20 @@ class VideoPlayerWidget(Gtk.Overlay):
 
     def _on_loop_toggled(self, btn):
         looping = btn.get_active()
-        self.video_widget.set_loop(looping)
+        if self.media_file:
+            self.media_file.set_loop(looping)
 
-    def _on_seek_pressed(self, _gesture, _n, _x, _y):
+    def _on_seek_change_value(self, scale, scroll_type, value):
         self.is_seeking = True
+        clamped = max(0.0, min(self.duration_sec, value))
+        self.lbl_cur_time.set_text(video_utils.format_duration(clamped))
+        self.seek_to_sec(clamped)
+        GLib.timeout_add(150, self._finish_seeking)
+        return False
 
-    def _on_seek_released(self, _gesture, _n, _x, _y):
+    def _finish_seeking(self):
         self.is_seeking = False
-        target_sec = self.seek_adj.get_value()
-        self.seek_to_sec(target_sec)
-
-    def _on_seek_value_changed(self, adj):
-        if self.is_seeking:
-            target_sec = adj.get_value()
-            self.lbl_cur_time.set_text(video_utils.format_duration(target_sec))
+        return GLib.SOURCE_REMOVE
 
     def seek_to_sec(self, seconds):
         if not self.media_stream:
@@ -307,20 +341,26 @@ class VideoPlayerWidget(Gtk.Overlay):
     def stop(self):
         """Stop playback, disconnect signals, and release media resources."""
         self._stop_periodic_timer()
-        if self.media_stream:
+        if hasattr(self, "picture") and self.picture:
             try:
-                self.media_stream.pause()
+                self.picture.set_paintable(None)
+            except Exception:
+                pass
+
+        if self.media_file:
+            try:
+                self.media_file.pause()
             except Exception:
                 pass
             for sid in self._sig_ids:
                 try:
-                    self.media_stream.disconnect(sid)
+                    self.media_file.disconnect(sid)
                 except Exception:
                     pass
             self._sig_ids.clear()
+            self.media_file = None
             self.media_stream = None
 
-        self.video_widget.set_media_stream(None)
         self.current_path = None
         self.duration_sec = 0.0
         self.is_seeking = False

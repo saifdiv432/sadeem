@@ -8,6 +8,8 @@ and calm GNOME/Adwaita 6-section vertical rail image editor.
 
 import concurrent.futures
 import os
+import shutil
+import subprocess
 import sys
 import threading
 
@@ -28,6 +30,39 @@ import media
 
 t = i18n.t
 APP_ID = "org.sadeem.Gallery"
+
+
+def launch_video_editor(video_path):
+    """Launches sadeem-video-editor for a given video file."""
+    editor_bin = shutil.which("sadeem-video-editor")
+    if not editor_bin:
+        repo_bin = os.path.normpath(os.path.join(APP_DIR, "..", "..", "..", "bin", "sadeem-video-editor"))
+        sys_bin = "/usr/bin/sadeem-video-editor"
+        for candidate in [repo_bin, sys_bin]:
+            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                editor_bin = candidate
+                break
+    if not editor_bin:
+        editor_bin = "sadeem-video-editor"
+
+    try:
+        res = subprocess.run(
+            ["systemd-run", "--user", "--scope", "--quiet", editor_bin, video_path],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if res.returncode == 0:
+            return True
+    except Exception:
+        pass
+
+    try:
+        subprocess.Popen([editor_bin, video_path], start_new_session=True, close_fds=True)
+        return True
+    except Exception as e:
+        sys.stderr.write(f"Failed to launch video editor: {e}\n")
+        return False
 
 MARKUP_COLORS = [
     ("#7a1c33", "Burgundy"),
@@ -334,6 +369,31 @@ SADEEM_CSS = """
     padding: 4px 10px;
     font-size: 12px;
 }
+.editor-drawer {
+    background-color: #222227;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.drawer-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.video-timeline-container {
+    background-color: #222227;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 12px;
+}
+.video-progress-banner {
+    background-color: rgba(122, 28, 51, 0.25);
+    border-radius: 8px;
+    border: 1px solid rgba(122, 28, 51, 0.5);
+    padding: 6px 12px;
+}
 .drawer-subtle-label {
     font-size: 11px;
     color: #94a3b8;
@@ -441,8 +501,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.canvas.stop_animation()
         if self.video_player_widget:
             self.video_player_widget.stop()
-        if self.video_editor_view:
-            self.video_editor_view._stop_poll_timer()
         self.thumb_pool.shutdown(wait=False, cancel_futures=True)
         return False
 
@@ -496,9 +554,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.root_stack.add_named(self.gallery_page, "gallery")
         self.root_stack.add_named(self.viewer_page, "viewer")
 
-        self.video_editor_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.root_stack.add_named(self.video_editor_container, "video_editor")
-
     def _setup_shortcuts(self):
         key_ctrl = Gtk.EventControllerKey()
         key_ctrl.connect("key-pressed", self._on_key_pressed)
@@ -506,13 +561,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
     def _on_key_pressed(self, _ctrl, keyval, _keycode, state):
         cur_child = self.root_stack.get_visible_child_name()
-        if cur_child == "video_editor":
-            if keyval == Gdk.KEY_Escape:
-                if self.video_editor_view:
-                    self.video_editor_view._request_close()
-                return True
-            return False
-
         if cur_child != "viewer":
             return False
 
@@ -1706,39 +1754,11 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         return self.video_player_widget
 
     def _open_video_editor(self, video_path):
-        import video_editor_ui
         if self.video_player_widget:
-            self.video_player_widget.stop()
-        self._clear_box(self.video_editor_container)
-        self.video_editor_view = video_editor_ui.VideoEditorView(
-            window=self,
-            video_path=video_path,
-            on_close=self._on_video_editor_closed,
-            on_saved=self._on_video_editor_saved,
-        )
-        self.video_editor_container.append(self.video_editor_view)
-        self.root_stack.set_visible_child_name("video_editor")
-
-    def _on_video_editor_closed(self):
-        self._clear_box(self.video_editor_container)
-        self.video_editor_view = None
-        self.root_stack.set_visible_child_name("viewer")
-        if self.is_current_video and self.video_player_widget and self.current_path:
-            self.video_player_widget.load_video(self.current_path)
-
-    def _on_video_editor_saved(self, saved_path):
-        self.all_gallery_items = []
-        if os.path.realpath(saved_path) == os.path.realpath(self.current_path):
-            self._load_viewer_index(self.viewer_index)
-        else:
-            self.open_file_directly(saved_path)
+            self.video_player_widget.pause()
+        launch_video_editor(video_path)
 
     def open_video_editor_directly(self, video_path):
-        items, idx = media.list_sibling_images(video_path)
-        self.viewer_items = items
-        self.viewer_index = idx
-        self.current_path = video_path
-        self.is_current_video = True
         self._open_video_editor(video_path)
 
     def _on_edit_toggle_clicked(self):
@@ -2496,25 +2516,43 @@ class SadeemGalleryApp(Adw.Application):
             application_id=APP_ID,
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
         )
-        self.window = None
 
-    def _ensure_window(self):
+    def do_startup(self):
+        Adw.Application.do_startup(self)
         if i18n.LANG == "ar":
             Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
         else:
             Gtk.Widget.set_default_direction(Gtk.TextDirection.LTR)
-        if not self.window:
-            self.window = SadeemGalleryWindow(self)
-        return self.window
+        self._install_css()
+
+    def _install_css(self):
+        swatch_rules = []
+        for idx, (hx, _name) in enumerate(MARKUP_COLORS):
+            swatch_rules.append(f".swatch-color-{idx} {{ background-color: {hx}; background-image: none; }}")
+        full_css = SADEEM_CSS + "\n" + "\n".join(swatch_rules)
+
+        prov = Gtk.CssProvider()
+        prov.load_from_string(full_css)
+        display = Gdk.Display.get_default()
+        if display:
+            Gtk.StyleContext.add_provider_for_display(
+                display, prov, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+            local_icons = os.path.abspath(os.path.join(APP_DIR, "..", "icons"))
+            if os.path.isdir(local_icons):
+                Gtk.IconTheme.get_for_display(display).add_search_path(local_icons)
 
     def do_activate(self):
-        win = self._ensure_window()
+        for win in self.get_windows():
+            if isinstance(win, SadeemGalleryWindow) and win.root_stack.get_visible_child_name() == "gallery":
+                win.present()
+                return
+        win = SadeemGalleryWindow(self)
         win.open_gallery_mode()
         win.present()
 
     def do_command_line(self, command_line):
         args = command_line.get_arguments()[1:]
-        win = self._ensure_window()
 
         edit_path = None
         open_path = None
@@ -2529,29 +2567,49 @@ class SadeemGalleryApp(Adw.Application):
                     edit_path = a.split("=", 1)[1]
                     break
 
-        if edit_path and os.path.isfile(edit_path):
-            if media.is_video_file(edit_path):
-                win.open_video_editor_directly(edit_path)
-                win.present()
+        if not edit_path:
+            for a in args:
+                if not a.startswith("-") and os.path.isfile(a):
+                    open_path = a
+                    break
+
+        target_path = edit_path or open_path
+        is_edit = bool(edit_path)
+
+        if target_path and os.path.isfile(target_path):
+            if is_edit and media.is_video_file(target_path):
+                launch_video_editor(target_path)
                 return 0
-            else:
+
+            target_real = os.path.realpath(target_path)
+            # Focus matching window if already open
+            for win in self.get_windows():
+                if isinstance(win, SadeemGalleryWindow) and win.current_path:
+                    if os.path.realpath(win.current_path) == target_real:
+                        if is_edit:
+                            win._set_edit_mode(True)
+                        win.present()
+                        return 0
+
+            # Create new window for distinct file
+            win = SadeemGalleryWindow(self)
+            if is_edit:
                 win.opened_in_edit_mode = True
-                win.open_file_directly(edit_path)
+                win.open_file_directly(target_path)
                 win._set_edit_mode(True)
-                win.present()
-                return 0
-
-        for a in args:
-            if not a.startswith("-") and os.path.isfile(a):
-                open_path = a
-                break
-
-        if open_path:
-            win.opened_in_edit_mode = False
-            win.open_file_directly(open_path)
+            else:
+                win.opened_in_edit_mode = False
+                win.open_file_directly(target_path)
             win.present()
             return 0
 
+        # No file specified: focus existing gallery window or open a new one
+        for win in self.get_windows():
+            if isinstance(win, SadeemGalleryWindow) and win.root_stack.get_visible_child_name() == "gallery":
+                win.present()
+                return 0
+
+        win = SadeemGalleryWindow(self)
         win.open_gallery_mode()
         win.present()
         return 0
