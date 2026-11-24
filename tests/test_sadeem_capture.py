@@ -226,11 +226,25 @@ class TestGjsAndJsLogic(unittest.TestCase):
             "cursorHalo.js",
             "windowMenuHelper.js",
         ]
+        env = os.environ.copy()
+        typelib_paths = "/usr/lib64/mutter-51:/usr/lib64/gnome-shell"
+        env["GI_TYPELIB_PATH"] = typelib_paths + (":" + env["GI_TYPELIB_PATH"] if "GI_TYPELIB_PATH" in env else "")
+        env["LD_LIBRARY_PATH"] = typelib_paths + (":" + env["LD_LIBRARY_PATH"] if "LD_LIBRARY_PATH" in env else "")
+
         for f in js_files:
             path = os.path.join(EXT_DIR, f)
             self.assertTrue(os.path.isfile(path), f"File {f} must exist")
-            # Verify file has non-trivial content
             self.assertGreater(os.path.getsize(path), 100, f"File {f} must not be empty")
+
+            res = subprocess.run(["gjs", "-m", path], capture_output=True, text=True, env=env, timeout=10)
+            out = (res.stderr + "\n" + res.stdout).strip()
+            self.assertNotIn("SyntaxError", out, f"GJS syntax error in {f}:\n{out}")
+            if res.returncode != 0:
+                self.assertIn(
+                    "resource:///org/gnome/shell/",
+                    out,
+                    f"Unexpected GJS failure in {f}:\n{out}",
+                )
 
     def test_no_deprecated_gnome_apis(self):
         """Verifies zero deprecated GNOME Shell / Clutter APIs in extension files."""
@@ -464,6 +478,67 @@ class TestGjsAndJsLogic(unittest.TestCase):
         self.assertNotIn("preferences-system-windows-symbolic", content, "captureUI.js must not use preferences-system-windows-symbolic")
         self.assertNotIn("monitor.height - cardHeight", content, "captureUI.js must not manually calculate bottom coordinate")
 
+    def test_capture_ui_layer_stacking_and_png_clipboard(self):
+        """
+        Verifies:
+        1. captureUI.js raises itself above all uiGroup siblings on open() and stacks _selectionBox above _dimOverlay.
+        2. Control card fades and disables reactivity during drag, and _dimensionsBadge avoids top clipping.
+        3. Both captureUI.js and captureHelper.js copy image/png GLib.Bytes via St.Clipboard.set_content, with zero St.Clipboard.set_text usage.
+        """
+        capture_ui_path = os.path.join(EXT_DIR, "captureUI.js")
+        capture_helper_path = os.path.join(EXT_DIR, "captureHelper.js")
+        with open(capture_ui_path, "r", encoding="utf-8") as fp:
+            ui_code = fp.read()
+        with open(capture_helper_path, "r", encoding="utf-8") as fp:
+            helper_code = fp.read()
+
+        # 1. Layer stacking
+        self.assertIn("Main.layoutManager.uiGroup.set_child_above_sibling(this, null);", ui_code)
+        self.assertIn("this.set_child_above_sibling(this._selectionBox, this._dimOverlay);", ui_code)
+        self.assertIn("this._controlCard.opacity = isDragging ? 60 : 255;", ui_code)
+        self.assertIn("this._controlCard.reactive = !isDragging;", ui_code)
+        self.assertIn("r.y < 28 ? 6 : -24", ui_code)
+
+        # 2. Clipboard image/png bytes (no set_text with path, no wl-copy file arg)
+        for fname, code in [("captureUI.js", ui_code), ("captureHelper.js", helper_code)]:
+            self.assertNotIn("set_text", code, f"{fname} must not copy file paths as text via St.Clipboard.set_text")
+            self.assertIn("St.Clipboard.get_default().set_content(", code, f"{fname} must copy PNG bytes via St.Clipboard.set_content")
+            self.assertIn("'image/png'", code, f"{fname} must specify 'image/png' MIME type")
+            self.assertIn("new GLib.Bytes(contents)", code, f"{fname} must wrap PNG contents in GLib.Bytes")
+
+        # 3. Verify GJS can read a real PNG file into GLib.Bytes and inspect St.Clipboard.set_content
+        with tempfile.NamedTemporaryFile("wb", suffix=".png", delete=False) as tf:
+            # Minimal valid 1x1 PNG header+payload
+            tf.write(
+                b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+                b"\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+            )
+            png_path = tf.name
+
+        try:
+            env = os.environ.copy()
+            typelib_paths = "/usr/lib64/mutter-51:/usr/lib64/gnome-shell"
+            env["GI_TYPELIB_PATH"] = typelib_paths + (":" + env["GI_TYPELIB_PATH"] if "GI_TYPELIB_PATH" in env else "")
+            env["LD_LIBRARY_PATH"] = typelib_paths + (":" + env["LD_LIBRARY_PATH"] if "LD_LIBRARY_PATH" in env else "")
+            gjs_test = f"""
+            const Gio = imports.gi.Gio;
+            const GLib = imports.gi.GLib;
+            imports.gi.versions.St = '51';
+            const St = imports.gi.St;
+            const [ok, contents] = Gio.File.new_for_path({png_path!r}).load_contents(null);
+            if (!ok || !contents || contents.length === 0) throw new Error('Failed reading PNG bytes');
+            const pngBytes = new GLib.Bytes(contents);
+            if (pngBytes.get_size() !== contents.length) throw new Error('GLib.Bytes size mismatch');
+            if (typeof St.Clipboard.prototype.set_content !== 'function') throw new Error('St.Clipboard.set_content missing');
+            print('PNG_CLIPBOARD_BYTES_OK:' + pngBytes.get_size());
+            """
+            res = subprocess.run(["gjs", "-c", gjs_test], capture_output=True, text=True, env=env, timeout=10)
+            self.assertEqual(res.returncode, 0, f"GJS PNG clipboard test failed:\n{res.stderr}")
+            self.assertIn("PNG_CLIPBOARD_BYTES_OK:", res.stdout)
+        finally:
+            if os.path.exists(png_path):
+                os.unlink(png_path)
+
 
 class TestSystemIntegration(unittest.TestCase):
     """Tests shell script syntax, systemd service cleanup, recipe YAML, and gschemas."""
@@ -510,10 +585,29 @@ class TestSystemIntegration(unittest.TestCase):
         self.assertNotIn("sadeem-capture/app.py", content, "recipe.yml must not reference app.py")
         # Must reference recorder.py
         self.assertIn("sadeem-capture/recorder.py", content, "recipe.yml must reference recorder.py in chmod +x")
+        # Must NOT reference removed sadeem-nvidia-manager binary
+        self.assertNotIn("/usr/bin/sadeem-nvidia-manager", content, "recipe.yml must not reference removed sadeem-nvidia-manager")
 
         # Valid YAML
         data = yaml.safe_load(content)
         self.assertIsInstance(data, dict, "recipe.yml must parse as valid dictionary")
+
+    def test_unwanted_desktop_entries_removed_and_backend_preserved(self):
+        """Verifies duplicate/internal .desktop launchers are removed while keeping shared backends intact."""
+        for rel in [
+            "files/system/usr/share/applications/org.sadeem.Capture.desktop",
+            "files/system/usr/share/applications/sadeem-nvidia-manager.desktop",
+            "files/system/usr/bin/sadeem-nvidia-manager",
+        ]:
+            self.assertFalse(os.path.exists(os.path.join(REPO_ROOT, rel)), f"Removed launcher must not exist: {rel}")
+
+        for rel in [
+            "files/system/usr/share/sadeem-nvidia/gpu-ids.json",
+            "files/system/usr/share/sadeem-capture/recorder.py",
+            "files/system/usr/share/sadeem-capture/capture/portal_screencast.py",
+            "files/system/usr/bin/sadeem-capture",
+        ]:
+            self.assertTrue(os.path.isfile(os.path.join(REPO_ROOT, rel)), f"Shared backend file must be preserved: {rel}")
 
     def test_glib_compile_schemas_dry_run(self):
         schema_dir = os.path.join(REPO_ROOT, "files/system/usr/share/glib-2.0/schemas")

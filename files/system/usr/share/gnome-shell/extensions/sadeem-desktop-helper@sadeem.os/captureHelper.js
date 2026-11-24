@@ -1,6 +1,7 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Shell from 'gi://Shell';
+import St from 'gi://St';
 
 const CaptureHelperIface = `
 <node>
@@ -179,6 +180,7 @@ export class CaptureHelperService {
                 try {
                     this._screenshotService.screenshot_finish(res);
                     stream.close(null);
+                    this._copyPngToClipboard(filePath);
                     invocation.return_value(new GLib.Variant('(b)', [true]));
                 } catch (e) {
                     console.error('[CaptureHelper] screenshot_finish error: ' + e);
@@ -204,6 +206,7 @@ export class CaptureHelperService {
                 try {
                     this._screenshotService.screenshot_area_finish(res);
                     stream.close(null);
+                    this._copyPngToClipboard(filePath);
                     invocation.return_value(new GLib.Variant('(b)', [true]));
                 } catch (e) {
                     console.error('[CaptureHelper] screenshot_area_finish error: ' + e);
@@ -253,6 +256,7 @@ export class CaptureHelperService {
                         try {
                             this._screenshotService.screenshot_window_finish(res);
                             stream.close(null);
+                            this._copyPngToClipboard(filePath);
                             invocation.return_value(new GLib.Variant('(b)', [true]));
                         } catch (e) {
                             console.error('[CaptureHelper] screenshot_window_finish error: ' + e);
@@ -353,6 +357,22 @@ export class CaptureHelperService {
             return true;
         }
         return false;
+    }
+
+    _copyPngToClipboard(filePath) {
+        try {
+            const [ok, contents] = Gio.File.new_for_path(filePath).load_contents(null);
+            if (ok && contents && contents.length > 0) {
+                const pngBytes = new GLib.Bytes(contents);
+                St.Clipboard.get_default().set_content(
+                    St.ClipboardType.CLIPBOARD,
+                    'image/png',
+                    pngBytes
+                );
+            }
+        } catch (e) {
+            console.error('[CaptureHelper] Clipboard image copy error: ' + e);
+        }
     }
 
     emitStopRecordingRequested() {

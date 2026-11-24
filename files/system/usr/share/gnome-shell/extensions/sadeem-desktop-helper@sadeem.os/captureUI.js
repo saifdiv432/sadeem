@@ -163,6 +163,9 @@ class CaptureUI extends St.Widget {
         });
         this._windowHighlight.add_child(this._windowTitleLabel);
         this.add_child(this._windowHighlight);
+
+        // Enforce internal stacking order (handles, badge, overlays)
+        this.set_child_above_sibling(this._selectionBox, this._dimOverlay);
     }
 
     _buildControls() {
@@ -386,6 +389,47 @@ class CaptureUI extends St.Widget {
 
         this._workAreaContainer.add_child(this._controlCard);
         this.add_child(this._workAreaContainer);
+        this._ensureLayerOrder();
+    }
+
+    _ensureLayerOrder() {
+        try {
+            if (this._frozenContainer && this._frozenContainer.get_parent() === this) {
+                this.set_child_below_sibling(this._frozenContainer, null);
+            }
+            if (this._dimOverlay && this._frozenContainer && this._dimOverlay.get_parent() === this) {
+                this.set_child_above_sibling(this._dimOverlay, this._frozenContainer);
+            }
+            if (this._screenHighlight && this._dimOverlay && this._screenHighlight.get_parent() === this) {
+                this.set_child_above_sibling(this._screenHighlight, this._dimOverlay);
+            }
+            if (this._windowHighlight && this._screenHighlight && this._windowHighlight.get_parent() === this) {
+                this.set_child_above_sibling(this._windowHighlight, this._screenHighlight);
+            }
+            if (this._selectionBox && this._dimOverlay && this._selectionBox.get_parent() === this) {
+                this.set_child_above_sibling(this._selectionBox, this._dimOverlay);
+                if (this._handleTL) this._selectionBox.set_child_above_sibling(this._handleTL, null);
+                if (this._handleTR) this._selectionBox.set_child_above_sibling(this._handleTR, null);
+                if (this._handleBL) this._selectionBox.set_child_above_sibling(this._handleBL, null);
+                if (this._handleBR) this._selectionBox.set_child_above_sibling(this._handleBR, null);
+                if (this._dimensionsBadge) this._selectionBox.set_child_above_sibling(this._dimensionsBadge, null);
+            }
+            if (this._workAreaContainer && this._workAreaContainer.get_parent() === this) {
+                this.set_child_above_sibling(this._workAreaContainer, null);
+            }
+        } catch (e) {
+            console.error('[CaptureUI] _ensureLayerOrder error: ' + e);
+        }
+    }
+
+    _setDragVisualState(isDragging) {
+        if (this._controlCard) {
+            this._controlCard.opacity = isDragging ? 60 : 255;
+            this._controlCard.reactive = !isDragging;
+        }
+        if (this._topPill) {
+            this._topPill.opacity = isDragging ? 60 : 255;
+        }
     }
 
     _createModeButton(iconName, labelText, mode) {
@@ -680,12 +724,18 @@ class CaptureUI extends St.Widget {
             console.error('[CaptureUI] Error capturing stage to content: ' + err);
         }
 
-        // Add to uiGroup if not added
-        if (!this.get_parent() && Main.layoutManager && Main.layoutManager.uiGroup) {
-            Main.layoutManager.uiGroup.add_child(this);
+        // Add to uiGroup if not added and always raise above all GNOME layers (ArcMenu, Dash-to-Dock, panel, cursorHalo, popups)
+        if (Main.layoutManager && Main.layoutManager.uiGroup) {
+            if (!this.get_parent()) {
+                Main.layoutManager.uiGroup.add_child(this);
+            }
+            Main.layoutManager.uiGroup.set_child_above_sibling(this, null);
         }
 
+        this.set_position(0, 0);
         this.set_size(global.stage.width, global.stage.height);
+        this._ensureLayerOrder();
+        this._setDragVisualState(false);
         this.visible = true;
         this._isOpen = true;
 
@@ -727,6 +777,7 @@ class CaptureUI extends St.Widget {
         this.visible = false;
         this._isOpen = false;
         this._dragState = null;
+        this._setDragVisualState(false);
 
         if (this._stageScreenshot) {
             this._stageScreenshot.set_content(null);
@@ -787,7 +838,17 @@ class CaptureUI extends St.Widget {
             this._dimBottom.set_size(0, 0);
             this._dimLeft.set_size(0, 0);
             this._dimRight.set_size(0, 0);
+            if (this._selectionBox) {
+                this._selectionBox.visible = false;
+                this._selectionBox.set_position(r.x, r.y);
+                this._selectionBox.set_size(0, 0);
+            }
             return;
+        }
+
+        // Ensure selection box is visible and stays above dimming overlay
+        if (this._selectionBox) {
+            this._selectionBox.visible = (this._mode === 'selection');
         }
 
         // 4 bars around selection
@@ -806,6 +867,9 @@ class CaptureUI extends St.Widget {
         // Update selection box
         this._selectionBox.set_position(r.x, r.y);
         this._selectionBox.set_size(r.width, r.height);
+        if (this._dimOverlay && this._selectionBox.get_parent() === this) {
+            this.set_child_above_sibling(this._selectionBox, this._dimOverlay);
+        }
 
         // Handles at corners
         const hw = 12;
@@ -814,9 +878,9 @@ class CaptureUI extends St.Widget {
         this._handleBL.set_position(-hw / 2, r.height - hw / 2);
         this._handleBR.set_position(r.width - hw / 2, r.height - hw / 2);
 
-        // Dimensions Badge
+        // Dimensions Badge (stay inside top corner when selection approaches top screen edge)
         this._dimensionsBadge.text = `${r.width} × ${r.height} px`;
-        this._dimensionsBadge.set_position(6, -24);
+        this._dimensionsBadge.set_position(6, r.y < 28 ? 6 : -24);
     }
 
     _clearDimming() {
@@ -944,18 +1008,22 @@ class CaptureUI extends St.Widget {
             if (r.width > 5 && r.height > 5) {
                 if (Math.hypot(x - r.x, y - r.y) <= hw) {
                     this._dragState = { type: 'resize', handle: 'TL', startX: x, startY: y, initialRect: { ...r } };
+                    this._setDragVisualState(true);
                     return Clutter.EVENT_STOP;
                 }
                 if (Math.hypot(x - (r.x + r.width), y - r.y) <= hw) {
                     this._dragState = { type: 'resize', handle: 'TR', startX: x, startY: y, initialRect: { ...r } };
+                    this._setDragVisualState(true);
                     return Clutter.EVENT_STOP;
                 }
                 if (Math.hypot(x - r.x, y - (r.y + r.height)) <= hw) {
                     this._dragState = { type: 'resize', handle: 'BL', startX: x, startY: y, initialRect: { ...r } };
+                    this._setDragVisualState(true);
                     return Clutter.EVENT_STOP;
                 }
                 if (Math.hypot(x - (r.x + r.width), y - (r.y + r.height)) <= hw) {
                     this._dragState = { type: 'resize', handle: 'BR', startX: x, startY: y, initialRect: { ...r } };
+                    this._setDragVisualState(true);
                     return Clutter.EVENT_STOP;
                 }
 
@@ -966,6 +1034,7 @@ class CaptureUI extends St.Widget {
                         return Clutter.EVENT_STOP;
                     }
                     this._dragState = { type: 'move', startX: x, startY: y, initialRect: { ...r } };
+                    this._setDragVisualState(true);
                     return Clutter.EVENT_STOP;
                 }
             }
@@ -973,7 +1042,7 @@ class CaptureUI extends St.Widget {
             // Start new selection drag
             this._dragState = { type: 'draw', startX: x, startY: y };
             this._selectionRect = { x, y, width: 0, height: 0 };
-            this._selectionBox.visible = true;
+            this._setDragVisualState(true);
             this._updateDimming();
             return Clutter.EVENT_STOP;
         }
@@ -1057,6 +1126,7 @@ class CaptureUI extends St.Widget {
     _onButtonRelease(event) {
         if (this._dragState) {
             this._dragState = null;
+            this._setDragVisualState(false);
             if (this._selectionRect.width < 5 || this._selectionRect.height < 5) {
                 this._selectionBox.visible = false;
                 this._clearDimming();
@@ -1245,9 +1315,18 @@ class CaptureUI extends St.Widget {
 
     _copyImageToClipboard(filePath) {
         try {
-            St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, filePath);
-            GLib.spawn_command_line_async(`sh -c 'wl-copy --type image/png < ${GLib.shell_quote(filePath)}'`);
-        } catch (e) {}
+            const [ok, contents] = Gio.File.new_for_path(filePath).load_contents(null);
+            if (ok && contents && contents.length > 0) {
+                const pngBytes = new GLib.Bytes(contents);
+                St.Clipboard.get_default().set_content(
+                    St.ClipboardType.CLIPBOARD,
+                    'image/png',
+                    pngBytes
+                );
+            }
+        } catch (e) {
+            console.error('[CaptureUI] Clipboard image copy error: ' + e);
+        }
     }
 
     _openInGallery(filePath, editMode = true) {
