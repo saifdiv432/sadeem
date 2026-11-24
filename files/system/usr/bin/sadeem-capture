@@ -1,2 +1,46 @@
-#!/usr/bin/env bash
-exec /usr/bin/python3 /usr/share/sadeem-capture/app.py "$@"
+#!/bin/sh
+# Sadeem Capture Instant Launcher
+# Communicates directly with org.sadeem.CaptureHelper inside GNOME Shell for sub-10ms response.
+
+# 1. Stop recording request
+if [ "$1" = "--stop-recording" ]; then
+    gdbus call --session --dest org.sadeem.CaptureHelper --object-path /org/sadeem/CaptureHelper \
+        --method org.sadeem.CaptureHelper.StopRecording >/dev/null 2>&1
+    exit $?
+fi
+
+# 2. Window direct capture request
+if [ "$1" = "--window-id" ] && [ -n "$2" ]; then
+    gdbus call --session --dest org.sadeem.CaptureHelper --object-path /org/sadeem/CaptureHelper \
+        --method org.sadeem.CaptureHelper.CaptureWindowNow "$2" >/dev/null 2>&1
+    exit $?
+fi
+
+# 3. Direct mode selection
+case "$1" in
+    --video)
+        gdbus call --session --dest org.sadeem.CaptureHelper --object-path /org/sadeem/CaptureHelper \
+            --method org.sadeem.CaptureHelper.OpenUI "video" >/dev/null 2>&1
+        exit $?
+        ;;
+    --screen)
+        gdbus call --session --dest org.sadeem.CaptureHelper --object-path /org/sadeem/CaptureHelper \
+            --method org.sadeem.CaptureHelper.OpenUI "screen" >/dev/null 2>&1
+        exit $?
+        ;;
+    --window)
+        gdbus call --session --dest org.sadeem.CaptureHelper --object-path /org/sadeem/CaptureHelper \
+            --method org.sadeem.CaptureHelper.OpenUI "window" >/dev/null 2>&1
+        exit $?
+        ;;
+    --area|--selection)
+        gdbus call --session --dest org.sadeem.CaptureHelper --object-path /org/sadeem/CaptureHelper \
+            --method org.sadeem.CaptureHelper.OpenUI "selection" >/dev/null 2>&1
+        exit $?
+        ;;
+esac
+
+# 4. No arguments or default: Open UI in selection mode
+gdbus call --session --dest org.sadeem.CaptureHelper --object-path /org/sadeem/CaptureHelper \
+    --method org.sadeem.CaptureHelper.OpenUI "" >/dev/null 2>&1
+exit $?

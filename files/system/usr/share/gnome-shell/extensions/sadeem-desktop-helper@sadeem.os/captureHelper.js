@@ -8,6 +8,20 @@ const CaptureHelperIface = `
     <method name="Ping">
       <arg type="s" name="reply" direction="out"/>
     </method>
+    <method name="OpenUI">
+      <arg type="s" name="mode" direction="in"/>
+      <arg type="b" name="success" direction="out"/>
+    </method>
+    <method name="StopRecording">
+      <arg type="b" name="success" direction="out"/>
+    </method>
+    <method name="SilentScreenshot">
+      <arg type="b" name="success" direction="out"/>
+    </method>
+    <method name="CaptureWindowNow">
+      <arg type="u" name="window_id" direction="in"/>
+      <arg type="b" name="success" direction="out"/>
+    </method>
     <method name="CaptureScreen">
       <arg type="b" name="include_cursor" direction="in"/>
       <arg type="s" name="file_path" direction="in"/>
@@ -43,6 +57,10 @@ const CaptureHelperIface = `
       <arg type="b" name="active" direction="in"/>
       <arg type="b" name="success" direction="out"/>
     </method>
+    <method name="SetGnomeIndicatorSuppressed">
+      <arg type="b" name="suppressed" direction="in"/>
+      <arg type="b" name="success" direction="out"/>
+    </method>
     <method name="FlashCameraIndicator">
       <arg type="b" name="success" direction="out"/>
     </method>
@@ -52,12 +70,17 @@ const CaptureHelperIface = `
 </node>`;
 
 export class CaptureHelperService {
-    constructor(haloManager, recordingIndicator = null) {
+    constructor(haloManager = null, recordingIndicator = null, captureUI = null) {
         this._haloManager = haloManager;
         this._recordingIndicator = recordingIndicator;
+        this._captureUI = captureUI;
         this._screenshotService = new Shell.Screenshot();
         this._dbusImpl = null;
         this._nameOwnerId = null;
+    }
+
+    setCaptureUI(captureUI) {
+        this._captureUI = captureUI;
     }
 
     setRecordingIndicator(indicator) {
@@ -89,6 +112,59 @@ export class CaptureHelperService {
 
     Ping() {
         return 'pong';
+    }
+
+    OpenUI(mode) {
+        try {
+            if (this._captureUI) {
+                let initialMode = 'selection';
+                let initialMedia = 'photo';
+
+                if (mode === 'video' || mode === '--video') {
+                    initialMode = 'selection';
+                    initialMedia = 'video';
+                } else if (mode === 'screen' || mode === '--screen') {
+                    initialMode = 'screen';
+                    initialMedia = 'photo';
+                } else if (mode === 'window' || mode === '--window') {
+                    initialMode = 'window';
+                    initialMedia = 'photo';
+                } else if (mode === 'area' || mode === '--area' || mode === 'selection' || mode === '--selection') {
+                    initialMode = 'selection';
+                    initialMedia = 'photo';
+                }
+
+                this._captureUI.open(initialMode, initialMedia);
+                return true;
+            }
+        } catch (e) {
+            console.error('[CaptureHelper] OpenUI error: ' + e);
+        }
+        return false;
+    }
+
+    StopRecording() {
+        if (this._captureUI && typeof this._captureUI.stopRecording === 'function') {
+            return this._captureUI.stopRecording();
+        }
+        this.emitStopRecordingRequested();
+        return true;
+    }
+
+    SilentScreenshot() {
+        if (this._captureUI && typeof this._captureUI.captureSilentScreenshot === 'function') {
+            this._captureUI.captureSilentScreenshot();
+            return true;
+        }
+        this.emitSilentScreenshotRequested();
+        return true;
+    }
+
+    CaptureWindowNow(windowId) {
+        if (this._captureUI && typeof this._captureUI.captureWindowNow === 'function') {
+            return this._captureUI.captureWindowNow(windowId);
+        }
+        return false;
     }
 
     CaptureScreenAsync([includeCursor, filePath], invocation) {
@@ -258,6 +334,14 @@ export class CaptureHelperService {
     SetRecordingState(active) {
         if (this._recordingIndicator) {
             this._recordingIndicator.setRecordingActive(active);
+            return true;
+        }
+        return false;
+    }
+
+    SetGnomeIndicatorSuppressed(suppressed) {
+        if (this._recordingIndicator && typeof this._recordingIndicator.setGnomeIndicatorSuppressed === 'function') {
+            this._recordingIndicator.setGnomeIndicatorSuppressed(suppressed);
             return true;
         }
         return false;

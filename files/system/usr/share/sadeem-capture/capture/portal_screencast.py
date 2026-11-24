@@ -48,13 +48,20 @@ def get_restore_token(mode: str) -> str:
 
 
 def set_restore_token(mode: str, token: str):
-    if not token:
+    if not token or mode == "window":
         return
     state = load_state()
     if "restore_tokens" not in state:
         state["restore_tokens"] = {}
     state["restore_tokens"][mode] = token
     save_state(state)
+
+
+def clear_restore_token(mode: str):
+    state = load_state()
+    if "restore_tokens" in state and mode in state["restore_tokens"]:
+        del state["restore_tokens"][mode]
+        save_state(state)
 
 
 def random_token(prefix="sadeem_"):
@@ -76,7 +83,7 @@ class ScreenCastPortalSession:
         Requests a ScreenCast session via org.freedesktop.portal.ScreenCast.
         mode: "screen", "selection", or "window"
         cursor_mode: 1 (Hidden), 2 (Embedded)
-        Returns: (node_id: int, fd: int) or (None, None) on failure/cancellation.
+        Returns: (status: str, node_id: int, fd: int) where status is "success", "canceled", or "error".
         """
         self.mode = mode
         sender = self.bus.get_unique_name().replace(".", "_").lstrip(":")
@@ -95,9 +102,13 @@ class ScreenCastPortalSession:
             session_req_token,
             sender,
         )
-        if not res or res[0] != 0:
-            print(f"[Portal] CreateSession failed or canceled: {res}", file=sys.stderr)
-            return None, None
+        if not res:
+            return "error", None, -1
+        if res[0] == 1:
+            return "canceled", None, -1
+        if res[0] != 0:
+            print(f"[Portal] CreateSession failed: {res}", file=sys.stderr)
+            return "error", None, -1
 
         results = res[1]
         self.session_handle = results.get("session_handle")
@@ -109,18 +120,22 @@ class ScreenCastPortalSession:
         # types: bit 0 (1) = Monitor, bit 1 (2) = Window
         source_type = 2 if mode == "window" else 1
         select_token = random_token("req_")
+        persist_val = 0 if mode == "window" else 2
         select_opts = {
             "types": GLib.Variant("u", source_type),
             "multiple": GLib.Variant("b", False),
             "cursor_mode": GLib.Variant("u", cursor_mode),
-            "persist_mode": GLib.Variant("u", 2),
+            "persist_mode": GLib.Variant("u", persist_val),
             "handle_token": GLib.Variant("s", select_token),
         }
 
-        # Check existing restore_token
-        saved_token = get_restore_token(mode)
-        if saved_token:
-            select_opts["restore_token"] = GLib.Variant("s", saved_token)
+        if mode == "window":
+            clear_restore_token("window")
+        else:
+            # Check existing restore_token for screen / selection
+            saved_token = get_restore_token(mode)
+            if saved_token:
+                select_opts["restore_token"] = GLib.Variant("s", saved_token)
 
         res = self._call_portal_sync_request(
             "SelectSources",
@@ -128,10 +143,16 @@ class ScreenCastPortalSession:
             select_token,
             sender,
         )
-        if not res or res[0] != 0:
+        if not res:
+            self.close()
+            return "error", None, -1
+        if res[0] == 1:
+            self.close()
+            return "canceled", None, -1
+        if res[0] != 0:
             print(f"[Portal] SelectSources failed: {res}", file=sys.stderr)
             self.close()
-            return None, None
+            return "error", None, -1
 
         # 3. Start Session
         start_token = random_token("req_")
@@ -145,52 +166,59 @@ class ScreenCastPortalSession:
             start_token,
             sender,
         )
-        if not res or res[0] != 0:
+        if not res:
+            self.close()
+            return "error", None, -1
+        if res[0] == 1:
+            self.close()
+            return "canceled", None, -1
+        if res[0] != 0:
             print(f"[Portal] Start failed: {res}", file=sys.stderr)
             self.close()
-            return None, None
+            return "error", None, -1
 
         start_results = res[1]
         streams = start_results.get("streams", [])
         if not streams:
             print("[Portal] No streams returned in Start response", file=sys.stderr)
             self.close()
-            return None, None
+            return "error", None, -1
 
         # Extract first stream node_id
         # streams is array of (uint32 node_id, a{sv} stream_properties)
         self.node_id = streams[0][0]
 
-        # Save new restore_token if provided
-        new_token = start_results.get("restore_token")
-        if new_token:
-            set_restore_token(mode, new_token)
+        # Save new restore_token if provided (never for window mode)
+        if mode != "window":
+            new_token = start_results.get("restore_token")
+            if new_token:
+                set_restore_token(mode, new_token)
 
         # 4. OpenPipeWireRemote
         self.pipewire_fd = self._open_pipewire_remote()
 
-        return self.node_id, self.pipewire_fd
+        return "success", self.node_id, self.pipewire_fd
 
     def _open_pipewire_remote(self) -> int:
         """Calls OpenPipeWireRemote on session_handle to obtain the file descriptor."""
         try:
-            msg = Gio.DBusMessage.new_method_call(
+            res, fd_list = self.bus.call_with_unix_fd_list_sync(
                 "org.freedesktop.portal.Desktop",
                 "/org/freedesktop/portal/desktop",
                 "org.freedesktop.portal.ScreenCast",
                 "OpenPipeWireRemote",
-            )
-            msg.set_body(GLib.Variant("(oa{sv})", (self.session_handle, {})))
-            reply = self.bus.send_message_with_reply_sync(
-                msg,
-                Gio.DBusSendMessageFlags.NONE,
+                GLib.Variant("(oa{sv})", (self.session_handle, {})),
+                GLib.VariantType.new("(h)"),
+                Gio.DBusCallFlags.NONE,
                 3000,
                 None,
+                None,
             )
-            if reply and reply.get_message_type() == Gio.DBusMessageType.METHOD_RETURN:
-                fd_list = reply.get_unix_fd_list()
-                if fd_list and fd_list.get_length() > 0:
-                    return fd_list.get(0)
+            if fd_list and fd_list.get_length() > 0:
+                idx = res.unpack()[0] if res else 0
+                raw_fd = fd_list.get(idx)
+                if raw_fd >= 0:
+                    return os.dup(raw_fd)
         except Exception as e:
             print(f"[Portal] OpenPipeWireRemote error: {e}", file=sys.stderr)
         return -1

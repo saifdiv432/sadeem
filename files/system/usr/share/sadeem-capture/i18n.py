@@ -46,6 +46,9 @@ STRINGS = {
         "toast_copied": "تم حفظ اللقطة ونسخها إلى الحافظة",
         "filename_prefix": "لقطة_شاشة",
         # Video recording strings
+        "setting_resolution": "الدقة:",
+        "setting_framerate": "معدل الإطارات:",
+        "setting_codec": "الترميز:",
         "res_native": "الافتراضية",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -86,6 +89,9 @@ STRINGS = {
         "toast_copied": "Screenshot saved and copied to clipboard",
         "filename_prefix": "Screenshot",
         # Video recording strings
+        "setting_resolution": "Resolution:",
+        "setting_framerate": "Framerate:",
+        "setting_codec": "Codec:",
         "res_native": "Native",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -126,6 +132,9 @@ STRINGS = {
         "toast_copied": "Capture enregistrée et copiée dans le presse-papiers",
         "filename_prefix": "Capture_d_ecran",
         # Video recording strings
+        "setting_resolution": "Résolution :",
+        "setting_framerate": "Images/sec :",
+        "setting_codec": "Codec :",
         "res_native": "Native",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -166,6 +175,9 @@ STRINGS = {
         "toast_copied": "Captura guardada y copiada al portapapeles",
         "filename_prefix": "Captura_de_pantalla",
         # Video recording strings
+        "setting_resolution": "Resolución:",
+        "setting_framerate": "Tasa de cuadros:",
+        "setting_codec": "Códec:",
         "res_native": "Nativa",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -206,6 +218,9 @@ STRINGS = {
         "toast_copied": "Bildschirmfoto gespeichert und in die Zwischenablage kopiert",
         "filename_prefix": "Bildschirmfoto",
         # Video recording strings
+        "setting_resolution": "Auflösung:",
+        "setting_framerate": "Bildrate:",
+        "setting_codec": "Codec:",
         "res_native": "Nativ",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -246,6 +261,9 @@ STRINGS = {
         "toast_copied": "Ekran görüntüsü kaydedildi ve panoya kopyalandı",
         "filename_prefix": "Ekran_Goruntusu",
         # Video recording strings
+        "setting_resolution": "Çözünürlük:",
+        "setting_framerate": "Kare hızı:",
+        "setting_codec": "Kodek:",
         "res_native": "Varsayılan",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -286,6 +304,9 @@ STRINGS = {
         "toast_copied": "Снимок экрана сохранен и скопирован в буфер",
         "filename_prefix": "Snimok_ekrana",
         # Video recording strings
+        "setting_resolution": "Разрешение:",
+        "setting_framerate": "Частота кадров:",
+        "setting_codec": "Кодек:",
         "res_native": "Исходное",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -326,6 +347,9 @@ STRINGS = {
         "toast_copied": "Captura guardada e copiada para a área de transferência",
         "filename_prefix": "Captura_de_ecra",
         # Video recording strings
+        "setting_resolution": "Resolução:",
+        "setting_framerate": "Taxa de quadros:",
+        "setting_codec": "Codec:",
         "res_native": "Nativa",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -366,6 +390,9 @@ STRINGS = {
         "toast_copied": "Schermata salvata e copiata negli appunti",
         "filename_prefix": "Schermata",
         # Video recording strings
+        "setting_resolution": "Risoluzione:",
+        "setting_framerate": "Frequenza fotogrammi:",
+        "setting_codec": "Codec:",
         "res_native": "Nativa",
         "res_1080p": "1080p",
         "res_720p": "720p",
@@ -406,6 +433,9 @@ STRINGS = {
         "toast_copied": "截图已保存并复制到剪贴板",
         "filename_prefix": "Jietu",
         # Video recording strings
+        "setting_resolution": "分辨率:",
+        "setting_framerate": "帧率:",
+        "setting_codec": "编码:",
         "res_native": "原始分辨率",
         "res_1080p": "1080p",
         "res_720p": "720p",

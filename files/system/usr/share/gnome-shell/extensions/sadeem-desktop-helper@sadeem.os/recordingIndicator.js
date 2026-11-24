@@ -8,12 +8,17 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
 export const RecordingIndicator = GObject.registerClass(
 class RecordingIndicator extends PanelMenu.Button {
-    _init(captureHelper) {
+    _init(captureHelper = null, captureUI = null) {
         super._init(0.5, 'Sadeem Recording Indicator', true);
         this._captureHelper = captureHelper;
+        this._captureUI = captureUI;
         this._timerSourceId = null;
         this._elapsedSeconds = 0;
         this._watchId = null;
+        this._gnomeIndicatorWatches = [];
+        this._indicatorSuppressed = false;
+        this._restoreTimerId = null;
+        this._flashTimerId = null;
 
         this.reactive = false;
         this.can_focus = false;
@@ -41,6 +46,7 @@ class RecordingIndicator extends PanelMenu.Button {
         this._camIcon = new St.Icon({
             icon_name: 'camera-photo-symbolic',
             icon_size: 13,
+            reactive: false,
             style: 'color: #ffffff;',
         });
         this._camBtn.set_child(this._camIcon);
@@ -69,6 +75,7 @@ class RecordingIndicator extends PanelMenu.Button {
         this._stopBtn.set_accessible_name('Stop Recording (Shift+Print)');
 
         const stopInnerBox = new St.BoxLayout({
+            reactive: false,
             y_align: Clutter.ActorAlign.CENTER,
         });
 
@@ -76,6 +83,7 @@ class RecordingIndicator extends PanelMenu.Button {
         this._dot = new St.Icon({
             icon_name: 'media-record-symbolic',
             icon_size: 11,
+            reactive: false,
             style: 'color: #ffffff; margin-right: 4px;',
         });
         stopInnerBox.add_child(this._dot);
@@ -83,6 +91,7 @@ class RecordingIndicator extends PanelMenu.Button {
         // Timer Label (00:00)
         this._timerLabel = new St.Label({
             text: '00:00',
+            reactive: false,
             y_align: Clutter.ActorAlign.CENTER,
             style: 'font-weight: bold; font-size: 12px; color: #ffffff; padding: 0 4px;',
         });
@@ -92,6 +101,7 @@ class RecordingIndicator extends PanelMenu.Button {
         this._stopIcon = new St.Icon({
             icon_name: 'media-playback-stop-symbolic',
             icon_size: 11,
+            reactive: false,
             style: 'color: #ffffff; margin-left: 4px;',
         });
         stopInnerBox.add_child(this._stopIcon);
@@ -107,13 +117,16 @@ class RecordingIndicator extends PanelMenu.Button {
         this.visible = false;
     }
 
+    setCaptureUI(captureUI) {
+        this._captureUI = captureUI;
+    }
+
     enable() {
         if (Main.panel && Main.panel.addToStatusArea) {
             Main.panel.addToStatusArea('sadeem-recording-indicator', this, 1, 'right');
         }
 
         // Auto-cleanup: watch org.sadeem.Capture on session bus
-        // If the recording application quits or crashes, hide the indicator automatically
         try {
             this._watchId = Gio.bus_watch_name(
                 Gio.BusType.SESSION,
@@ -121,8 +134,7 @@ class RecordingIndicator extends PanelMenu.Button {
                 Gio.BusNameWatcherFlags.NONE,
                 null,
                 () => {
-                    // Name vanished
-                    if (this.visible) {
+                    if (this.visible && !this._captureUI?._isRecording) {
                         this.setRecordingActive(false);
                     }
                 }
@@ -133,7 +145,22 @@ class RecordingIndicator extends PanelMenu.Button {
     }
 
     disable() {
+        if (this._flashTimerId) {
+            GLib.source_remove(this._flashTimerId);
+            this._flashTimerId = null;
+        }
+        if (this._restoreTimerId) {
+            GLib.source_remove(this._restoreTimerId);
+            this._restoreTimerId = null;
+        }
+        if (this._timerSourceId) {
+            GLib.source_remove(this._timerSourceId);
+            this._timerSourceId = null;
+        }
+
+        this._indicatorSuppressed = false;
         this.setRecordingActive(false);
+        this._restoreGnomeIndicators();
 
         if (this._watchId) {
             try {
@@ -145,11 +172,34 @@ class RecordingIndicator extends PanelMenu.Button {
         this.destroy();
     }
 
+    setGnomeIndicatorSuppressed(suppressed) {
+        if (this._restoreTimerId) {
+            GLib.source_remove(this._restoreTimerId);
+            this._restoreTimerId = null;
+        }
+
+        if (suppressed) {
+            this._indicatorSuppressed = true;
+            this._suppressGnomeIndicators();
+        } else {
+            this._indicatorSuppressed = false;
+            // Safe 500ms delay to prevent yellow indicator flash during Mutter screencast teardown
+            this._restoreTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+                this._restoreTimerId = null;
+                if (!this._indicatorSuppressed && !this.visible) {
+                    this._restoreGnomeIndicators();
+                }
+                return GLib.SOURCE_REMOVE;
+            });
+        }
+    }
+
     setRecordingActive(active) {
         if (active) {
             this._elapsedSeconds = 0;
             this._updateTimerDisplay();
             this.visible = true;
+            this._suppressGnomeIndicators();
 
             if (!this._timerSourceId) {
                 let pulseState = false;
@@ -174,7 +224,62 @@ class RecordingIndicator extends PanelMenu.Button {
             if (this._dot) {
                 this._dot.opacity = 255;
             }
+            if (!this._indicatorSuppressed) {
+                this._restoreGnomeIndicators();
+            }
         }
+    }
+
+    _suppressGnomeIndicators() {
+        this._restoreGnomeIndicators();
+
+        const targets = [];
+        if (Main.panel && Main.panel.statusArea) {
+            if (Main.panel.statusArea.screenSharing) {
+                targets.push(Main.panel.statusArea.screenSharing);
+            }
+            if (Main.panel.statusArea.screenRecording) {
+                targets.push(Main.panel.statusArea.screenRecording);
+            }
+            const qs = Main.panel.statusArea.quickSettings;
+            if (qs && qs._remoteAccess && qs._remoteAccess._indicator) {
+                targets.push(qs._remoteAccess._indicator);
+            }
+        }
+
+        for (const item of targets) {
+            try {
+                const wasVisible = item.visible;
+                item.visible = false;
+                const id = item.connect('notify::visible', () => {
+                    if ((this.visible || this._indicatorSuppressed) && item.visible) {
+                        item.visible = false;
+                    }
+                });
+                this._gnomeIndicatorWatches.push({ item, id, wasVisible });
+            } catch (e) {
+                // Ignore item connection issues
+            }
+        }
+    }
+
+    _restoreGnomeIndicators() {
+        if (!this._gnomeIndicatorWatches) return;
+        for (const { item, id, wasVisible } of this._gnomeIndicatorWatches) {
+            try {
+                item.disconnect(id);
+                if (typeof item._sync === 'function') {
+                    item._sync();
+                } else if (typeof item._onScreencastInProgressChanged === 'function') {
+                    item._onScreencastInProgressChanged();
+                } else {
+                    item.visible = wasVisible;
+                }
+            } catch (e) {
+                // Ignore disconnect issues
+            }
+        }
+        this._gnomeIndicatorWatches = [];
     }
 
     _updateTimerDisplay() {
@@ -188,23 +293,28 @@ class RecordingIndicator extends PanelMenu.Button {
     }
 
     _requestStop() {
+        // 1. Direct call inside Shell if captureUI is available
+        if (this._captureUI && typeof this._captureUI.stopRecording === 'function') {
+            this._captureUI.stopRecording();
+            return;
+        }
+
+        // 2. D-Bus helper signal fallback
         if (this._captureHelper && this._captureHelper.emitStopRecordingRequested) {
             this._captureHelper.emitStopRecordingRequested();
         }
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, () => {
-            if (this.visible) {
-                try {
-                    GLib.spawn_command_line_async('/usr/bin/sadeem-capture --stop-recording');
-                } catch (e) {
-                    console.error(`[SadeemIndicator] Fallback stop spawn failed: ${e}`);
-                }
-            }
-            return GLib.SOURCE_REMOVE;
-        });
     }
 
     _requestSnapshot() {
         this.flashCameraIcon();
+
+        // 1. Direct call inside Shell if captureUI is available
+        if (this._captureUI && typeof this._captureUI.captureSilentScreenshot === 'function') {
+            this._captureUI.captureSilentScreenshot();
+            return;
+        }
+
+        // 2. D-Bus helper signal fallback
         if (this._captureHelper && this._captureHelper.emitSilentScreenshotRequested) {
             this._captureHelper.emitSilentScreenshotRequested();
         }
@@ -216,7 +326,12 @@ class RecordingIndicator extends PanelMenu.Button {
         if (this._camBtn) {
             this._camBtn.style = 'padding: 3px 7px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.7); margin-right: 2px;';
         }
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 220, () => {
+        if (this._flashTimerId) {
+            GLib.source_remove(this._flashTimerId);
+            this._flashTimerId = null;
+        }
+        this._flashTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 220, () => {
+            this._flashTimerId = null;
             if (this._camIcon) {
                 this._camIcon.opacity = 255;
             }

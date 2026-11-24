@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 
 import gi
 gi.require_version("Gio", "2.0")
@@ -110,6 +111,22 @@ class CaptureClient:
             try:
                 res = proxy.call_sync(
                     "SetRecordingState",
+                    GLib.Variant("(b)", (bool(active),)),
+                    Gio.DBusCallFlags.NONE,
+                    1000,
+                    None,
+                )
+                return bool(res.unpack()[0])
+            except Exception:
+                pass
+        return False
+
+    def set_gnome_indicator_suppressed(self, active: bool) -> bool:
+        proxy = self.ensure_helper_proxy()
+        if proxy:
+            try:
+                res = proxy.call_sync(
+                    "SetGnomeIndicatorSuppressed",
                     GLib.Variant("(b)", (bool(active),)),
                     Gio.DBusCallFlags.NONE,
                     1000,
@@ -311,38 +328,45 @@ def generate_screenshot_path() -> str:
     return os.path.join(screenshots_dir, f"{prefix}_{now_str}.png")
 
 
-def copy_file_to_clipboard(file_path: str) -> bool:
-    """Non-blocking clipboard copy via wl-copy (avoids pipe hang from forked daemon)."""
-    if not os.path.isfile(file_path) or not shutil.which("wl-copy"):
-        return False
+def _copy_worker(file_path: str):
     try:
         with open(file_path, "rb") as f:
-            data = f.read()
-        proc = subprocess.Popen(
-            ["wl-copy", "--type", "image/png"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
-        proc.stdin.write(data)
-        proc.stdin.close()
-        proc.wait(timeout=1.5)
-        return proc.returncode == 0
+            proc = subprocess.Popen(
+                ["wl-copy", "--type", "image/png"],
+                stdin=f,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                close_fds=True,
+                start_new_session=True,
+            )
+            proc.wait(timeout=3.0)
     except Exception as e:
-        print(f"[CaptureClient] Clipboard copy failed: {e}", file=sys.stderr)
+        print(f"[CaptureClient] Async clipboard copy error: {e}", file=sys.stderr)
+
+
+def copy_file_to_clipboard(file_path: str) -> bool:
+    """Non-blocking clipboard copy running in background thread."""
+    if not os.path.isfile(file_path) or not shutil.which("wl-copy"):
         return False
+    t = threading.Thread(target=_copy_worker, args=(file_path,), daemon=True)
+    t.start()
+    return True
 
 
 def launch_gallery_editor(file_path: str):
     if not os.path.isfile(file_path):
         return
     try:
+        if shutil.which("systemd-run"):
+            cmd = ["systemd-run", "--user", "--scope", "--quiet", "sadeem-gallery", "--edit", file_path]
+        else:
+            cmd = ["sadeem-gallery", "--edit", file_path]
         subprocess.Popen(
-            ["sadeem-gallery", "--edit", file_path],
+            cmd,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             start_new_session=True,
+            close_fds=True,
         )
     except Exception as e:
         print(f"[CaptureClient] Failed to spawn sadeem-gallery: {e}", file=sys.stderr)

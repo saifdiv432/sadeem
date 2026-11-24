@@ -17,16 +17,11 @@ show-apps-icon-file=''
 
 [org.gnome.shell.keybindings]
 toggle-message-tray=['<Super>m']
-show-screenshot-ui=@as []
+show-screenshot-ui=['Print']
 screenshot=@as []
 
 [org.gnome.settings-daemon.plugins.media-keys]
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']
-
-[org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/]
-name='Sadeem Capture'
-command='/usr/bin/sadeem-capture'
-binding='Print'
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']
 
 [org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/]
 name='Stop Screen Recording'

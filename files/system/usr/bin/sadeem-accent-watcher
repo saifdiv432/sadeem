@@ -53,15 +53,13 @@ except Exception:
     # 3. Call gnome-extensions enable directly
     gnome-extensions enable "$EXT" 2>/dev/null || true
 
-    # 4. Disable default GNOME Shell screenshot shortcuts
-    gsettings set org.gnome.shell.keybindings show-screenshot-ui "@as []" 2>/dev/null || true
+    # 4. Route Print key to show-screenshot-ui (intercepted by extension.js for instant sub-millisecond launch)
+    gsettings set org.gnome.shell.keybindings show-screenshot-ui "['Print']" 2>/dev/null || true
     gsettings set org.gnome.shell.keybindings screenshot "@as []" 2>/dev/null || true
 
-    # 5. Add custom shortcuts for Sadeem Capture and Stop Recording
-    gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']" 2>/dev/null || true
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ name "Sadeem Capture" 2>/dev/null || true
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ command "/usr/bin/sadeem-capture" 2>/dev/null || true
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ binding "Print" 2>/dev/null || true
+    # 5. Add custom shortcut for Stop Recording and clean obsolete capture custom binding
+    gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']" 2>/dev/null || true
+    gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ 2>/dev/null || true
 
     gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ name "Stop Screen Recording" 2>/dev/null || true
     gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ command "/usr/bin/sadeem-capture --stop-recording" 2>/dev/null || true
@@ -72,6 +70,32 @@ except Exception:
     gsettings set org.gnome.shell.extensions.dash-to-panel show-apps-icon-file "" 2>/dev/null || true
 
     touch "$HOME/.config/sadeem/migration-v3.done"
+fi
+
+# One-time migration to v4 (Ensure sadeem-capture resident pre-warmed daemon is enabled and active)
+if [ ! -f "$HOME/.config/sadeem/migration-v4.done" ]; then
+    mkdir -p "$HOME/.config/sadeem"
+    touch "$HOME/.config/sadeem/migration-v4.done"
+fi
+
+# One-time migration to v5 (Eliminate resident daemon sadeem-capture.service, cleanup obsolete bindings, ensure native GNOME Shell UI)
+if [ ! -f "$HOME/.config/sadeem/migration-v5.done" ]; then
+    mkdir -p "$HOME/.config/sadeem"
+    systemctl --user disable --now sadeem-capture.service 2>/dev/null || true
+    systemctl --user daemon-reload 2>/dev/null || true
+
+    # Clean custom-sadeem-capture and keep only custom-sadeem-stop-record
+    gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']" 2>/dev/null || true
+    gsettings reset-recursively org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-capture/ 2>/dev/null || true
+
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ name "Stop Screen Recording" 2>/dev/null || true
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ command "/usr/bin/sadeem-capture --stop-recording" 2>/dev/null || true
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/ binding "<Shift>Print" 2>/dev/null || true
+
+    gsettings set org.gnome.shell.keybindings show-screenshot-ui "['Print']" 2>/dev/null || true
+    gsettings set org.gnome.shell.keybindings screenshot "@as []" 2>/dev/null || true
+
+    touch "$HOME/.config/sadeem/migration-v5.done"
 fi
 
 gsettings set org.gnome.desktop.interface accent-color 'red' 2>/dev/null || true

@@ -82,44 +82,60 @@ class VideoRecorder:
         self._stopping = False
         self.start_time = 0.0
 
-    def start(self) -> bool:
+    def start(self):
         """
         Starts the video and audio recording pipeline.
-        Returns True on success, False if canceled or failed.
+        Returns: "success", "canceled", or "error".
         """
         if self.is_recording:
-            return True
+            return "success"
 
-        # 1. Request ScreenCast session from Portal
+        # 1. Suppress GNOME built-in yellow indicator BEFORE portal session request
+        if self.client:
+            self.client.set_gnome_indicator_suppressed(True)
+
+        # 2. Request ScreenCast session from Portal
         self.portal = ScreenCastPortalSession()
         cursor_mode = 2 if self.cursor_enabled else 1
-        node_id, pw_fd = self.portal.request_screencast(
+        status, node_id, pw_fd = self.portal.request_screencast(
             mode=self.mode,
             cursor_mode=cursor_mode,
         )
 
-        if node_id is None:
-            print("[VideoRecorder] Portal request was canceled or failed.", file=sys.stderr)
+        if status == "canceled":
+            print("[VideoRecorder] Portal request was canceled by user.", file=sys.stderr)
+            if self.client:
+                self.client.set_gnome_indicator_suppressed(False)
             self.portal.close()
             self.portal = None
-            return False
+            return "canceled"
 
-        # 2. Build GStreamer Pipeline String
+        if status != "success" or node_id is None:
+            print("[VideoRecorder] Portal request failed.", file=sys.stderr)
+            if self.client:
+                self.client.set_gnome_indicator_suppressed(False)
+            self.portal.close()
+            self.portal = None
+            return "error"
+
+        # 3. Build GStreamer Pipeline String
         try:
             pipeline_str = self._build_pipeline_string(node_id, pw_fd)
             self.pipeline = Gst.parse_launch(pipeline_str)
         except Exception as exc:
             print(f"[VideoRecorder] Failed to create GStreamer pipeline: {exc}", file=sys.stderr)
+            if self.client:
+                self.client.set_gnome_indicator_suppressed(False)
             self.portal.close()
             self.portal = None
-            return False
+            return "error"
 
-        # 3. Activate Halo if requested
+        # 4. Activate Halo if requested
         if self.halo_enabled and self.cursor_enabled and self.mode != "window":
             if self.client:
                 self.client.set_halo_active(True)
 
-        # 4. Activate bus watch before PLAYING
+        # 5. Activate bus watch before PLAYING
         self._bus = self.pipeline.get_bus()
         self._bus.add_signal_watch()
         self._bus_watch_id = self._bus.connect("message", self._on_bus_message)
@@ -127,17 +143,19 @@ class VideoRecorder:
         ret = self.pipeline.set_state(Gst.State.PLAYING)
         if ret == Gst.StateChangeReturn.FAILURE:
             print("[VideoRecorder] GStreamer failed to transition to PLAYING.", file=sys.stderr)
+            if self.client:
+                self.client.set_gnome_indicator_suppressed(False)
             self._cleanup_on_failure()
-            return False
+            return "error"
 
         self.is_recording = True
         self.start_time = time.time()
 
-        # 5. Tell Sadeem Desktop Helper to display recording indicator in panel
+        # 6. Show Sadeem Red Recording Indicator in panel ONLY after PLAYING succeeds
         if self.client:
             self.client.set_recording_state(True)
 
-        return True
+        return "success"
 
     def _build_pipeline_string(self, node_id: int, pw_fd: int) -> str:
         """Constructs robust, validated GStreamer pipeline string."""
@@ -278,7 +296,8 @@ class VideoRecorder:
         duration_sec = max(0.1, time.time() - self.start_time)
 
         try:
-            # 1. Turn off panel recording indicator and cursor halo immediately
+            # 1. Turn off red panel recording indicator and cursor halo immediately
+            # GNOME yellow indicator remains suppressed!
             if self.client:
                 try:
                     self.client.set_recording_state(False)
@@ -302,10 +321,10 @@ class VideoRecorder:
             # 3. Send EOS event to flush MP4 moov atom & finalize file
             self.pipeline.send_event(Gst.Event.new_eos())
 
-            # 4. Wait on bus for EOS (up to 5 seconds timeout)
+            # 4. Wait on bus for EOS (up to 4 seconds timeout)
             bus = self.pipeline.get_bus()
             msg = bus.timed_pop_filtered(
-                5 * Gst.SECOND,
+                4 * Gst.SECOND,
                 Gst.MessageType.EOS | Gst.MessageType.ERROR,
             )
 
@@ -317,14 +336,21 @@ class VideoRecorder:
             self.pipeline.set_state(Gst.State.NULL)
             self.pipeline = None
 
-            # 6. Close portal session
+            # 6. Close portal session completely
             if self.portal:
                 self.portal.close()
                 self.portal = None
 
+            # 7. AFTER portal is completely closed, release GNOME yellow indicator suppression
+            if self.client:
+                try:
+                    self.client.set_gnome_indicator_suppressed(False)
+                except Exception:
+                    pass
+
             self.is_recording = False
 
-            # 7. Verify file output
+            # 8. Verify file output
             file_size = os.path.getsize(self.output_path) if os.path.isfile(self.output_path) else 0
             success = file_size > 0
             return success, self.output_path, file_size, duration_sec
@@ -333,6 +359,7 @@ class VideoRecorder:
             self._cleanup_on_failure()
 
     def _cleanup_on_failure(self):
+        had_resources = (self.pipeline is not None or self.portal is not None or self.is_recording)
         self.is_recording = False
         if self._bus and self._bus_watch_id:
             try:
@@ -345,12 +372,6 @@ class VideoRecorder:
                 pass
             self._bus_watch_id = None
             self._bus = None
-        if self.client:
-            try:
-                self.client.set_recording_state(False)
-                self.client.set_halo_active(False)
-            except Exception:
-                pass
         if self.pipeline:
             try:
                 self.pipeline.set_state(Gst.State.NULL)
@@ -363,3 +384,10 @@ class VideoRecorder:
             except Exception:
                 pass
             self.portal = None
+        if had_resources and self.client:
+            try:
+                self.client.set_recording_state(False)
+                self.client.set_halo_active(False)
+                self.client.set_gnome_indicator_suppressed(False)
+            except Exception:
+                pass

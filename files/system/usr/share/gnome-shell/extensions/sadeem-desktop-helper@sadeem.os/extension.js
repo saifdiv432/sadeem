@@ -8,6 +8,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { AppMenu } from 'resource:///org/gnome/shell/ui/appMenu.js';
 import { CursorHaloManager } from './cursorHalo.js';
 import { CaptureHelperService } from './captureHelper.js';
+import { CaptureUI } from './captureUI.js';
 import { WindowMenuHelper } from './windowMenuHelper.js';
 import { RecordingIndicator } from './recordingIndicator.js';
 
@@ -124,18 +125,23 @@ export default class SadeemDesktopHelperExtension extends Extension {
         // 6. Hook Quick Settings screenshot button to launch sadeem-capture
         this._hookQuickSettingsScreenshot();
 
-        // 7. Wayland screen capture bridge, cursor halo, recording indicator, and window menu capture
+        // 7. Wayland screen capture bridge, cursor halo, recording indicator, capture UI, and window menu capture
         this._cursorHalo = new CursorHaloManager();
         this._cursorHalo.enable();
 
         this._recordingIndicator = new RecordingIndicator();
         this._recordingIndicator.enable();
 
-        this._captureHelper = new CaptureHelperService(this._cursorHalo, this._recordingIndicator);
+        this._captureUI = new CaptureUI(null, this._cursorHalo, this._recordingIndicator);
+
+        this._captureHelper = new CaptureHelperService(this._cursorHalo, this._recordingIndicator, this._captureUI);
         this._captureHelper.enable();
+
+        this._captureUI._captureHelper = this._captureHelper;
+        this._recordingIndicator.setCaptureUI(this._captureUI);
         this._recordingIndicator._captureHelper = this._captureHelper;
 
-        this._windowMenuHelper = new WindowMenuHelper();
+        this._windowMenuHelper = new WindowMenuHelper(this._captureUI);
         this._windowMenuHelper.enable();
     }
 
@@ -191,7 +197,12 @@ export default class SadeemDesktopHelperExtension extends Extension {
 
         this._layeredPackages = null;
 
-        // 5. Disable Capture Helper, Recording Indicator, Cursor Halo, and Window Menu
+        // 5. Disable Capture UI, Capture Helper, Recording Indicator, Cursor Halo, and Window Menu
+        if (this._captureUI) {
+            this._captureUI.destroy();
+            this._captureUI = null;
+        }
+
         if (this._windowMenuHelper) {
             this._windowMenuHelper.disable();
             this._windowMenuHelper = null;
@@ -385,12 +396,11 @@ export default class SadeemDesktopHelperExtension extends Extension {
                     }
                 } catch (e) {}
 
-                try {
-                    GLib.spawn_command_line_async('/usr/bin/sadeem-capture');
+                if (self._captureUI) {
+                    self._captureUI.open(mode || 'selection');
                     return;
-                } catch (err) {
-                    console.error('[SadeemDesktopHelper] Failed to launch sadeem-capture: ' + err);
                 }
+
                 return self._origScreenshotUIOpen.call(this, mode);
             };
         }

@@ -1,5 +1,4 @@
 import GLib from 'gi://GLib';
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { WindowMenu } from 'resource:///org/gnome/shell/ui/windowMenu.js';
 
 const SCREENSHOT_LABELS = {
@@ -29,36 +28,17 @@ function getSystemLanguage() {
 }
 
 export class WindowMenuHelper {
-    constructor() {
-        this._origScreenshotOpen = null;
+    constructor(captureUI = null) {
+        this._captureUI = captureUI;
         this._origBuildMenu = null;
     }
 
+    setCaptureUI(captureUI) {
+        this._captureUI = captureUI;
+    }
+
     enable() {
-        // 1. Reroute Main.screenshotUI.open to launch sadeem-capture
-        const hookScreenshot = () => {
-            if (Main.screenshotUI && !this._origScreenshotOpen) {
-                this._origScreenshotOpen = Main.screenshotUI.open;
-                this._origScreenshotOpenObj = Main.screenshotUI;
-                Main.screenshotUI.open = function(...args) {
-                    try {
-                        GLib.spawn_command_line_async('sadeem-capture');
-                    } catch (e) {
-                        console.error('[WindowMenuHelper] Failed to launch sadeem-capture: ' + e);
-                    }
-                };
-            }
-        };
-
-        hookScreenshot();
-        if (!this._origScreenshotOpen) {
-            this._idleHookId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                hookScreenshot();
-                return GLib.SOURCE_REMOVE;
-            });
-        }
-
-        // 2. Intercept WindowMenu._buildMenu
+        // Intercept WindowMenu._buildMenu to add/enhance Take Screenshot action
         if (WindowMenu && WindowMenu.prototype && !this._origBuildMenu) {
             this._origBuildMenu = WindowMenu.prototype._buildMenu;
             const self = this;
@@ -71,22 +51,6 @@ export class WindowMenuHelper {
     }
 
     disable() {
-        if (this._idleHookId) {
-            GLib.source_remove(this._idleHookId);
-            this._idleHookId = null;
-        }
-
-        // Restore Main.screenshotUI.open
-        if (this._origScreenshotOpen) {
-            if (this._origScreenshotOpenObj) {
-                this._origScreenshotOpenObj.open = this._origScreenshotOpen;
-            } else if (Main.screenshotUI) {
-                Main.screenshotUI.open = this._origScreenshotOpen;
-            }
-            this._origScreenshotOpen = null;
-            this._origScreenshotOpenObj = null;
-        }
-
         // Restore WindowMenu.prototype._buildMenu
         if (WindowMenu && WindowMenu.prototype && this._origBuildMenu) {
             WindowMenu.prototype._buildMenu = this._origBuildMenu;
@@ -115,30 +79,28 @@ export class WindowMenuHelper {
             }
         }
 
+        const triggerCapture = () => {
+            menu.close();
+            if (this._captureUI && typeof this._captureUI.captureWindowNow === 'function') {
+                this._captureUI.captureWindowNow(winId);
+                return;
+            }
+            try {
+                GLib.spawn_command_line_async(`sadeem-capture --window-id ${winId}`);
+            } catch (e) {
+                console.error('[WindowMenuHelper] Failed to launch sadeem-capture: ' + e);
+            }
+        };
+
         if (existingItem) {
             existingItem.label.set_text(localizedLabel);
-            // Replace click action
             if (existingItem._sadeemCaptureHandler) {
                 existingItem.disconnect(existingItem._sadeemCaptureHandler);
             }
-            existingItem._sadeemCaptureHandler = existingItem.connect('activate', () => {
-                menu.close();
-                try {
-                    GLib.spawn_command_line_async(`sadeem-capture --window-id ${winId}`);
-                } catch (e) {
-                    console.error('[WindowMenuHelper] Failed to launch sadeem-capture: ' + e);
-                }
-            });
+            existingItem._sadeemCaptureHandler = existingItem.connect('activate', triggerCapture);
         } else {
             // Append Take Screenshot item
-            menu.addAction(localizedLabel, () => {
-                menu.close();
-                try {
-                    GLib.spawn_command_line_async(`sadeem-capture --window-id ${winId}`);
-                } catch (e) {
-                    console.error('[WindowMenuHelper] Failed to launch sadeem-capture: ' + e);
-                }
-            });
+            menu.addAction(localizedLabel, triggerCapture);
         }
     }
 }
