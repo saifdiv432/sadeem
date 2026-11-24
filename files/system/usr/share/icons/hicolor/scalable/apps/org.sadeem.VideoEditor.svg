@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="vidBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a1c33"/>
+      <stop offset="50%" stop-color="#442646"/>
+      <stop offset="100%" stop-color="#0f4c5c"/>
+    </linearGradient>
+    <linearGradient id="turqGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="filmGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e1e24"/>
+      <stop offset="50%" stop-color="#2a2a34"/>
+      <stop offset="100%" stop-color="#1e1e24"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Main Squircle Background Container -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#vidBg)" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="2"/>
+
+  <!-- Filmstrip Window Body -->
+  <rect x="22" y="30" width="84" height="68" rx="8" fill="url(#filmGrad)" stroke="#ffffff" stroke-opacity="0.2" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Filmstrip Perforations Top -->
+  <rect x="26" y="34" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="38" y="34" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="50" y="34" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="62" y="34" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="74" y="34" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="86" y="34" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="98" y="34" width="4" height="6" rx="1" fill="#ffffff" fill-opacity="0.85"/>
+
+  <!-- Filmstrip Perforations Bottom -->
+  <rect x="26" y="88" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="38" y="88" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="50" y="88" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="62" y="88" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="74" y="88" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="86" y="88" width="8" height="6" rx="1.5" fill="#ffffff" fill-opacity="0.85"/>
+  <rect x="98" y="88" width="4" height="6" rx="1" fill="#ffffff" fill-opacity="0.85"/>
+
+  <!-- Inner Video Frame Screen -->
+  <rect x="27" y="44" width="74" height="40" rx="4" fill="#0f172a" stroke="url(#turqGrad)" stroke-width="1.5"/>
+
+  <!-- Play Triangle in Viewport -->
+  <polygon points="56,54 74,64 56,74" fill="url(#turqGrad)"/>
+
+  <!-- Vertical Timeline Cut Line Indicator -->
+  <line x1="64" y1="26" x2="64" y2="102" stroke="#ef4444" stroke-width="2" stroke-dasharray="3,2" stroke-linecap="round"/>
+  <polygon points="61,24 67,24 64,28" fill="#ef4444"/>
+  <polygon points="61,104 67,104 64,100" fill="#ef4444"/>
+
+  <!-- Editing Scissors Badge (Bottom Right) -->
+  <g transform="translate(74, 68) scale(0.85)" filter="url(#shadow)">
+    <circle cx="24" cy="24" r="20" fill="#7a1c33" stroke="#e2e8f0" stroke-width="2"/>
+    <!-- Stylized Scissors -->
+    <!-- Blade 1 -->
+    <path d="M 16 14 C 18 14, 20 16, 21 18 L 31 33" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="16" cy="15" r="4.5" stroke="#ffffff" stroke-width="2.2" fill="none"/>
+    <!-- Blade 2 -->
+    <path d="M 16 34 C 18 34, 20 32, 21 30 L 31 15" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="16" cy="33" r="4.5" stroke="#ffffff" stroke-width="2.2" fill="none"/>
+    <!-- Pivot Pin -->
+    <circle cx="23" cy="24" r="2.2" fill="#06b6d4"/>
+  </g>
+</svg>
