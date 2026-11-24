@@ -45,7 +45,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print: لقطة شاشة صامتة | Shift+Print: إيقاف وحفظ التسجيل",
     "helper_disabled_warning": "إضافة «مساعد سطح مكتب سديم» غير مفعّلة. يرجى تفعيلها لالتقاط الشاشة بدقة.",
     "error_capture_failed": "فشل التقاط الشاشة",
-    "error_rec_start_failed": "فشل بدء تسجيل الفيديو"
+    "error_rec_start_failed": "فشل بدء تسجيل الفيديو",
+    "notif_photo_title": "تم التقاط الشاشة",
+    "notif_photo_body": "تم حفظ الصورة ونسخها إلى الحافظة",
+    "notif_video_title": "تم حفظ تسجيل الفيديو",
+    "notif_video_body": "يمكنك معاينة التسجيل أو تحريره مباشرةً",
+    "notif_action_edit": "تحرير",
+    "notif_action_show_folder": "فتح المجلد"
   },
   "en": {
     "app_name": "Sadeem Capture",
@@ -87,7 +93,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print: Silent screenshot | Shift+Print: Stop & save recording",
     "helper_disabled_warning": "Sadeem Desktop Helper extension is disabled. Please enable it for screen capture.",
     "error_capture_failed": "Screen capture failed",
-    "error_rec_start_failed": "Failed to start video recording"
+    "error_rec_start_failed": "Failed to start video recording",
+    "notif_photo_title": "Screenshot Captured",
+    "notif_photo_body": "Saved and copied to clipboard",
+    "notif_video_title": "Screencast Saved",
+    "notif_video_body": "Ready to view or edit",
+    "notif_action_edit": "Edit",
+    "notif_action_show_folder": "Show in Files"
   },
   "fr": {
     "app_name": "Sadeem Capture",
@@ -129,7 +141,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print : Capture silencieuse | Shift+Print : Arrêter l'enregistrement",
     "helper_disabled_warning": "L'extension Sadeem Desktop Helper est désactivée. Veuillez l'activer.",
     "error_capture_failed": "Échec de la capture d'écran",
-    "error_rec_start_failed": "Échec du démarrage de l'enregistrement vidéo"
+    "error_rec_start_failed": "Échec du démarrage de l'enregistrement vidéo",
+    "notif_photo_title": "Capture d'écran enregistrée",
+    "notif_photo_body": "Image enregistrée et copiée dans le presse-papiers",
+    "notif_video_title": "Enregistrement vidéo enregistré",
+    "notif_video_body": "Prêt à être visionné ou édité",
+    "notif_action_edit": "Éditer",
+    "notif_action_show_folder": "Afficher dans Fichiers"
   },
   "es": {
     "app_name": "Sadeem Capture",
@@ -171,7 +189,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print: Captura silenciosa | Shift+Print: Detener y guardar grabación",
     "helper_disabled_warning": "La extensión Sadeem Desktop Helper está deshabilitada. Actívela.",
     "error_capture_failed": "Error al capturar la pantalla",
-    "error_rec_start_failed": "Error al iniciar la grabación de video"
+    "error_rec_start_failed": "Error al iniciar la grabación de video",
+    "notif_photo_title": "Captura de pantalla realizada",
+    "notif_photo_body": "Guardada y copiada al portapapeles",
+    "notif_video_title": "Grabación de pantalla guardada",
+    "notif_video_body": "Lista para ver o editar",
+    "notif_action_edit": "Editar",
+    "notif_action_show_folder": "Mostrar en Archivos"
   },
   "de": {
     "app_name": "Sadeem Capture",
@@ -213,7 +237,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Druck: Stummer Screenshot | Umschalt+Druck: Aufnahme stoppen",
     "helper_disabled_warning": "Die Erweiterung Sadeem Desktop Helper ist deaktiviert. Bitte aktivieren.",
     "error_capture_failed": "Bildschirmaufnahme fehlgeschlagen",
-    "error_rec_start_failed": "Videoaufnahme konnte nicht gestartet werden"
+    "error_rec_start_failed": "Videoaufnahme konnte nicht gestartet werden",
+    "notif_photo_title": "Bildschirmfoto aufgenommen",
+    "notif_photo_body": "Gespeichert und in die Zwischenablage kopiert",
+    "notif_video_title": "Bildschirmaufnahme gespeichert",
+    "notif_video_body": "Bereit zum Ansehen oder Bearbeiten",
+    "notif_action_edit": "Bearbeiten",
+    "notif_action_show_folder": "In Dateien anzeigen"
   },
   "tr": {
     "app_name": "Sadeem Yakalama",
@@ -255,7 +285,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print: Sessiz ekran görüntüsü | Shift+Print: Kaydı durdur ve kaydet",
     "helper_disabled_warning": "Sadeem Masaüstü Yardımcısı uzantısı devre dışı. Lütfen etkinleştirin.",
     "error_capture_failed": "Ekran yakalama başarısız oldu",
-    "error_rec_start_failed": "Video kaydı başlatılamadı"
+    "error_rec_start_failed": "Video kaydı başlatılamadı",
+    "notif_photo_title": "Ekran Görüntüsü Alındı",
+    "notif_photo_body": "Kaydedildi ve panoya kopyalandı",
+    "notif_video_title": "Ekran Kaydı Kaydedildi",
+    "notif_video_body": "Görüntülemeye veya düzenlemeye hazır",
+    "notif_action_edit": "Düzenle",
+    "notif_action_show_folder": "Dosyalarda Göster"
   },
   "ru": {
     "app_name": "Снимок Sadeem",
@@ -297,7 +333,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print: Бесшумный снимок | Shift+Print: Остановить запись",
     "helper_disabled_warning": "Расширение Sadeem Desktop Helper отключено. Пожалуйста, включите его.",
     "error_capture_failed": "Не удалось сделать снимок экрана",
-    "error_rec_start_failed": "Не удалось начать запись видео"
+    "error_rec_start_failed": "Не удалось начать запись видео",
+    "notif_photo_title": "Снимок экрана сделан",
+    "notif_photo_body": "Сохранено и скопировано в буфер обмена",
+    "notif_video_title": "Видеозапись сохранена",
+    "notif_video_body": "Готово к просмотру или редактированию",
+    "notif_action_edit": "Редактировать",
+    "notif_action_show_folder": "Показать в файлах"
   },
   "pt": {
     "app_name": "Captura Sadeem",
@@ -339,7 +381,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print: Captura silenciosa | Shift+Print: Parar e salvar gravação",
     "helper_disabled_warning": "A extensão Sadeem Desktop Helper está desativada. Ative-a.",
     "error_capture_failed": "Falha na captura de ecrã",
-    "error_rec_start_failed": "Falha ao iniciar a gravação de vídeo"
+    "error_rec_start_failed": "Falha ao iniciar a gravação de vídeo",
+    "notif_photo_title": "Captura de ecrã guardada",
+    "notif_photo_body": "Guardada e copiada para a área de transferência",
+    "notif_video_title": "Gravação de ecrã guardada",
+    "notif_video_body": "Pronta para ver ou editar",
+    "notif_action_edit": "Editar",
+    "notif_action_show_folder": "Mostrar nos Ficheiros"
   },
   "it": {
     "app_name": "Cattura Sadeem",
@@ -381,7 +429,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Stamp: Screenshot silenzioso | Shift+Stamp: Ferma registrazione",
     "helper_disabled_warning": "L'estensione Sadeem Desktop Helper è disabilitata. Si prega di abilitarla.",
     "error_capture_failed": "Acquisizione schermo non riuscita",
-    "error_rec_start_failed": "Impossibile avviare la registrazione video"
+    "error_rec_start_failed": "Impossibile avviare la registrazione video",
+    "notif_photo_title": "Schermata catturata",
+    "notif_photo_body": "Salvata e copiata negli appunti",
+    "notif_video_title": "Registrazione schermo salvata",
+    "notif_video_body": "Pronta per la visualizzazione o la modifica",
+    "notif_action_edit": "Modifica",
+    "notif_action_show_folder": "Mostra nei file"
   },
   "zh": {
     "app_name": "Sadeem 截图",
@@ -423,7 +477,13 @@ export const STRINGS = {
     "hint_recording_shortcuts": "Print: 静音截屏 | Shift+Print: 停止并保存录屏",
     "helper_disabled_warning": "Sadeem 桌面助手扩展已禁用。请启用它以正常截屏。",
     "error_capture_failed": "截屏失败",
-    "error_rec_start_failed": "无法开始录屏"
+    "error_rec_start_failed": "无法开始录屏",
+    "notif_photo_title": "屏幕截图已捕获",
+    "notif_photo_body": "已保存并复制到剪贴板",
+    "notif_video_title": "屏幕录制已保存",
+    "notif_video_body": "已就绪，可查看或编辑",
+    "notif_action_edit": "编辑",
+    "notif_action_show_folder": "在文件中显示"
   }
 };
 

@@ -7,6 +7,7 @@ import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 import * as I18n from './captureI18n.js';
 
 export const CaptureUI = GObject.registerClass(
@@ -52,6 +53,7 @@ class CaptureUI extends St.Widget {
         this._lastSilentShotTime = 0;
         this._frozenContent = null;
         this._cursorInfo = null;
+        this._notifSource = null;
 
         // Build Stage Container and Layers
         this._buildLayers();
@@ -787,6 +789,12 @@ class CaptureUI extends St.Widget {
 
     destroy() {
         this.close();
+        if (this._notifSource) {
+            try {
+                this._notifSource.destroy();
+            } catch (e) {}
+            this._notifSource = null;
+        }
         super.destroy();
     }
 
@@ -1202,14 +1210,11 @@ class CaptureUI extends St.Widget {
                 shooter.screenshot_area_finish(res);
                 stream.close(null);
 
-                // Copy to clipboard
+                // Copy image bytes to clipboard
                 this._copyImageToClipboard(targetPath);
 
-                // Notify user
-                Main.notify(I18n.t('app_name'), I18n.t('toast_copied'));
-
-                // Open in gallery editor
-                this._openInGallery(targetPath);
+                // Show clean native notification with Edit / Show in Files actions
+                this._notifyCaptureComplete(targetPath, 'photo');
             } catch (err) {
                 console.error('[CaptureUI] screenshot_area error: ' + err);
                 try { stream.close(null); } catch (e) {}
@@ -1245,6 +1250,7 @@ class CaptureUI extends St.Widget {
                 shooter.screenshot_finish(res);
                 stream.close(null);
                 this._copyImageToClipboard(targetPath);
+                this._notifyCaptureComplete(targetPath, 'photo');
             } catch (err) {
                 try { stream.close(null); } catch (e) {}
             }
@@ -1290,8 +1296,7 @@ class CaptureUI extends St.Widget {
                         shooter.screenshot_window_finish(res);
                         stream.close(null);
                         this._copyImageToClipboard(targetPath);
-                        Main.notify(I18n.t('app_name'), I18n.t('toast_copied'));
-                        this._openInGallery(targetPath);
+                        this._notifyCaptureComplete(targetPath, 'photo');
                     } catch (e) {
                         try { stream.close(null); } catch (ce) {}
                     }
@@ -1329,14 +1334,139 @@ class CaptureUI extends St.Widget {
         }
     }
 
-    _openInGallery(filePath, editMode = true) {
-        const editFlag = editMode ? '--edit ' : '';
+    _getNotificationSource(mediaType = 'photo') {
+        const iconName = mediaType === 'video' ? 'camera-video-symbolic' : 'camera-photo-symbolic';
+        if (!this._notifSource) {
+            this._notifSource = new MessageTray.Source({
+                title: I18n.t('app_name'),
+                iconName: iconName,
+            });
+            this._notifSource.connect('destroy', () => {
+                this._notifSource = null;
+            });
+            Main.messageTray.add(this._notifSource);
+        }
+        return this._notifSource;
+    }
+
+    _launchBackgroundCommand(argv) {
         try {
-            GLib.spawn_command_line_async(`systemd-run --user --scope --quiet sadeem-gallery ${editFlag}${GLib.shell_quote(filePath)}`);
+            const scoped = new Gio.Subprocess({
+                argv: ['systemd-run', '--user', '--scope', '--quiet', ...argv],
+                flags: Gio.SubprocessFlags.NONE,
+            });
+            scoped.init(null);
+            return;
         } catch (err) {
             try {
-                GLib.spawn_command_line_async(`sadeem-gallery ${editFlag}${GLib.shell_quote(filePath)}`);
-            } catch (e) {}
+                const sub = new Gio.Subprocess({
+                    argv: argv,
+                    flags: Gio.SubprocessFlags.NONE,
+                });
+                sub.init(null);
+            } catch (e) {
+                console.error('[CaptureUI] Failed to launch background command: ' + e);
+            }
+        }
+    }
+
+    _showFileInFolder(filePath) {
+        const file = Gio.File.new_for_path(filePath);
+        const uri = file.get_uri();
+        try {
+            Gio.DBus.session.call(
+                'org.freedesktop.FileManager1',
+                '/org/freedesktop/FileManager1',
+                'org.freedesktop.FileManager1',
+                'ShowItems',
+                new GLib.Variant('(ass)', [[uri], '']),
+                null,
+                Gio.DBusCallFlags.NONE,
+                3000,
+                null,
+                (conn, res) => {
+                    try {
+                        conn.call_finish(res);
+                    } catch (err) {
+                        this._openParentFolderFallback(file);
+                    }
+                }
+            );
+        } catch (e) {
+            this._openParentFolderFallback(file);
+        }
+    }
+
+    _openParentFolderFallback(file) {
+        try {
+            const parent = file.get_parent();
+            if (parent) {
+                Gio.AppInfo.launch_default_for_uri(
+                    parent.get_uri(),
+                    global.create_app_launch_context(0, -1)
+                );
+            }
+        } catch (err) {
+            console.error('[CaptureUI] Failed to open parent folder: ' + err);
+        }
+    }
+
+    _notifyCaptureComplete(filePath, mediaType = 'photo') {
+        try {
+            const isVideo = (mediaType === 'video');
+            const source = this._getNotificationSource(mediaType);
+            const title = isVideo ? I18n.t('notif_video_title') : I18n.t('notif_photo_title');
+            const body = isVideo
+                ? `${GLib.path_get_basename(filePath)} — ${I18n.t('notif_video_body')}`
+                : I18n.t('notif_photo_body');
+
+            let gicon = null;
+            if (!isVideo) {
+                try {
+                    const photoFile = Gio.File.new_for_path(filePath);
+                    if (photoFile.query_exists(null)) {
+                        gicon = Gio.FileIcon.new(photoFile);
+                    }
+                } catch (e) {}
+                if (!gicon) {
+                    gicon = new Gio.ThemedIcon({ name: 'camera-photo-symbolic' });
+                }
+            } else {
+                gicon = new Gio.ThemedIcon({ name: 'camera-video-symbolic' });
+            }
+
+            const notification = new MessageTray.Notification({
+                source,
+                title,
+                body,
+                gicon,
+            });
+
+            notification.addAction(I18n.t('notif_action_edit'), () => {
+                try { Main.overview?.hide(); } catch (e) {}
+                try { Main.panel?.closeCalendar?.(); } catch (e) {}
+                if (isVideo) {
+                    this._launchBackgroundCommand(['sadeem-video-editor', filePath]);
+                } else {
+                    this._launchBackgroundCommand(['sadeem-gallery', '--edit', filePath]);
+                }
+            });
+
+            notification.addAction(I18n.t('notif_action_show_folder'), () => {
+                try { Main.overview?.hide(); } catch (e) {}
+                try { Main.panel?.closeCalendar?.(); } catch (e) {}
+                this._showFileInFolder(filePath);
+            });
+
+            notification.connect('activated', () => {
+                try { Main.overview?.hide(); } catch (e) {}
+                try { Main.panel?.closeCalendar?.(); } catch (e) {}
+                this._launchBackgroundCommand(['sadeem-gallery', filePath]);
+            });
+
+            source.addNotification(notification);
+        } catch (err) {
+            console.error('[CaptureUI] _notifyCaptureComplete error: ' + err);
         }
     }
 
@@ -1454,11 +1584,8 @@ class CaptureUI extends St.Widget {
         this._cleanupRecordingState();
 
         if (exitStatus === 0 && this._savedVideoInfo) {
-            const { size, path } = this._savedVideoInfo;
-            const title = I18n.t('notif_recorded_title');
-            const body = I18n.t('notif_recorded_body', { size, path });
-            Main.notify(title, body);
-            this._openInGallery(path, false);
+            const { path } = this._savedVideoInfo;
+            this._notifyCaptureComplete(path, 'video');
             this._savedVideoInfo = null;
         } else if (exitStatus === 2) {
             // User canceled Portal prompt: silent exit, no notification

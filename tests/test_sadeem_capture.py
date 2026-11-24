@@ -407,13 +407,35 @@ class TestGjsAndJsLogic(unittest.TestCase):
         self.assertIn("25 MB", ar_notif)
         self.assertIn("/home/user/video.mp4", ar_notif)
 
-        # Test parameter substitution in GJS captureI18n.js
+        # Test parameter substitution and new interactive notification keys in GJS captureI18n.js
         with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as tf:
             tf.write(f"""
             import * as I18n from "file://{os.path.join(EXT_DIR, 'captureI18n.js')}";
             let res = I18n.t("notif_recorded_body", {{ size: "30 MB", path: "/tmp/sample.mp4" }});
             if (!res.includes("30 MB") || !res.includes("/tmp/sample.mp4")) {{
                 throw new Error("GJS i18n interpolation failed: " + res);
+            }}
+            const requiredNotifKeys = [
+                "notif_photo_title",
+                "notif_photo_body",
+                "notif_video_title",
+                "notif_video_body",
+                "notif_action_edit",
+                "notif_action_show_folder",
+            ];
+            for (const lang of I18n.SUPPORTED_LANGUAGES) {{
+                for (const key of requiredNotifKeys) {{
+                    const val = I18n.STRINGS[lang]?.[key];
+                    if (!val || typeof val !== "string" || val.trim().length === 0) {{
+                        throw new Error(`Missing ${{key}} for lang ${{lang}} in captureI18n.js`);
+                    }}
+                }}
+            }}
+            if (I18n.STRINGS.ar.notif_action_edit !== "تحرير") {{
+                throw new Error("Unexpected Arabic notif_action_edit label");
+            }}
+            if (I18n.STRINGS.en.notif_action_edit !== "Edit") {{
+                throw new Error("Unexpected English notif_action_edit label");
             }}
             print("GJS_I18N_VERIFIED");
             """)
@@ -538,6 +560,40 @@ class TestGjsAndJsLogic(unittest.TestCase):
         finally:
             if os.path.exists(png_path):
                 os.unlink(png_path)
+
+    def test_interactive_capture_notification_and_no_auto_launch(self):
+        """
+        Verifies:
+        1. captureUI.js does not auto-launch sadeem-gallery immediately after photo capture or video recording finish.
+        2. _notifyCaptureComplete uses GNOME 51 MessageTray.Source and MessageTray.Notification.
+        3. notif_action_edit routes photos to sadeem-gallery --edit and videos to sadeem-video-editor,
+           notif_action_show_folder calls org.freedesktop.FileManager1.ShowItems,
+           and notification 'activated' opens sadeem-gallery without --edit.
+        """
+        capture_ui_path = os.path.join(EXT_DIR, "captureUI.js")
+        with open(capture_ui_path, "r", encoding="utf-8") as fp:
+            ui_code = fp.read()
+
+        self.assertIn("resource:///org/gnome/shell/ui/messageTray.js", ui_code)
+        self.assertIn("new MessageTray.Source({", ui_code)
+        self.assertIn("Main.messageTray.add(this._notifSource);", ui_code)
+        self.assertIn("new MessageTray.Notification({", ui_code)
+        self.assertIn("Gio.FileIcon.new(", ui_code)
+        self.assertIn("source.addNotification(notification);", ui_code)
+        self.assertIn("notification.addAction(I18n.t('notif_action_edit')", ui_code)
+        self.assertIn("notification.addAction(I18n.t('notif_action_show_folder')", ui_code)
+        self.assertIn("notification.connect('activated'", ui_code)
+        self.assertIn("'sadeem-gallery', '--edit', filePath", ui_code)
+        self.assertIn("'sadeem-video-editor', filePath", ui_code)
+        self.assertIn("org.freedesktop.FileManager1", ui_code)
+        self.assertIn("ShowItems", ui_code)
+        self.assertIn("this._launchBackgroundCommand(['sadeem-gallery', filePath]);", ui_code)
+
+        # Ensure capture paths invoke _notifyCaptureComplete and never auto-launch gallery directly
+        self.assertNotIn("_openInGallery", ui_code)
+        self.assertIn("this._notifyCaptureComplete(targetPath, 'photo')", ui_code)
+        self.assertIn("this._notifyCaptureComplete(path, 'video')", ui_code)
+        self.assertEqual(ui_code.count("this._notifyCaptureComplete("), 4)
 
 
 class TestSystemIntegration(unittest.TestCase):

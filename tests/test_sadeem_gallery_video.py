@@ -211,8 +211,11 @@ class TestPortalAndCaptureUI(unittest.TestCase):
         self.assertIn("Clutter.Orientation.VERTICAL", content)
         # 5. No deprecated vertical property
         self.assertNotIn("vertical:", content)
-        # 6. Open video in gallery without --edit
-        self.assertIn("this._openInGallery(path, false)", content)
+        # 6. Video recording completion shows interactive notification & body click opens gallery without --edit
+        self.assertNotIn("this._openInGallery(", content)
+        self.assertIn("this._notifyCaptureComplete(path, 'video')", content)
+        self.assertIn("this._launchBackgroundCommand(['sadeem-gallery', filePath]);", content)
+        self.assertIn("this._launchBackgroundCommand(['sadeem-video-editor', filePath]);", content)
 
     def test_translated_settings_in_ten_languages(self):
         expected_langs = ["ar", "en", "fr", "es", "de", "tr", "ru", "pt", "it", "zh"]
