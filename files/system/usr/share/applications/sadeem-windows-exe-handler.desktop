@@ -29,5 +29,5 @@ Icon=application-x-ms-dos-executable
 Terminal=false
 Categories=System;Emulator;
 StartupNotify=true
-NoDisplay=false
+NoDisplay=true
 MimeType=application/x-ms-dos-executable;application/vnd.microsoft.portable-executable;application/x-msdownload;application/x-msi;

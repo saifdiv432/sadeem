@@ -2,25 +2,39 @@
 # -*- coding: utf-8 -*-
 """
 Sadeem Windows App Runner (sadeem-windows-exe-handler)
-Seamless, automatic launcher for Windows executables (.exe and .msi) in Sadeem OS.
+Seamless, automatic launcher for Windows executables (.exe and .msi) in Sadeem OS,
+plus automatic GNOME .desktop shortcut & icon synchronization for installed Windows apps.
 Built with Python 3, GTK 4, and Libadwaita following GNOME Human Interface Guidelines.
 """
 
+import fcntl
 import os
-import sys
-import subprocess
-import threading
-import urllib.parse
+import shlex
 import shutil
+import subprocess
+import sys
+import tempfile
+import threading
 import time
-import gi
+import urllib.parse
 
-gi.require_version('Gtk', '4.0')
-gi.require_version('Adw', '1')
-from gi.repository import Gtk, Adw, GLib, Gio, Gdk
+for _sync_dir in (
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "..", "share", "sadeem-windows"
+        )
+    ),
+    "/usr/share/sadeem-windows",
+):
+    if os.path.isdir(_sync_dir) and _sync_dir not in sys.path:
+        sys.path.insert(0, _sync_dir)
+
+import shortcut_sync  # noqa: E402
 
 BOTTLE_NAME = "Sadeem-Windows"
-BOTTLE_DIR = os.path.expanduser(f"~/.var/app/com.usebottles.bottles/data/bottles/bottles/{BOTTLE_NAME}")
+BOTTLE_DIR = os.path.expanduser(
+    f"~/.var/app/com.usebottles.bottles/data/bottles/bottles/{BOTTLE_NAME}"
+)
 
 TRANSLATIONS = {
     "en": {
@@ -44,6 +58,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "Could not create the Sadeem-Windows compatibility container in Bottles.",
         "err_launch_failed_title": "Unable to Launch Executable",
         "err_launch_failed_desc": "An error occurred while attempting to launch {file} inside the Sadeem bottle.",
+        "notif_app_added_title": "Windows App Added",
+        "notif_app_added_body": "Added {name} to the applications menu",
     },
     "ar": {
         "app_title": "مشغّل برامج ويندوز — سديم",
@@ -66,6 +82,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "تعذّر إنشاء بيئة التشغيل Sadeem-Windows داخل تطبيق Bottles.",
         "err_launch_failed_title": "تعذّر تشغيل الملف",
         "err_launch_failed_desc": "حدث خطأ أثناء محاولة تشغيل الملف:\n{file}",
+        "notif_app_added_title": "تطبيق ويندوز جديد",
+        "notif_app_added_body": "تمت إضافة {name} إلى قائمة التطبيقات",
     },
     "fr": {
         "app_title": "Exécuteur d'applications Windows (Sadeem)",
@@ -88,6 +106,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "Impossible de créer le conteneur de compatibilité Sadeem-Windows dans Bottles.",
         "err_launch_failed_title": "Impossible de lancer l'exécutable",
         "err_launch_failed_desc": "Une erreur est survenue lors de la tentative de lancement de {file} dans la bouteille Sadeem.",
+        "notif_app_added_title": "Application Windows ajoutée",
+        "notif_app_added_body": "{name} a été ajouté au menu des applications",
     },
     "es": {
         "app_title": "Lanzador de aplicaciones Windows (Sadeem)",
@@ -110,6 +130,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "No se pudo crear el contenedor de compatibilidad Sadeem-Windows en Bottles.",
         "err_launch_failed_title": "No se pudo iniciar el ejecutable",
         "err_launch_failed_desc": "Ocurrió un error al intentar iniciar {file} dentro de la botella de Sadeem.",
+        "notif_app_added_title": "Aplicación de Windows añadida",
+        "notif_app_added_body": "Se añadió {name} al menú de aplicaciones",
     },
     "de": {
         "app_title": "Windows-App-Starter (Sadeem)",
@@ -132,6 +154,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "Der Kompatibilitätscontainer Sadeem-Windows konnte in Bottles nicht erstellt werden.",
         "err_launch_failed_title": "Ausführbare Datei konnte nicht gestartet werden",
         "err_launch_failed_desc": "Beim Starten von {file} in der Sadeem-Flasche ist ein Fehler aufgetreten.",
+        "notif_app_added_title": "Windows-App hinzugefügt",
+        "notif_app_added_body": "{name} wurde zum Anwendungsmenü hinzugefügt",
     },
     "tr": {
         "app_title": "Windows Uygulama Başlatıcısı (Sadeem)",
@@ -154,6 +178,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "Bottles içinde Sadeem-Windows uyumluluk kapsayıcısı oluşturulamadı.",
         "err_launch_failed_title": "Yürütülebilir Dosya Başlatılamadı",
         "err_launch_failed_desc": "{file} dosyasını Sadeem şişesinde başlatırken bir hata oluştu.",
+        "notif_app_added_title": "Windows Uygulaması Eklendi",
+        "notif_app_added_body": "{name} uygulamalar menüsüne eklendi",
     },
     "ru": {
         "app_title": "Запуск приложений Windows (Sadeem)",
@@ -176,6 +202,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "Не удалось создать контейнер совместимости Sadeem-Windows в Bottles.",
         "err_launch_failed_title": "Не удалось запустить файл",
         "err_launch_failed_desc": "Произошла ошибка при попытке запуска {file} в бутылке Sadeem.",
+        "notif_app_added_title": "Приложение Windows добавлено",
+        "notif_app_added_body": "{name} добавлено в меню приложений",
     },
     "pt": {
         "app_title": "Executor de Aplicações Windows (Sadeem)",
@@ -198,6 +226,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "Não foi possível criar o contentor de compatibilidade Sadeem-Windows no Bottles.",
         "err_launch_failed_title": "Não foi possível iniciar o executável",
         "err_launch_failed_desc": "Ocorreu um erro ao tentar iniciar {file} na garrafa Sadeem.",
+        "notif_app_added_title": "Aplicação Windows adicionada",
+        "notif_app_added_body": "{name} foi adicionado ao menu de aplicações",
     },
     "it": {
         "app_title": "Avviatore applicazioni Windows (Sadeem)",
@@ -220,6 +250,8 @@ TRANSLATIONS = {
         "err_create_failed_desc": "Impossibile creare il contenitore di compatibilità Sadeem-Windows in Bottles.",
         "err_launch_failed_title": "Impossibile avviare l'eseguibile",
         "err_launch_failed_desc": "Si è verificato un errore durante l'avvio di {file} nella bottiglia Sadeem.",
+        "notif_app_added_title": "App Windows aggiunta",
+        "notif_app_added_body": "{name} è stata aggiunta al menu delle applicazioni",
     },
     "zh": {
         "app_title": "Windows 应用程序运行器 (Sadeem)",
@@ -242,8 +274,11 @@ TRANSLATIONS = {
         "err_create_failed_desc": "无法在 Bottles 中创建 Sadeem-Windows 兼容容器。",
         "err_launch_failed_title": "无法启动可执行文件",
         "err_launch_failed_desc": "尝试在 Sadeem 容器中启动 {file} 时发生错误。",
+        "notif_app_added_title": "已添加 Windows 应用",
+        "notif_app_added_body": "已将 {name} 添加到应用菜单",
     },
 }
+
 
 def get_language():
     for var in ("LC_ALL", "LC_MESSAGES", "LANGUAGE", "LANG"):
@@ -254,11 +289,14 @@ def get_language():
                 return code
     return "en"
 
+
 LANG = get_language()
 T = TRANSLATIONS[LANG]
 
+
 def _t(key):
     return T.get(key, TRANSLATIONS["en"].get(key, key))
+
 
 def decode_target_path(arg):
     if not arg:
@@ -270,28 +308,38 @@ def decode_target_path(arg):
         path = arg
     return os.path.abspath(os.path.expanduser(path))
 
+
 def is_bottles_installed():
     try:
         res = subprocess.run(
             ["flatpak", "info", "com.usebottles.bottles"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            check=False
+            check=False,
         )
         return res.returncode == 0
     except Exception:
         return False
+
 
 def is_bottle_present():
     if os.path.isdir(BOTTLE_DIR):
         return True
     try:
         res = subprocess.run(
-            ["flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles", "-j", "list", "bottles"],
+            [
+                "flatpak",
+                "run",
+                "--command=bottles-cli",
+                "com.usebottles.bottles",
+                "-j",
+                "list",
+                "bottles",
+            ],
             capture_output=True,
             text=True,
             timeout=10,
-            check=False
+            check=False,
         )
         if BOTTLE_NAME.lower() in res.stdout.lower():
             return True
@@ -300,440 +348,877 @@ def is_bottle_present():
     return False
 
 
-class SadeemWindowsRunnerWindow(Adw.ApplicationWindow):
-    def __init__(self, app, target_path=None):
-        super().__init__(application=app)
-        self.app = app
-        self.target_path = target_path
-        self._is_cancelled = False
-        self._current_proc = None
-        self._pulse_timeout_id = None
+def build_bottles_run_cmd(target_path, exec_args=None):
+    """Build exact bottles-cli run command with optional trailing executable args."""
+    cmd = [
+        "flatpak",
+        "run",
+        "--command=bottles-cli",
+        "com.usebottles.bottles",
+        "run",
+        "-b",
+        BOTTLE_NAME,
+        "-e",
+        target_path,
+    ]
+    if exec_args and str(exec_args).strip():
+        try:
+            split_args = shlex.split(str(exec_args))
+        except ValueError:
+            split_args = [str(exec_args).strip()]
+        if split_args:
+            cmd.append("--")
+            cmd.extend(split_args)
+    return cmd
 
-        if LANG == "ar":
-            Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
 
-        self.set_title(_t("app_title"))
-        self.set_default_size(480, 380)
-        self.set_resizable(False)
+def _spawn_sync_watch():
+    """Launch background shortcut/icon sync watcher detached from the runner UI."""
+    try:
+        subprocess.Popen(
+            [sys.executable, os.path.abspath(__file__), "--sync-watch"],
+            start_new_session=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        pass
 
-        self._apply_css()
-        self._build_ui()
 
-        # Connect destroy / close to cleanup
-        self.connect("close-request", self._on_close_request)
+def send_app_added_notification(app_name, icon_path=None):
+    """Send a quiet desktop notification when a new Windows shortcut is synced."""
+    title = _t("notif_app_added_title")
+    body = _t("notif_app_added_body").format(name=app_name)
+    icon = (
+        icon_path
+        if (icon_path and os.path.isfile(icon_path))
+        else "application-x-ms-dos-executable"
+    )
 
-        # Start execution
-        GLib.idle_add(self._start_workflow)
-
-    def _apply_css(self):
-        css = """
-        .sadeem-badge {
-            background-color: alpha(#7a1c33, 0.12);
-            border: 1px solid alpha(#7a1c33, 0.30);
-            border-radius: 9999px;
-            padding: 16px;
-        }
-        .sadeem-error-badge {
-            background-color: alpha(#c01c28, 0.12);
-            border: 1px solid alpha(#c01c28, 0.30);
-            border-radius: 9999px;
-            padding: 16px;
-        }
-        .dim-label {
-            opacity: 0.75;
-        }
-        .mono-view {
-            font-family: monospace;
-            font-size: 0.85em;
-        }
-        """
-        provider = Gtk.CssProvider()
-        provider.load_from_string(css)
-        display = Gdk.Display.get_default()
-        if display:
-            Gtk.StyleContext.add_provider_for_display(
-                display,
-                provider,
-                Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    notify_send = shutil.which("notify-send")
+    if notify_send:
+        try:
+            subprocess.run(
+                [notify_send, "-a", _t("app_title"), "-i", icon, title, body],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+                check=False,
             )
+            return True
+        except Exception:
+            pass
 
-    def _build_ui(self):
-        self.toolbar_view = Adw.ToolbarView()
-        self.set_content(self.toolbar_view)
+    gdbus = shutil.which("gdbus")
+    if gdbus:
+        try:
+            subprocess.run(
+                [
+                    gdbus,
+                    "call",
+                    "--session",
+                    "--dest",
+                    "org.freedesktop.Notifications",
+                    "--object-path",
+                    "/org/freedesktop/Notifications",
+                    "--method",
+                    "org.freedesktop.Notifications.Notify",
+                    _t("app_title"),
+                    "0",
+                    icon,
+                    title,
+                    body,
+                    "[]",
+                    "{}",
+                    "-1",
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+                check=False,
+            )
+            return True
+        except Exception:
+            pass
 
-        # HeaderBar
-        self.header_bar = Adw.HeaderBar()
-        self.header_bar.set_title_widget(Adw.WindowTitle(title=_t("app_title")))
-        self.toolbar_view.add_top_bar(self.header_bar)
+    return False
 
-        # Stack for Progress vs Error states
-        self.stack = Gtk.Stack()
-        self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
-        self.toolbar_view.set_content(self.stack)
 
-        # ---------------- Page 1: Progress / Provisioning ----------------
-        progress_box = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL,
-            spacing=12,
-            margin_top=20,
-            margin_bottom=20,
-            margin_start=28,
-            margin_end=28,
-            valign=Gtk.Align.CENTER
+def is_bottle_process_active(bottle_name=BOTTLE_NAME, bottle_dir=BOTTLE_DIR):
+    """Return True if any Wine/Bottles process belonging to the bottle is running."""
+    my_pid = str(os.getpid())
+    markers = tuple(
+        m.encode("utf-8", errors="ignore")
+        for m in (bottle_name, bottle_dir)
+        if m
+    )
+    proc_tokens = (b"wine", b"bottles-cli", b".exe", b"proton", b"pressure-vessel")
+
+    try:
+        pids = os.listdir("/proc")
+    except OSError:
+        return False
+
+    for pid in pids:
+        if not pid.isdigit() or pid == my_pid:
+            continue
+        base = os.path.join("/proc", pid)
+        try:
+            with open(os.path.join(base, "cmdline"), "rb") as f:
+                cmdline = f.read()
+        except OSError:
+            continue
+
+        if not cmdline:
+            continue
+        cmd_low = cmdline.lower()
+        if b"sadeem-windows-exe-handler" in cmd_low and b"--sync" in cmd_low:
+            continue
+        if not any(tok in cmd_low for tok in proc_tokens):
+            continue
+
+        if any(m in cmdline for m in markers):
+            return True
+
+        try:
+            with open(os.path.join(base, "environ"), "rb") as f:
+                environ = f.read()
+        except OSError:
+            continue
+
+        if any(m in environ for m in markers):
+            return True
+
+    return False
+
+
+def run_sync_once(bottle_dir=BOTTLE_DIR, applications_dir=None, icons_dir=None):
+    res = shortcut_sync.sync_bottle_shortcuts(
+        bottle_dir=bottle_dir,
+        applications_dir=applications_dir,
+        icons_dir=icons_dir,
+    )
+    print(
+        f"Sadeem Windows sync: {len(res['active'])} active, "
+        f"{len(res['added'])} added, {len(res['updated'])} updated, "
+        f"{len(res['removed'])} removed."
+    )
+    for item in res["added"]:
+        print(f"  + {item['name']} -> {item['desktop_path']}")
+    for path in res["removed"]:
+        print(f"  - removed {path}")
+    return 0
+
+
+def run_sync_watch(
+    bottle_dir=BOTTLE_DIR,
+    lock_path=None,
+    poll_interval=3.0,
+    grace_seconds=15.0,
+    max_seconds=3600.0,
+    applications_dir=None,
+    icons_dir=None,
+):
+    """
+    Single-instance background watcher locked via flock:
+    performs an immediate sync, polls every 3s while Wine/Bottles processes for
+    Sadeem-Windows remain active, continues for 15s after exit (up to 60 minutes max),
+    and emits quiet desktop notifications for newly added shortcuts.
+    """
+    if lock_path is None:
+        lock_path = f"/tmp/sadeem-windows-sync-{os.getuid()}.lock"
+
+    lock_file = None
+    try:
+        lock_file = open(lock_path, "a+", encoding="utf-8")
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        if lock_file is not None:
+            try:
+                lock_file.close()
+            except OSError:
+                pass
+        return 0
+
+    try:
+        try:
+            lock_file.seek(0)
+            lock_file.truncate()
+            lock_file.write(str(os.getpid()))
+            lock_file.flush()
+        except OSError:
+            pass
+
+        start_time = time.monotonic()
+        last_active_time = start_time
+
+        def _sync_and_notify():
+            res = shortcut_sync.sync_bottle_shortcuts(
+                bottle_dir=bottle_dir,
+                applications_dir=applications_dir,
+                icons_dir=icons_dir,
+            )
+            for item in res["added"]:
+                send_app_added_notification(item["name"], item.get("icon"))
+
+        last_fp = shortcut_sync.get_shortcuts_fingerprint(bottle_dir)
+        _sync_and_notify()
+
+        while (time.monotonic() - start_time) < max_seconds:
+            if is_bottle_process_active(BOTTLE_NAME, bottle_dir):
+                last_active_time = time.monotonic()
+            elif (time.monotonic() - last_active_time) >= grace_seconds:
+                _sync_and_notify()
+                break
+
+            time.sleep(poll_interval)
+
+            cur_fp = shortcut_sync.get_shortcuts_fingerprint(bottle_dir)
+            if cur_fp != last_fp:
+                last_fp = cur_fp
+                _sync_and_notify()
+    finally:
+        try:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+        except OSError:
+            pass
+        try:
+            lock_file.close()
+        except OSError:
+            pass
+
+    return 0
+
+
+def launch_installed_silent(target_path, exec_args=None):
+    """
+    Launch an already-installed Windows shortcut directly without showing the
+    provisioning UI unless the bottle/file is missing or launch fails immediately.
+    """
+    if not target_path or not os.path.isfile(target_path):
+        return _run_gui_app(target_path, exec_args=exec_args)
+
+    if not is_bottles_installed() or not is_bottle_present():
+        return _run_gui_app(target_path, exec_args=exec_args)
+
+    cmd_run = build_bottles_run_cmd(target_path, exec_args)
+    log_path = None
+    try:
+        log_fd, log_path = tempfile.mkstemp(prefix="sadeem-win-run-", suffix=".log")
+        with os.fdopen(log_fd, "w", encoding="utf-8", errors="replace") as logf:
+            proc = subprocess.Popen(
+                cmd_run,
+                stdin=subprocess.DEVNULL,
+                stdout=logf,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+    except Exception as e:
+        if log_path and os.path.exists(log_path):
+            try:
+                os.remove(log_path)
+            except OSError:
+                pass
+        return _run_gui_app(
+            target_path,
+            exec_args=exec_args,
+            initial_error=(
+                _t("err_launch_failed_title"),
+                _t("err_launch_failed_desc").format(file=os.path.basename(target_path)),
+                str(e),
+            ),
         )
 
-        # Icon Badge
-        badge_box = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL,
-            halign=Gtk.Align.CENTER,
-            valign=Gtk.Align.CENTER
-        )
-        badge_box.set_size_request(72, 72)
-        badge_box.add_css_class("sadeem-badge")
+    time.sleep(1.2)
+    ret = proc.poll()
+    details = ""
+    if log_path and os.path.exists(log_path):
+        try:
+            with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+                details = f.read().strip()
+        except OSError:
+            details = ""
+        try:
+            os.remove(log_path)
+        except OSError:
+            pass
 
-        icon_img = Gtk.Image.new_from_icon_name("application-x-ms-dos-executable")
-        icon_img.set_pixel_size(40)
-        badge_box.append(icon_img)
-        progress_box.append(badge_box)
-
-        # Filename label
-        self.file_label = Gtk.Label()
-        self.file_label.add_css_class("title-3")
-        self.file_label.set_ellipsize(3) # PANGO_ELLIPSIZE_END
-        self.file_label.set_justify(Gtk.Justification.CENTER)
-        filename = os.path.basename(self.target_path) if self.target_path else ""
-        self.file_label.set_text(filename)
-        progress_box.append(self.file_label)
-
-        # Title Label
-        self.title_label = Gtk.Label(label=_t("preparing_title"))
-        self.title_label.add_css_class("heading")
-        self.title_label.set_wrap(True)
-        self.title_label.set_justify(Gtk.Justification.CENTER)
-        progress_box.append(self.title_label)
-
-        # Description Label
-        self.desc_label = Gtk.Label(label=_t("preparing_desc"))
-        self.desc_label.add_css_class("body")
-        self.desc_label.add_css_class("dim-label")
-        self.desc_label.set_wrap(True)
-        self.desc_label.set_justify(Gtk.Justification.CENTER)
-        progress_box.append(self.desc_label)
-
-        # Progress bar
-        self.progress_bar = Gtk.ProgressBar()
-        self.progress_bar.set_hexpand(True)
-        self.progress_bar.set_margin_top(8)
-        self.progress_bar.set_margin_bottom(4)
-        progress_box.append(self.progress_bar)
-
-        # Status text
-        self.status_label = Gtk.Label(label=_t("creating_bottle"))
-        self.status_label.add_css_class("caption")
-        self.status_label.add_css_class("dim-label")
-        self.status_label.set_wrap(True)
-        self.status_label.set_justify(Gtk.Justification.CENTER)
-        progress_box.append(self.status_label)
-
-        # Cancel button
-        self.cancel_btn = Gtk.Button(label=_t("btn_cancel"))
-        self.cancel_btn.set_halign(Gtk.Align.CENTER)
-        self.cancel_btn.set_size_request(120, 36)
-        self.cancel_btn.set_margin_top(8)
-        self.cancel_btn.connect("clicked", self._on_cancel_clicked)
-        progress_box.append(self.cancel_btn)
-
-        self.stack.add_named(progress_box, "progress")
-
-        # ---------------- Page 2: Error View ----------------
-        error_box = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL,
-            spacing=12,
-            margin_top=18,
-            margin_bottom=18,
-            margin_start=24,
-            margin_end=24,
-            valign=Gtk.Align.CENTER
+    if ret is not None and ret != 0:
+        return _run_gui_app(
+            target_path,
+            exec_args=exec_args,
+            initial_error=(
+                _t("err_launch_failed_title"),
+                _t("err_launch_failed_desc").format(file=os.path.basename(target_path)),
+                details,
+            ),
         )
 
-        err_badge_box = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL,
-            halign=Gtk.Align.CENTER,
-            valign=Gtk.Align.CENTER
-        )
-        err_badge_box.set_size_request(68, 68)
-        err_badge_box.add_css_class("sadeem-error-badge")
+    return 0
 
-        err_icon = Gtk.Image.new_from_icon_name("dialog-error-symbolic")
-        err_icon.set_pixel_size(36)
-        err_badge_box.append(err_icon)
-        error_box.append(err_badge_box)
 
-        self.err_title_label = Gtk.Label()
-        self.err_title_label.add_css_class("title-3")
-        self.err_title_label.set_wrap(True)
-        self.err_title_label.set_justify(Gtk.Justification.CENTER)
-        error_box.append(self.err_title_label)
+def _ensure_gtk():
+    import gi
 
-        self.err_desc_label = Gtk.Label()
-        self.err_desc_label.add_css_class("body")
-        self.err_desc_label.add_css_class("dim-label")
-        self.err_desc_label.set_wrap(True)
-        self.err_desc_label.set_justify(Gtk.Justification.CENTER)
-        error_box.append(self.err_desc_label)
+    gi.require_version("Gtk", "4.0")
+    gi.require_version("Adw", "1")
+    from gi.repository import Gtk, Adw, GLib, Gio, Gdk
 
-        # Expander for error details
-        self.expander = Adw.ExpanderRow()
-        self.expander.set_title(_t("btn_details"))
-        self.expander.set_visible(False)
+    return Gtk, Adw, GLib, Gio, Gdk
 
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_min_content_height(100)
-        scrolled.set_max_content_height(140)
-        scrolled.set_hexpand(True)
 
-        self.err_text_view = Gtk.TextView()
-        self.err_text_view.set_editable(False)
-        self.err_text_view.set_cursor_visible(False)
-        self.err_text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
-        self.err_text_view.add_css_class("mono-view")
-        scrolled.set_child(self.err_text_view)
-        self.expander.add_row(scrolled)
+def create_runner_window_class():
+    Gtk, Adw, GLib, Gio, Gdk = _ensure_gtk()
 
-        expander_group = Adw.PreferencesGroup()
-        expander_group.add(self.expander)
-        error_box.append(expander_group)
-
-        # Action Buttons Box
-        self.error_btn_box = Gtk.Box(
-            orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=10,
-            halign=Gtk.Align.CENTER,
-            margin_top=8
-        )
-
-        self.btn_open_bottles = Gtk.Button(label=_t("btn_open_bottles"))
-        self.btn_open_bottles.connect("clicked", self._on_open_bottles_clicked)
-        self.error_btn_box.append(self.btn_open_bottles)
-
-        self.btn_open_welcome = Gtk.Button(label=_t("btn_open_welcome"))
-        self.btn_open_welcome.connect("clicked", self._on_open_welcome_clicked)
-        self.btn_open_welcome.set_visible(False)
-        self.error_btn_box.append(self.btn_open_welcome)
-
-        self.btn_close = Gtk.Button(label=_t("btn_close"))
-        self.btn_close.add_css_class("suggested-action")
-        self.btn_close.connect("clicked", lambda b: self.close())
-        self.error_btn_box.append(self.btn_close)
-
-        error_box.append(self.error_btn_box)
-
-        self.stack.add_named(error_box, "error")
-        self.stack.set_visible_child_name("progress")
-
-    def _start_pulse(self):
-        if not self._pulse_timeout_id:
-            self._pulse_timeout_id = GLib.timeout_add(100, self._on_pulse_tick)
-
-    def _stop_pulse(self):
-        if self._pulse_timeout_id:
-            GLib.source_remove(self._pulse_timeout_id)
+    class SadeemWindowsRunnerWindow(Adw.ApplicationWindow):
+        def __init__(self, app, target_path=None, exec_args=None, initial_error=None):
+            super().__init__(application=app)
+            self.app = app
+            self.target_path = target_path
+            self.exec_args = exec_args or ""
+            self._initial_error = initial_error
+            self._is_cancelled = False
+            self._launched_ok = False
+            self._current_proc = None
             self._pulse_timeout_id = None
 
-    def _on_pulse_tick(self):
-        if not self._is_cancelled:
-            self.progress_bar.pulse()
-            return True
-        return False
+            if LANG == "ar":
+                Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
 
-    def _on_close_request(self, window):
-        self._is_cancelled = True
-        self._stop_pulse()
-        if self._current_proc and self._current_proc.poll() is None:
-            try:
-                self._current_proc.terminate()
-            except Exception:
-                pass
-        return False
+            self.set_title(_t("app_title"))
+            self.set_default_size(480, 380)
+            self.set_resizable(False)
 
-    def _on_cancel_clicked(self, btn):
-        self.close()
+            self._apply_css()
+            self._build_ui()
 
-    def _on_open_bottles_clicked(self, btn):
-        try:
-            subprocess.Popen(["flatpak", "run", "com.usebottles.bottles"])
-        except Exception:
-            pass
-        self.close()
+            # Connect destroy / close to cleanup
+            self.connect("close-request", self._on_close_request)
 
-    def _on_open_welcome_clicked(self, btn):
-        try:
-            if shutil.which("sadeem-welcome"):
-                subprocess.Popen(["sadeem-welcome"])
-        except Exception:
-            pass
-        self.close()
+            # Start execution or display initial error
+            GLib.idle_add(self._start_workflow)
 
-    def show_error(self, title, desc, details=None, show_welcome=False, show_bottles=True):
-        self._stop_pulse()
-        self.err_title_label.set_text(title)
-        self.err_desc_label.set_text(desc)
-        self.btn_open_welcome.set_visible(show_welcome)
-        self.btn_open_bottles.set_visible(show_bottles)
+        def _apply_css(self):
+            css = """
+            .sadeem-badge {
+                background-color: alpha(#7a1c33, 0.12);
+                border: 1px solid alpha(#7a1c33, 0.30);
+                border-radius: 9999px;
+                padding: 16px;
+            }
+            .sadeem-error-badge {
+                background-color: alpha(#c01c28, 0.12);
+                border: 1px solid alpha(#c01c28, 0.30);
+                border-radius: 9999px;
+                padding: 16px;
+            }
+            .dim-label {
+                opacity: 0.75;
+            }
+            .mono-view {
+                font-family: monospace;
+                font-size: 0.85em;
+            }
+            """
+            provider = Gtk.CssProvider()
+            provider.load_from_string(css)
+            display = Gdk.Display.get_default()
+            if display:
+                Gtk.StyleContext.add_provider_for_display(
+                    display,
+                    provider,
+                    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+                )
 
-        if details and details.strip():
-            buf = self.err_text_view.get_buffer()
-            buf.set_text(details.strip())
-            self.expander.set_visible(True)
-        else:
+        def _build_ui(self):
+            self.toolbar_view = Adw.ToolbarView()
+            self.set_content(self.toolbar_view)
+
+            # HeaderBar
+            self.header_bar = Adw.HeaderBar()
+            self.header_bar.set_title_widget(Adw.WindowTitle(title=_t("app_title")))
+            self.toolbar_view.add_top_bar(self.header_bar)
+
+            # Stack for Progress vs Error states
+            self.stack = Gtk.Stack()
+            self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+            self.toolbar_view.set_content(self.stack)
+
+            # ---------------- Page 1: Progress / Provisioning ----------------
+            progress_box = Gtk.Box(
+                orientation=Gtk.Orientation.VERTICAL,
+                spacing=12,
+                margin_top=20,
+                margin_bottom=20,
+                margin_start=28,
+                margin_end=28,
+                valign=Gtk.Align.CENTER,
+            )
+
+            # Icon Badge
+            badge_box = Gtk.Box(
+                orientation=Gtk.Orientation.VERTICAL,
+                halign=Gtk.Align.CENTER,
+                valign=Gtk.Align.CENTER,
+            )
+            badge_box.set_size_request(72, 72)
+            badge_box.add_css_class("sadeem-badge")
+
+            icon_img = Gtk.Image.new_from_icon_name("application-x-ms-dos-executable")
+            icon_img.set_pixel_size(40)
+            badge_box.append(icon_img)
+            progress_box.append(badge_box)
+
+            # Filename label
+            self.file_label = Gtk.Label()
+            self.file_label.add_css_class("title-3")
+            self.file_label.set_ellipsize(3)  # PANGO_ELLIPSIZE_END
+            self.file_label.set_justify(Gtk.Justification.CENTER)
+            filename = os.path.basename(self.target_path) if self.target_path else ""
+            self.file_label.set_text(filename)
+            progress_box.append(self.file_label)
+
+            # Title Label
+            self.title_label = Gtk.Label(label=_t("preparing_title"))
+            self.title_label.add_css_class("heading")
+            self.title_label.set_wrap(True)
+            self.title_label.set_justify(Gtk.Justification.CENTER)
+            progress_box.append(self.title_label)
+
+            # Description Label
+            self.desc_label = Gtk.Label(label=_t("preparing_desc"))
+            self.desc_label.add_css_class("body")
+            self.desc_label.add_css_class("dim-label")
+            self.desc_label.set_wrap(True)
+            self.desc_label.set_justify(Gtk.Justification.CENTER)
+            progress_box.append(self.desc_label)
+
+            # Progress bar
+            self.progress_bar = Gtk.ProgressBar()
+            self.progress_bar.set_hexpand(True)
+            self.progress_bar.set_margin_top(8)
+            self.progress_bar.set_margin_bottom(4)
+            progress_box.append(self.progress_bar)
+
+            # Status text
+            self.status_label = Gtk.Label(label=_t("creating_bottle"))
+            self.status_label.add_css_class("caption")
+            self.status_label.add_css_class("dim-label")
+            self.status_label.set_wrap(True)
+            self.status_label.set_justify(Gtk.Justification.CENTER)
+            progress_box.append(self.status_label)
+
+            # Cancel button
+            self.cancel_btn = Gtk.Button(label=_t("btn_cancel"))
+            self.cancel_btn.set_halign(Gtk.Align.CENTER)
+            self.cancel_btn.set_size_request(120, 36)
+            self.cancel_btn.set_margin_top(8)
+            self.cancel_btn.connect("clicked", self._on_cancel_clicked)
+            progress_box.append(self.cancel_btn)
+
+            self.stack.add_named(progress_box, "progress")
+
+            # ---------------- Page 2: Error View ----------------
+            error_box = Gtk.Box(
+                orientation=Gtk.Orientation.VERTICAL,
+                spacing=12,
+                margin_top=18,
+                margin_bottom=18,
+                margin_start=24,
+                margin_end=24,
+                valign=Gtk.Align.CENTER,
+            )
+
+            err_badge_box = Gtk.Box(
+                orientation=Gtk.Orientation.VERTICAL,
+                halign=Gtk.Align.CENTER,
+                valign=Gtk.Align.CENTER,
+            )
+            err_badge_box.set_size_request(68, 68)
+            err_badge_box.add_css_class("sadeem-error-badge")
+
+            err_icon = Gtk.Image.new_from_icon_name("dialog-error-symbolic")
+            err_icon.set_pixel_size(36)
+            err_badge_box.append(err_icon)
+            error_box.append(err_badge_box)
+
+            self.err_title_label = Gtk.Label()
+            self.err_title_label.add_css_class("title-3")
+            self.err_title_label.set_wrap(True)
+            self.err_title_label.set_justify(Gtk.Justification.CENTER)
+            error_box.append(self.err_title_label)
+
+            self.err_desc_label = Gtk.Label()
+            self.err_desc_label.add_css_class("body")
+            self.err_desc_label.add_css_class("dim-label")
+            self.err_desc_label.set_wrap(True)
+            self.err_desc_label.set_justify(Gtk.Justification.CENTER)
+            error_box.append(self.err_desc_label)
+
+            # Expander for error details
+            self.expander = Adw.ExpanderRow()
+            self.expander.set_title(_t("btn_details"))
             self.expander.set_visible(False)
 
-        self.stack.set_visible_child_name("error")
+            scrolled = Gtk.ScrolledWindow()
+            scrolled.set_min_content_height(100)
+            scrolled.set_max_content_height(140)
+            scrolled.set_hexpand(True)
 
-    def _start_workflow(self):
-        # 1. Check target file argument
-        if not self.target_path:
-            self.show_error(
-                _t("err_no_file_title"),
-                _t("err_no_file_desc"),
-                show_bottles=False
+            self.err_text_view = Gtk.TextView()
+            self.err_text_view.set_editable(False)
+            self.err_text_view.set_cursor_visible(False)
+            self.err_text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+            self.err_text_view.add_css_class("mono-view")
+            scrolled.set_child(self.err_text_view)
+            self.expander.add_row(scrolled)
+
+            expander_group = Adw.PreferencesGroup()
+            expander_group.add(self.expander)
+            error_box.append(expander_group)
+
+            # Action Buttons Box
+            self.error_btn_box = Gtk.Box(
+                orientation=Gtk.Orientation.HORIZONTAL,
+                spacing=10,
+                halign=Gtk.Align.CENTER,
+                margin_top=8,
             )
-            return
 
-        if not os.path.isfile(self.target_path):
-            self.show_error(
-                _t("err_file_not_found_title"),
-                _t("err_file_not_found_desc").format(path=self.target_path),
-                show_bottles=False
-            )
-            return
+            self.btn_open_bottles = Gtk.Button(label=_t("btn_open_bottles"))
+            self.btn_open_bottles.connect("clicked", self._on_open_bottles_clicked)
+            self.error_btn_box.append(self.btn_open_bottles)
 
-        # 2. Check if Bottles Flatpak is installed
-        if not is_bottles_installed():
-            self.show_error(
-                _t("err_bottles_missing_title"),
-                _t("err_bottles_missing_desc"),
-                show_welcome=True,
-                show_bottles=False
-            )
-            return
+            self.btn_open_welcome = Gtk.Button(label=_t("btn_open_welcome"))
+            self.btn_open_welcome.connect("clicked", self._on_open_welcome_clicked)
+            self.btn_open_welcome.set_visible(False)
+            self.error_btn_box.append(self.btn_open_welcome)
 
-        # 3. Check bottle and start runner thread
-        threading.Thread(target=self._worker_thread, daemon=True).start()
+            self.btn_close = Gtk.Button(label=_t("btn_close"))
+            self.btn_close.add_css_class("suggested-action")
+            self.btn_close.connect("clicked", lambda b: self.close())
+            self.error_btn_box.append(self.btn_close)
 
-    def _worker_thread(self):
-        self._start_pulse()
+            error_box.append(self.error_btn_box)
 
-        # Step 3a: Provision bottle if not present
-        if not is_bottle_present():
-            GLib.idle_add(self.title_label.set_text, _t("preparing_title"))
-            GLib.idle_add(self.desc_label.set_text, _t("preparing_desc"))
-            GLib.idle_add(self.status_label.set_text, _t("creating_bottle"))
+            self.stack.add_named(error_box, "error")
+            self.stack.set_visible_child_name("progress")
 
-            cmd_new = [
-                "flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles",
-                "new", "--bottle-name", BOTTLE_NAME, "--environment", "gaming"
-            ]
+        def _start_pulse(self):
+            if not self._pulse_timeout_id:
+                self._pulse_timeout_id = GLib.timeout_add(100, self._on_pulse_tick)
+            return False
+
+        def _stop_pulse(self):
+            if self._pulse_timeout_id:
+                GLib.source_remove(self._pulse_timeout_id)
+                self._pulse_timeout_id = None
+
+        def _on_pulse_tick(self):
+            if not self._is_cancelled and not self._launched_ok:
+                self.progress_bar.pulse()
+                return True
+            return False
+
+        def _on_close_request(self, window):
+            self._stop_pulse()
+            if not self._launched_ok:
+                self._is_cancelled = True
+                if self._current_proc and self._current_proc.poll() is None:
+                    try:
+                        self._current_proc.terminate()
+                    except Exception:
+                        pass
+            return False
+
+        def _on_cancel_clicked(self, btn):
+            self.close()
+
+        def _on_open_bottles_clicked(self, btn):
             try:
-                self._current_proc = subprocess.Popen(
-                    cmd_new,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True
+                subprocess.Popen(["flatpak", "run", "com.usebottles.bottles"])
+            except Exception:
+                pass
+            self.close()
+
+        def _on_open_welcome_clicked(self, btn):
+            try:
+                if shutil.which("sadeem-welcome"):
+                    subprocess.Popen(["sadeem-welcome"])
+            except Exception:
+                pass
+            self.close()
+
+        def show_error(self, title, desc, details=None, show_welcome=False, show_bottles=True):
+            self._stop_pulse()
+            self.err_title_label.set_text(title)
+            self.err_desc_label.set_text(desc)
+            self.btn_open_welcome.set_visible(show_welcome)
+            self.btn_open_bottles.set_visible(show_bottles)
+
+            if details and details.strip():
+                buf = self.err_text_view.get_buffer()
+                buf.set_text(details.strip())
+                self.expander.set_visible(True)
+            else:
+                self.expander.set_visible(False)
+
+            self.stack.set_visible_child_name("error")
+            return False
+
+        def _finish_launch_success(self):
+            self._launched_ok = True
+            self.close()
+            return False
+
+        def _start_workflow(self):
+            if self._initial_error:
+                title, desc, details = self._initial_error
+                self.show_error(title, desc, details=details)
+                return False
+
+            # 1. Check target file argument
+            if not self.target_path:
+                self.show_error(
+                    _t("err_no_file_title"),
+                    _t("err_no_file_desc"),
+                    show_bottles=False,
                 )
-                out, err = self._current_proc.communicate()
-            except Exception as e:
-                if not self._is_cancelled:
+                return False
+
+            if not os.path.isfile(self.target_path):
+                self.show_error(
+                    _t("err_file_not_found_title"),
+                    _t("err_file_not_found_desc").format(path=self.target_path),
+                    show_bottles=False,
+                )
+                return False
+
+            # 2. Check if Bottles Flatpak is installed
+            if not is_bottles_installed():
+                self.show_error(
+                    _t("err_bottles_missing_title"),
+                    _t("err_bottles_missing_desc"),
+                    show_welcome=True,
+                    show_bottles=False,
+                )
+                return False
+
+            # 3. Check bottle and start runner thread
+            threading.Thread(target=self._worker_thread, daemon=True).start()
+            return False
+
+        def _worker_thread(self):
+            GLib.idle_add(self._start_pulse)
+
+            # Step 3a: Provision bottle if not present
+            if not is_bottle_present():
+                GLib.idle_add(self.title_label.set_text, _t("preparing_title"))
+                GLib.idle_add(self.desc_label.set_text, _t("preparing_desc"))
+                GLib.idle_add(self.status_label.set_text, _t("creating_bottle"))
+
+                cmd_new = [
+                    "flatpak",
+                    "run",
+                    "--command=bottles-cli",
+                    "com.usebottles.bottles",
+                    "new",
+                    "--bottle-name",
+                    BOTTLE_NAME,
+                    "--environment",
+                    "gaming",
+                ]
+                try:
+                    self._current_proc = subprocess.Popen(
+                        cmd_new,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                    )
+                    out, err = self._current_proc.communicate()
+                except Exception as e:
+                    if not self._is_cancelled:
+                        GLib.idle_add(
+                            self.show_error,
+                            _t("err_create_failed_title"),
+                            _t("err_create_failed_desc"),
+                            str(e),
+                        )
+                    return
+
+                if self._is_cancelled:
+                    return
+
+                if self._current_proc.returncode != 0 and not is_bottle_present():
+                    details = f"{out}\n{err}".strip()
                     GLib.idle_add(
                         self.show_error,
                         _t("err_create_failed_title"),
                         _t("err_create_failed_desc"),
-                        str(e)
+                        details,
                     )
-                return
+                    return
 
             if self._is_cancelled:
                 return
 
-            if self._current_proc.returncode != 0 and not is_bottle_present():
-                details = f"{out}\n{err}".strip()
-                GLib.idle_add(
-                    self.show_error,
-                    _t("err_create_failed_title"),
-                    _t("err_create_failed_desc"),
-                    details
-                )
+            # Step 3b: Launch executable inside Sadeem-Windows bottle
+            GLib.idle_add(self.title_label.set_text, _t("launching_app"))
+            GLib.idle_add(self.status_label.set_text, _t("launching_app"))
+
+            cmd_run = build_bottles_run_cmd(self.target_path, self.exec_args)
+            log_path = None
+            try:
+                log_fd, log_path = tempfile.mkstemp(prefix="sadeem-win-run-", suffix=".log")
+                with os.fdopen(log_fd, "w", encoding="utf-8", errors="replace") as logf:
+                    self._current_proc = subprocess.Popen(
+                        cmd_run,
+                        stdin=subprocess.DEVNULL,
+                        stdout=logf,
+                        stderr=subprocess.STDOUT,
+                        start_new_session=True,
+                    )
+            except Exception as e:
+                if log_path and os.path.exists(log_path):
+                    try:
+                        os.remove(log_path)
+                    except OSError:
+                        pass
+                if not self._is_cancelled:
+                    GLib.idle_add(
+                        self.show_error,
+                        _t("err_launch_failed_title"),
+                        _t("err_launch_failed_desc").format(
+                            file=os.path.basename(self.target_path)
+                        ),
+                        str(e),
+                    )
                 return
 
-        if self._is_cancelled:
-            return
+            # Wait a short interval to ensure it didn't exit immediately with an error
+            time.sleep(1.8)
 
-        # Step 3b: Launch executable inside Sadeem-Windows bottle
-        GLib.idle_add(self.title_label.set_text, _t("launching_app"))
-        GLib.idle_add(self.status_label.set_text, _t("launching_app"))
+            details = ""
+            if log_path and os.path.exists(log_path):
+                try:
+                    with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+                        details = f.read().strip()
+                except OSError:
+                    details = ""
+                try:
+                    os.remove(log_path)
+                except OSError:
+                    pass
 
-        cmd_run = [
-            "flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles",
-            "run", "-b", BOTTLE_NAME, "-e", self.target_path
-        ]
-        try:
-            self._current_proc = subprocess.Popen(
-                cmd_run,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-        except Exception as e:
-            if not self._is_cancelled:
+            if self._is_cancelled:
+                return
+
+            ret = self._current_proc.poll()
+            if ret is not None and ret != 0:
                 GLib.idle_add(
                     self.show_error,
                     _t("err_launch_failed_title"),
-                    _t("err_launch_failed_desc").format(file=os.path.basename(self.target_path)),
-                    str(e)
+                    _t("err_launch_failed_desc").format(
+                        file=os.path.basename(self.target_path)
+                    ),
+                    details,
                 )
-            return
+            else:
+                # Start background shortcut/icon watcher before closing runner window
+                _spawn_sync_watch()
+                # Launched successfully! Mark _launched_ok and dismiss cleanly
+                GLib.idle_add(self._finish_launch_success)
 
-        # Wait a short interval to ensure it didn't exit immediately with an error
-        time.sleep(1.8)
+    return SadeemWindowsRunnerWindow
 
-        if self._is_cancelled:
-            return
 
-        ret = self._current_proc.poll()
-        if ret is not None and ret != 0:
-            out, err = self._current_proc.communicate()
-            details = f"{out}\n{err}".strip()
-            GLib.idle_add(
-                self.show_error,
-                _t("err_launch_failed_title"),
-                _t("err_launch_failed_desc").format(file=os.path.basename(self.target_path)),
-                details
+def _run_gui_app(target_path=None, exec_args=None, initial_error=None):
+    Gtk, Adw, GLib, Gio, Gdk = _ensure_gtk()
+    WindowCls = create_runner_window_class()
+
+    class SadeemWindowsRunnerApp(Adw.Application):
+        def __init__(self):
+            super().__init__(
+                application_id="org.sadeem.WindowsAppRunner",
+                flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
             )
-        else:
-            # Launched successfully! Dismiss runner window cleanly
-            GLib.idle_add(self.close)
+
+        def do_activate(self):
+            win = WindowCls(
+                self,
+                target_path=target_path,
+                exec_args=exec_args,
+                initial_error=initial_error,
+            )
+            win.present()
+
+    app = SadeemWindowsRunnerApp()
+    return app.run([])
 
 
-class SadeemWindowsRunnerApp(Adw.Application):
-    def __init__(self, target_path=None):
-        super().__init__(
-            application_id="org.sadeem.WindowsAppRunner",
-            flags=Gio.ApplicationFlags.DEFAULT_FLAGS
-        )
-        self.target_path = target_path
+def parse_cli_args(argv):
+    """
+    Parse handler CLI arguments cleanly without choking on negative Windows flags
+    passed after --args (e.g. '--args -quickstart') or binfmt wrapper duplicates.
+    """
+    if not argv:
+        return {"mode": "gui", "target": None, "args": ""}
 
-    def do_activate(self):
-        win = SadeemWindowsRunnerWindow(self, self.target_path)
-        win.present()
+    if "--sync" in argv:
+        return {"mode": "sync"}
+
+    if "--sync-watch" in argv:
+        return {"mode": "sync-watch"}
+
+    if any(a == "--launch-installed" or a.startswith("--launch-installed=") for a in argv):
+        target = None
+        exec_args = ""
+        i = 0
+        while i < len(argv):
+            tok = argv[i]
+            if tok == "--launch-installed" and i + 1 < len(argv):
+                target = decode_target_path(argv[i + 1])
+                i += 2
+            elif tok.startswith("--launch-installed="):
+                target = decode_target_path(tok.split("=", 1)[1])
+                i += 1
+            elif tok == "--args" and i + 1 < len(argv):
+                exec_args = argv[i + 1]
+                i += 2
+            elif tok.startswith("--args="):
+                exec_args = tok.split("=", 1)[1]
+                i += 1
+            else:
+                i += 1
+        return {"mode": "launch-installed", "target": target, "args": exec_args}
+
+    # Normal GUI mode (single path, %U URL, or binfmt wrapper `"$1" "$@"`)
+    target = decode_target_path(argv[0])
+    exec_args = ""
+    if len(argv) > 2 and decode_target_path(argv[1]) == target:
+        exec_args = shlex.join(argv[2:])
+    return {"mode": "gui", "target": target, "args": exec_args}
 
 
-def main():
-    target = None
-    if len(sys.argv) > 1:
-        target = decode_target_path(sys.argv[1])
+def main(argv=None):
+    parsed = parse_cli_args(sys.argv[1:] if argv is None else argv)
+    mode = parsed["mode"]
+    if mode == "sync":
+        sys.exit(run_sync_once())
+    if mode == "sync-watch":
+        sys.exit(run_sync_watch())
+    if mode == "launch-installed":
+        sys.exit(launch_installed_silent(parsed.get("target"), parsed.get("args")))
+    sys.exit(_run_gui_app(parsed.get("target"), exec_args=parsed.get("args")))
 
-    app = SadeemWindowsRunnerApp(target)
-    sys.exit(app.run([]))
+
+def __getattr__(name):
+    if name == "SadeemWindowsRunnerWindow":
+        cls = create_runner_window_class()
+        globals()["SadeemWindowsRunnerWindow"] = cls
+        return cls
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 if __name__ == "__main__":
