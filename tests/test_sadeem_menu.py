@@ -161,6 +161,18 @@ class TestSadeemMenuTileBoard(unittest.TestCase):
                 self.assertIn("DragManager", code)
                 self.assertIn("ResizeOverlay", code)
                 self.assertIn("this._resizeOverlay.syncBounds(geom.totalWidth, geom.totalHeight)", code)
+                self.assertIn("this._boardView?.beginResizeAnchor()", code)
+                self.assertIn("this._boardView?.syncResizeAnchor()", code)
+                self.assertIn("this._boardView?.endResizeAnchor()", code)
+                self.assertIn("onResizeMotion:", code)
+                self.assertIn("onResizeCancelled:", code)
+                m_committed = re.search(r"onResizeCommitted:\s*\(\)\s*=>\s*\{([^}]*)\}", code)
+                self.assertIsNotNone(m_committed, "onResizeCommitted callback missing in menuUI.js")
+                self.assertLess(
+                    m_committed.group(1).find("endResizeAnchor()"),
+                    m_committed.group(1).find("this.renderCurrentView()"),
+                    "onResizeCommitted must call endResizeAnchor() before renderCurrentView()",
+                )
                 self.assertIn("pinLooseApp(id, null, null", code)
                 self.assertIn("changed::menu-opacity", code)
                 self.assertIn("_syncSurfaceOpacity()", code)
@@ -198,6 +210,13 @@ class TestSadeemMenuTileBoard(unittest.TestCase):
                 self.assertIn("transform_stage_point", code)
                 self.assertIn("hitTestUnifiedBoard", code)
                 self.assertIn("visualActor", code)
+                self.assertIn("const boundsActor = ctx.boardScroll || ctx.boardView", code)
+                self.assertIn("beginDragSession?.()", code)
+                self.assertIn("endDragSession?.()", code)
+                self.assertIn("setDragPreviewExtent?.(res.previewRect", code)
+                self.assertIn("this._makeDropKey(res)", code)
+                self.assertIn("if (nextKey === this._lastDropKey)", code)
+                self.assertIn("this._clearDropVisuals(false)", code)
                 m_bp = re.search(r"actor\.connect\('button-press-event',\s*\([^\)]*\)\s*=>\s*\{([\s\S]*?)\}\);", code)
                 self.assertIsNotNone(m_bp)
                 self.assertNotIn("EVENT_STOP", m_bp.group(1), "dragManager button-press-event must never return EVENT_STOP")
@@ -218,11 +237,19 @@ class TestSadeemMenuTileBoard(unittest.TestCase):
                 self.assertIn("this._cornerHandle.set_cursor_type(cornerCursor)", code)
                 self.assertIn("this._settings.set_int('menu-width', finalW)", code)
                 self.assertIn("this._settings.set_int('menu-height', finalH)", code)
+                self.assertIn("onResizeMotion", code)
+                self.assertIn("onResizeCancelled", code)
+                self.assertNotIn("this._onResizeMotion =", code, "this._onResizeMotion must not shadow ResizeOverlay._onResizeMotion(ev)")
+                self.assertIn("this._onResizeMotionCb = onResizeMotion || null;", code)
                 m_motion = re.search(r"_onResizeMotion\(ev\)\s*\{([\s\S]*?)\n    \}", code)
                 self.assertIsNotNone(m_motion, "_onResizeMotion missing in resizeManager.js")
                 self.assertNotIn(".style =", m_motion.group(1), "resize MOTION must never mutate .style")
                 self.assertIn("this._rootStack.set_size(activeW, activeH)", m_motion.group(1))
                 self.assertIn("this.syncBounds(activeW, activeH)", m_motion.group(1))
+                self.assertIn("this._onResizeMotionCb?.(activeW, activeH)", m_motion.group(1))
+                m_cancel = re.search(r"cancel\(\)\s*\{([\s\S]*?)\n    \}", code)
+                self.assertIsNotNone(m_cancel, "cancel() missing in resizeManager.js")
+                self.assertIn("this._onResizeCancelled?.()", m_cancel.group(1))
                 m_cap = re.search(r"_onCapturedEvent\(ev\)\s*\{([\s\S]*?)\n    \}", code)
                 self.assertIsNotNone(m_cap)
                 self.assertNotIn(".style =", m_cap.group(1), "resize captured-event must never mutate .style")
@@ -265,6 +292,42 @@ class TestSadeemMenuTileBoard(unittest.TestCase):
                 self.assertIn("_cleanupIdleId", code)
 
             if f == "boardView.js":
+                self.assertIn("export function computeRtlAnchoredScrollValue", code)
+                self.assertIn("beginResizeAnchor()", code)
+                self.assertIn("syncResizeAnchor()", code)
+                self.assertIn("endResizeAnchor()", code)
+                self.assertIn("notify::page-size", code)
+                self.assertIn("notify::upper", code)
+                self.assertIn("notify::allocation", code)
+                self.assertIn("_scrollAllocSigId", code)
+                self.assertIn("_disconnectHAdjSignals()", code)
+                self.assertIn("boardScroll.hadjustment || viewport.hadjustment", code)
+                self.assertIn("orientation: Clutter.Orientation.HORIZONTAL", code)
+                self.assertIn("boardScroll.set_text_direction(Clutter.TextDirection.LTR)", code)
+                self.assertIn("viewport.set_text_direction(Clutter.TextDirection.LTR)", code)
+                self.assertIn("boardCanvas.set_text_direction(textDir)", code)
+                self.assertNotIn("text_direction:", code, "boardView.js must call .set_text_direction(), not pass text_direction in constructors")
+                self.assertIn("leftSpacer.set_width(0)", code)
+                self.assertIn("syncRestBoardHeight()", code)
+                self.assertIn("beginDragSession()", code)
+                self.assertIn("endDragSession()", code)
+                self.assertIn("setDragPreviewExtent(", code)
+                self.assertIn("Math.max(floorH, neededH)", code)
+                self.assertIn("computeBoardRestHeight", code)
+                self.assertIn("computeDragExpandedBoardHeight", code)
+                self.assertNotIn("height: ${packed.totalHeight}px;", code, "boardCanvas inline style must not lock height below expanded drop area")
+                self.assertIn("x_align: Clutter.ActorAlign.FILL", code)
+                self.assertIn("x_align: Clutter.ActorAlign.START", code)
+                self.assertIn("y_align: Clutter.ActorAlign.START", code)
+                self.assertIn("leftSpacer", code)
+                m_home = re.search(r"renderHome\([^\)]*\)\s*\{([\s\S]*?)\n    \}", code)
+                self.assertIsNotNone(m_home, "renderHome missing in boardView.js")
+                self.assertNotIn("Clutter.ActorAlign.END", m_home.group(1), "renderHome must never rely on ActorAlign.END on RTL boardCanvas")
+                self.assertLess(
+                    m_home.group(1).find("viewport.add_child(leftSpacer)"),
+                    m_home.group(1).find("viewport.add_child(boardCanvas)"),
+                    "leftSpacer must precede boardCanvas in RTL viewport",
+                )
                 self.assertIn("hscrollbar_policy: St.PolicyType.AUTOMATIC", code)
                 self.assertIn("vscrollbar_policy: St.PolicyType.AUTOMATIC", code)
                 self.assertIn("getLooseAppIconSize", code)
@@ -997,6 +1060,68 @@ class TestSadeemMenuTileBoard(unittest.TestCase):
         res = _run_gjs_script(script)
         self.assertEqual(res.returncode, 0, f"GJS resize handle bounds test failed:\n{res.stderr}\n{res.stdout}")
         self.assertIn("RESIZE_FIXED_LAYOUT_BOUNDS_OK", res.stdout)
+
+    def test_rtl_live_resize_board_anchoring_and_dnd_in_gjs(self):
+        script = f"""
+        import * as TileLayout from 'file://{os.path.join(MENU_DIR, "tileLayout.js")}';
+
+        // 1. computeRtlAnchoredScrollValue: upper > pageSize (scroll pinned to right edge)
+        if (TileLayout.computeRtlAnchoredScrollValue(1000, 700, 0, 0) !== 300)
+            throw new Error('upper > pageSize must anchor to max horizontal scroll');
+
+        // 2. upper <= pageSize (clamped to lower=0, no overflow)
+        if (TileLayout.computeRtlAnchoredScrollValue(700, 900, 0, 0) !== 0)
+            throw new Error('upper <= pageSize must return lower=0');
+
+        // 3. rightOffset > 0 (preserves user scroll offset from right edge across live narrow/widen)
+        if (TileLayout.computeRtlAnchoredScrollValue(1000, 700, 120, 0) !== 180)
+            throw new Error('rightOffset=120 at pageSize=700 expected 180');
+        if (TileLayout.computeRtlAnchoredScrollValue(1000, 550, 120, 0) !== 330)
+            throw new Error('rightOffset=120 during narrowing (pageSize=550) expected 330');
+        if (TileLayout.computeRtlAnchoredScrollValue(1000, 940, 120, 0) !== 0)
+            throw new Error('rightOffset=120 during widening past left edge (pageSize=940) must clamp to 0');
+
+        // 4. Non-zero lower adjustment bound
+        if (TileLayout.computeRtlAnchoredScrollValue(1020, 700, 0, 20) !== 320)
+            throw new Error('Non-zero lower bound upper > pageSize mismatch');
+        if (TileLayout.computeRtlAnchoredScrollValue(500, 700, 0, 20) !== 20)
+            throw new Error('Non-zero lower bound upper <= pageSize mismatch');
+
+        // 5. RTL & LTR empty-cell DnD math remains aligned with boardCanvas local space
+        const items = [{{ type: 'app', id: 'app1', col: 0, row: 0 }}];
+        const packedRtl = TileLayout.computeUnifiedBoardRects(items, 72, 82, 10, 10, true);
+        const dropRtl = TileLayout.hitTestUnifiedBoard({{
+            localX: packedRtl.totalWidth - 36,
+            localY: 130,
+            boardCols: packedRtl.totalCols,
+            totalWidth: packedRtl.totalWidth,
+            cellW: 72,
+            cellH: 82,
+            gap: 10,
+            itemRects: packedRtl.rects,
+            dragKind: 'board-app',
+            dragPayload: {{ itemType: 'app', itemId: 'app1' }},
+            isRtl: true,
+        }});
+        if (!dropRtl || dropRtl.action !== 'place-board-item' || dropRtl.targetCol !== 0 || dropRtl.targetRow !== 1)
+            throw new Error('RTL hitTestUnifiedBoard col 0 drop mismatch: ' + JSON.stringify(dropRtl));
+
+        // 6. Downward drag height expansion without unnecessary rest vertical scrollbar
+        if (TileLayout.computeBoardRestHeight(174, 500, 14) !== 486)
+            throw new Error('computeBoardRestHeight must cover visible board area cleanly without overflow');
+        if (TileLayout.computeBoardRestHeight(700, 500, 14) !== 700)
+            throw new Error('computeBoardRestHeight must preserve taller packed height');
+        const expandedH = TileLayout.computeDragExpandedBoardHeight(486, {{ y: 420, height: 82 }}, 82, 10);
+        if (expandedH < 594)
+            throw new Error('computeDragExpandedBoardHeight must expand canvas for downward drop preview, got: ' + expandedH);
+        if (TileLayout.computeDragExpandedBoardHeight(486, {{ y: 200, height: 82 }}, 82, 10) !== 486)
+            throw new Error('computeDragExpandedBoardHeight must not expand when drop preview fits in rest height');
+
+        print('RTL_LIVE_RESIZE_ANCHORING_OK');
+        """
+        res = _run_gjs_script(script)
+        self.assertEqual(res.returncode, 0, f"GJS RTL live resize anchoring test failed:\n{res.stderr}\n{res.stdout}")
+        self.assertIn("RTL_LIVE_RESIZE_ANCHORING_OK", res.stdout)
 
     def test_sadeem_system_menu_settings_page_and_translations(self):
         sys_bin = os.path.join(REPO_ROOT, "files/system/usr/bin/sadeem-system")

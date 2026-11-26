@@ -699,6 +699,243 @@ class TestGjsAndJsLogic(unittest.TestCase):
         self.assertEqual(res.returncode, 0, f"GJS suppression test failed: {res.stderr}")
         self.assertIn("SUPPRESSION_LOGIC_VERIFIED", res.stdout)
 
+    def test_emoji_copy_popup_clamping_and_dtp_rtl_fixes(self):
+        """
+        Verifies Batch 1 fixes:
+        1) clampPopupAnchorToWorkArea / clampPopupBoxToWorkArea in GJS across 1366x768 & 1920x1080 corners/edges.
+        2) emoji-copy@felipeftn GNOME 51 metadata, compiled gschemas, and dconf defaults.
+        3) dash-to-panel windowPreview.js RTL LTR-container fix & helper cleanup in disable().
+        """
+        import json
+
+        clamp_js = os.path.join(EXT_DIR, "popupClamp.js")
+        self.assertTrue(os.path.isfile(clamp_js))
+
+        with tempfile.NamedTemporaryFile("w", suffix=".mjs", delete=False) as tf:
+            tf.write(
+                f"""
+import {{ clampPopupAnchorToWorkArea, clampPopupBoxToWorkArea, SIDE_TOP, SIDE_BOTTOM }} from 'file://{clamp_js}';
+
+const cases = [
+    {{ wa: {{ x: 0, y: 0, width: 1366, height: 720 }}, w: 360, h: 440, side: SIDE_TOP }},
+    {{ wa: {{ x: 0, y: 0, width: 1366, height: 720 }}, w: 360, h: 440, side: SIDE_BOTTOM }},
+    {{ wa: {{ x: 0, y: 0, width: 1920, height: 1032 }}, w: 400, h: 460, side: SIDE_TOP }},
+    {{ wa: {{ x: 0, y: 0, width: 1920, height: 1032 }}, w: 400, h: 460, side: SIDE_BOTTOM }},
+];
+
+const margin = 12;
+for (const c of cases) {{
+    const pts = [
+        [0, 0], [c.wa.width, 0], [0, c.wa.height], [c.wa.width, c.wa.height],
+        [10, c.wa.height / 2], [c.wa.width - 5, c.wa.height / 2],
+        [c.wa.width / 2, 5], [c.wa.width / 2, c.wa.height - 2],
+    ];
+    for (const [px, py] of pts) {{
+        const a = clampPopupAnchorToWorkArea(px, py, c.w, c.h, c.wa, c.side, margin, 0.5);
+        const left = a.x - c.w * 0.5;
+        const right = a.x + c.w * 0.5;
+        const top = c.side === SIDE_BOTTOM ? a.y - c.h : a.y;
+        const bottom = c.side === SIDE_BOTTOM ? a.y : a.y + c.h;
+        if (left < c.wa.x + margin - 1 || right > c.wa.x + c.wa.width - margin + 1 ||
+            top < c.wa.y + margin - 1 || bottom > c.wa.y + c.wa.height - margin + 1) {{
+            throw new Error(`Anchor out of bounds (${{px}},${{py}}) side=${{c.side}} -> [${{left}},${{top}},${{right}},${{bottom}}]`);
+        }}
+        const box = clampPopupBoxToWorkArea(px - 20, py - 20, c.w, c.h, c.wa, margin);
+        if (box.x < c.wa.x + margin || box.x + c.w > c.wa.x + c.wa.width - margin ||
+            box.y < c.wa.y + margin || box.y + c.h > c.wa.y + c.wa.height - margin) {{
+            throw new Error(`Box out of bounds -> (${{box.x}},${{box.y}})`);
+        }}
+    }}
+}}
+print("POPUP_CLAMP_GJS_OK");
+"""
+            )
+            test_mjs = tf.name
+
+        try:
+            gjs_res = subprocess.run(["gjs", "-m", test_mjs], capture_output=True, text=True, check=True)
+            self.assertIn("POPUP_CLAMP_GJS_OK", gjs_res.stdout)
+        finally:
+            os.unlink(test_mjs)
+
+        ext_root = os.path.dirname(EXT_DIR)
+        emoji_dir = os.path.join(ext_root, "emoji-copy@felipeftn")
+        with open(os.path.join(emoji_dir, "metadata.json"), "r", encoding="utf-8") as fp:
+            emoji_meta = json.load(fp)
+        self.assertIn("51", emoji_meta.get("shell-version", []))
+        self.assertEqual(os.stat(os.path.join(emoji_dir, "metadata.json")).st_mode & 0o444, 0o444)
+
+        compiled_schema = os.path.join(emoji_dir, "schemas", "gschemas.compiled")
+        self.assertTrue(os.path.isfile(compiled_schema) and os.path.getsize(compiled_schema) > 0)
+        subprocess.run(["glib-compile-schemas", "--strict", "--dry-run", os.path.join(emoji_dir, "schemas")], check=True)
+
+        dconf_dir = os.path.join(REPO_ROOT, "files/system/etc/dconf/db/local.d")
+        with open(os.path.join(dconf_dir, "01-sadeem-defaults"), "r", encoding="utf-8") as fp:
+            self.assertIn("'emoji-copy@felipeftn'", fp.read())
+        with open(os.path.join(dconf_dir, "02-sadeem-extensions"), "r", encoding="utf-8") as fp:
+            ext_dconf = fp.read()
+        self.assertIn("[org/gnome/shell/extensions/emoji-copy]", ext_dconf)
+        self.assertIn("active-keybind=true", ext_dconf)
+        self.assertIn("emoji-keybind=['<Super>period']", ext_dconf)
+        self.assertIn("window-location='cursor'", ext_dconf)
+
+        dtp_dir = os.path.join(ext_root, "dash-to-panel@jderose9.github.com")
+        dtp_wp = os.path.join(dtp_dir, "windowPreview.js")
+        dtp_pos_js = os.path.join(dtp_dir, "previewPosition.js")
+        self.assertTrue(os.path.isfile(dtp_pos_js))
+
+        with tempfile.NamedTemporaryFile("w", suffix=".mjs", delete=False) as tf:
+            tf.write(
+                f"""
+import {{ computePreviewMenuPosition, SIDE_BOTTOM, SIDE_TOP, SIDE_RIGHT, SIDE_LEFT }} from 'file://{dtp_pos_js}';
+
+// Bottom panel 1920x1080: RTL places Arabic app icons on the right half (e.g. x1=1450)
+// and LTR places icons on the left half (e.g. x1=120). Both must center over the icon and stay on monitor.
+const rtlCenter = computePreviewMenuPosition({{
+    sourceX1: 1450, sourceY1: 1032, sourceContentWidth: 48, sourceContentHeight: 48,
+    appIconMargin: 0, previewsWidth: 260, previewsHeight: 160,
+    monitorX: 0, monitorY: 0, monitorWidth: 1920, monitorHeight: 1080,
+    clipHeight: 180, vertical: false, position: SIDE_BOTTOM,
+}});
+if (rtlCenter.x !== 1344 || rtlCenter.y !== 20) {{
+    throw new Error(`Unexpected RTL preview position: ${{JSON.stringify(rtlCenter)}}`);
+}}
+
+const ltrEdgeLeft = computePreviewMenuPosition({{
+    sourceX1: 10, sourceY1: 1032, sourceContentWidth: 40, sourceContentHeight: 40,
+    appIconMargin: 0, previewsWidth: 260, previewsHeight: 160,
+    monitorX: 0, monitorY: 0, monitorWidth: 1920, monitorHeight: 1080,
+    clipHeight: 180, vertical: false, position: SIDE_BOTTOM,
+}});
+if (ltrEdgeLeft.x !== 0 || ltrEdgeLeft.y !== 20) {{
+    throw new Error(`Left edge preview not clamped: ${{JSON.stringify(ltrEdgeLeft)}}`);
+}}
+
+const rtlEdgeRight = computePreviewMenuPosition({{
+    sourceX1: 1870, sourceY1: 1032, sourceContentWidth: 40, sourceContentHeight: 40,
+    appIconMargin: 0, previewsWidth: 260, previewsHeight: 160,
+    monitorX: 0, monitorY: 0, monitorWidth: 1920, monitorHeight: 1080,
+    clipHeight: 180, vertical: false, position: SIDE_BOTTOM,
+}});
+if (rtlEdgeRight.x !== 1660 || rtlEdgeRight.y !== 20) {{
+    throw new Error(`Right edge preview not clamped: ${{JSON.stringify(rtlEdgeRight)}}`);
+}}
+
+// Top and vertical panels (LTR & RTL symmetric)
+const topPos = computePreviewMenuPosition({{
+    sourceX1: 600, sourceY1: 0, sourceContentWidth: 48, sourceContentHeight: 48,
+    previewsWidth: 240, previewsHeight: 150, monitorWidth: 1366, monitorHeight: 768,
+    clipHeight: 180, vertical: false, position: SIDE_TOP,
+}});
+if (topPos.y !== 0 || topPos.x !== 504) {{
+    throw new Error(`Top panel position wrong: ${{JSON.stringify(topPos)}}`);
+}}
+
+const rightVert = computePreviewMenuPosition({{
+    sourceX1: 1318, sourceY1: 300, sourceContentWidth: 48, sourceContentHeight: 48,
+    previewsWidth: 220, previewsHeight: 150, monitorWidth: 1366, monitorHeight: 768,
+    clipWidth: 240, vertical: true, position: SIDE_RIGHT,
+}});
+if (rightVert.x !== 20 || rightVert.y !== 249) {{
+    throw new Error(`Right vertical panel position wrong: ${{JSON.stringify(rightVert)}}`);
+}}
+
+print("DTP_PREVIEW_POS_GJS_OK");
+"""
+            )
+            dtp_mjs = tf.name
+
+        try:
+            gjs_res2 = subprocess.run(["gjs", "-m", dtp_mjs], capture_output=True, text=True, check=True)
+            self.assertIn("DTP_PREVIEW_POS_GJS_OK", gjs_res2.stdout)
+        finally:
+            os.unlink(dtp_mjs)
+
+        with open(dtp_wp, "r", encoding="utf-8") as fp:
+            wp_code = fp.read()
+        self.assertIn("new Clutter.FixedLayout()", wp_code)
+        self.assertIn("text_direction: Clutter.TextDirection.LTR", wp_code)
+        self.assertIn("Clutter.get_default_text_direction()", wp_code)
+        self.assertIn("computePreviewMenuPosition", wp_code)
+
+        with open(os.path.join(EXT_DIR, "extension.js"), "r", encoding="utf-8") as fp:
+            helper_code = fp.read()
+        self.assertIn("clampPopupAnchorToWorkArea", helper_code)
+        self.assertIn("bp?._userArrowSide ??", helper_code)
+        self.assertIn("bp?._sourceAlignment ??", helper_code)
+        self.assertIn("'clipboardIndicator'", helper_code)
+        self.assertNotIn("'emoji-copy@felipeftn'", helper_code)
+        self.assertIn("box.setPosition(this.sourceActor, alignment)", helper_code)
+        self.assertNotIn("box.set_position(", helper_code)
+        self.assertIn("_cursorRetryId", helper_code)
+        self.assertIn("_sadeemClampIdleId", helper_code)
+        self.assertIn("_sadeemAllocSigId", helper_code)
+
+        # Verify emoji-copy@felipeftn self-clamps at 4 corners AND on 180px -> 480px expansion
+        emoji_clamp_js = os.path.join(emoji_dir, "popupClamp.js")
+        self.assertTrue(os.path.isfile(emoji_clamp_js))
+        with open(os.path.join(emoji_dir, "extension.js"), "r", encoding="utf-8") as fp:
+            emoji_ext_code = fp.read()
+        self.assertIn("notify::allocation", emoji_ext_code)
+        self.assertIn("_detachBoxClampWatch", emoji_ext_code)
+        self.assertIn("clampPopupAnchorToWorkArea", emoji_ext_code)
+        self.assertIn("clampPopupBoxToWorkArea", emoji_ext_code)
+        self.assertIn("bp.setPosition(menu.sourceActor, alignment)", emoji_ext_code)
+        self.assertIn("grab_key_focus()", emoji_ext_code)
+        self.assertIn("Math.abs(dx) < 2 && Math.abs(dy) < 2", emoji_ext_code)
+
+        with tempfile.NamedTemporaryFile("w", suffix=".mjs", delete=False) as tf:
+            tf.write(
+                f"""
+import {{ clampPopupAnchorToWorkArea, clampPopupBoxToWorkArea, SIDE_TOP, SIDE_BOTTOM }} from 'file://{emoji_clamp_js}';
+
+for (const wa of [
+    {{ x: 0, y: 0, width: 1366, height: 720 }},
+    {{ x: 0, y: 0, width: 1920, height: 1032 }},
+]) {{
+    for (const side of [SIDE_TOP, SIDE_BOTTOM]) {{
+        for (const [px, py] of [[0, 0], [wa.width, 0], [0, wa.height], [wa.width, wa.height], [wa.width - 20, wa.height - 200]]) {{
+            // Initial collapsed open (180px tall), then expanded via category/search to 480px tall
+            const initH = 180;
+            const expH = 480;
+            const w = 380;
+            const anchor = clampPopupAnchorToWorkArea(px, py, w, initH, wa, side, 12, 0.5);
+            let bx = anchor.x - w * 0.5;
+            let by = side === SIDE_BOTTOM ? anchor.y - expH : anchor.y;
+            const clamped = clampPopupBoxToWorkArea(bx, by, w, expH, wa, 12);
+            const dx = clamped.x - bx;
+            const dy = clamped.y - by;
+            const finalBx = bx + dx;
+            const finalBy = by + dy;
+            if (finalBx < wa.x + 12 || finalBx + w > wa.x + wa.width - 12 ||
+                finalBy < wa.y + 12 || finalBy + expH > wa.y + wa.height - 12) {{
+                throw new Error(`Emoji expanded popup out of bounds (${{finalBx}},${{finalBy}},${{w}},${{expH}}) in ${{JSON.stringify(wa)}}`);
+            }}
+        }}
+    }}
+}}
+print("EMOJI_EXPANSION_CLAMP_GJS_OK");
+"""
+            )
+            emoji_mjs = tf.name
+
+        try:
+            gjs_res3 = subprocess.run(["gjs", "-m", emoji_mjs], capture_output=True, text=True, check=True)
+            self.assertIn("EMOJI_EXPANSION_CLAMP_GJS_OK", gjs_res3.stdout)
+        finally:
+            os.unlink(emoji_mjs)
+
+        env = os.environ.copy()
+        typelib_paths = "/usr/lib64/mutter-51:/usr/lib64/gnome-shell"
+        env["GI_TYPELIB_PATH"] = typelib_paths + (":" + env["GI_TYPELIB_PATH"] if "GI_TYPELIB_PATH" in env else "")
+        env["LD_LIBRARY_PATH"] = typelib_paths + (":" + env["LD_LIBRARY_PATH"] if "LD_LIBRARY_PATH" in env else "")
+        for p in (clamp_js, emoji_clamp_js, os.path.join(EXT_DIR, "extension.js"), dtp_pos_js, dtp_wp, os.path.join(emoji_dir, "extension.js")):
+            r = subprocess.run(["gjs", "-m", p], capture_output=True, text=True, env=env, timeout=10)
+            out = (r.stderr + "\n" + r.stdout).strip()
+            self.assertNotIn("SyntaxError", out, f"GJS syntax error in {p}:\n{out}")
+            if r.returncode != 0:
+                self.assertIn("resource:///org/gnome/shell/", out, f"Unexpected GJS failure in {p}:\n{out}")
+
     def test_i18n_ten_languages_and_interpolation(self):
         expected_langs = ["ar", "en", "fr", "es", "de", "tr", "ru", "pt", "it", "zh"]
         self.assertEqual(len(i18n.SUPPORTED_LANGUAGES), 10)
@@ -905,6 +1142,141 @@ class TestGjsAndJsLogic(unittest.TestCase):
         self.assertIn("this._notifyCaptureComplete(path, 'video')", ui_code)
         self.assertGreaterEqual(ui_code.count("this._notifyCaptureComplete("), 3)
         self.assertGreaterEqual(ui_code.count("this._finishPhotoSuccess(targetPath, stream)"), 4)
+
+    def test_batch3_halo_cursor_capture_performance_and_lockclock_disposal(self):
+        """
+        Verifies Batch 3 fixes:
+        1) cursorHalo.js uses GNOME 51 Meta.CursorTracker ('position-invalidated', get_pointer),
+           raises halo on uiGroup, tracks BUTTON1_MASK, and cleans up on setActive(false) / disable().
+        2) sadeem-desktop-helper stylesheet.css exists and captureUI.js syncs toggle buttons in open(),
+           auto-enables _includeCursor with _toggleHalo(), draws cyan halo onto captured PNG via Cairo,
+           avoids destroying/rebuilding _settingsPopup in _updateSettingsDisplay(), caches _lastCursorType
+           & _frozenWindows, and moves Gio._promisify to module scope.
+        3) adwaita-lock-clock@saifeldin.osama/extension.js clears disposed St.DrawingArea (_clockCanvas)
+           on unlock / destroy so 1s timer never logs 'St.DrawingArea has been already disposed'.
+        """
+        # 1. cursorHalo.js
+        halo_path = os.path.join(EXT_DIR, "cursorHalo.js")
+        with open(halo_path, "r", encoding="utf-8") as fp:
+            halo_code = fp.read()
+        self.assertIn("Meta.CursorTracker", halo_code)
+        self.assertIn("get_cursor_tracker", halo_code)
+        self.assertIn("'position-invalidated'", halo_code)
+        self.assertIn("this._cursorTracker.get_pointer()", halo_code)
+        self.assertIn("Clutter.ModifierType.BUTTON1_MASK", halo_code)
+        self.assertIn("Main.layoutManager.uiGroup.set_child_above_sibling(this._actor, null)", halo_code)
+        self.assertIn("this._cursorTracker.disconnect(this._cursorSigId)", halo_code)
+
+        # 2. captureUI.js + stylesheet.css
+        css_path = os.path.join(EXT_DIR, "stylesheet.css")
+        self.assertTrue(os.path.isfile(css_path))
+        with open(css_path, "r", encoding="utf-8") as fp:
+            css_code = fp.read()
+        for cls in (
+            ".sadeem-capture-card",
+            ".sadeem-capture-mode-btn-active",
+            ".sadeem-capture-icon-btn-active",
+            ".sadeem-capture-halo-btn-active",
+            ".sadeem-capture-btn-video",
+            ".sadeem-capture-pill-btn-active",
+            ".sadeem-capture-setting-chip-active",
+        ):
+            self.assertIn(cls, css_code)
+
+        ui_path = os.path.join(EXT_DIR, "captureUI.js")
+        with open(ui_path, "r", encoding="utf-8") as fp:
+            ui_code = fp.read()
+        self.assertIn("import Cairo from 'gi://cairo';", ui_code)
+        self.assertIn("this._syncToggleButtons();", ui_code)
+        self.assertIn("this._drawHaloOnPng(targetPath, targetRect, cursorInfo, frozenScale);", ui_code)
+        self.assertIn("Cairo.ImageSurface.createFromPNG(targetPath)", ui_code)
+        self.assertIn("this._lastCursorType", ui_code)
+        self.assertIn("this._frozenWindows", ui_code)
+        self.assertIn("this._lastScreenHighlightMon", ui_code)
+        self.assertNotIn("box-shadow", ui_code, "captureUI.js highlight/selection overlays must avoid CPU box-shadow blur")
+        self.assertNotIn("#sadeem-screen-highlight", css_code)
+        self.assertNotIn("#sadeem-window-highlight", css_code)
+        self.assertNotIn("#sadeem-selection-box", css_code)
+        m_clear_dim = re.search(r"_clearDimming\(\)\s*\{([\s\S]*?)\n    \}", ui_code)
+        self.assertIsNotNone(m_clear_dim)
+        self.assertIn("this._dimOverlay.visible = false", m_clear_dim.group(1))
+        self.assertNotIn("set_size(0, 0)", m_clear_dim.group(1))
+
+        m_upd_settings = re.search(r"_updateSettingsDisplay\(\)\s*\{([\s\S]*?)\n    \}", ui_code)
+        self.assertIsNotNone(m_upd_settings)
+        self.assertNotIn("destroy_all_children", m_upd_settings.group(1))
+        self.assertNotIn("_buildSettingsPopupContents", m_upd_settings.group(1))
+
+        m_open = re.search(r"async open\([^\)]*\)\s*\{([\s\S]*?)\n    \}", ui_code)
+        self.assertIsNotNone(m_open)
+        self.assertNotIn("Gio._promisify", m_open.group(1))
+        self.assertIn("this._syncToggleButtons()", m_open.group(1))
+        self.assertIn("this._snapshotFrozenWindows()", m_open.group(1))
+
+        m_win_cursor = re.search(r"_updateWindowUnderCursor\([^\)]*\)\s*\{([\s\S]*?)\n    \}", ui_code)
+        self.assertIsNotNone(m_win_cursor)
+        self.assertNotIn("sort_windows_by_stacking", m_win_cursor.group(1))
+
+        m_halo_toggle = re.search(r"_toggleHalo\(\)\s*\{([\s\S]*?)\n    \}", ui_code)
+        self.assertIsNotNone(m_halo_toggle)
+        self.assertIn("this._includeCursor = true;", m_halo_toggle.group(1))
+
+        # Live Cairo PNG roundtrip matching captureUI cyan halo colors
+        with tempfile.NamedTemporaryFile("wb", suffix=".png", delete=False) as tf:
+            png_path = tf.name
+        Image.new("RGB", (80, 80), (20, 20, 20)).save(png_path)
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as tf:
+            tf.write(
+                f"""
+                import Cairo from 'gi://cairo';
+                const surface = Cairo.ImageSurface.createFromPNG({png_path!r});
+                const cr = new Cairo.Context(surface);
+                cr.newPath();
+                cr.arc(40, 40, 24, 0, 2 * Math.PI);
+                cr.setSourceRGBA(6 / 255, 182 / 255, 212 / 255, 0.30);
+                cr.fillPreserve();
+                cr.setSourceRGBA(6 / 255, 182 / 255, 212 / 255, 0.85);
+                cr.setLineWidth(2.5);
+                cr.stroke();
+                cr.$dispose();
+                surface.writeToPNG({png_path!r});
+                surface.finish();
+                print('CAPTURE_HALO_CAIRO_OK');
+                """
+            )
+            js_path = tf.name
+        try:
+            r = subprocess.run(["gjs", "-m", js_path], capture_output=True, text=True, check=True)
+            self.assertIn("CAPTURE_HALO_CAIRO_OK", r.stdout)
+            im = Image.open(png_path).convert("RGB")
+            c_px = im.getpixel((40, 40))
+            b_px = im.getpixel((64, 40))
+            self.assertGreater(c_px[2], c_px[0] + 30, f"Center must show cyan halo tint, got {c_px}")
+            self.assertGreater(b_px[2], b_px[0] + 100, f"Border must show strong cyan ring, got {b_px}")
+        finally:
+            if os.path.exists(js_path):
+                os.unlink(js_path)
+            if os.path.exists(png_path):
+                os.unlink(png_path)
+
+        # 3. adwaita-lock-clock St.DrawingArea disposal guard
+        lock_ext = os.path.join(os.path.dirname(EXT_DIR), "adwaita-lock-clock@saifeldin.osama/extension.js")
+        with open(lock_ext, "r", encoding="utf-8") as fp:
+            lock_code = fp.read()
+        self.assertIn("clockCanvas.connect('destroy'", lock_code)
+        self.assertIn("customShell.connect('destroy'", lock_code)
+        self.assertIn("if (Main.screenShield && !Main.screenShield._dialog)", lock_code)
+        self.assertIn("this._restoreUnlockDialog();", lock_code)
+
+        env = os.environ.copy()
+        typelib_paths = "/usr/lib64/mutter-51:/usr/lib64/gnome-shell"
+        env["GI_TYPELIB_PATH"] = typelib_paths + (":" + env["GI_TYPELIB_PATH"] if "GI_TYPELIB_PATH" in env else "")
+        env["LD_LIBRARY_PATH"] = typelib_paths + (":" + env["LD_LIBRARY_PATH"] if "LD_LIBRARY_PATH" in env else "")
+        res_lock = subprocess.run(["gjs", "-m", lock_ext], capture_output=True, text=True, env=env, timeout=10)
+        lock_out = (res_lock.stderr + "\n" + res_lock.stdout).strip()
+        self.assertNotIn("SyntaxError", lock_out, f"GJS syntax error in adwaita-lock-clock:\n{lock_out}")
+        if res_lock.returncode != 0:
+            self.assertIn("resource:///org/gnome/shell/", lock_out, f"Unexpected GJS failure in adwaita-lock-clock:\n{lock_out}")
 
 
 class TestSystemIntegration(unittest.TestCase):

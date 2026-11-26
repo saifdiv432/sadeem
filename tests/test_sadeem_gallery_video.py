@@ -197,13 +197,17 @@ class TestPortalAndCaptureUI(unittest.TestCase):
 
     def test_capture_ui_layout_specifications(self):
         ui_path = os.path.join(EXT_DIR, "captureUI.js")
+        css_path = os.path.join(EXT_DIR, "stylesheet.css")
         with open(ui_path, "r", encoding="utf-8") as fp:
             content = fp.read()
+        with open(css_path, "r", encoding="utf-8") as fp:
+            css_content = fp.read()
 
         # 1. No fixed width: 440px
         self.assertNotIn("width: 440px", content)
-        # 2. Min width 310px
-        self.assertIn("min-width: 310px", content)
+        # 2. Min width 310px (moved cleanly to stylesheet.css for fast option switching)
+        self.assertIn("sadeem-capture-card", content)
+        self.assertIn("min-width: 310px", css_content)
         # 3. No weather-clear-symbolic
         self.assertNotIn("weather-clear-symbolic", content)
         self.assertIn("find-location-symbolic", content)

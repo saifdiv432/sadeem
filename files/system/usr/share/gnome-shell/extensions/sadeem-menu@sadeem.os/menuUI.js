@@ -73,9 +73,11 @@ export class SadeemPanelButton extends PanelMenu.Button {
 
     _buildMenuContents() {
         const textDir = this._isRtl ? Clutter.TextDirection.RTL : Clutter.TextDirection.LTR;
-        this._menuRootStack = new St.Widget({ layout_manager: new Clutter.BinLayout(), reactive: false, x_expand: true, y_expand: true, text_direction: textDir });
+        this._menuRootStack = new St.Widget({ layout_manager: new Clutter.BinLayout(), reactive: false, x_expand: true, y_expand: true });
+        this._menuRootStack.set_text_direction(textDir);
         this._menuRootStack.clip_to_allocation = true;
-        this._rootContainer = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, style_class: 'sadeem-menu-root', x_expand: true, y_expand: true, text_direction: textDir });
+        this._rootContainer = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, style_class: 'sadeem-menu-root', x_expand: true, y_expand: true });
+        this._rootContainer.set_text_direction(textDir);
 
         const topBar = new St.BoxLayout({ orientation: Clutter.Orientation.HORIZONTAL, style_class: 'sadeem-menu-topbar', x_expand: true });
         const sidebarIcon = new St.Icon({ icon_name: 'open-menu-symbolic', icon_size: 16, reactive: false });
@@ -108,7 +110,7 @@ export class SadeemPanelButton extends PanelMenu.Button {
         this._bottomStrip = new BottomStripView({ onNewGroup: () => this._openNewGroupBar(), onOpenSettings: () => { this.menu.close(); this._onOpenExtensionPrefs?.(); }, onPowerAction: () => this.menu.close(), onShowTooltip: (a, t) => this._showTooltip(a, t), onHideTooltip: target => this._hideTooltip(target) });
         this._rootContainer.add_child(this._bottomStrip);
 
-        this._resizeOverlay = new ResizeOverlay({ menuActor: this.menu.actor, rootStack: this._menuRootStack, rootContainer: this._rootContainer, settings: this._settings, getWorkArea: () => this._getWorkArea(), isRtl: this._isRtl, isBlocked: () => this._groupModal.isOpen || this._contextMenu.isOpen || this._dragManager?.isDragging, onBeforeStart: () => { this._hideTooltip(); this._contextMenu.close(); }, onResizeCommitted: () => { this._applyGeometry(); this.renderCurrentView(); } });
+        this._resizeOverlay = new ResizeOverlay({ menuActor: this.menu.actor, rootStack: this._menuRootStack, rootContainer: this._rootContainer, settings: this._settings, getWorkArea: () => this._getWorkArea(), isRtl: this._isRtl, isBlocked: () => this._groupModal.isOpen || this._contextMenu.isOpen || this._dragManager?.isDragging, onBeforeStart: () => { this._hideTooltip(); this._contextMenu.close(); this._boardView?.beginResizeAnchor(); }, onResizeMotion: () => { this._boardView?.syncResizeAnchor(); }, onResizeCancelled: () => { this._boardView?.endResizeAnchor(); }, onResizeCommitted: () => { this._boardView?.endResizeAnchor(); this._applyGeometry(); this.renderCurrentView(); } });
         this._groupModal = new GroupModalOverlay();
         this._dragOverlayLayer = new St.Widget({ layout_manager: new Clutter.FixedLayout(), reactive: false, x_expand: true, y_expand: true });
         this._dragManager = new DragManager({ menuActor: this.menu.actor, rootStack: this._menuRootStack, overlayLayer: this._dragOverlayLayer, isResizing: () => this._resizeOverlay.isResizing, onBeforeStart: p => { this._hideTooltip(); this._contextMenu.close(); if (p.kind === 'group-modal-app') this._groupModal.close(); }, onDrop: (drag, res) => applyBoardDrop(this._appData, this._getRecords(), drag, res) });

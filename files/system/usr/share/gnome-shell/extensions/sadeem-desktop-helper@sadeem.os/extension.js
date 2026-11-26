@@ -12,6 +12,9 @@ import { CaptureHelperService } from './captureHelper.js';
 import { CaptureUI } from './captureUI.js';
 import { WindowMenuHelper } from './windowMenuHelper.js';
 import { RecordingIndicator } from './recordingIndicator.js';
+import { clampPopupAnchorToWorkArea, clampPopupBoxToWorkArea } from './popupClamp.js';
+
+export { clampPopupAnchorToWorkArea, clampPopupBoxToWorkArea };
 
 const RTL_ELEMENTS = [
     { element: 'desktopButton', visible: true, position: 'stackedTL' },
@@ -85,6 +88,7 @@ export default class SadeemDesktopHelperExtension extends Extension {
     enable() {
         this._signals = [];
         this._hookedMenus = new Map();
+        this._cursorRetryId = 0;
         this._interfaceSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
 
         // 1. Initial panel RTL/LTR orientation
@@ -156,10 +160,29 @@ export default class SadeemDesktopHelperExtension extends Extension {
             this._signals = [];
         }
 
+        // Disconnect queued cursor retry timer
+        if (this._cursorRetryId) {
+            try {
+                GLib.source_remove(this._cursorRetryId);
+            } catch (e) {}
+            this._cursorRetryId = 0;
+        }
+
         // Restore hooked indicator menus
         if (this._hookedMenus) {
             for (const [menu, originalOpen] of this._hookedMenus.entries()) {
                 try {
+                    if (menu._sadeemClampIdleId) {
+                        GLib.source_remove(menu._sadeemClampIdleId);
+                        menu._sadeemClampIdleId = 0;
+                    }
+                    if (menu._sadeemAllocSigId && menu._sadeemAllocTarget) {
+                        try {
+                            menu._sadeemAllocTarget.disconnect(menu._sadeemAllocSigId);
+                        } catch (_e) {}
+                        menu._sadeemAllocSigId = 0;
+                        menu._sadeemAllocTarget = null;
+                    }
                     menu.open = originalOpen;
                     if (menu._sadeemIndicator) {
                         menu.sourceActor = menu._sadeemIndicator;
@@ -272,43 +295,225 @@ export default class SadeemDesktopHelperExtension extends Extension {
         }
     }
 
-    _setupCursorPopups() {
+    _findStatusIndicator(statusArea, exactKeys, keyword) {
+        for (const key of exactKeys) {
+            if (statusArea[key]?.menu) {
+                return statusArea[key];
+            }
+        }
+        const kw = keyword.toLowerCase();
+        for (const [key, ind] of Object.entries(statusArea)) {
+            if (!ind?.menu) continue;
+            const hay = `${key} ${ind.constructor?.name || ''} ${ind.accessible_name || ''}`.toLowerCase();
+            if (hay.includes(kw)) {
+                return ind;
+            }
+        }
+        return null;
+    }
+
+    _setupCursorPopups(retryCount = 0) {
         try {
             if (!Main.panel || !Main.panel.statusArea) return;
 
-            const indicators = [
-                Main.panel.statusArea.clipboardIndicator,
-                Main.panel.statusArea['clipboard-indicator@tudmotu.com'],
-                Main.panel.statusArea['emoji-copy@felipeftn'],
-                Main.panel.statusArea.emojiCopy,
-            ];
+            const statusArea = Main.panel.statusArea;
+            // emoji-copy@felipeftn self-manages cursor clamping and dynamic expansion in its own extension.js
+            // so only one authority controls its anchor; sadeem-desktop-helper manages clipboardIndicator.
+            const clipInd = this._findStatusIndicator(
+                statusArea,
+                ['clipboardIndicator', 'clipboard-indicator@tudmotu.com'],
+                'clipboard'
+            );
 
-            for (const ind of indicators) {
-                if (ind && ind.menu && !this._hookedMenus.has(ind.menu)) {
-                    this._hookMenuToCursor(ind, ind.menu);
-                }
+            if (clipInd && clipInd.menu && !this._hookedMenus.has(clipInd.menu)) {
+                this._hookMenuToCursor(clipInd, clipInd.menu);
+            }
+
+            if (!clipInd && retryCount < 12 && !this._cursorRetryId) {
+                this._cursorRetryId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+                    this._cursorRetryId = 0;
+                    this._setupCursorPopups(retryCount + 1);
+                    return GLib.SOURCE_REMOVE;
+                });
             }
         } catch (e) {
             console.error('[SadeemDesktopHelper] Error setting up cursor popups: ' + e);
         }
     }
 
+    _getMonitorIndexAtPoint(px, py) {
+        const monitors = Main.layoutManager?.monitors || [];
+        for (let i = 0; i < monitors.length; i++) {
+            const m = monitors[i];
+            if (px >= m.x && px < m.x + m.width && py >= m.y && py < m.y + m.height) {
+                return i;
+            }
+        }
+        return Main.layoutManager?.primaryIndex ?? 0;
+    }
+
+    _shouldAnchorMenuToCursor(indicator, menu) {
+        // Explicit panel-button click keeps the panel anchor if indicator's cursor setting is off;
+        // keyboard shortcut / cursor actor or Sadeem cursor-mode defaults anchor cleanly to cursor.
+        if (menu.sourceActor && menu.sourceActor !== indicator) {
+            return true;
+        }
+        try {
+            const schemaSource = Gio.SettingsSchemaSource.get_default();
+            const clipSettings = indicator?.extension?.settings || indicator?._settings;
+            if (clipSettings) {
+                return clipSettings.get_boolean('open-at-cursor');
+            }
+            if (schemaSource?.lookup('org.gnome.shell.extensions.clipboard-indicator', true)) {
+                return new Gio.Settings({ schema_id: 'org.gnome.shell.extensions.clipboard-indicator' })
+                    .get_boolean('open-at-cursor');
+            }
+        } catch (_e) {}
+        return true;
+    }
+
     _hookMenuToCursor(indicator, menu) {
         const originalOpen = menu.open;
+        const helper = this;
         menu._sadeemIndicator = indicator;
         this._hookedMenus.set(menu, originalOpen);
 
+        const clearPendingClamp = (m) => {
+            if (m._sadeemClampIdleId) {
+                try {
+                    GLib.source_remove(m._sadeemClampIdleId);
+                } catch (_e) {}
+                m._sadeemClampIdleId = 0;
+            }
+            if (m._sadeemAllocSigId && m._sadeemAllocTarget) {
+                try {
+                    m._sadeemAllocTarget.disconnect(m._sadeemAllocSigId);
+                } catch (_e) {}
+                m._sadeemAllocSigId = 0;
+                m._sadeemAllocTarget = null;
+            }
+        };
+
         menu.open = function(animate) {
+            let workArea = null;
+            const useCursor = helper._shouldAnchorMenuToCursor(indicator, this);
+
             try {
-                if (global.get_pointer && Main.layoutManager.dummyCursor) {
-                    const [x, y] = global.get_pointer();
-                    Main.layoutManager.dummyCursor.set_position(x, y);
-                    menu.sourceActor = Main.layoutManager.dummyCursor;
+                if (useCursor && global.get_pointer && Main.layoutManager?.dummyCursor) {
+                    const [px, py] = global.get_pointer();
+                    const monIdx = helper._getMonitorIndexAtPoint(px, py);
+                    workArea = Main.layoutManager.getWorkAreaForMonitor(monIdx);
+
+                    let menuW = 360;
+                    let menuH = 440;
+                    try {
+                        const actor = this.actor || this._boxPointer;
+                        if (actor) {
+                            const [, natW] = actor.get_preferred_width(-1);
+                            const [, natH] = actor.get_preferred_height(-1);
+                            if (natW > 50) menuW = Math.max(natW, 360);
+                            if (natH > 50) menuH = Math.max(natH, 440);
+                        }
+                    } catch (_e) {}
+
+                    const bp = this._boxPointer;
+                    const arrowSide =
+                        bp?._userArrowSide ??
+                        bp?._arrowSide ??
+                        St.Side.BOTTOM;
+                    const arrowAlignment =
+                        bp?._sourceAlignment ??
+                        this._arrowAlignment ??
+                        0.5;
+                    const anchor = clampPopupAnchorToWorkArea(
+                        px,
+                        py,
+                        menuW,
+                        menuH,
+                        workArea,
+                        arrowSide,
+                        12,
+                        arrowAlignment
+                    );
+
+                    Main.layoutManager.dummyCursor.set_position(anchor.x, anchor.y);
+                    this.sourceActor = Main.layoutManager.dummyCursor;
                 }
             } catch (err) {
                 console.error('[SadeemDesktopHelper] Error anchoring to cursor: ' + err);
             }
-            return originalOpen.call(this, animate);
+
+            const result = originalOpen.call(this, animate);
+
+            if (useCursor && workArea) {
+                clearPendingClamp(this);
+                const targetWa = workArea;
+                const applyDummyCursorClamp = () => {
+                    try {
+                        if (!this.isOpen || !this._boxPointer) {
+                            return;
+                        }
+                        const box = this._boxPointer;
+                        let [bx, by] = box.get_transformed_position();
+                        let [bw, bh] = box.get_transformed_size();
+                        if (bw <= 0 || bh <= 0) {
+                            const alloc = box.get_allocation_box();
+                            bx = alloc.x1;
+                            by = alloc.y1;
+                            bw = alloc.x2 - alloc.x1;
+                            bh = alloc.y2 - alloc.y1;
+                        }
+                        if (bw <= 0 || bh <= 0) {
+                            return;
+                        }
+                        const clamped = clampPopupBoxToWorkArea(bx, by, bw, bh, targetWa, 12);
+                        const dx = clamped.x - bx;
+                        const dy = clamped.y - by;
+                        if (Math.abs(dx) >= 1 || Math.abs(dy) >= 1) {
+                            const cursor = Main.layoutManager?.dummyCursor;
+                            if (cursor) {
+                                const [curX, curY] = cursor.get_position();
+                                const nextX = Math.max(
+                                    targetWa.x,
+                                    Math.min(Math.round(curX + dx), targetWa.x + targetWa.width)
+                                );
+                                const nextY = Math.max(
+                                    targetWa.y,
+                                    Math.min(Math.round(curY + dy), targetWa.y + targetWa.height)
+                                );
+                                cursor.set_position(nextX, nextY);
+                                this.sourceActor = cursor;
+                            }
+                            const alignment = box._sourceAlignment ?? this._arrowAlignment ?? 0.5;
+                            if (typeof box.setPosition === 'function' && this.sourceActor) {
+                                box.setPosition(this.sourceActor, alignment);
+                            }
+                        }
+                    } catch (_e) {}
+                };
+
+                if (this._boxPointer) {
+                    this._sadeemAllocTarget = this._boxPointer;
+                    this._sadeemAllocSigId = this._boxPointer.connect('notify::allocation', () => {
+                        if (this._sadeemAllocSigId && this._sadeemAllocTarget) {
+                            try {
+                                this._sadeemAllocTarget.disconnect(this._sadeemAllocSigId);
+                            } catch (_e) {}
+                            this._sadeemAllocSigId = 0;
+                            this._sadeemAllocTarget = null;
+                        }
+                        applyDummyCursorClamp();
+                    });
+                }
+
+                this._sadeemClampIdleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    this._sadeemClampIdleId = 0;
+                    applyDummyCursorClamp();
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
+
+            return result;
         };
     }
 

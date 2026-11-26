@@ -17,6 +17,7 @@
 */
 
 import St from "gi://St";
+import Clutter from "gi://Clutter";
 import Meta from "gi://Meta";
 import GLib from "gi://GLib";
 import Shell from "gi://Shell";
@@ -35,10 +36,16 @@ import { EmojiButton } from "./emojiButton.js";
 import { EmojiCategory } from "./emojiCategory.js";
 import { EmojiSearchItem } from "./emojiSearchItem.js";
 import { SQLite } from "./handlers/sql.js";
+import { clampPopupAnchorToWorkArea, clampPopupBoxToWorkArea } from "./popupClamp.js";
 
 export default class EmojiCopy extends Extension {
   async enable() {
     this.timeoutSourceId = null;
+    this._allocClampSigId = 0;
+    this._allocClampIdleId = 0;
+    this._clampAdjustCount = 0;
+    this._isClampingPopup = false;
+    this._activeWorkArea = null;
     this._settings = this.getSettings();
     this.position = this._settings.get_string("position");
     this._permanentItems = 0;
@@ -166,10 +173,14 @@ export default class EmojiCopy extends Extension {
     this._settings.disconnectObject(this);
     this.super_btn.menu.disconnectObject(this);
 
+    this._detachBoxClampWatch();
+
     if (this.timeoutSourceId) {
       GLib.Source.remove(this.timeoutSourceId);
       this.timeoutSourceId = null;
     }
+
+    this._activeWorkArea = null;
 
     this.sqlite.destroy();
     this.searchItem.destroy();
@@ -189,6 +200,129 @@ export default class EmojiCopy extends Extension {
     this.emojiCategories = null;
   }
 
+  _getMonitorIndexAtPoint(px, py) {
+    const monitors = Main.layoutManager?.monitors || [];
+    for (let i = 0; i < monitors.length; i++) {
+      const m = monitors[i];
+      if (px >= m.x && px < m.x + m.width && py >= m.y && py < m.y + m.height) {
+        return i;
+      }
+    }
+    return Main.layoutManager?.primaryIndex ?? 0;
+  }
+
+  _getWorkAreaForMenu() {
+    if (this._activeWorkArea) {
+      return this._activeWorkArea;
+    }
+    const [px, py] = global.get_pointer ? global.get_pointer() : [0, 0];
+    const monIdx = this._getMonitorIndexAtPoint(px, py);
+    return Main.layoutManager.getWorkAreaForMonitor(monIdx);
+  }
+
+  _getAnchorActor() {
+    return Main.layoutManager?.dummyCursor || this._cursorAnchor;
+  }
+
+  _detachBoxClampWatch() {
+    if (this._allocClampIdleId) {
+      try {
+        GLib.source_remove(this._allocClampIdleId);
+      } catch (_e) {}
+      this._allocClampIdleId = 0;
+    }
+    const bp = this.super_btn?.menu?._boxPointer;
+    if (this._allocClampSigId && bp) {
+      try {
+        bp.disconnect(this._allocClampSigId);
+      } catch (_e) {}
+    }
+    this._allocClampSigId = 0;
+    this._clampAdjustCount = 0;
+  }
+
+  _attachBoxClampWatch() {
+    const bp = this.super_btn?.menu?._boxPointer;
+    if (!bp || this._allocClampSigId) {
+      return;
+    }
+    this._clampAdjustCount = 0;
+    this._allocClampSigId = bp.connect("notify::allocation", () => {
+      if (this._isClampingPopup || !this.super_btn?.menu?.isOpen) {
+        return;
+      }
+      if (this._allocClampIdleId) {
+        return;
+      }
+      this._allocClampIdleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+        this._allocClampIdleId = 0;
+        this._clampRealizedMenuToWorkArea();
+        return GLib.SOURCE_REMOVE;
+      });
+    });
+  }
+
+  _clampRealizedMenuToWorkArea() {
+    const menu = this.super_btn?.menu;
+    const bp = menu?._boxPointer;
+    if (!menu?.isOpen || !bp || this._isClampingPopup || this._clampAdjustCount >= 6) {
+      return;
+    }
+    if (this._settings?.get_string("window-location") !== "cursor") {
+      return;
+    }
+
+    const workArea = this._getWorkAreaForMenu();
+    if (!workArea) {
+      return;
+    }
+
+    let [bx, by] = bp.get_transformed_position();
+    let [bw, bh] = bp.get_transformed_size();
+    if (bw <= 0 || bh <= 0) {
+      const alloc = bp.get_allocation_box();
+      bx = alloc.x1;
+      by = alloc.y1;
+      bw = alloc.x2 - alloc.x1;
+      bh = alloc.y2 - alloc.y1;
+    }
+    if (bw <= 0 || bh <= 0) {
+      return;
+    }
+
+    const clamped = clampPopupBoxToWorkArea(bx, by, bw, bh, workArea, 12);
+    const dx = clamped.x - bx;
+    const dy = clamped.y - by;
+    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+      return;
+    }
+
+    this._isClampingPopup = true;
+    this._clampAdjustCount += 1;
+    try {
+      const anchor = this._getAnchorActor();
+      if (anchor) {
+        const [curX, curY] = anchor.get_position();
+        const nextX = Math.max(
+          workArea.x,
+          Math.min(Math.round(curX + dx), workArea.x + workArea.width),
+        );
+        const nextY = Math.max(
+          workArea.y,
+          Math.min(Math.round(curY + dy), workArea.y + workArea.height),
+        );
+        anchor.set_position(nextX, nextY);
+        menu.sourceActor = anchor;
+      }
+      const alignment = menu._arrowAlignment ?? bp._sourceAlignment ?? 0.5;
+      if (typeof bp.setPosition === "function" && menu.sourceActor) {
+        bp.setPosition(menu.sourceActor, alignment);
+      }
+    } finally {
+      this._isClampingPopup = false;
+    }
+  }
+
   toggleMenu() {
     const windowLocation = this._settings.get_string("window-location");
 
@@ -197,27 +331,50 @@ export default class EmojiCopy extends Extension {
       return;
     }
 
-    if (!this._cursorAnchor) {
-      this._cursorAnchor = new St.Widget({
-        width: 1,
-        height: 1,
-        opacity: 0,
-        reactive: false,
-      });
-      Main.uiGroup.add_child(this._cursorAnchor);
-    }
-
     if (windowLocation === "cursor") {
-      let x, y;
-      [x, y] = global.get_pointer();
+      const [px, py] = global.get_pointer();
+      const monIdx = this._getMonitorIndexAtPoint(px, py);
+      const workArea = Main.layoutManager.getWorkAreaForMonitor(monIdx);
+      this._activeWorkArea = workArea;
 
-      const margin = 10;
-      const clampedX = Math.max(margin, Math.min(x, global.stage.width - margin));
-      const clampedY = Math.max(margin, Math.min(y, global.stage.height - margin));
+      const bp = this.super_btn.menu._boxPointer;
+      const arrowSide = bp?._userArrowSide ?? bp?._arrowSide ?? St.Side.BOTTOM;
+      let effAlignment = this.super_btn.menu._arrowAlignment ?? bp?._sourceAlignment ?? 0.5;
+      const textDir = bp?.text_direction ?? Clutter.get_default_text_direction();
+      if (textDir === Clutter.TextDirection.RTL && (arrowSide === St.Side.TOP || arrowSide === St.Side.BOTTOM)) {
+        effAlignment = 1.0 - effAlignment;
+      }
 
-      this._cursorAnchor.set_position(clampedX, clampedY);
-      this.super_btn.menu.sourceActor = this._cursorAnchor;
+      let menuW = 360;
+      let menuH = 440;
+      try {
+        const actor = this.super_btn.menu.actor || bp;
+        if (actor) {
+          const [, natW] = actor.get_preferred_width(-1);
+          const [, natH] = actor.get_preferred_height(-1);
+          if (natW > 50) menuW = Math.max(natW, 360);
+          if (natH > 50) menuH = Math.max(natH, 440);
+        }
+      } catch (_e) {}
+
+      const safeAnchor = clampPopupAnchorToWorkArea(
+        px,
+        py,
+        menuW,
+        menuH,
+        workArea,
+        arrowSide,
+        12,
+        effAlignment,
+      );
+
+      const anchor = this._getAnchorActor();
+      if (anchor) {
+        anchor.set_position(safeAnchor.x, safeAnchor.y);
+        this.super_btn.menu.sourceActor = anchor;
+      }
     } else {
+      this._activeWorkArea = null;
       this.super_btn.menu.sourceActor = this.super_btn;
     }
 
@@ -248,7 +405,19 @@ export default class EmojiCopy extends Extension {
       // menu; the first "append" selection must not append to it.
       this.clipboardOwned = false;
       this.setPendingClipboard(null);
+      if (this._settings.get_string("window-location") === "cursor") {
+        this._attachBoxClampWatch();
+        if (!this._allocClampIdleId) {
+          this._allocClampIdleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this._allocClampIdleId = 0;
+            this._clampRealizedMenuToWorkArea();
+            return GLib.SOURCE_REMOVE;
+          });
+        }
+      }
     } else {
+      this._detachBoxClampWatch();
+      this._activeWorkArea = null;
       // Copy what was collected and reorder "recently used", now that the
       // row is no longer visible.
       this.flushPendingClipboard();
@@ -259,8 +428,14 @@ export default class EmojiCopy extends Extension {
     this.clearCategories();
     this.searchItem.searchEntry.set_text("");
 
+    if (this.timeoutSourceId) {
+      GLib.Source.remove(this.timeoutSourceId);
+      this.timeoutSourceId = null;
+    }
+
     this.timeoutSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 20, () => {
-      if (open) {
+      if (open && this.searchItem?.searchEntry) {
+        this.searchItem.searchEntry.grab_key_focus();
         global.stage.set_key_focus(this.searchItem.searchEntry);
       }
       this.timeoutSourceId = null;

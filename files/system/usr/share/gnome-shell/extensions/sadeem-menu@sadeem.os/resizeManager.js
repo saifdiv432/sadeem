@@ -36,14 +36,14 @@ export class ResizeOverlay extends St.Widget {
         GObject.registerClass(this);
     }
 
-    constructor({ menuActor, rootStack, rootContainer, settings, getWorkArea, isRtl, isBlocked, onBeforeStart, onResizeCommitted }) {
+    constructor({ menuActor, rootStack, rootContainer, settings, getWorkArea, isRtl, isBlocked, onBeforeStart, onResizeMotion, onResizeCancelled, onResizeCommitted }) {
         super({
             layout_manager: new Clutter.FixedLayout(),
-            text_direction: Clutter.TextDirection.LTR,
             reactive: false,
             x_expand: true,
             y_expand: true,
         });
+        this.set_text_direction(Clutter.TextDirection.LTR);
 
         this._menuActor = menuActor;
         this._rootStack = rootStack;
@@ -53,6 +53,8 @@ export class ResizeOverlay extends St.Widget {
         this._isRtl = Boolean(isRtl);
         this._isBlocked = isBlocked || (() => false);
         this._onBeforeStart = onBeforeStart || null;
+        this._onResizeMotionCb = onResizeMotion || null;
+        this._onResizeCancelled = onResizeCancelled || null;
         this._onResizeCommitted = onResizeCommitted || null;
 
         this._session = null;
@@ -173,6 +175,7 @@ export class ResizeOverlay extends St.Widget {
         this._rootStack.set_size(activeW, activeH);
         this._rootContainer.set_size(activeW, activeH);
         this.syncBounds(activeW, activeH);
+        this._onResizeMotionCb?.(activeW, activeH);
         return Clutter.EVENT_STOP;
     }
 
@@ -188,6 +191,7 @@ export class ResizeOverlay extends St.Widget {
             this._rootStack.set_size(s.startW, s.startH);
             this._rootContainer.set_size(s.startW, s.startH);
             this.syncBounds(s.startW, s.startH);
+            this._onResizeMotionCb?.(s.startW, s.startH);
             this.cancel();
             return Clutter.EVENT_STOP;
         }
@@ -213,17 +217,20 @@ export class ResizeOverlay extends St.Widget {
     cancel() {
         this._disconnectCapture();
         this._session = null;
+        this._onResizeCancelled?.();
     }
 
     destroy() {
+        this._onBeforeStart = null;
+        this._onResizeMotionCb = null;
+        this._onResizeCancelled = null;
+        this._onResizeCommitted = null;
         this.cancel();
         this._menuActor = null;
         this._rootStack = null;
         this._rootContainer = null;
         this._settings = null;
         this._getWorkArea = null;
-        this._onBeforeStart = null;
-        this._onResizeCommitted = null;
         super.destroy();
     }
 }

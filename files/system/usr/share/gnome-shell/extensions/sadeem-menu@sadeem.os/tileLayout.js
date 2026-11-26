@@ -1257,3 +1257,31 @@ export function hitTestUnifiedBoard({
         },
     };
 }
+
+export function computeRtlAnchoredScrollValue(upper, pageSize, rightOffset = 0, lower = 0) {
+    const safeLower = Number.isFinite(Number(lower)) ? Number(lower) : 0;
+    const safeUpper = Number.isFinite(Number(upper)) ? Number(upper) : safeLower;
+    const safePage = Number.isFinite(Number(pageSize)) ? Math.max(0, Number(pageSize)) : 0;
+    const safeRightOffset = Number.isFinite(Number(rightOffset)) ? Math.max(0, Number(rightOffset)) : 0;
+    const maxV = Math.max(safeLower, safeUpper - safePage);
+    return clampNumber(maxV - safeRightOffset, safeLower, maxV);
+}
+
+export function computeBoardRestHeight(packedHeight, scrollPageSize, viewportPadY = 14) {
+    const baseH = Math.max(0, Math.round(Number(packedHeight) || 0));
+    const pageH = Math.max(0, Math.floor(Number(scrollPageSize) || 0));
+    const padY = Math.max(0, Math.round(Number(viewportPadY) || 0));
+    const availH = Math.max(0, pageH - padY);
+    return Math.max(baseH, availH);
+}
+
+export function computeDragExpandedBoardHeight(restHeight, previewRect, cellH = 82, gap = CELL_GAP) {
+    const baseH = Math.max(0, Math.round(Number(restHeight) || 0));
+    if (!previewRect || !Number.isFinite(previewRect.y) || !Number.isFinite(previewRect.height))
+        return baseH;
+    const neededBottom = Math.ceil(previewRect.y + previewRect.height + Math.max(0, Number(gap) || 0));
+    if (neededBottom <= baseH)
+        return baseH;
+    const safetyRow = Math.max(24, Math.round(Number(cellH) || 82));
+    return Math.max(baseH, neededBottom + safetyRow);
+}

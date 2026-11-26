@@ -330,13 +330,22 @@ export default class AdwaitaLockClockExtension extends Extension {
         }
         const intervalSec = (this._settings && !this._settings.get_boolean('show-seconds')) ? 5 : 1;
         this._clockTimerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, intervalSec, () => {
-            if (!this._patchedDialog || (Main.screenShield && !Main.screenShield._dialog)) {
+            if (Main.screenShield && !Main.screenShield._dialog) {
+                if (this._patchedDialog || this._customShell || this._clockCanvas)
+                    this._restoreUnlockDialog();
+                this._tryPatchUnlockDialog();
+            } else if (!this._patchedDialog) {
                 this._tryPatchUnlockDialog();
             } else {
                 this._syncAuthPromptIsolation();
             }
-            if (this._clockCanvas && this._clockCanvas.visible) {
-                this._clockCanvas.queue_repaint();
+            if (this._clockCanvas && this._customShell) {
+                try {
+                    if (this._clockCanvas.visible)
+                        this._clockCanvas.queue_repaint();
+                } catch (_e) {
+                    this._clockCanvas = null;
+                }
             }
             const now = new Date();
             if (now.getSeconds() < intervalSec) {
@@ -593,21 +602,24 @@ export default class AdwaitaLockClockExtension extends Extension {
 
     _restoreUnlockDialog() {
         this._disconnectDialogSignals();
-        if (this._customShell) {
-            this._customShell.destroy();
-            this._customShell = null;
-            this._clockCanvas = null;
-            this._infoRect = null;
+        const shell = this._customShell;
+        this._customShell = null;
+        this._clockCanvas = null;
+        this._infoRect = null;
+        if (shell) {
+            try { shell.destroy(); } catch (_e) {}
         }
         if (this._patchedDialog && this._patchedDialog._clock) {
             const clockBox = this._patchedDialog._clock;
-            if (clockBox._time) clockBox._time.show();
-            if (clockBox._date) clockBox._date.show();
-            if (clockBox._hint) {
-                clockBox._hint.opacity = 255;
-                clockBox._hint.height = -1;
-                clockBox._hint.show();
-            }
+            try {
+                if (clockBox._time) clockBox._time.show();
+                if (clockBox._date) clockBox._date.show();
+                if (clockBox._hint) {
+                    clockBox._hint.opacity = 255;
+                    clockBox._hint.height = -1;
+                    clockBox._hint.show();
+                }
+            } catch (_e) {}
         }
         this._patchedDialog = null;
     }
@@ -622,23 +634,42 @@ export default class AdwaitaLockClockExtension extends Extension {
 
     _buildCustomLockUI() {
         if (this._customShell) {
-            this._customShell.destroy();
+            const oldShell = this._customShell;
+            this._customShell = null;
+            this._clockCanvas = null;
+            this._infoRect = null;
+            try { oldShell.destroy(); } catch (_e) {}
         }
 
-        this._customShell = new St.BoxLayout({
+        const customShell = new St.BoxLayout({
             orientation: Clutter.Orientation.VERTICAL,
             style_class: 'adw-lock-vertical-shell',
             x_align: Clutter.ActorAlign.CENTER,
+        });
+        this._customShell = customShell;
+        customShell.connect('destroy', () => {
+            if (this._customShell === customShell) {
+                this._customShell = null;
+                this._clockCanvas = null;
+                this._infoRect = null;
+                this._patchedDialog = null;
+                this._disconnectDialogSignals();
+            }
         });
 
         this._customShell.connect('notify::mapped', () => this._scheduleAlign());
         this._customShell.connect('notify::allocation', () => this._scheduleAlign());
 
-        this._clockCanvas = new St.DrawingArea({
+        const clockCanvas = new St.DrawingArea({
             style_class: 'adw-clock-frame',
             width: 236,
             height: 236,
             x_align: Clutter.ActorAlign.CENTER,
+        });
+        this._clockCanvas = clockCanvas;
+        clockCanvas.connect('destroy', () => {
+            if (this._clockCanvas === clockCanvas)
+                this._clockCanvas = null;
         });
         this._clockCanvas.connect('repaint', area => this._drawAnalogClock(area));
         this._customShell.add_child(this._clockCanvas);

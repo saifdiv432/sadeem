@@ -26,6 +26,7 @@ import St from 'gi://St'
 
 import * as Taskbar from './taskbar.js'
 import * as Utils from './utils.js'
+import { computePreviewMenuPosition } from './previewPosition.js'
 import { SETTINGS, DESKTOPSETTINGS } from './extension.js'
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js'
 
@@ -63,7 +64,12 @@ export const PreviewMenu = GObject.registerClass(
   },
   class PreviewMenu extends St.Widget {
     _init(panel) {
-      super._init({ layout_manager: new Clutter.BinLayout() })
+      // Use FixedLayout + LTR container geometry so Clutter.BinLayout + x_align:START
+      // never mirror or pin window previews to the right screen edge in RTL locales.
+      super._init({
+        layout_manager: new Clutter.FixedLayout(),
+        text_direction: Clutter.TextDirection.LTR,
+      })
 
       let geom = panel.geom
       this.panel = panel
@@ -84,16 +90,12 @@ export const PreviewMenu = GObject.registerClass(
       this.menu = new St.Widget({
         name: 'preview-menu',
         layout_manager: new Clutter.BinLayout(),
+        text_direction: Clutter.TextDirection.LTR,
         reactive: true,
         track_hover: true,
-        x_expand: true,
-        y_expand: true,
-        x_align:
-          Clutter.ActorAlign[geom.position != St.Side.RIGHT ? 'START' : 'END'],
-        y_align:
-          Clutter.ActorAlign[geom.position != St.Side.BOTTOM ? 'START' : 'END'],
       })
       this._box = Utils.createBoxLayout({ vertical: geom.vertical })
+      this._box.text_direction = Clutter.get_default_text_direction()
       this._scrollView = new St.ScrollView({
         name: 'dashtopanelPreviewScrollview',
         hscrollbar_policy: St.PolicyType.NEVER,
@@ -536,40 +538,45 @@ export const PreviewMenu = GObject.registerClass(
     }
 
     _updatePosition() {
+      this.text_direction = Clutter.TextDirection.LTR
+      this.menu.text_direction = Clutter.TextDirection.LTR
+      this._box.text_direction = Clutter.get_default_text_direction()
+
       let sourceNode = this.currentAppIcon.get_theme_node()
       let sourceContentBox = sourceNode.get_content_box(
         this.currentAppIcon.get_allocation_box(),
       )
       let sourceAllocation = Utils.getTransformedAllocation(this.currentAppIcon)
-      let [previewsWidth, previewsHeight] = this._getPreviewsSize()
+      let [rawPreviewsWidth, rawPreviewsHeight] = this._getPreviewsSize()
       let appIconMargin = SETTINGS.get_int('appicon-margin') / scaleFactor
-      let x = 0,
-        y = 0
 
-      previewsWidth = Math.min(previewsWidth, this.panel.monitor.width)
-      previewsHeight = Math.min(previewsHeight, this.panel.monitor.height)
+      const pos = computePreviewMenuPosition({
+        sourceX1: sourceAllocation.x1,
+        sourceY1: sourceAllocation.y1,
+        sourceContentWidth: sourceContentBox.x2 - sourceContentBox.x1,
+        sourceContentHeight: sourceContentBox.y2 - sourceContentBox.y1,
+        appIconMargin,
+        previewsWidth: rawPreviewsWidth,
+        previewsHeight: rawPreviewsHeight,
+        monitorX: this.panel.monitor.x,
+        monitorY: this.panel.monitor.y,
+        monitorWidth: this.panel.monitor.width,
+        monitorHeight: this.panel.monitor.height,
+        clipWidth: this.width,
+        clipHeight: this.clipHeight,
+        vertical: this.panel.geom.vertical,
+        position: this.panel.geom.position,
+      })
+
+      let previewsWidth = pos.width
+      let previewsHeight = pos.height
+      let x = pos.x
+      let y = pos.y
+
       this._updateScrollFade(
         previewsWidth < this.panel.monitor.width &&
           previewsHeight < this.panel.monitor.height,
       )
-
-      if (this.panel.geom.vertical) {
-        y =
-          sourceAllocation.y1 +
-          appIconMargin -
-          this.panel.monitor.y +
-          (sourceContentBox.y2 - sourceContentBox.y1 - previewsHeight) * 0.5
-        y = Math.max(y, 0)
-        y = Math.min(y, this.panel.monitor.height - previewsHeight)
-      } else {
-        x =
-          sourceAllocation.x1 +
-          appIconMargin -
-          this.panel.monitor.x +
-          (sourceContentBox.x2 - sourceContentBox.x1 - previewsWidth) * 0.5
-        x = Math.max(x, 0)
-        x = Math.min(x, this.panel.monitor.width - previewsWidth)
-      }
 
       if (!this.opened) {
         this.menu.set_position(x, y)
@@ -855,6 +862,7 @@ export const Preview = GObject.registerClass(
         reactive: true,
         track_hover: true,
         layout_manager: new Clutter.BinLayout(),
+        text_direction: Clutter.get_default_text_direction(),
       })
 
       this.window = null

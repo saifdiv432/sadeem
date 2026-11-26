@@ -64,6 +64,7 @@ export class DragManager {
         this._previewActor = null;
         this._highlightActor = null;
         this._highlightClass = '';
+        this._lastDropKey = '';
         this._suppressNextClick = false;
         this._suppressIdleId = null;
     }
@@ -183,8 +184,10 @@ export class DragManager {
     _startDragVisuals(stageX, stageY) {
         const p = this._pending;
         p.started = true;
+        this._lastDropKey = '';
         this._suppressNextClick = true;
         this._onBeforeStart?.(p);
+        this._boardCtx?.boardView?.beginDragSession?.();
 
         const fadeActor = p.visualActor || p.payload?.visualActor || p.payload?.fadeActor || p.actor;
         if (fadeActor) {
@@ -258,8 +261,9 @@ export class DragManager {
         if (!ctx || !ctx.boardView || !ctx.boardCanvas || !this._pending)
             return null;
         try {
-            const [vx, vy] = ctx.boardView.get_transformed_position();
-            const [vw, vh] = ctx.boardView.get_transformed_size();
+            const boundsActor = ctx.boardScroll || ctx.boardView;
+            const [vx, vy] = boundsActor.get_transformed_position();
+            const [vw, vh] = boundsActor.get_transformed_size();
             if (stageX < vx || stageX > (vx + vw) || stageY < vy || stageY > (vy + vh))
                 return null;
 
@@ -286,13 +290,31 @@ export class DragManager {
         }
     }
 
+    _makeDropKey(res) {
+        if (!res)
+            return '';
+        return [
+            res.action || '',
+            res.targetCol ?? '',
+            res.targetRow ?? '',
+            res.targetGroupId || '',
+            res.targetAppId || '',
+        ].join(':');
+    }
+
     _updateDropTarget(stageX, stageY) {
-        this._clearDropVisuals();
         const res = this._computeDropResolution(stageX, stageY);
+        const nextKey = this._makeDropKey(res);
+        if (nextKey === this._lastDropKey)
+            return;
+
+        this._clearDropVisuals(false);
+        this._lastDropKey = nextKey;
         if (!res || !this._boardCtx?.boardCanvas)
             return;
 
         if (res.previewRect) {
+            this._boardCtx.boardView?.setDragPreviewExtent?.(res.previewRect, this._boardCtx.cellH, this._boardCtx.gap);
             const pr = new St.Widget({
                 style_class: 'sadeem-drop-preview-slot',
                 reactive: false,
@@ -313,7 +335,11 @@ export class DragManager {
         }
     }
 
-    _clearDropVisuals() {
+    _clearDropVisuals(endSession = true) {
+        if (endSession) {
+            this._lastDropKey = '';
+            this._boardCtx?.boardView?.endDragSession?.();
+        }
         if (this._previewActor) {
             try {
                 this._previewActor.destroy();

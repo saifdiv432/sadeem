@@ -9,6 +9,10 @@ import { bindTooltip } from './bottomStrip.js';
 import * as I18n from './i18n.js';
 import * as TileLayout from './tileLayout.js';
 
+export function computeRtlAnchoredScrollValue(upper, pageSize, rightOffset = 0, lower = 0) {
+    return TileLayout.computeRtlAnchoredScrollValue(upper, pageSize, rightOffset, lower);
+}
+
 function getAppGicon(appRecord) {
     try {
         const icon = appRecord?.appInfo?.get_icon?.();
@@ -34,11 +38,27 @@ export class BoardView extends St.BoxLayout {
         });
         this.clip_to_allocation = true;
         this._boardScroll = null;
+        this._viewport = null;
+        this._boardCanvas = null;
+        this._baseBoardHeight = 0;
+        this._restBoardHeight = 0;
+        this._dragLockedHeight = 0;
+        this._isDragSession = false;
+        this._isDragExpanded = false;
         this._searchScroll = null;
         this._searchResults = [];
         this._searchButtons = [];
         this._selectedSearchIndex = -1;
         this._callbacks = {};
+        this._isRtl = false;
+        this._resizingRightOffset = null;
+        this._needsInitialRtlScroll = false;
+        this._hAdj = null;
+        this._hAdjPageSigId = null;
+        this._hAdjUpperSigId = null;
+        this._vAdj = null;
+        this._vAdjPageSigId = null;
+        this._scrollAllocSigId = null;
 
         this.connect('button-press-event', (_a, ev) => {
             if (ev.get_button() === Clutter.BUTTON_SECONDARY && this._callbacks.onBackgroundContext) {
@@ -50,12 +70,130 @@ export class BoardView extends St.BoxLayout {
         });
     }
 
+    _disconnectHAdjSignals() {
+        if (this._boardScroll && this._scrollAllocSigId) {
+            try { this._boardScroll.disconnect(this._scrollAllocSigId); } catch (_e) {}
+            this._scrollAllocSigId = null;
+        }
+        if (this._vAdj) {
+            if (this._vAdjPageSigId) {
+                try { this._vAdj.disconnect(this._vAdjPageSigId); } catch (_e) {}
+                this._vAdjPageSigId = null;
+            }
+            this._vAdj = null;
+        }
+        if (this._hAdj) {
+            if (this._hAdjPageSigId) {
+                try { this._hAdj.disconnect(this._hAdjPageSigId); } catch (_e) {}
+                this._hAdjPageSigId = null;
+            }
+            if (this._hAdjUpperSigId) {
+                try { this._hAdj.disconnect(this._hAdjUpperSigId); } catch (_e) {}
+                this._hAdjUpperSigId = null;
+            }
+            this._hAdj = null;
+        }
+    }
+
+    syncRestBoardHeight() {
+        const vAdj = this._boardScroll?.vadjustment || this._viewport?.vadjustment;
+        if (!this._boardCanvas || !vAdj || vAdj.page_size <= 0)
+            return;
+        const nextRest = TileLayout.computeBoardRestHeight(this._baseBoardHeight, vAdj.page_size);
+        this._restBoardHeight = nextRest;
+        if (!this._isDragSession && !this._isDragExpanded && Math.abs(this._boardCanvas.height - nextRest) > 1)
+            this._boardCanvas.set_height(nextRest);
+    }
+
+    beginDragSession() {
+        if (!this._boardCanvas)
+            return;
+        this._isDragSession = true;
+        const vAdj = this._boardScroll?.vadjustment || this._viewport?.vadjustment;
+        const visibleH = (vAdj && vAdj.page_size > 0)
+            ? TileLayout.computeBoardRestHeight(this._baseBoardHeight, vAdj.page_size)
+            : this._restBoardHeight;
+        const baseH = Math.max(this._baseBoardHeight, this._restBoardHeight, visibleH, Math.round(this._boardCanvas.height || 0));
+        this._dragLockedHeight = baseH;
+        if (Math.abs(this._boardCanvas.height - baseH) > 1)
+            this._boardCanvas.set_height(baseH);
+    }
+
+    setDragPreviewExtent(previewRect = null, cellH = 82, gap = TileLayout.CELL_GAP) {
+        if (!this._boardCanvas || !previewRect)
+            return;
+        if (!this._isDragSession)
+            this.beginDragSession();
+        const floorH = Math.max(this._dragLockedHeight, this._baseBoardHeight, this._restBoardHeight);
+        const neededH = TileLayout.computeDragExpandedBoardHeight(floorH, previewRect, cellH, gap);
+        const nextH = Math.max(floorH, neededH);
+        if (nextH > this._dragLockedHeight) {
+            this._dragLockedHeight = nextH;
+            this._isDragExpanded = nextH > Math.max(this._baseBoardHeight, this._restBoardHeight);
+            if (Math.abs(this._boardCanvas.height - nextH) > 1)
+                this._boardCanvas.set_height(nextH);
+        }
+    }
+
+    endDragSession() {
+        this._isDragSession = false;
+        this._isDragExpanded = false;
+        this._dragLockedHeight = 0;
+        if (!this._boardCanvas)
+            return;
+        const targetH = Math.max(this._baseBoardHeight, this._restBoardHeight);
+        if (Math.abs(this._boardCanvas.height - targetH) > 1)
+            this._boardCanvas.set_height(targetH);
+    }
+
+    beginResizeAnchor() {
+        const hAdj = this._boardScroll?.hadjustment || this._viewport?.hadjustment;
+        if (!this._isRtl || !hAdj) {
+            this._resizingRightOffset = null;
+            return;
+        }
+        const maxV = Math.max(hAdj.lower, hAdj.upper - hAdj.page_size);
+        this._resizingRightOffset = Math.max(0, maxV - hAdj.value);
+    }
+
+    syncResizeAnchor() {
+        const hAdj = this._boardScroll?.hadjustment || this._viewport?.hadjustment;
+        if (!this._isRtl || !hAdj || this._resizingRightOffset === null)
+            return;
+        if (hAdj.page_size <= 0)
+            return;
+        const nextVal = computeRtlAnchoredScrollValue(
+            hAdj.upper,
+            hAdj.page_size,
+            this._resizingRightOffset,
+            hAdj.lower
+        );
+        if (hAdj.value !== nextVal)
+            hAdj.value = nextVal;
+    }
+
+    endResizeAnchor() {
+        this._resizingRightOffset = null;
+    }
+
     renderHome(boardItems, opts) {
+        this._disconnectHAdjSignals();
         this._callbacks = opts;
+        this._isRtl = Boolean(opts.isRtl);
+        this._resizingRightOffset = null;
+        this._needsInitialRtlScroll = this._isRtl;
         this._searchResults = [];
         this._searchButtons = [];
         this._selectedSearchIndex = -1;
         this._searchScroll = null;
+        this._boardScroll = null;
+        this._viewport = null;
+        this._boardCanvas = null;
+        this._baseBoardHeight = 0;
+        this._restBoardHeight = 0;
+        this._dragLockedHeight = 0;
+        this._isDragSession = false;
+        this._isDragExpanded = false;
         this.destroy_all_children();
 
         const level = Number.isInteger(opts.iconSizeLevel) ? opts.iconSizeLevel : 2;
@@ -72,17 +210,23 @@ export class BoardView extends St.BoxLayout {
             cell.h,
             TileLayout.CELL_GAP,
             visibleCols,
-            Boolean(opts.isRtl)
+            this._isRtl
         );
 
+        const textDir = this._isRtl ? Clutter.TextDirection.RTL : Clutter.TextDirection.LTR;
         const boardCanvas = new St.Widget({
             layout_manager: new Clutter.FixedLayout(),
-            style: `width: ${packed.totalWidth}px; height: ${packed.totalHeight}px;`,
+            style: `width: ${packed.totalWidth}px;`,
             x_expand: false,
             y_expand: false,
+            x_align: Clutter.ActorAlign.START,
+            y_align: Clutter.ActorAlign.START,
             reactive: true,
         });
         boardCanvas.set_size(packed.totalWidth, packed.totalHeight);
+        this._boardCanvas = boardCanvas;
+        this._baseBoardHeight = packed.totalHeight;
+        this._restBoardHeight = packed.totalHeight;
         boardCanvas.connect('button-press-event', (_a, ev) => {
             if (ev.get_button() === Clutter.BUTTON_SECONDARY) {
                 const [sx, sy] = ev.get_coords();
@@ -102,25 +246,26 @@ export class BoardView extends St.BoxLayout {
             actor.set_size(r.width, r.height);
         }
 
-        opts.dragManager?.setBoardContext({
-            boardView: this,
-            boardCanvas,
-            boardCols: packed.totalCols,
-            totalWidth: packed.totalWidth,
-            cellW: cell.w,
-            cellH: cell.h,
-            gap: TileLayout.CELL_GAP,
-            itemRects: packed.rects,
-            isRtl: Boolean(opts.isRtl),
-        });
-
         const viewport = new St.BoxLayout({
-            orientation: Clutter.Orientation.VERTICAL,
+            orientation: Clutter.Orientation.HORIZONTAL,
             style_class: 'sadeem-menu-board-viewport',
-            x_expand: false,
+            x_expand: true,
             y_expand: false,
+            x_align: Clutter.ActorAlign.FILL,
+            y_align: Clutter.ActorAlign.START,
         });
+        if (this._isRtl) {
+            const leftSpacer = new St.Widget({
+                x_expand: true,
+                y_expand: false,
+                reactive: false,
+                style: 'min-width: 0px;',
+            });
+            leftSpacer.set_width(0);
+            viewport.add_child(leftSpacer);
+        }
         viewport.add_child(boardCanvas);
+        this._viewport = viewport;
 
         const boardScroll = new St.ScrollView({
             style_class: 'sadeem-menu-board-scroll',
@@ -139,7 +284,61 @@ export class BoardView extends St.BoxLayout {
             return this._handleShiftHorizScroll(boardScroll, ev);
         });
         this._boardScroll = boardScroll;
+
+        opts.dragManager?.setBoardContext({
+            boardView: this,
+            boardScroll,
+            boardCanvas,
+            boardCols: packed.totalCols,
+            totalWidth: packed.totalWidth,
+            baseTotalHeight: packed.totalHeight,
+            cellW: cell.w,
+            cellH: cell.h,
+            gap: TileLayout.CELL_GAP,
+            itemRects: packed.rects,
+            isRtl: this._isRtl,
+        });
+
+        const hAdj = boardScroll.hadjustment || viewport.hadjustment;
+        if (hAdj) {
+            this._hAdj = hAdj;
+            const onHAdjChanged = () => {
+                if (!this._boardScroll || this._hAdj !== hAdj)
+                    return;
+                if (this._resizingRightOffset !== null) {
+                    this.syncResizeAnchor();
+                    return;
+                }
+                if (this._needsInitialRtlScroll && hAdj.page_size > 0 && hAdj.upper > 0) {
+                    this._needsInitialRtlScroll = false;
+                    const nextVal = computeRtlAnchoredScrollValue(hAdj.upper, hAdj.page_size, 0, hAdj.lower);
+                    if (hAdj.value !== nextVal)
+                        hAdj.value = nextVal;
+                }
+            };
+            this._hAdjPageSigId = hAdj.connect('notify::page-size', onHAdjChanged);
+            this._hAdjUpperSigId = hAdj.connect('notify::upper', onHAdjChanged);
+        }
+        const vAdj = boardScroll.vadjustment || viewport.vadjustment;
+        if (vAdj) {
+            this._vAdj = vAdj;
+            this._vAdjPageSigId = vAdj.connect('notify::page-size', () => {
+                if (!this._boardScroll || this._vAdj !== vAdj)
+                    return;
+                this.syncRestBoardHeight();
+            });
+        }
+        this._scrollAllocSigId = boardScroll.connect('notify::allocation', () => {
+            if (!this._isDragSession && !this._isDragExpanded)
+                this.syncRestBoardHeight();
+            if (this._resizingRightOffset !== null)
+                this.syncResizeAnchor();
+        });
+
         this.add_child(boardScroll);
+        boardScroll.set_text_direction(Clutter.TextDirection.LTR);
+        viewport.set_text_direction(Clutter.TextDirection.LTR);
+        boardCanvas.set_text_direction(textDir);
     }
 
     _handleShiftHorizScroll(scrollView, ev) {
@@ -155,7 +354,7 @@ export class BoardView extends St.BoxLayout {
             const [sdx, sdy] = ev.get_scroll_delta?.() || [0, 0];
             delta = (Math.abs(sdy) >= Math.abs(sdx) ? sdy : sdx) * 48;
         }
-        const hAdj = scrollView.hadjustment;
+        const hAdj = scrollView.hadjustment || this._viewport?.hadjustment;
         if (delta !== 0 && hAdj && hAdj.upper > hAdj.page_size) {
             const maxV = Math.max(hAdj.lower, hAdj.upper - hAdj.page_size);
             hAdj.value = TileLayout.clampNumber(hAdj.value + delta, hAdj.lower, maxV);
@@ -561,9 +760,19 @@ export class BoardView extends St.BoxLayout {
     }
 
     renderSearch(appResults, fileResults, filesPending, opts) {
+        this._disconnectHAdjSignals();
+        this._resizingRightOffset = null;
+        this._needsInitialRtlScroll = false;
         opts.dragManager?.clearBoardContext();
         this._callbacks = opts;
         this._boardScroll = null;
+        this._viewport = null;
+        this._boardCanvas = null;
+        this._baseBoardHeight = 0;
+        this._restBoardHeight = 0;
+        this._dragLockedHeight = 0;
+        this._isDragSession = false;
+        this._isDragExpanded = false;
         this._searchScroll = null;
         this._searchResults = [];
         this._searchButtons = [];
@@ -675,5 +884,21 @@ export class BoardView extends St.BoxLayout {
     getSelectedSearchItem() {
         const idx = this._selectedSearchIndex >= 0 ? this._selectedSearchIndex : 0;
         return this._searchResults[idx] || null;
+    }
+
+    destroy() {
+        this._disconnectHAdjSignals();
+        this._boardScroll = null;
+        this._viewport = null;
+        this._boardCanvas = null;
+        this._baseBoardHeight = 0;
+        this._restBoardHeight = 0;
+        this._dragLockedHeight = 0;
+        this._isDragSession = false;
+        this._isDragExpanded = false;
+        this._searchScroll = null;
+        this._resizingRightOffset = null;
+        this._callbacks = {};
+        super.destroy();
     }
 }

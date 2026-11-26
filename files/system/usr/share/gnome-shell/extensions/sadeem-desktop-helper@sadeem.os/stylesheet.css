@@ -1,0 +1,131 @@
+/* stylesheet.css - Sadeem Capture UI controls & active states */
+
+.sadeem-capture-top-pill {
+    background-color: rgba(28, 28, 32, 0.94);
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 6px 16px;
+    margin-top: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.sadeem-capture-hint-label {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.sadeem-capture-card {
+    background-color: rgba(36, 36, 40, 0.96);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    min-width: 310px;
+    padding: 12px 14px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+}
+
+.sadeem-capture-close-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.12);
+    padding: 0px;
+}
+
+.sadeem-capture-modes-box {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 8px;
+    spacing: 4px;
+}
+
+.sadeem-capture-mode-btn {
+    min-width: 86px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background-color: transparent;
+}
+
+.sadeem-capture-mode-btn-active {
+    background-color: rgba(255, 255, 255, 0.22);
+    font-weight: bold;
+}
+
+.sadeem-capture-capsule {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 9999px;
+    padding: 3px;
+    spacing: 2px;
+}
+
+.sadeem-capture-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 4px;
+}
+
+.sadeem-capture-icon-btn-active {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.sadeem-capture-halo-btn-active {
+    background-color: rgba(6, 182, 212, 0.45);
+    border: 1px solid rgba(6, 182, 212, 0.9);
+}
+
+.sadeem-capture-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 9999px;
+    background-color: #7a1c33;
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 3px rgba(122, 28, 51, 0.45);
+    padding: 0px;
+}
+
+.sadeem-capture-btn-video {
+    background-color: #e01b24;
+    box-shadow: 0 0 0 3px rgba(224, 27, 36, 0.45);
+}
+
+.sadeem-capture-video-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    spacing: 6px;
+}
+
+.sadeem-capture-pill-btn {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sadeem-capture-pill-btn-active {
+    background-color: rgba(255, 255, 255, 0.22);
+}
+
+.sadeem-capture-settings-popup {
+    background-color: rgba(28, 28, 32, 0.98);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px;
+    margin-top: 6px;
+}
+
+.sadeem-capture-setting-chip {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.sadeem-capture-setting-chip-active {
+    background-color: rgba(255, 255, 255, 0.25);
+}

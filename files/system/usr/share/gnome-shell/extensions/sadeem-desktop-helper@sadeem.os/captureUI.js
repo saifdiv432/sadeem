@@ -1,4 +1,5 @@
 // captureUI.js - Native GNOME Shell UI for Sadeem Capture
+import Cairo from 'gi://cairo';
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -9,6 +10,11 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 import * as I18n from './captureI18n.js';
+
+try {
+    if (Shell?.Screenshot?.prototype)
+        Gio._promisify(Shell.Screenshot.prototype, 'screenshot_stage_to_content');
+} catch (_e) {}
 
 export const CaptureUI = GObject.registerClass(
 class CaptureUI extends St.Widget {
@@ -46,6 +52,12 @@ class CaptureUI extends St.Widget {
         this._dragState = null;
         this._hoveredWindow = null;
         this._hoveredMonitor = null;
+        this._lastScreenHighlightMon = null;
+        this._lastCursorType = null;
+        this._frozenWindows = [];
+        this._resButtons = [];
+        this._fpsButtons = [];
+        this._codecButtons = [];
 
         // Process & Subprocess State
         this._recorderSubprocess = null;
@@ -118,7 +130,7 @@ class CaptureUI extends St.Widget {
             name: 'sadeem-selection-box',
             reactive: false,
             visible: false,
-            style: 'border: 2px solid #ffffff; box-shadow: 0 0 12px rgba(0,0,0,0.5);',
+            style: 'border: 2px solid #ffffff;',
         });
 
         // Circular Handles
@@ -143,12 +155,12 @@ class CaptureUI extends St.Widget {
         this._selectionBox.add_child(this._dimensionsBadge);
         this.add_child(this._selectionBox);
 
-        // 4. Highlight Frames for Screen & Window Modes
+        // 4. Highlight Frames for Screen & Window Modes (GPU-friendly borders, zero CPU blur shadows)
         this._screenHighlight = new St.Widget({
             name: 'sadeem-screen-highlight',
             reactive: false,
             visible: false,
-            style: 'border: 3px solid #7a1c33; border-radius: 8px; box-shadow: inset 0 0 16px rgba(122, 28, 51, 0.35);',
+            style: 'border: 3px solid #7a1c33; border-radius: 6px;',
         });
         this.add_child(this._screenHighlight);
 
@@ -156,7 +168,7 @@ class CaptureUI extends St.Widget {
             name: 'sadeem-window-highlight',
             reactive: false,
             visible: false,
-            style: 'border: 3px solid #7a1c33; border-radius: 8px; background-color: rgba(122, 28, 51, 0.12); box-shadow: 0 0 20px rgba(122, 28, 51, 0.4);',
+            style: 'border: 3px solid #7a1c33; border-radius: 6px; background-color: rgba(122, 28, 51, 0.10);',
         });
         this._windowTitleLabel = new St.Label({
             name: 'sadeem-window-title',
@@ -182,6 +194,7 @@ class CaptureUI extends St.Widget {
         // Top Row: Hint Pill (Top of Work Area, lightweight, reactive: false)
         this._topPill = new St.BoxLayout({
             name: 'sadeem-top-pill',
+            style_class: 'sadeem-capture-top-pill',
             orientation: Clutter.Orientation.HORIZONTAL,
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.START,
@@ -189,14 +202,13 @@ class CaptureUI extends St.Widget {
             y_expand: false,
             margin_top: 24,
             reactive: false,
-            style: 'background-color: rgba(28, 28, 32, 0.94); border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.18); padding: 6px 16px; margin-top: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);',
         });
 
         this._hintLabel = new St.Label({
+            style_class: 'sadeem-capture-hint-label',
             text: I18n.t('select_hint'),
             reactive: false,
             y_align: Clutter.ActorAlign.CENTER,
-            style: 'color: #ffffff; font-size: 12px; font-weight: bold;',
         });
         this._topPill.add_child(this._hintLabel);
         this._workAreaContainer.add_child(this._topPill);
@@ -213,6 +225,7 @@ class CaptureUI extends St.Widget {
         // Floating toolbar card at bottom of current monitor work area
         this._controlCard = new St.BoxLayout({
             name: 'sadeem-control-card',
+            style_class: 'sadeem-capture-card',
             orientation: Clutter.Orientation.VERTICAL,
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.END,
@@ -222,7 +235,6 @@ class CaptureUI extends St.Widget {
             reactive: true,
             can_focus: true,
             track_hover: true,
-            style: 'background-color: rgba(36, 36, 40, 0.96); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); min-width: 310px; padding: 12px 14px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);',
         });
 
         // Card Top Header: Close Button in upper corner of card
@@ -233,11 +245,10 @@ class CaptureUI extends St.Widget {
         });
         cardHeader.add_child(new St.Widget({ x_expand: true }));
         this._closeBtn = new St.Button({
-            style_class: 'button',
+            style_class: 'button sadeem-capture-close-btn',
             reactive: true,
             can_focus: true,
             track_hover: true,
-            style: 'width: 26px; height: 26px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.12); padding: 0;',
         });
         this._closeBtn.set_accessible_name(I18n.t('tooltip_close'));
         this._closeBtn.set_child(new St.Icon({
@@ -255,7 +266,7 @@ class CaptureUI extends St.Widget {
         // Row 1: Mode Selector (Selection, Screen, Window)
         this._modesBox = new St.BoxLayout({
             orientation: Clutter.Orientation.HORIZONTAL,
-            style: 'background-color: rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 3px; margin-bottom: 8px; spacing: 4px;',
+            style_class: 'sadeem-capture-modes-box',
         });
 
         this._modeBtnSelection = this._createModeButton('edit-select-all-symbolic', I18n.t('mode_selection'), 'selection');
@@ -280,7 +291,7 @@ class CaptureUI extends St.Widget {
         this._mediaBox = new St.BoxLayout({
             orientation: Clutter.Orientation.HORIZONTAL,
             y_align: Clutter.ActorAlign.CENTER,
-            style: 'background-color: rgba(255, 255, 255, 0.08); border-radius: 9999px; padding: 3px; spacing: 2px;',
+            style_class: 'sadeem-capture-capsule',
         });
         this._photoBtn = this._createToggleIconButton('camera-photo-symbolic', I18n.t('tab_photo'), () => this._setMediaMode('photo'));
         this._videoBtn = this._createToggleIconButton('camera-video-symbolic', I18n.t('tab_video'), () => this._setMediaMode('video'));
@@ -290,12 +301,11 @@ class CaptureUI extends St.Widget {
 
         // Center: Circular Capture / Record Button
         this._captureBtn = new St.Button({
-            style_class: 'button',
+            style_class: 'button sadeem-capture-btn',
             reactive: true,
             can_focus: true,
             track_hover: true,
             y_align: Clutter.ActorAlign.CENTER,
-            style: 'width: 52px; height: 52px; border-radius: 9999px; background-color: #7a1c33; border: 3px solid rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 3px rgba(122, 28, 51, 0.45); padding: 0;',
         });
         this._captureBtnIcon = new St.Icon({
             icon_name: 'camera-photo-symbolic',
@@ -313,7 +323,7 @@ class CaptureUI extends St.Widget {
         this._cursorBox = new St.BoxLayout({
             orientation: Clutter.Orientation.HORIZONTAL,
             y_align: Clutter.ActorAlign.CENTER,
-            style: 'background-color: rgba(255, 255, 255, 0.08); border-radius: 9999px; padding: 3px; spacing: 2px;',
+            style_class: 'sadeem-capture-capsule',
         });
         this._cursorToggleBtn = this._createToggleIconButton('input-mouse-symbolic', I18n.t('tooltip_cursor'), () => this._toggleCursor());
         this._haloToggleBtn = this._createToggleIconButton('find-location-symbolic', I18n.t('tooltip_halo'), () => this._toggleHalo());
@@ -328,16 +338,15 @@ class CaptureUI extends St.Widget {
             orientation: Clutter.Orientation.HORIZONTAL,
             y_align: Clutter.ActorAlign.CENTER,
             visible: false,
-            style: 'margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.1); spacing: 6px;',
+            style_class: 'sadeem-capture-video-row',
         });
 
         // Audio System Toggle
         this._audioSysBtn = new St.Button({
-            style_class: 'button',
+            style_class: 'button sadeem-capture-pill-btn',
             reactive: true,
             can_focus: true,
             track_hover: true,
-            style: 'padding: 4px 10px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.22);',
         });
         const audioSysBox = new St.BoxLayout({ orientation: Clutter.Orientation.HORIZONTAL, y_align: Clutter.ActorAlign.CENTER, style: 'spacing: 5px;' });
         audioSysBox.add_child(new St.Icon({ icon_name: 'audio-volume-high-symbolic', icon_size: 13, style: 'color: #ffffff;' }));
@@ -348,11 +357,10 @@ class CaptureUI extends St.Widget {
 
         // Microphone Toggle
         this._audioMicBtn = new St.Button({
-            style_class: 'button',
+            style_class: 'button sadeem-capture-pill-btn',
             reactive: true,
             can_focus: true,
             track_hover: true,
-            style: 'padding: 4px 10px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.08);',
         });
         const audioMicBox = new St.BoxLayout({ orientation: Clutter.Orientation.HORIZONTAL, y_align: Clutter.ActorAlign.CENTER, style: 'spacing: 5px;' });
         audioMicBox.add_child(new St.Icon({ icon_name: 'audio-input-microphone-symbolic', icon_size: 13, style: 'color: #ffffff;' }));
@@ -365,11 +373,10 @@ class CaptureUI extends St.Widget {
 
         // Settings / Codec / Resolution popup button
         this._settingsMenuBtn = new St.Button({
-            style_class: 'button',
+            style_class: 'button sadeem-capture-pill-btn',
             reactive: true,
             can_focus: true,
             track_hover: true,
-            style: 'padding: 4px 10px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.08);',
         });
         const settingsBtnBox = new St.BoxLayout({ orientation: Clutter.Orientation.HORIZONTAL, y_align: Clutter.ActorAlign.CENTER, style: 'spacing: 5px;' });
         settingsBtnBox.add_child(new St.Icon({ icon_name: 'emblem-system-symbolic', icon_size: 13, style: 'color: #ffffff;' }));
@@ -385,13 +392,14 @@ class CaptureUI extends St.Widget {
         this._settingsPopup = new St.BoxLayout({
             orientation: Clutter.Orientation.VERTICAL,
             visible: false,
-            style: 'background-color: rgba(28, 28, 32, 0.98); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px; margin-top: 6px;',
+            style_class: 'sadeem-capture-settings-popup',
         });
         this._buildSettingsPopupContents();
         this._controlCard.add_child(this._settingsPopup);
 
         this._workAreaContainer.add_child(this._controlCard);
         this.add_child(this._workAreaContainer);
+        this._syncToggleButtons();
         this._ensureLayerOrder();
     }
 
@@ -435,14 +443,31 @@ class CaptureUI extends St.Widget {
         }
     }
 
+    _setActorClassState(actor, className, active) {
+        if (!actor)
+            return;
+        if (active)
+            actor.add_style_class_name(className);
+        else
+            actor.remove_style_class_name(className);
+    }
+
+    _setCursorType(cursorType) {
+        if (this._lastCursorType === cursorType)
+            return;
+        this._lastCursorType = cursorType;
+        try {
+            this.set_cursor_type(cursorType);
+        } catch (_e) {}
+    }
+
     _createModeButton(iconName, labelText, mode) {
         const btn = new St.Button({
-            style_class: 'button',
+            style_class: 'button sadeem-capture-mode-btn',
             reactive: true,
             can_focus: true,
             track_hover: true,
             x_expand: true,
-            style: 'min-width: 86px; padding: 7px 10px; border-radius: 10px; background-color: transparent;',
         });
         const box = new St.BoxLayout({
             orientation: Clutter.Orientation.VERTICAL,
@@ -469,11 +494,10 @@ class CaptureUI extends St.Widget {
 
     _createToggleIconButton(iconName, tooltip, onClick) {
         const btn = new St.Button({
-            style_class: 'button',
+            style_class: 'button sadeem-capture-icon-btn',
             reactive: true,
             can_focus: true,
             track_hover: true,
-            style: 'width: 32px; height: 32px; border-radius: 9999px; background-color: transparent; padding: 4px;',
         });
         btn.set_accessible_name(tooltip);
         btn.set_child(new St.Icon({
@@ -489,18 +513,23 @@ class CaptureUI extends St.Widget {
     }
 
     _buildSettingsPopupContents() {
+        this._resButtons = [];
+        this._fpsButtons = [];
+        this._codecButtons = [];
+
         // Resolution Selector
         const resBox = new St.BoxLayout({ orientation: Clutter.Orientation.HORIZONTAL, y_align: Clutter.ActorAlign.CENTER, style: 'margin-bottom: 4px; spacing: 4px;' });
         resBox.add_child(new St.Label({ text: I18n.t('setting_resolution'), style: 'color: rgba(255,255,255,0.7); font-size: 11px; min-width: 80px;' }));
         for (const [key, label] of [['native', I18n.t('res_native')], ['1080p', '1080p'], ['720p', '720p']]) {
             const b = new St.Button({
                 label: label,
-                style: 'padding: 2px 8px; border-radius: 6px; font-size: 11px; background-color: ' + (this._resolution === key ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)') + '; color: #ffffff;',
+                style_class: 'button sadeem-capture-setting-chip',
             });
             b.connect('clicked', () => {
                 this._resolution = key;
                 this._updateSettingsDisplay();
             });
+            this._resButtons.push({ key, btn: b });
             resBox.add_child(b);
         }
         this._settingsPopup.add_child(resBox);
@@ -511,12 +540,13 @@ class CaptureUI extends St.Widget {
         for (const [fpsVal, label] of [[60, '60 fps'], [30, '30 fps']]) {
             const b = new St.Button({
                 label: label,
-                style: 'padding: 2px 8px; border-radius: 6px; font-size: 11px; background-color: ' + (this._fps === fpsVal ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)') + '; color: #ffffff;',
+                style_class: 'button sadeem-capture-setting-chip',
             });
             b.connect('clicked', () => {
                 this._fps = fpsVal;
                 this._updateSettingsDisplay();
             });
+            this._fpsButtons.push({ key: fpsVal, btn: b });
             fpsBox.add_child(b);
         }
         this._settingsPopup.add_child(fpsBox);
@@ -527,12 +557,13 @@ class CaptureUI extends St.Widget {
         for (const [cVal, label] of [['h264', 'H.264'], ['h265', 'H.265']]) {
             const b = new St.Button({
                 label: label,
-                style: 'padding: 2px 8px; border-radius: 6px; font-size: 11px; background-color: ' + (this._codec === cVal ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)') + '; color: #ffffff;',
+                style_class: 'button sadeem-capture-setting-chip',
             });
             b.connect('clicked', () => {
                 this._codec = cVal;
                 this._updateSettingsDisplay();
             });
+            this._codecButtons.push({ key: cVal, btn: b });
             codecBox.add_child(b);
         }
         this._settingsPopup.add_child(codecBox);
@@ -578,22 +609,19 @@ class CaptureUI extends St.Widget {
 
     _setMode(mode) {
         this._mode = mode;
-        const activeStyle = 'padding: 6px 12px; border-radius: 10px; background-color: rgba(255, 255, 255, 0.22); font-weight: bold;';
-        const inactiveStyle = 'padding: 6px 12px; border-radius: 10px; background-color: transparent;';
-
-        this._modeBtnSelection.style = (mode === 'selection' ? activeStyle : inactiveStyle);
-        this._modeBtnScreen.style = (mode === 'screen' ? activeStyle : inactiveStyle);
-        this._modeBtnWindow.style = (mode === 'window' ? activeStyle : inactiveStyle);
+        this._setActorClassState(this._modeBtnSelection, 'sadeem-capture-mode-btn-active', mode === 'selection');
+        this._setActorClassState(this._modeBtnScreen, 'sadeem-capture-mode-btn-active', mode === 'screen');
+        this._setActorClassState(this._modeBtnWindow, 'sadeem-capture-mode-btn-active', mode === 'window');
 
         if (mode === 'selection') {
-            try { this.set_cursor_type(Clutter.CursorType.CROSSHAIR); } catch (e) {}
+            this._setCursorType(Clutter.CursorType.CROSSHAIR);
             this._hintLabel.text = I18n.t('select_hint');
             this._selectionBox.visible = (this._selectionRect.width > 5 && this._selectionRect.height > 5);
             this._screenHighlight.visible = false;
             this._windowHighlight.visible = false;
             this._updateDimming();
         } else if (mode === 'screen') {
-            try { this.set_cursor_type(Clutter.CursorType.POINTER); } catch (e) {}
+            this._setCursorType(Clutter.CursorType.POINTER);
             this._hintLabel.text = I18n.t('screen_hint');
             this._selectionBox.visible = false;
             this._windowHighlight.visible = false;
@@ -601,11 +629,12 @@ class CaptureUI extends St.Widget {
             this._updateScreenHighlight();
             this._clearDimming();
         } else if (mode === 'window') {
-            try { this.set_cursor_type(Clutter.CursorType.POINTER); } catch (e) {}
+            this._setCursorType(Clutter.CursorType.POINTER);
             this._hintLabel.text = I18n.t('window_hint');
             this._selectionBox.visible = false;
             this._screenHighlight.visible = false;
             this._windowHighlight.visible = false;
+            this._hoveredWindow = null;
             this._clearDimming();
             this._updateWindowUnderCursor();
         }
@@ -613,19 +642,16 @@ class CaptureUI extends St.Widget {
 
     _setMediaMode(mediaMode) {
         this._mediaMode = mediaMode;
-        const activeStyle = 'width: 32px; height: 32px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.25); padding: 4px;';
-        const inactiveStyle = 'width: 32px; height: 32px; border-radius: 9999px; background-color: transparent; padding: 4px;';
-
-        this._photoBtn.style = (mediaMode === 'photo' ? activeStyle : inactiveStyle);
-        this._videoBtn.style = (mediaMode === 'video' ? activeStyle : inactiveStyle);
+        this._setActorClassState(this._photoBtn, 'sadeem-capture-icon-btn-active', mediaMode === 'photo');
+        this._setActorClassState(this._videoBtn, 'sadeem-capture-icon-btn-active', mediaMode === 'video');
+        this._setActorClassState(this._captureBtn, 'sadeem-capture-btn-video', mediaMode === 'video');
 
         if (mediaMode === 'photo') {
-            this._captureBtn.style = 'width: 52px; height: 52px; border-radius: 9999px; background-color: #7a1c33; border: 3px solid rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 3px rgba(122, 28, 51, 0.45); padding: 0;';
             this._captureBtnIcon.icon_name = 'camera-photo-symbolic';
             this._videoSettingsRow.visible = false;
             this._settingsPopup.visible = false;
+            this._settingsMenuOpen = false;
         } else {
-            this._captureBtn.style = 'width: 52px; height: 52px; border-radius: 9999px; background-color: #e01b24; border: 3px solid rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 3px rgba(224, 27, 36, 0.45); padding: 0;';
             this._captureBtnIcon.icon_name = 'media-record-symbolic';
             this._videoSettingsRow.visible = true;
         }
@@ -638,16 +664,20 @@ class CaptureUI extends St.Widget {
 
     _toggleCursor() {
         this._includeCursor = !this._includeCursor;
-        const activeStyle = 'width: 32px; height: 32px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.25); padding: 4px;';
-        const inactiveStyle = 'width: 32px; height: 32px; border-radius: 9999px; background-color: transparent; padding: 4px;';
-        this._cursorToggleBtn.style = (this._includeCursor ? activeStyle : inactiveStyle);
+        this._syncToggleButtons();
     }
 
     _toggleHalo() {
         this._haloActive = !this._haloActive;
-        const activeStyle = 'width: 32px; height: 32px; border-radius: 9999px; background-color: rgba(6, 182, 212, 0.45); border: 1px solid rgba(6, 182, 212, 0.9); padding: 4px;';
-        const inactiveStyle = 'width: 32px; height: 32px; border-radius: 9999px; background-color: transparent; padding: 4px;';
-        this._haloToggleBtn.style = (this._haloActive ? activeStyle : inactiveStyle);
+        if (this._haloActive && !this._includeCursor)
+            this._includeCursor = true;
+        this._syncToggleButtons();
+    }
+
+    _syncToggleButtons() {
+        this._setActorClassState(this._cursorToggleBtn, 'sadeem-capture-icon-btn-active', this._includeCursor);
+        this._setActorClassState(this._haloToggleBtn, 'sadeem-capture-halo-btn-active', this._haloActive);
+        this._updateAudioButtons();
     }
 
     _toggleAudioSys() {
@@ -679,9 +709,8 @@ class CaptureUI extends St.Widget {
     _updateAudioButtons() {
         const sysActive = (this._audioMode === 'system' || this._audioMode === 'both');
         const micActive = (this._audioMode === 'mic' || this._audioMode === 'both');
-
-        this._audioSysBtn.style = 'padding: 4px 10px; border-radius: 9999px; margin-right: 6px; background-color: ' + (sysActive ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.08)') + ';';
-        this._audioMicBtn.style = 'padding: 4px 10px; border-radius: 9999px; margin-right: 6px; background-color: ' + (micActive ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.08)') + ';';
+        this._setActorClassState(this._audioSysBtn, 'sadeem-capture-pill-btn-active', sysActive);
+        this._setActorClassState(this._audioMicBtn, 'sadeem-capture-pill-btn-active', micActive);
     }
 
     _toggleSettingsPopup() {
@@ -693,9 +722,35 @@ class CaptureUI extends St.Widget {
         if (this._settingsBtnLabel) {
             this._settingsBtnLabel.text = `${this._resolution} | ${this._codec.toUpperCase()} | ${this._fps}fps`;
         }
-        // Rebuild popup items styling
-        this._settingsPopup.destroy_all_children();
-        this._buildSettingsPopupContents();
+        for (const item of this._resButtons)
+            this._setActorClassState(item.btn, 'sadeem-capture-setting-chip-active', item.key === this._resolution);
+        for (const item of this._fpsButtons)
+            this._setActorClassState(item.btn, 'sadeem-capture-setting-chip-active', item.key === this._fps);
+        for (const item of this._codecButtons)
+            this._setActorClassState(item.btn, 'sadeem-capture-setting-chip-active', item.key === this._codec);
+    }
+
+    _snapshotFrozenWindows() {
+        const snapshot = [];
+        try {
+            const activeWorkspace = global.workspace_manager.get_active_workspace();
+            const rawWindows = activeWorkspace.list_windows();
+            const sortedWindows = global.display.sort_windows_by_stacking(rawWindows).reverse();
+            for (const win of sortedWindows) {
+                if (!win || win.is_hidden() || win.is_override_redirect())
+                    continue;
+                const type = win.get_window_type();
+                if (type === Meta.WindowType.DOCK || type === Meta.WindowType.DESKTOP)
+                    continue;
+                const rect = win.get_frame_rect();
+                snapshot.push({
+                    win,
+                    rect,
+                    title: win.get_title() || win.get_wm_class() || 'Window',
+                });
+            }
+        } catch (_e) {}
+        this._frozenWindows = snapshot;
     }
 
     // --- Open, Close & Modal Lifecycle ---
@@ -709,10 +764,11 @@ class CaptureUI extends St.Widget {
             return;
         }
 
+        this._snapshotFrozenWindows();
+
         try {
             // Freeze screen directly in GPU memory
             const shooter = new Shell.Screenshot();
-            Gio._promisify(Shell.Screenshot.prototype, 'screenshot_stage_to_content');
             const [content, scale, cursorContent, cursorPoint, cursorScale] = await shooter.screenshot_stage_to_content();
 
             this._frozenContent = content;
@@ -742,6 +798,8 @@ class CaptureUI extends St.Widget {
         this._setDragVisualState(false);
         this.visible = true;
         this._isOpen = true;
+        this._lastCursorType = null;
+        this._lastScreenHighlightMon = null;
 
         // Safely push modal
         try {
@@ -750,14 +808,13 @@ class CaptureUI extends St.Widget {
             console.error('[CaptureUI] pushModal failed: ' + e);
         }
 
-        try {
-            this.set_cursor_type(Clutter.CursorType.CROSSHAIR);
-        } catch (e) {}
+        this._setCursorType(Clutter.CursorType.CROSSHAIR);
 
         // Position control card on monitor under cursor
         this._positionControlCard();
 
-        // Initialize Modes
+        // Initialize Modes & sync visual toggle button state
+        this._syncToggleButtons();
         this._setMode(initialMode);
         this._setMediaMode(initialMedia);
     }
@@ -774,13 +831,15 @@ class CaptureUI extends St.Widget {
             console.error('[CaptureUI] popModal error: ' + e);
         }
 
-        try {
-            this.set_cursor_type(Clutter.CursorType.DEFAULT);
-        } catch (e) {}
+        this._setCursorType(Clutter.CursorType.DEFAULT);
+        this._lastCursorType = null;
 
         this.visible = false;
         this._isOpen = false;
         this._dragState = null;
+        this._hoveredWindow = null;
+        this._lastScreenHighlightMon = null;
+        this._frozenWindows = [];
         this._settingsMenuOpen = false;
         if (this._settingsPopup) {
             this._settingsPopup.visible = false;
@@ -843,6 +902,8 @@ class CaptureUI extends St.Widget {
     // --- Dimming & Selection Rendering ---
 
     _updateDimming() {
+        if (this._dimOverlay && !this._dimOverlay.visible)
+            this._dimOverlay.visible = true;
         const sw = global.stage.width;
         const sh = global.stage.height;
         const r = this._selectionRect;
@@ -900,50 +961,55 @@ class CaptureUI extends St.Widget {
     }
 
     _clearDimming() {
-        this._dimTop.set_size(0, 0);
-        this._dimBottom.set_size(0, 0);
-        this._dimLeft.set_size(0, 0);
-        this._dimRight.set_size(0, 0);
+        if (this._dimOverlay)
+            this._dimOverlay.visible = false;
     }
 
-    _updateScreenHighlight() {
-        const [cx, cy] = global.get_pointer();
+    _updateScreenHighlight(pointerX = null, pointerY = null) {
+        let cx = pointerX;
+        let cy = pointerY;
+        if (cx === null || cy === null)
+            [cx, cy] = global.get_pointer();
         const m = this._findMonitorAt(cx, cy);
         if (m) {
-            this._screenHighlight.set_position(m.x + 4, m.y + 4);
-            this._screenHighlight.set_size(m.width - 8, m.height - 8);
             this._hoveredMonitor = m;
+            if (m !== this._lastScreenHighlightMon) {
+                this._lastScreenHighlightMon = m;
+                this._screenHighlight.set_position(m.x + 4, m.y + 4);
+                this._screenHighlight.set_size(m.width - 8, m.height - 8);
+            }
         }
     }
 
-    _updateWindowUnderCursor() {
-        const [cx, cy] = global.get_pointer();
+    _updateWindowUnderCursor(pointerX = null, pointerY = null) {
+        let cx = pointerX;
+        let cy = pointerY;
+        if (cx === null || cy === null)
+            [cx, cy] = global.get_pointer();
         try {
-            const activeWorkspace = global.workspace_manager.get_active_workspace();
-            const rawWindows = activeWorkspace.list_windows();
-            // Sort top-to-bottom
-            const sortedWindows = global.display.sort_windows_by_stacking(rawWindows).reverse();
+            if (!this._frozenWindows || this._frozenWindows.length === 0)
+                this._snapshotFrozenWindows();
 
-            let targetWin = null;
-            for (const win of sortedWindows) {
-                if (!win || win.is_hidden() || win.is_override_redirect()) continue;
-                const type = win.get_window_type();
-                if (type === Meta.WindowType.DOCK || type === Meta.WindowType.DESKTOP) continue;
-
-                const rect = win.get_frame_rect();
+            let targetEntry = null;
+            for (const entry of this._frozenWindows) {
+                const rect = entry.rect;
                 if (cx >= rect.x && cx <= rect.x + rect.width && cy >= rect.y && cy <= rect.y + rect.height) {
-                    targetWin = win;
+                    targetEntry = entry;
                     break;
                 }
             }
 
-            this._hoveredWindow = targetWin;
-            if (targetWin) {
-                const rect = targetWin.get_frame_rect();
+            const nextWin = targetEntry ? targetEntry.win : null;
+            if (nextWin === this._hoveredWindow && Boolean(nextWin) === this._windowHighlight.visible)
+                return;
+
+            this._hoveredWindow = nextWin;
+            if (targetEntry) {
+                const rect = targetEntry.rect;
                 this._windowHighlight.visible = true;
                 this._windowHighlight.set_position(rect.x, rect.y);
                 this._windowHighlight.set_size(rect.width, rect.height);
-                this._windowTitleLabel.text = targetWin.get_title() || targetWin.get_wm_class() || 'Window';
+                this._windowTitleLabel.text = targetEntry.title;
             } else {
                 this._windowHighlight.visible = false;
             }
@@ -1068,39 +1134,45 @@ class CaptureUI extends St.Widget {
 
     _onMotion(event) {
         const [x, y] = event.get_coords();
+        const overControls = this._isPointInsideActor(this._controlCard, x, y) || this._isPointInsideActor(this._topPill, x, y);
 
-        // Control card / top pill hover cursor
-        try {
-            if (this._isPointInsideActor(this._controlCard, x, y) || this._isPointInsideActor(this._topPill, x, y)) {
-                this.set_cursor_type(Clutter.CursorType.DEFAULT);
-            } else if (this._mode === 'selection' && !this._dragState) {
-                const r = this._selectionRect;
-                const hw = 16;
-                if (r.width > 5 && r.height > 5) {
-                    if (Math.hypot(x - r.x, y - r.y) <= hw || Math.hypot(x - (r.x + r.width), y - (r.y + r.height)) <= hw) {
-                        this.set_cursor_type(Clutter.CursorType.NWSE_RESIZE);
-                    } else if (Math.hypot(x - (r.x + r.width), y - r.y) <= hw || Math.hypot(x - r.x, y - (r.y + r.height)) <= hw) {
-                        this.set_cursor_type(Clutter.CursorType.NESW_RESIZE);
-                    } else if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) {
-                        this.set_cursor_type(Clutter.CursorType.MOVE);
-                    } else {
-                        this.set_cursor_type(Clutter.CursorType.CROSSHAIR);
-                    }
+        // Control card / top pill hover cursor (cached via _lastCursorType)
+        if (overControls) {
+            this._setCursorType(Clutter.CursorType.DEFAULT);
+        } else if (this._mode === 'selection' && !this._dragState) {
+            const r = this._selectionRect;
+            const hw = 16;
+            if (r.width > 5 && r.height > 5) {
+                if (Math.hypot(x - r.x, y - r.y) <= hw || Math.hypot(x - (r.x + r.width), y - (r.y + r.height)) <= hw) {
+                    this._setCursorType(Clutter.CursorType.NWSE_RESIZE);
+                } else if (Math.hypot(x - (r.x + r.width), y - r.y) <= hw || Math.hypot(x - r.x, y - (r.y + r.height)) <= hw) {
+                    this._setCursorType(Clutter.CursorType.NESW_RESIZE);
+                } else if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) {
+                    this._setCursorType(Clutter.CursorType.MOVE);
                 } else {
-                    this.set_cursor_type(Clutter.CursorType.CROSSHAIR);
+                    this._setCursorType(Clutter.CursorType.CROSSHAIR);
                 }
-            } else if (this._mode === 'screen' || this._mode === 'window') {
-                this.set_cursor_type(Clutter.CursorType.POINTER);
+            } else {
+                this._setCursorType(Clutter.CursorType.CROSSHAIR);
             }
-        } catch (e) {}
+        } else if (this._mode === 'screen' || this._mode === 'window') {
+            this._setCursorType(Clutter.CursorType.POINTER);
+        }
 
         if (this._mode === 'screen') {
-            this._updateScreenHighlight();
+            if (!overControls)
+                this._updateScreenHighlight(x, y);
             return Clutter.EVENT_PROPAGATE;
         }
 
         if (this._mode === 'window') {
-            this._updateWindowUnderCursor();
+            if (overControls) {
+                this._hoveredWindow = null;
+                if (this._windowHighlight.visible)
+                    this._windowHighlight.visible = false;
+                return Clutter.EVENT_PROPAGATE;
+            }
+            this._updateWindowUnderCursor(x, y);
             return Clutter.EVENT_PROPAGATE;
         }
 
@@ -1185,13 +1257,47 @@ class CaptureUI extends St.Widget {
         return candidate;
     }
 
+    _drawHaloOnPng(targetPath, targetRect, cursorInfo, frozenScale = 1.0) {
+        const pt = cursorInfo?.point;
+        if (!pt || !targetRect)
+            return;
+        if (pt.x < targetRect.x || pt.x > (targetRect.x + targetRect.width) ||
+            pt.y < targetRect.y || pt.y > (targetRect.y + targetRect.height))
+            return;
+        try {
+            const surface = Cairo.ImageSurface.createFromPNG(targetPath);
+            const cr = new Cairo.Context(surface);
+            const cx = (pt.x - targetRect.x) * frozenScale;
+            const cy = (pt.y - targetRect.y) * frozenScale;
+            const radius = 24 * frozenScale;
+            cr.newPath();
+            cr.arc(cx, cy, radius, 0, 2 * Math.PI);
+            cr.setSourceRGBA(6 / 255, 182 / 255, 212 / 255, 0.30);
+            cr.fillPreserve();
+            cr.setSourceRGBA(6 / 255, 182 / 255, 212 / 255, 0.85);
+            cr.setLineWidth(2.5 * frozenScale);
+            cr.stroke();
+            cr.$dispose();
+            surface.writeToPNG(targetPath);
+            surface.finish();
+        } catch (err) {
+            console.error('[CaptureUI] Failed drawing cursor halo onto PNG: ' + err);
+        }
+    }
+
+    _preparePhotoHalo(targetPath, stream, haloActive, targetRect, cursorInfo, frozenScale) {
+        try { stream.close(null); } catch (_e) {}
+        if (haloActive)
+            this._drawHaloOnPng(targetPath, targetRect, cursorInfo, frozenScale);
+    }
+
     _finishPhotoSuccess(targetPath, stream) {
         try { stream.close(null); } catch (_e) {}
         this._copyImageToClipboard(targetPath);
         this._notifyCaptureComplete(targetPath, 'photo');
     }
 
-    _capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor) {
+    _capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor, haloActive = false, cursorInfo = null, frozenScale = 1.0) {
         let stream = null;
         try {
             const file = Gio.File.new_for_path(targetPath);
@@ -1205,6 +1311,7 @@ class CaptureUI extends St.Widget {
             shooter.screenshot(includeCursor, stream, (_o, res) => {
                 try {
                     shooter.screenshot_finish(res);
+                    this._preparePhotoHalo(targetPath, stream, haloActive, targetRect, cursorInfo, frozenScale);
                     this._finishPhotoSuccess(targetPath, stream);
                 } catch (err) {
                     console.error('[CaptureUI] screenshot fallback error: ' + err);
@@ -1215,6 +1322,7 @@ class CaptureUI extends St.Widget {
             shooter.screenshot_window(true, includeCursor, stream, (_o, res) => {
                 try {
                     shooter.screenshot_window_finish(res);
+                    this._preparePhotoHalo(targetPath, stream, haloActive, targetRect, cursorInfo, frozenScale);
                     this._finishPhotoSuccess(targetPath, stream);
                 } catch (err) {
                     console.error('[CaptureUI] screenshot_window fallback error: ' + err);
@@ -1225,6 +1333,7 @@ class CaptureUI extends St.Widget {
             shooter.screenshot_area(targetRect.x, targetRect.y, targetRect.width, targetRect.height, stream, (_o, res) => {
                 try {
                     shooter.screenshot_area_finish(res);
+                    this._preparePhotoHalo(targetPath, stream, haloActive, targetRect, cursorInfo, frozenScale);
                     this._finishPhotoSuccess(targetPath, stream);
                 } catch (err) {
                     console.error('[CaptureUI] screenshot_area fallback error: ' + err);
@@ -1239,6 +1348,7 @@ class CaptureUI extends St.Widget {
         const monitor = this._findMonitorAt(cx, cy) || Main.layoutManager.primaryMonitor;
         const captureMode = this._mode;
         const includeCursor = this._includeCursor;
+        const haloActive = this._haloActive;
         const frozenContent = this._frozenContent;
         const frozenScale = this._frozenScale || 1.0;
         const cursorInfo = this._cursorInfo;
@@ -1300,11 +1410,14 @@ class CaptureUI extends St.Widget {
                     (_obj, res) => {
                         try {
                             Shell.Screenshot.composite_to_stream_finish(res);
+                            try { stream.close(null); } catch (_e) {}
+                            if (haloActive)
+                                this._drawHaloOnPng(targetPath, targetRect, cursorInfo, frozenScale);
                             this._finishPhotoSuccess(targetPath, stream);
                         } catch (err) {
                             console.error('[CaptureUI] composite_to_stream failed, falling back: ' + err);
                             try { stream.close(null); } catch (_e) {}
-                            this._capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor);
+                            this._capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor, haloActive, cursorInfo, frozenScale);
                         }
                     }
                 );
@@ -1315,7 +1428,7 @@ class CaptureUI extends St.Widget {
             }
         }
 
-        this._capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor);
+        this._capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor, haloActive, cursorInfo, frozenScale);
     }
 
     captureSilentScreenshot() {
