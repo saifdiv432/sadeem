@@ -213,11 +213,14 @@ for b in misterdownloadmanager misterdownloadmanager-cli misterdownloadmanager-m
     install -m 755 "$BIN_PATH" "${TARGET_ROOT}/usr/bin/$b"
 done
 
-# Install Firefox Extension XPI
+# Install Firefox Extension XPI (system + Flatpak Firefox skel)
 MDM_XPI=$(find "$MDM_EXTRACT" -type f -name "mdm-firefox.xpi" | head -n 1)
 if [[ -n "$MDM_XPI" ]] && [[ -f "$MDM_XPI" ]]; then
+    SKEL_FF_EXT_DIR="${TARGET_ROOT}/etc/skel/.var/app/org.mozilla.firefox/.mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+    mkdir -p "$SKEL_FF_EXT_DIR"
     cp -f "$MDM_XPI" "${TARGET_ROOT}/usr/share/misterdownloadmanager/mdm-firefox.xpi"
     cp -f "$MDM_XPI" "${TARGET_ROOT}/usr/lib64/firefox/browser/extensions/integration@misterdownloadmanager.com.xpi"
+    cp -f "$MDM_XPI" "${SKEL_FF_EXT_DIR}/integration@misterdownloadmanager.com.xpi"
 fi
 
 # Install Chromium extension files

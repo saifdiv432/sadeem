@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.sadeem.menu" path="/org/sadeem/menu/">
+    <key name="tile-columns" type="i">
+      <default>3</default>
+      <range min="1" max="4"/>
+      <summary>Number of group columns on the tile board</summary>
+      <description>Target number of side-by-side 6-unit group columns on the Windows 10 style tile board (1..4), automatically clamped to screen width.</description>
+    </key>
+
+    <key name="menu-width" type="i">
+      <default>1140</default>
+      <range min="440" max="1800"/>
+      <summary>Menu popup width</summary>
+      <description>Stored free pixel width of the Sadeem Menu popup container (440..1800px).</description>
+    </key>
+
+    <key name="menu-height" type="i">
+      <default>680</default>
+      <range min="380" max="1020"/>
+      <summary>Menu popup height</summary>
+      <description>Free pixel height of the Sadeem Menu popup container (380..1020px).</description>
+    </key>
+
+    <key name="icon-size-level" type="i">
+      <default>2</default>
+      <range min="0" max="4"/>
+      <summary>Icon size level</summary>
+      <description>Unified 2D board cell preset index (0..4 mapped to cell presets 64x70, 70x76, 78x84, 88x94, 98x104px).</description>
+    </key>
+
+    <key name="menu-opacity" type="i">
+      <default>96</default>
+      <range min="10" max="100"/>
+      <summary>Menu background opacity percentage</summary>
+      <description>Background opacity percentage for the Sadeem Menu surface (10..100).</description>
+    </key>
+
+    <key name="show-all-apps-sidebar" type="b">
+      <default>true</default>
+      <summary>Show All Apps sidebar</summary>
+      <description>Display the collapsible alphabetical All Apps sidebar with jump grid alongside the tile board.</description>
+    </key>
+
+    <key name="show-most-used" type="b">
+      <default>true</default>
+      <summary>Show most used applications</summary>
+      <description>Display Most Used apps inside the compact bottom strip.</description>
+    </key>
+
+    <key name="most-used-count" type="i">
+      <default>3</default>
+      <range min="1" max="4"/>
+      <summary>Most used apps count</summary>
+      <description>Maximum number of Most Used apps shown in the bottom strip (1..4).</description>
+    </key>
+
+    <key name="show-recently-installed" type="b">
+      <default>true</default>
+      <summary>Show recently installed applications</summary>
+      <description>Display Recently Installed user and Flatpak apps inside the compact bottom strip.</description>
+    </key>
+
+    <key name="recently-installed-count" type="i">
+      <default>3</default>
+      <range min="1" max="4"/>
+      <summary>Recently installed apps count</summary>
+      <description>Maximum number of Recently Installed apps shown in the bottom strip (1..4).</description>
+    </key>
+
+    <key name="bottom-section-count" type="i">
+      <default>3</default>
+      <range min="1" max="4"/>
+      <summary>Items per bottom strip section (legacy fallback)</summary>
+      <description>Legacy fallback count of applications per section in the compact bottom strip (1..4).</description>
+    </key>
+
+    <key name="auto-categorize" type="b">
+      <default>true</default>
+      <summary>Enable smart automatic groups</summary>
+      <description>Automatically populate the built-in smart groups (Sadeem, Office, Games, Social).</description>
+    </key>
+
+    <key name="disabled-smart-groups" type="as">
+      <default>[]</default>
+      <summary>Individually disabled smart groups</summary>
+      <description>List of built-in smart group IDs (sadeem, office, games, social) hidden individually by the user.</description>
+    </key>
+
+    <key name="show-power-buttons" type="b">
+      <default>false</default>
+      <summary>Show power buttons in menu footer</summary>
+      <description>Whether Lock, Restart, and Power Off buttons are shown in the footer.</description>
+    </key>
+
+    <key name="bind-super-key" type="b">
+      <default>true</default>
+      <summary>Bind Super key to open Sadeem Menu</summary>
+      <description>When enabled, pressing Super opens Sadeem Menu instead of GNOME Overview.</description>
+    </key>
+
+    <key name="layout-config" type="s">
+      <default>'{}'</default>
+      <summary>Serialized unified tile board configuration</summary>
+      <description>JSON configuration storing unified groups, app tiles, tile folders, sizes, ordering, excluded_apps, and removed_groups.</description>
+    </key>
+  </schema>
+</schemalist>

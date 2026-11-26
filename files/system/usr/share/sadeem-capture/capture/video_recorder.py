@@ -20,13 +20,147 @@ from gi.repository import GLib, Gst
 if not Gst.is_initialized():
     Gst.init(None)
 
-from capture.media_probe import (
-    get_muxer_element,
-    probe_audio_encoder,
-    probe_h264_encoder,
-    probe_h265_encoder,
-)
+from capture import media_probe
 from capture.portal_screencast import ScreenCastPortalSession
+
+
+def compute_even_crop_margins(
+    crop_x: int,
+    crop_y: int,
+    crop_w: int,
+    crop_h: int,
+    frame_w: int,
+    frame_h: int,
+    logical_w: int = 0,
+    logical_h: int = 0,
+):
+    """
+    Clamp selection rectangle to physical frame dimensions, optionally scaling from logical
+    monitor coordinates when HiDPI / fractional scaling is active, and align x, y, width,
+    height to strict even integers (& ~1). Returns (left, top, right, bottom, even_w, even_h).
+    """
+    sx_factor = 1.0
+    sy_factor = 1.0
+    if logical_w > 0 and logical_h > 0 and frame_w > 0 and frame_h > 0:
+        if frame_w != logical_w or frame_h != logical_h:
+            sx_factor = float(frame_w) / float(logical_w)
+            sy_factor = float(frame_h) / float(logical_h)
+
+    px_x = int(round(crop_x * sx_factor))
+    px_y = int(round(crop_y * sy_factor))
+    px_w = int(round(crop_w * sx_factor))
+    px_h = int(round(crop_h * sy_factor))
+
+    fw = max(2, int(frame_w) & ~1)
+    fh = max(2, int(frame_h) & ~1)
+    left = min(max(0, px_x & ~1), max(0, fw - 2))
+    top = min(max(0, px_y & ~1), max(0, fh - 2))
+    max_w = max(2, (fw - left) & ~1)
+    max_h = max(2, (fh - top) & ~1)
+    even_w = max(2, min(px_w & ~1, max_w))
+    even_h = max(2, min(px_h & ~1, max_h))
+    right = max(0, int(frame_w) - left - even_w)
+    bottom = max(0, int(frame_h) - top - even_h)
+    return left, top, right, bottom, even_w, even_h
+
+
+def build_video_encoder_spec(codec: str, fps: int) -> dict:
+    """
+    Build encoder command spec respecting the actual probed encoder (vah264enc/vaapi/nvenc/x264/x265)
+    and whether VA-API vapostproc zero-copy GPU conversion is supported.
+    """
+    fps_val = int(fps) if int(fps) in (30, 60) else 60
+    key_int = fps_val * 2
+    enc_info = media_probe.probe_h265_encoder() if str(codec).lower() == "h265" else media_probe.probe_h264_encoder()
+    name = str(enc_info.get("name", "x264enc"))
+    parser = str(enc_info.get("parser", "h264parse"))
+    is_hw = bool(enc_info.get("is_hardware", False))
+    base_pipe = str(enc_info.get("pipeline_str", name))
+    has_vapostproc = Gst.ElementFactory.find("vapostproc") is not None
+
+    if name in ("vah264enc", "vah265enc"):
+        enc_pipe = f"{base_pipe} b-frames=0 target-usage=7 rate-control=cqp qpi=24 key-int-max={key_int}"
+        uses_va_postproc = has_vapostproc
+        yuv_format = "NV12"
+    elif name in ("vaapih264enc", "vaapih265enc") or name.startswith("nv") or is_hw:
+        enc_pipe = base_pipe
+        uses_va_postproc = False
+        yuv_format = "NV12"
+    elif name in ("x264enc", "x265enc"):
+        enc_pipe = base_pipe if "speed-preset=" in base_pipe else f"{name} speed-preset=ultrafast tune=zerolatency"
+        uses_va_postproc = False
+        yuv_format = "I420"
+    else:
+        enc_pipe = base_pipe
+        uses_va_postproc = False
+        yuv_format = "I420"
+
+    return {
+        "codec": str(codec).lower(),
+        "name": name,
+        "pipeline_str": enc_pipe,
+        "full_str": f"{enc_pipe} ! {parser}",
+        "parser": parser,
+        "is_hardware": is_hw,
+        "uses_va_postproc": uses_va_postproc,
+        "yuv_format": yuv_format,
+    }
+
+
+def get_encoder_yuv_format(enc_info: dict) -> str:
+    """Return optimal planar/semi-planar YUV format accepted by the selected encoder."""
+    if not enc_info:
+        return "I420"
+    name = str(enc_info.get("name", ""))
+    if enc_info.get("is_hardware") or name.startswith(("va", "nv")):
+        return "NV12"
+    return "I420"
+
+
+def attach_even_crop_caps_probe(
+    pipeline,
+    crop_name: str,
+    crop_x: int,
+    crop_y: int,
+    crop_w: int,
+    crop_h: int,
+    logical_w: int = 0,
+    logical_h: int = 0,
+):
+    """
+    Attach a downstream CAPS event probe on videocrop's sink pad so left/top/right/bottom
+    are always aligned to strict even integers matching the actual stream frame size and HiDPI scale.
+    """
+    if not pipeline:
+        return False
+    crop_elem = pipeline.get_by_name(crop_name)
+    if not crop_elem:
+        return False
+    sink_pad = crop_elem.get_static_pad("sink")
+    if not sink_pad:
+        return False
+
+    def _on_caps_probe(_pad, info):
+        ev = info.get_event()
+        if ev and ev.type == Gst.EventType.CAPS:
+            caps = ev.parse_caps()
+            if caps and caps.get_size() > 0:
+                s = caps.get_structure(0)
+                ok_w, in_w = s.get_int("width")
+                ok_h, in_h = s.get_int("height")
+                if ok_w and ok_h and in_w >= 2 and in_h >= 2:
+                    left, top, right, bottom, _ew, _eh = compute_even_crop_margins(
+                        crop_x, crop_y, crop_w, crop_h, in_w, in_h,
+                        logical_w=logical_w, logical_h=logical_h,
+                    )
+                    crop_elem.set_property("left", left)
+                    crop_elem.set_property("top", top)
+                    crop_elem.set_property("right", right)
+                    crop_elem.set_property("bottom", bottom)
+        return Gst.PadProbeReturn.OK
+
+    sink_pad.add_probe(Gst.PadProbeType.EVENT_DOWNSTREAM, _on_caps_probe)
+    return True
 
 
 def generate_recording_path() -> str:
@@ -122,6 +256,15 @@ class VideoRecorder:
         try:
             pipeline_str = self._build_pipeline_string(node_id, pw_fd)
             self.pipeline = Gst.parse_launch(pipeline_str)
+            if self.mode == "selection" and self.crop_box:
+                attach_even_crop_caps_probe(
+                    self.pipeline,
+                    "crop",
+                    int(self.crop_box[0] * self.scale_factor),
+                    int(self.crop_box[1] * self.scale_factor),
+                    int(self.crop_box[2] * self.scale_factor),
+                    int(self.crop_box[3] * self.scale_factor),
+                )
         except Exception as exc:
             print(f"[VideoRecorder] Failed to create GStreamer pipeline: {exc}", file=sys.stderr)
             if self.client:
@@ -165,8 +308,9 @@ class VideoRecorder:
         else:
             v_src = f'pipewiresrc path="{node_id}" do-timestamp=true'
 
-        # Crop element for selection mode
+        # Crop element for selection mode (strict even alignment + packed BGRx before videocrop)
         crop_elem = ""
+        even_sel_w, even_sel_h = 0, 0
         if self.mode == "selection" and self.crop_box:
             sel_x, sel_y, sel_w, sel_h = self.crop_box
             sw, sh = self.screen_size
@@ -179,92 +323,76 @@ class VideoRecorder:
             sw = int(sw * self.scale_factor)
             sh = int(sh * self.scale_factor)
 
-            # Ensure even dimensions (required by encoders)
-            sel_w = max(4, sel_w - (sel_w % 2))
-            sel_h = max(4, sel_h - (sel_h % 2))
+            crop_left, crop_top, crop_right, crop_bottom, even_sel_w, even_sel_h = compute_even_crop_margins(
+                sel_x, sel_y, sel_w, sel_h, sw, sh
+            )
+            crop_elem = (
+                f"videoconvert ! video/x-raw,format=BGRx,pixel-aspect-ratio=1/1 ! "
+                f"videocrop name=crop top={crop_top} left={crop_left} right={crop_right} bottom={crop_bottom} !"
+            )
 
-            crop_left = max(0, sel_x)
-            crop_top = max(0, sel_y)
-            crop_right = max(0, sw - (crop_left + sel_w))
-            crop_bottom = max(0, sh - (crop_top + sel_h))
-
-            crop_elem = f"videocrop top={crop_top} left={crop_left} right={crop_right} bottom={crop_bottom} !"
-
-        # Video encoder probe
-        if self.codec == "h265":
-            v_enc = probe_h265_encoder()
-        else:
-            v_enc = probe_h264_encoder()
-
-        # Check if vapostproc is available for VA GPU zero-copy path
-        has_vapostproc = Gst.ElementFactory.find("vapostproc") is not None
+        # Video encoder spec
+        v_enc = build_video_encoder_spec(self.codec, self.framerate)
         is_native_screen = (self.mode == "screen" and self.resolution == "native")
-        use_va_gpu = (
-            v_enc.get("is_hardware", False)
-            and v_enc.get("name", "").startswith("va")
-            and has_vapostproc
-            and not crop_elem
-        )
+        use_va_postproc = bool(v_enc.get("uses_va_postproc"))
+        use_va_dmabuf = is_native_screen and use_va_postproc and not crop_elem
 
-        # Determine target caps
+        scale_size_props = ""
         if self.resolution == "1080p":
-            caps_str = f"video/x-raw,width=1920,height=1080,framerate={self.framerate}/1"
+            scale_size_props = ",width=1920,height=1080"
         elif self.resolution == "720p":
-            caps_str = f"video/x-raw,width=1280,height=720,framerate={self.framerate}/1"
-        else:
-            if self.mode == "window" and self.crop_box:
-                init_w = max(4, int(self.crop_box[2]) - (int(self.crop_box[2]) % 2))
-                init_h = max(4, int(self.crop_box[3]) - (int(self.crop_box[3]) % 2))
-                caps_str = f"video/x-raw,width={init_w},height={init_h},framerate={self.framerate}/1"
-            elif self.mode == "selection" and self.crop_box:
-                sel_w = max(4, int(self.crop_box[2] * self.scale_factor))
-                sel_w -= (sel_w % 2)
-                sel_h = max(4, int(self.crop_box[3] * self.scale_factor))
-                sel_h -= (sel_h % 2)
-                caps_str = f"video/x-raw,width={sel_w},height={sel_h},framerate={self.framerate}/1"
-            else:
-                caps_str = f"video/x-raw,framerate={self.framerate}/1"
+            scale_size_props = ",width=1280,height=720"
+        elif self.mode == "window" and self.crop_box:
+            init_w = max(2, int(self.crop_box[2]) & ~1)
+            init_h = max(2, int(self.crop_box[3]) & ~1)
+            scale_size_props = f",width={init_w},height={init_h}"
 
-        # Performance optimizations:
-        # 1. In native screen mode: skip videoscale entirely to eliminate unnecessary copies
-        # 2. In VA hardware mode: use vapostproc directly in GPU memory when available
-        if is_native_screen:
-            conv_scale_elem = "vapostproc !" if use_va_gpu else "videoconvert !"
-        elif use_va_gpu:
-            conv_scale_elem = "vapostproc !"
+        needs_scale = (self.mode == "window" or self.resolution != "native")
+        if use_va_dmabuf:
+            conv_scale_caps = "video/x-raw(memory:DMABuf),pixel-aspect-ratio=1/1 ! vapostproc ! video/x-raw(memory:VAMemory),format=NV12,colorimetry=bt709"
+        elif use_va_postproc:
+            pre_src = "" if crop_elem else "videoconvert ! video/x-raw,format=BGRx,pixel-aspect-ratio=1/1 ! "
+            scale_step = f"videoscale add-borders=true ! video/x-raw,format=BGRx{scale_size_props},pixel-aspect-ratio=1/1 ! " if needs_scale else ""
+            conv_scale_caps = f"{pre_src}{scale_step}vapostproc ! video/x-raw(memory:VAMemory),format=NV12,colorimetry=bt709"
         else:
-            conv_scale_elem = "videoconvert ! videoscale add-borders=true !"
+            yuv_fmt = v_enc["yuv_format"]
+            color_prop = ",colorimetry=bt709" if yuv_fmt == "I420" else ""
+            pre_src = "" if crop_elem else "video/x-raw,pixel-aspect-ratio=1/1 ! "
+            scale_step = "" if is_native_screen else "videoscale add-borders=true ! "
+            conv_scale_caps = f"{pre_src}videoconvert ! {scale_step}video/x-raw,format={yuv_fmt}{color_prop}{scale_size_props},pixel-aspect-ratio=1/1"
 
-        # 3. Anti-stutter safety valve: drop excess frames downstream if GPU/CPU is overwhelmed
+        # Drop excess frames cleanly without duplicating on static screen
+        rate_elem = f"videorate drop-only=true max-rate={self.framerate} !"
         leaky_queue = "queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 !"
 
         v_pipeline = (
-            f"{v_src} ! {crop_elem} {conv_scale_elem} videorate ! {caps_str} ! "
-            f"{leaky_queue} {v_enc['pipeline_str']} ! {v_enc['parser']} ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! mux."
+            f"{v_src} ! {crop_elem} {conv_scale_caps} ! {rate_elem} "
+            f"{leaky_queue} {v_enc['full_str']} ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! mux."
         )
 
         # Audio Pipeline
-        a_enc = probe_audio_encoder()
+        a_enc = media_probe.probe_audio_encoder()
         a_pipeline = ""
+        a_caps = "audio/x-raw,rate=48000,channels=2"
 
         if self.audio_mode == "system":
             a_pipeline = (
                 f'pulsesrc device="@DEFAULT_SINK@.monitor" ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! '
-                f"audioconvert ! audioresample ! {a_enc['pipeline_str']} ! {a_enc['parser']} ! queue ! mux."
+                f"audioconvert ! audioresample ! {a_caps} ! {a_enc['pipeline_str']} ! {a_enc['parser']} ! queue ! mux."
             )
         elif self.audio_mode == "mic":
             a_pipeline = (
                 f'pulsesrc device="{self.microphone_id}" ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! '
-                f"audioconvert ! audioresample ! {a_enc['pipeline_str']} ! {a_enc['parser']} ! queue ! mux."
+                f"audioconvert ! audioresample ! {a_caps} ! {a_enc['pipeline_str']} ! {a_enc['parser']} ! queue ! mux."
             )
         elif self.audio_mode == "both":
             a_pipeline = (
-                f"audiomixer name=mix ! audioconvert ! audioresample ! {a_enc['pipeline_str']} ! {a_enc['parser']} ! queue ! mux. "
-                f'pulsesrc device="@DEFAULT_SINK@.monitor" ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! audioconvert ! audioresample ! mix. '
-                f'pulsesrc device="{self.microphone_id}" ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! audioconvert ! audioresample ! mix.'
+                f"audiomixer name=mix ! audioconvert ! audioresample ! {a_caps} ! {a_enc['pipeline_str']} ! {a_enc['parser']} ! queue ! mux. "
+                f'pulsesrc device="@DEFAULT_SINK@.monitor" ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! audioconvert ! audioresample ! {a_caps} ! mix. '
+                f'pulsesrc device="{self.microphone_id}" ! queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0 ! audioconvert ! audioresample ! {a_caps} ! mix.'
             )
 
-        mux_str = f'{get_muxer_element()} name=mux ! filesink location="{self.output_path}"'
+        mux_str = f'{media_probe.get_muxer_element()} name=mux ! filesink location="{self.output_path}"'
 
         return f"{mux_str} {v_pipeline} {a_pipeline}"
 

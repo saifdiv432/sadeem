@@ -1,0 +1,11 @@
+{
+  "name": "Sadeem Menu",
+  "description": "Native application launcher and intelligent search menu for Sadeem OS",
+  "uuid": "sadeem-menu@sadeem.os",
+  "settings-schema": "org.sadeem.menu",
+  "shell-version": [
+    "50",
+    "51"
+  ],
+  "version": 1
+}

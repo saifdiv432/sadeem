@@ -1,13 +1,3 @@
-[org/gnome/shell/extensions/arcmenu]
-menu-button-icon='/usr/share/icons/hicolor/scalable/apps/sadeem-logo.svg'
-menu-button-icon-size=24
-menu-height=700
-menu-layout='elementary'
-menu-position-alignment=58
-menu-width-adjustment=150
-position-in-panel='Left'
-search-entry-border-radius=(true, 25)
-
 [org/gnome/shell/extensions/dash-to-panel]
 click-action='CYCLE-MIN'
 panel-element-positions='{"0":[{"element":"desktopButton","visible":true,"position":"stackedTL"},{"element":"systemMenu","visible":true,"position":"stackedTL"},{"element":"dateMenu","visible":true,"position":"stackedTL"},{"element":"rightBox","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedBR"},{"element":"leftBox","visible":true,"position":"stackedBR"},{"element":"showAppsButton","visible":false,"position":"stackedBR"},{"element":"activitiesButton","visible":false,"position":"stackedBR"}]}'

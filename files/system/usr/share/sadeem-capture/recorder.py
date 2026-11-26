@@ -22,7 +22,9 @@ gi.require_version("Gst", "1.0")
 from gi.repository import GLib, Gio, Gst
 
 from capture.portal_screencast import ScreenCastPortalSession
+from capture.video_recorder import attach_even_crop_caps_probe, build_video_encoder_spec
 from capture import media_probe
+import i18n
 
 
 def format_size(bytes_val: int) -> str:
@@ -45,77 +47,103 @@ class VideoRecorderApp:
         self.tmp_mkv = ""
         self.final_mp4 = ""
         self.current_level = 1
+        self.node_id = None
+        self.fd = -1
+        self._bus_watch_id = 0
+        self._got_video_frame = False
+        self._fallback_triggered = False
 
     def build_pipeline_str(self, node_id: int, fd: int, level: int = 1) -> str:
         codec = self.args.codec.lower()
-        fps = int(self.args.fps)
-        key_int = fps * 2
+        fps = int(self.args.fps) if int(self.args.fps) in (30, 60) else 60
         res = self.args.resolution.lower()
 
-        # Resolution caps
-        if res == "1080p":
-            res_caps_raw = "video/x-raw,width=1920,height=1080,pixel-aspect-ratio=1/1 ! "
-        elif res == "720p":
-            res_caps_raw = "video/x-raw,width=1280,height=720,pixel-aspect-ratio=1/1 ! "
-        else:
-            res_caps_raw = "video/x-raw,pixel-aspect-ratio=1/1 ! "
+        v_enc = build_video_encoder_spec(codec, fps)
+        enc_str = v_enc["full_str"]
+        use_va_postproc = bool(v_enc.get("uses_va_postproc"))
+        rate_elem = f"videorate drop-only=true max-rate={fps}"
+        vqueue = "queue name=vqueue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0"
 
-        # Video Encoder
-        if codec == "h265":
-            if media_probe.probe_h265_encoder().get("is_hardware"):
-                enc_str = f"vah265enc b-frames=0 target-usage=7 rate-control=cqp qpi=24 key-int-max={key_int} ! h265parse"
-            else:
-                enc_str = "x265enc speed-preset=ultrafast tune=zerolatency ! h265parse"
-        else:
-            if media_probe.probe_h264_encoder().get("is_hardware"):
-                enc_str = f"vah264enc b-frames=0 target-usage=7 rate-control=cqp qpi=24 key-int-max={key_int} ! h264parse"
-            else:
-                enc_str = "x264enc speed-preset=ultrafast tune=zerolatency ! h264parse"
+        size_props = ""
+        if res == "1080p":
+            size_props = ",width=1920,height=1080"
+        elif res == "720p":
+            size_props = ",width=1280,height=720"
 
         # Level 1: Zero-copy DMA-BUF (screen mode at native resolution)
         if level == 1 and self.args.mode == "screen" and res == "native":
-            video_pipeline = (
-                f"pipewiresrc fd={fd} path=\"{node_id}\" do-timestamp=true keepalive-time=1000 ! "
-                f"video/x-raw(memory:DMABuf),pixel-aspect-ratio=1/1 ! vapostproc ! "
-                f"{enc_str} ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! mux."
-            )
+            if use_va_postproc:
+                va_caps = "video/x-raw(memory:VAMemory),format=NV12,colorimetry=bt709"
+                video_pipeline = (
+                    f"pipewiresrc fd={fd} path=\"{node_id}\" do-timestamp=true keepalive-time=1000 ! "
+                    f"video/x-raw(memory:DMABuf),pixel-aspect-ratio=1/1 ! vapostproc ! {va_caps} ! {rate_elem} ! "
+                    f"{vqueue} ! {enc_str} ! queue ! mux."
+                )
+            else:
+                yuv_fmt = v_enc["yuv_format"]
+                color_prop = ",colorimetry=bt709" if yuv_fmt == "I420" else ""
+                video_pipeline = (
+                    f"pipewiresrc fd={fd} path=\"{node_id}\" do-timestamp=true keepalive-time=1000 ! "
+                    f"video/x-raw(memory:DMABuf),pixel-aspect-ratio=1/1 ! vapostproc ! "
+                    f"video/x-raw,format={yuv_fmt}{color_prop},pixel-aspect-ratio=1/1 ! {rate_elem} ! "
+                    f"{vqueue} ! {enc_str} ! queue ! mux."
+                )
         else:
-            # Modes with dynamic / scaled aspect ratio (window, scaled screen, or selection crop)
-            crop_filter = ""
+            # Level 2: Fixate pixel-aspect-ratio=1/1 on BGRx BEFORE videocrop and vapostproc
+            # to prevent unfixated upstream PAR (e.g. 1/2147483647) overflowing gst_va_vpp_fixate_size.
+            has_crop = False
             if self.args.mode == "selection" and self.args.crop:
                 try:
                     parts = [int(p) for p in self.args.crop.split(",")]
-                    if len(parts) == 4:
-                        crop_filter = "videocrop name=crop ! "
+                    has_crop = len(parts) == 4
                 except Exception:
-                    crop_filter = ""
+                    has_crop = False
 
-            video_pipeline = (
-                f"pipewiresrc fd={fd} path=\"{node_id}\" do-timestamp=true keepalive-time=1000 ! "
-                f"video/x-raw ! {crop_filter}videoconvert ! videoscale add-borders=true ! {res_caps_raw}"
-                f"{enc_str} ! queue leaky=downstream max-size-buffers=2 max-size-bytes=0 max-size-time=0 ! mux."
-            )
+            needs_scale = (self.args.mode == "window" or res != "native")
+            if use_va_postproc:
+                bgrx_caps = "video/x-raw,format=BGRx,pixel-aspect-ratio=1/1"
+                prep = f"videoconvert ! {bgrx_caps} ! videocrop name=crop ! " if has_crop else f"videoconvert ! {bgrx_caps} ! "
+                scale_part = f"videoscale add-borders=true ! video/x-raw,format=BGRx{size_props},pixel-aspect-ratio=1/1 ! " if needs_scale else ""
+                va_caps = "video/x-raw(memory:VAMemory),format=NV12,colorimetry=bt709"
+                video_pipeline = (
+                    f"pipewiresrc fd={fd} path=\"{node_id}\" do-timestamp=true keepalive-time=1000 ! "
+                    f"{prep}{scale_part}vapostproc ! {va_caps} ! {rate_elem} ! "
+                    f"{vqueue} ! {enc_str} ! queue ! mux."
+                )
+            else:
+                yuv_fmt = v_enc["yuv_format"]
+                color_prop = ",colorimetry=bt709" if yuv_fmt == "I420" else ""
+                prep = "videoconvert ! video/x-raw,format=BGRx,pixel-aspect-ratio=1/1 ! videocrop name=crop ! " if has_crop else "video/x-raw,pixel-aspect-ratio=1/1 ! "
+                scale_part = "videoscale add-borders=true ! " if needs_scale else ""
+                raw_caps = f"video/x-raw,format={yuv_fmt}{color_prop}{size_props},pixel-aspect-ratio=1/1"
+                video_pipeline = (
+                    f"pipewiresrc fd={fd} path=\"{node_id}\" do-timestamp=true keepalive-time=1000 ! "
+                    f"{prep}videoconvert ! {scale_part}{raw_caps} ! {rate_elem} ! "
+                    f"{vqueue} ! {enc_str} ! queue ! mux."
+                )
 
-        # Audio branch
+        # Audio branch (consistent buffering + 48kHz stereo caps across all modes)
         audio_mode = self.args.audio.lower()
         audio_pipeline = ""
+        a_caps = "audio/x-raw,rate=48000,channels=2"
+        q_audio = "queue max-size-buffers=0 max-size-time=1000000000 max-size-bytes=0"
         if audio_mode == "system":
             audio_pipeline = (
-                "pulsesrc device=\"@DEFAULT_SINK@.monitor\" ! audioconvert ! audioresample ! "
-                "avenc_aac ! aacparse ! queue ! mux."
+                f'pulsesrc device="@DEFAULT_SINK@.monitor" ! {q_audio} ! audioconvert ! audioresample ! '
+                f"{a_caps} ! avenc_aac ! aacparse ! queue ! mux."
             )
         elif audio_mode == "mic":
             mic_dev = f"device=\"{self.args.mic}\"" if self.args.mic else ""
             audio_pipeline = (
-                f"pulsesrc {mic_dev} ! audioconvert ! audioresample ! "
-                "avenc_aac ! aacparse ! queue ! mux."
+                f"pulsesrc {mic_dev} ! {q_audio} ! audioconvert ! audioresample ! "
+                f"{a_caps} ! avenc_aac ! aacparse ! queue ! mux."
             )
         elif audio_mode == "both":
             mic_dev = f"device=\"{self.args.mic}\"" if self.args.mic else ""
             audio_pipeline = (
-                f"pulsesrc device=\"@DEFAULT_SINK@.monitor\" ! audioconvert ! audioresample ! queue ! mixer. "
-                f"pulsesrc {mic_dev} ! audioconvert ! audioresample ! queue ! mixer. "
-                "audiomixer name=mixer ! audioconvert ! audioresample ! avenc_aac ! aacparse ! queue ! mux."
+                f'pulsesrc device="@DEFAULT_SINK@.monitor" ! {q_audio} ! audioconvert ! audioresample ! {a_caps} ! queue ! mixer. '
+                f"pulsesrc {mic_dev} ! {q_audio} ! audioconvert ! audioresample ! {a_caps} ! queue ! mixer. "
+                f"audiomixer name=mixer ! audioconvert ! audioresample ! {a_caps} ! avenc_aac ! aacparse ! queue ! mux."
             )
 
         full_pipeline = (
@@ -133,9 +161,13 @@ class VideoRecorderApp:
         os.makedirs(recordings_dir, exist_ok=True)
 
         now_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        prefix = "تسجيل_سديم"
+        prefix = i18n.t("filename_video_prefix") or "Sadeem_Recording"
         self.final_mp4 = os.path.join(recordings_dir, f"{prefix}_{now_str}.mp4")
-        self.tmp_mkv = os.path.join(recordings_dir, f".sadeem_tmp_{now_str}.mkv")
+        idx = 1
+        while os.path.exists(self.final_mp4):
+            self.final_mp4 = os.path.join(recordings_dir, f"{prefix}_{now_str}_{idx}.mp4")
+            idx += 1
+        self.tmp_mkv = os.path.join(recordings_dir, f".sadeem_tmp_{now_str}_{os.getpid()}.mkv")
 
         # 1. Establish Portal Screencast Session
         self.portal = ScreenCastPortalSession()
@@ -152,74 +184,23 @@ class VideoRecorderApp:
             print("[Recorder] Failed to obtain screencast portal session", file=sys.stderr)
             return 1
 
+        self.node_id = node_id
+        self.fd = fd
+        self.loop = GLib.MainLoop()
+
         # 2. Setup GStreamer pipeline (Level 1 zero-copy or Level 2)
         initial_level = 2 if (self.args.mode == "selection" and self.args.crop) else 1
-        self.current_level = initial_level
-        pipe_str = self.build_pipeline_str(node_id, fd, level=initial_level)
-
-        try:
-            self.pipeline = Gst.parse_launch(pipe_str)
-        except Exception as e:
-            print(f"[Recorder] Pipeline parse error on Level {initial_level}: {e}", file=sys.stderr)
-            if initial_level == 1:
-                # Fallback to Level 2
-                self.current_level = 2
-                pipe_str = self.build_pipeline_str(node_id, fd, level=2)
-                try:
-                    self.pipeline = Gst.parse_launch(pipe_str)
-                except Exception as e2:
-                    print(f"[Recorder] Level 2 pipeline parse error: {e2}", file=sys.stderr)
-                    self.portal.close()
-                    return 1
-            else:
+        if not self._setup_and_start_pipeline(initial_level):
+            if initial_level == 1 and not self._switch_to_level2():
                 self.portal.close()
                 return 1
-
-        # Configure dynamic videocrop if present
-        if self.args.crop:
-            try:
-                crop_elem = self.pipeline.get_by_name("crop")
-                if crop_elem:
-                    parts = [int(p) for p in self.args.crop.split(",")]
-                    if len(parts) == 4:
-                        cx, cy, cw, ch = parts
-                        crop_elem.set_property("left", max(0, cx))
-                        crop_elem.set_property("top", max(0, cy))
-            except Exception:
-                pass
-
-        self.loop = GLib.MainLoop()
-        bus = self.pipeline.get_bus()
-        bus.add_watch(GLib.PRIORITY_DEFAULT, self._on_bus_message)
+            elif initial_level != 1:
+                self.portal.close()
+                return 1
 
         # 3. Register signal handlers for clean SIGINT / SIGTERM stop
         signal.signal(signal.SIGINT, self._handle_signal)
         signal.signal(signal.SIGTERM, self._handle_signal)
-
-        # 4. Start pipeline
-        ret = self.pipeline.set_state(Gst.State.PLAYING)
-        if ret == Gst.StateChangeReturn.FAILURE:
-            print(f"[Recorder] Failed to start pipeline on Level {self.current_level}", file=sys.stderr)
-            if self.current_level == 1:
-                # Retry on Level 2
-                self.pipeline.set_state(Gst.State.NULL)
-                self.current_level = 2
-                pipe_str = self.build_pipeline_str(node_id, fd, level=2)
-                try:
-                    self.pipeline = Gst.parse_launch(pipe_str)
-                    bus = self.pipeline.get_bus()
-                    bus.add_watch(GLib.PRIORITY_DEFAULT, self._on_bus_message)
-                    ret = self.pipeline.set_state(Gst.State.PLAYING)
-                    if ret == Gst.StateChangeReturn.FAILURE:
-                        self.portal.close()
-                        return 1
-                except Exception as e:
-                    print(f"[Recorder] Level 2 launch error: {e}", file=sys.stderr)
-                    self.portal.close()
-                    return 1
-            else:
-                self.portal.close()
-                return 1
 
         self.is_running = True
         # Output status to listening captureUI
@@ -233,6 +214,86 @@ class VideoRecorderApp:
         # 5. Clean teardown and remuxing
         return self._finalize_recording()
 
+    def _teardown_pipeline(self):
+        if self._bus_watch_id:
+            try:
+                GLib.source_remove(self._bus_watch_id)
+            except Exception:
+                pass
+            self._bus_watch_id = 0
+        if self.pipeline:
+            try:
+                self.pipeline.set_state(Gst.State.NULL)
+            except Exception:
+                pass
+            self.pipeline = None
+
+    def _attach_probes(self):
+        if not self.pipeline:
+            return
+        if self.args.mode == "selection" and self.args.crop:
+            try:
+                parts = [int(p) for p in self.args.crop.split(",")]
+                if len(parts) == 4:
+                    cx, cy, cw, ch = parts
+                    lw, lh = 0, 0
+                    mon_sz = getattr(self.args, "monitor_size", "") or ""
+                    if mon_sz:
+                        ms_parts = [int(v) for v in mon_sz.split(",")]
+                        if len(ms_parts) == 2 and ms_parts[0] > 0 and ms_parts[1] > 0:
+                            lw, lh = ms_parts[0], ms_parts[1]
+                    attach_even_crop_caps_probe(
+                        self.pipeline, "crop", cx, cy, cw, ch,
+                        logical_w=lw, logical_h=lh,
+                    )
+            except Exception:
+                pass
+
+        vqueue = self.pipeline.get_by_name("vqueue")
+        if vqueue:
+            sink_pad = vqueue.get_static_pad("sink")
+            if sink_pad:
+                def _on_first_video_frame(_pad, _info):
+                    self._got_video_frame = True
+                    return Gst.PadProbeReturn.REMOVE
+                sink_pad.add_probe(Gst.PadProbeType.BUFFER, _on_first_video_frame)
+
+    def _setup_and_start_pipeline(self, level: int) -> bool:
+        self._teardown_pipeline()
+        self.current_level = level
+        self._got_video_frame = False
+        pipe_str = self.build_pipeline_str(self.node_id, self.fd, level=level)
+        try:
+            self.pipeline = Gst.parse_launch(pipe_str)
+        except Exception as e:
+            print(f"[Recorder] Pipeline parse error on Level {level}: {e}", file=sys.stderr)
+            self.pipeline = None
+            return False
+
+        self._attach_probes()
+        bus = self.pipeline.get_bus()
+        self._bus_watch_id = bus.add_watch(GLib.PRIORITY_DEFAULT, self._on_bus_message)
+
+        ret = self.pipeline.set_state(Gst.State.PLAYING)
+        if ret == Gst.StateChangeReturn.FAILURE:
+            print(f"[Recorder] Failed to start pipeline on Level {level}", file=sys.stderr)
+            self._teardown_pipeline()
+            return False
+        return True
+
+    def _switch_to_level2(self) -> bool:
+        self._fallback_triggered = True
+        if self._setup_and_start_pipeline(2):
+            return True
+        if self.loop and self.loop.is_running():
+            self.loop.quit()
+        return False
+
+    def _switch_to_level2_idle(self):
+        if not self.stop_requested:
+            self._switch_to_level2()
+        return GLib.SOURCE_REMOVE
+
     def _handle_signal(self, signum, frame):
         if not self.stop_requested:
             self.stop_requested = True
@@ -244,7 +305,8 @@ class VideoRecorderApp:
             self.pipeline.send_event(Gst.Event.new_eos())
 
             # Await EOS for up to 4 seconds
-            GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 4, self._force_quit)
+            GLib.timeout_add_seconds(4, self._force_quit)
+        return GLib.SOURCE_REMOVE
 
     def _force_quit(self):
         if self.loop and self.loop.is_running():
@@ -258,6 +320,27 @@ class VideoRecorderApp:
                 self.loop.quit()
         elif t == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
+            err_lower = f"{err} {debug or ''}".lower()
+            is_negotiation = (
+                "not-negotiated" in err_lower
+                or "negotiation" in err_lower
+                or "not negotiated" in err_lower
+                or err.matches(Gst.CoreError.quark(), Gst.CoreError.NEGOTIATION)
+                or err.matches(Gst.StreamError.quark(), Gst.StreamError.FORMAT)
+            )
+            if (
+                self.current_level == 1
+                and not self._got_video_frame
+                and not self._fallback_triggered
+                and is_negotiation
+            ):
+                self._fallback_triggered = True
+                print(
+                    f"[Recorder] Level 1 DMABuf negotiation error ({err}), falling back to Level 2...",
+                    file=sys.stderr,
+                )
+                GLib.idle_add(self._switch_to_level2_idle)
+                return True
             print(f"[Recorder] GStreamer error: {err}, debug: {debug}", file=sys.stderr)
             if self.loop and self.loop.is_running():
                 self.loop.quit()
@@ -303,7 +386,8 @@ class VideoRecorderApp:
             print(f"[Recorder] FFmpeg remuxing error: {e}", file=sys.stderr)
 
         # Fallback: keep MKV if remuxing failed
-        safe_mkv = self.tmp_mkv.replace("/.sadeem_tmp_", "/تسجيل_سديم_")
+        fb_prefix = i18n.t("filename_video_prefix") or "Sadeem_Recording"
+        safe_mkv = self.tmp_mkv.replace("/.sadeem_tmp_", f"/{fb_prefix}_")
         try:
             os.rename(self.tmp_mkv, safe_mkv)
             final_size = os.path.getsize(safe_mkv)
@@ -322,6 +406,7 @@ def main():
     parser.add_argument("--mode", default="screen", choices=["selection", "screen", "window"])
     parser.add_argument("--crop", default="", help="Cropping rectangle x,y,w,h")
     parser.add_argument("--monitor", default="0", help="Monitor index")
+    parser.add_argument("--monitor-size", default="", help="Logical monitor dimensions W,H for HiDPI scaling")
     parser.add_argument("--resolution", default="native", choices=["native", "1080p", "720p"])
     parser.add_argument("--fps", default="60", choices=["30", "60"])
     parser.add_argument("--codec", default="h264", choices=["h264", "h265"])

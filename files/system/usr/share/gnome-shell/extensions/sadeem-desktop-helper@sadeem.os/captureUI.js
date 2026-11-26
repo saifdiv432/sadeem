@@ -52,6 +52,7 @@ class CaptureUI extends St.Widget {
         this._isRecording = false;
         this._lastSilentShotTime = 0;
         this._frozenContent = null;
+        this._frozenScale = 1.0;
         this._cursorInfo = null;
         this._notifSource = null;
 
@@ -715,6 +716,7 @@ class CaptureUI extends St.Widget {
             const [content, scale, cursorContent, cursorPoint, cursorScale] = await shooter.screenshot_stage_to_content();
 
             this._frozenContent = content;
+            this._frozenScale = scale || 1.0;
             this._cursorInfo = {
                 content: cursorContent,
                 point: cursorPoint,
@@ -779,12 +781,18 @@ class CaptureUI extends St.Widget {
         this.visible = false;
         this._isOpen = false;
         this._dragState = null;
+        this._settingsMenuOpen = false;
+        if (this._settingsPopup) {
+            this._settingsPopup.visible = false;
+        }
         this._setDragVisualState(false);
 
         if (this._stageScreenshot) {
             this._stageScreenshot.set_content(null);
         }
         this._frozenContent = null;
+        this._frozenScale = 1.0;
+        this._cursorInfo = null;
     }
 
     destroy() {
@@ -1167,24 +1175,88 @@ class CaptureUI extends St.Widget {
         }
     }
 
+    _uniquePngPath(screenshotsDir, prefix, timeStr) {
+        let candidate = `${screenshotsDir}/${prefix}_${timeStr}.png`;
+        let suffix = 1;
+        while (Gio.File.new_for_path(candidate).query_exists(null)) {
+            candidate = `${screenshotsDir}/${prefix}_${timeStr}_${suffix}.png`;
+            suffix++;
+        }
+        return candidate;
+    }
+
+    _finishPhotoSuccess(targetPath, stream) {
+        try { stream.close(null); } catch (_e) {}
+        this._copyImageToClipboard(targetPath);
+        this._notifyCaptureComplete(targetPath, 'photo');
+    }
+
+    _capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor) {
+        let stream = null;
+        try {
+            const file = Gio.File.new_for_path(targetPath);
+            stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
+        } catch (err) {
+            console.error('[CaptureUI] Fallback file stream error: ' + err);
+            return;
+        }
+        const shooter = new Shell.Screenshot();
+        if (captureMode === 'screen') {
+            shooter.screenshot(includeCursor, stream, (_o, res) => {
+                try {
+                    shooter.screenshot_finish(res);
+                    this._finishPhotoSuccess(targetPath, stream);
+                } catch (err) {
+                    console.error('[CaptureUI] screenshot fallback error: ' + err);
+                    try { stream.close(null); } catch (_e) {}
+                }
+            });
+        } else if (captureMode === 'window') {
+            shooter.screenshot_window(true, includeCursor, stream, (_o, res) => {
+                try {
+                    shooter.screenshot_window_finish(res);
+                    this._finishPhotoSuccess(targetPath, stream);
+                } catch (err) {
+                    console.error('[CaptureUI] screenshot_window fallback error: ' + err);
+                    try { stream.close(null); } catch (_e) {}
+                }
+            });
+        } else {
+            shooter.screenshot_area(targetRect.x, targetRect.y, targetRect.width, targetRect.height, stream, (_o, res) => {
+                try {
+                    shooter.screenshot_area_finish(res);
+                    this._finishPhotoSuccess(targetPath, stream);
+                } catch (err) {
+                    console.error('[CaptureUI] screenshot_area fallback error: ' + err);
+                    try { stream.close(null); } catch (_e) {}
+                }
+            });
+        }
+    }
+
     _capturePhoto() {
         const [cx, cy] = global.get_pointer();
         const monitor = this._findMonitorAt(cx, cy) || Main.layoutManager.primaryMonitor;
+        const captureMode = this._mode;
+        const includeCursor = this._includeCursor;
+        const frozenContent = this._frozenContent;
+        const frozenScale = this._frozenScale || 1.0;
+        const cursorInfo = this._cursorInfo;
 
         let targetRect = { x: monitor.x, y: monitor.y, width: monitor.width, height: monitor.height };
 
-        if (this._mode === 'selection') {
+        if (captureMode === 'selection') {
             if (this._selectionRect.width >= 5 && this._selectionRect.height >= 5) {
                 targetRect = { ...this._selectionRect };
             }
-        } else if (this._mode === 'window') {
+        } else if (captureMode === 'window') {
             if (this._hoveredWindow) {
                 const rect = this._hoveredWindow.get_frame_rect();
                 targetRect = { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
             }
         }
 
-        // Target path
+        // Target path (collision-safe for bursts in the same second)
         const picturesDir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) || `${GLib.get_home_dir()}/Pictures`;
         const screenshotsDir = `${picturesDir}/Screenshots`;
         GLib.mkdir_with_parents(screenshotsDir, 0o755);
@@ -1192,34 +1264,58 @@ class CaptureUI extends St.Widget {
         const now = GLib.DateTime.new_now_local();
         const timeStr = now.format('%Y-%m-%d_%H-%M-%S');
         const prefix = I18n.t('filename_prefix');
-        const targetPath = `${screenshotsDir}/${prefix}_${timeStr}.png`;
+        const targetPath = this._uniquePngPath(screenshotsDir, prefix, timeStr);
 
-        // Hide UI immediately to ensure clean capture
+        // Hide UI cleanly before async file write/fallback
         this.close();
 
         // Shutter sound
         this._playShutterSound();
 
-        // Composite from frozen content or screenshot directly
-        const file = Gio.File.new_for_path(targetPath);
-        const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
-
-        const shooter = new Shell.Screenshot();
-        shooter.screenshot_area(targetRect.x, targetRect.y, targetRect.width, targetRect.height, stream, (obj, res) => {
+        // Prefer GPU-frozen composite_to_stream so cursor toggle and frozen menus/tooltips are preserved accurately
+        const texture = frozenContent?.get_texture ? frozenContent.get_texture() : frozenContent;
+        if (texture && typeof Shell.Screenshot.composite_to_stream === 'function') {
+            let stream = null;
             try {
-                shooter.screenshot_area_finish(res);
-                stream.close(null);
+                const file = Gio.File.new_for_path(targetPath);
+                stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
+                const rawCursorContent = includeCursor ? cursorInfo?.content : null;
+                const cursorTexture = rawCursorContent?.get_texture ? rawCursorContent.get_texture() : (rawCursorContent || null);
+                const cursorX = Math.round((cursorInfo?.point?.x || 0) * frozenScale);
+                const cursorY = Math.round((cursorInfo?.point?.y || 0) * frozenScale);
+                const cursorScale = cursorInfo?.scale || 1.0;
 
-                // Copy image bytes to clipboard
-                this._copyImageToClipboard(targetPath);
-
-                // Show clean native notification with Edit / Show in Files actions
-                this._notifyCaptureComplete(targetPath, 'photo');
+                Shell.Screenshot.composite_to_stream(
+                    texture,
+                    Math.round(targetRect.x * frozenScale),
+                    Math.round(targetRect.y * frozenScale),
+                    Math.round(targetRect.width * frozenScale),
+                    Math.round(targetRect.height * frozenScale),
+                    frozenScale,
+                    cursorTexture,
+                    cursorX,
+                    cursorY,
+                    cursorScale,
+                    stream,
+                    (_obj, res) => {
+                        try {
+                            Shell.Screenshot.composite_to_stream_finish(res);
+                            this._finishPhotoSuccess(targetPath, stream);
+                        } catch (err) {
+                            console.error('[CaptureUI] composite_to_stream failed, falling back: ' + err);
+                            try { stream.close(null); } catch (_e) {}
+                            this._capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor);
+                        }
+                    }
+                );
+                return;
             } catch (err) {
-                console.error('[CaptureUI] screenshot_area error: ' + err);
-                try { stream.close(null); } catch (e) {}
+                console.error('[CaptureUI] composite_to_stream init failed, falling back: ' + err);
+                try { stream?.close(null); } catch (_e) {}
             }
-        });
+        }
+
+        this._capturePhotoFallback(targetPath, targetRect, captureMode, includeCursor);
     }
 
     captureSilentScreenshot() {
@@ -1239,7 +1335,7 @@ class CaptureUI extends St.Widget {
 
         const dt = GLib.DateTime.new_now_local();
         const timeStr = dt.format('%Y-%m-%d_%H-%M-%S');
-        const targetPath = `${screenshotsDir}/${I18n.t('filename_prefix')}_${timeStr}.png`;
+        const targetPath = this._uniquePngPath(screenshotsDir, I18n.t('filename_prefix'), timeStr);
 
         const file = Gio.File.new_for_path(targetPath);
         const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
@@ -1248,9 +1344,7 @@ class CaptureUI extends St.Widget {
         shooter.screenshot(this._includeCursor, stream, (obj, res) => {
             try {
                 shooter.screenshot_finish(res);
-                stream.close(null);
-                this._copyImageToClipboard(targetPath);
-                this._notifyCaptureComplete(targetPath, 'photo');
+                this._finishPhotoSuccess(targetPath, stream);
             } catch (err) {
                 try { stream.close(null); } catch (e) {}
             }
@@ -1282,7 +1376,7 @@ class CaptureUI extends St.Widget {
 
             const dt = GLib.DateTime.new_now_local();
             const timeStr = dt.format('%Y-%m-%d_%H-%M-%S');
-            const targetPath = `${screenshotsDir}/${I18n.t('filename_prefix')}_${timeStr}.png`;
+            const targetPath = this._uniquePngPath(screenshotsDir, I18n.t('filename_prefix'), timeStr);
 
             this._playShutterSound();
 
@@ -1403,7 +1497,7 @@ class CaptureUI extends St.Widget {
             if (parent) {
                 Gio.AppInfo.launch_default_for_uri(
                     parent.get_uri(),
-                    global.create_app_launch_context(0, -1)
+                    global.create_app_launch_context(global.get_current_time(), -1)
                 );
             }
         } catch (err) {
@@ -1495,12 +1589,16 @@ class CaptureUI extends St.Widget {
         argv.push('--mode', this._mode);
 
         if (this._mode === 'selection' && this._selectionRect.width >= 5 && this._selectionRect.height >= 5) {
-            argv.push('--crop', `${this._selectionRect.x},${this._selectionRect.y},${this._selectionRect.width},${this._selectionRect.height}`);
-        } else if (this._mode === 'window' && this._hoveredWindow) {
-            const rect = this._hoveredWindow.get_frame_rect();
-            argv.push('--crop', `${rect.x},${rect.y},${rect.width},${rect.height}`);
+            const locX = Math.max(0, Math.round(this._selectionRect.x - (monitor?.x || 0)));
+            const locY = Math.max(0, Math.round(this._selectionRect.y - (monitor?.y || 0)));
+            const locW = Math.max(2, Math.round(this._selectionRect.width));
+            const locH = Math.max(2, Math.round(this._selectionRect.height));
+            argv.push('--crop', `${locX},${locY},${locW},${locH}`);
         }
 
+        if (monitor?.width > 0 && monitor?.height > 0) {
+            argv.push('--monitor-size', `${Math.round(monitor.width)},${Math.round(monitor.height)}`);
+        }
         argv.push('--monitor', String(Math.max(0, monitorIndex)));
         argv.push('--resolution', this._resolution);
         argv.push('--fps', String(this._fps));

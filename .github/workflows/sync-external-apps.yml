@@ -1,0 +1,47 @@
+name: sync-external-apps
+
+on:
+  schedule:
+    # Run daily at 03:00 UTC (ahead of the twice-weekly 06:00 UTC image build)
+    - cron: "00 03 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Check and Sync ZapFast & MisterDM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+
+      - name: Check and sync latest releases
+        id: sync_apps
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/sync_external_apps.py
+
+      - name: Commit, push, and trigger image build
+        if: steps.sync_apps.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet && [ -z "$(git status --porcelain)" ]; then
+            echo "No repository changes after sync."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add files/scripts/install-external-apps.sh files/system/
+          git commit -m "chore(apps): sync ${{ steps.sync_apps.outputs.summary }}"
+          git push
+          gh workflow run build.yml --ref "${{ github.ref_name }}" || true

@@ -3,6 +3,7 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import St from 'gi://St';
+import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { AppMenu } from 'resource:///org/gnome/shell/ui/appMenu.js';
@@ -106,11 +107,8 @@ export default class SadeemDesktopHelperExtension extends Extension {
         this._setupCursorPopups();
 
         if (Main.extensionManager) {
-            const extSig = Main.extensionManager.connect('extension-state-changed', (mgr, ext) => {
+            const extSig = Main.extensionManager.connect('extension-state-changed', () => {
                 this._setupCursorPopups();
-                if (ext && ext.uuid === 'arcmenu@arcmenu.com') {
-                    this._hookArcMenu();
-                }
             });
             this._signals.push({ obj: Main.extensionManager, id: extSig });
         }
@@ -119,7 +117,7 @@ export default class SadeemDesktopHelperExtension extends Extension {
         this._layeredPackages = new Set();
         this._queryLayeredPackagesAsync();
 
-        // 5. Hook AppMenu and ArcMenu for context menu "Uninstall" option
+        // 5. Hook AppMenu for context menu "Uninstall" option
         this._hookAppMenu();
 
         // 6. Hook Quick Settings screenshot button to launch sadeem-capture
@@ -178,15 +176,6 @@ export default class SadeemDesktopHelperExtension extends Extension {
         if (this._origAppMenuOpen) {
             AppMenu.prototype.open = this._origAppMenuOpen;
             this._origAppMenuOpen = null;
-        }
-
-        // Restore ArcMenu AppContextMenu.prototype.open
-        if (this._origArcMenuOpen && this._arcMenuClass) {
-            try {
-                this._arcMenuClass.prototype.open = this._origArcMenuOpen;
-            } catch (e) {}
-            this._origArcMenuOpen = null;
-            this._arcMenuClass = null;
         }
 
         // Restore Main.screenshotUI.open
@@ -337,48 +326,6 @@ export default class SadeemDesktopHelperExtension extends Extension {
                 return self._origAppMenuOpen.call(this, animate);
             };
         }
-
-        this._hookArcMenu();
-    }
-
-    async _hookArcMenu() {
-        if (this._origArcMenuOpen) return;
-        try {
-            let modulePath = null;
-            const arcMenuExt = Main.extensionManager?.lookup ? Main.extensionManager.lookup('arcmenu@arcmenu.com') : null;
-            if (arcMenuExt?.dir) {
-                const appMenuFile = arcMenuExt.dir.get_child('appMenu.js');
-                if (appMenuFile.query_exists(null)) {
-                    modulePath = appMenuFile.get_uri();
-                }
-            }
-            if (!modulePath) {
-                const defaultFile = Gio.File.new_for_path('/usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/appMenu.js');
-                if (defaultFile.query_exists(null)) {
-                    modulePath = defaultFile.get_uri();
-                }
-            }
-
-            if (modulePath) {
-                const arcModule = await import(modulePath);
-                if (arcModule?.AppContextMenu && !this._origArcMenuOpen) {
-                    const AppContextMenu = arcModule.AppContextMenu;
-                    this._origArcMenuOpen = AppContextMenu.prototype.open;
-                    this._arcMenuClass = AppContextMenu;
-                    const self = this;
-                    AppContextMenu.prototype.open = function(animate) {
-                        try {
-                            self._injectUninstallerItem(this);
-                        } catch (e) {
-                            console.error('[SadeemDesktopHelper] Error injecting uninstaller item in ArcMenu: ' + e);
-                        }
-                        return self._origArcMenuOpen.call(this, animate);
-                    };
-                }
-            }
-        } catch (err) {
-            console.error('[SadeemDesktopHelper] Failed to hook ArcMenu: ' + err);
-        }
     }
 
     _hookQuickSettingsScreenshot() {
@@ -392,7 +339,7 @@ export default class SadeemDesktopHelperExtension extends Extension {
                     if (Main.panel.closeQuickSettings) {
                         Main.panel.closeQuickSettings();
                     } else if (Main.panel.statusArea.quickSettings?.menu) {
-                        Main.panel.statusArea.quickSettings.menu.close({animate: false});
+                        Main.panel.statusArea.quickSettings.menu.close(BoxPointer.PopupAnimation.NONE);
                     }
                 } catch (e) {}
 

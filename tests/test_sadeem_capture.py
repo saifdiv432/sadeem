@@ -12,6 +12,7 @@ Tests actual live components:
 
 import argparse
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -19,6 +20,7 @@ import sys
 import tempfile
 import unittest
 import yaml
+from PIL import Image
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CAPTURE_DIR = os.path.join(REPO_ROOT, "files/system/usr/share/sadeem-capture")
@@ -139,6 +141,314 @@ class TestGstreamerPipelineGeneration(unittest.TestCase):
 
             pipe = Gst.parse_launch(pipe_str)
             self.assertIsNotNone(pipe, f"Gst.parse_launch failed for screen native ({codec})")
+
+    def test_selection_crop_no_green_bar_or_chroma_shift(self):
+        """
+        End-to-end pixel alignment test on odd and non-16-aligned dimensions (866x536, 866x836, 501x403):
+        verifies zero bright green top bar, Chroma/Luma center alignment <= 2.0px, and clean framerate
+        across capture.video_recorder.VideoRecorder and recorder.VideoRecorderApp using the active encoder.
+        """
+        from capture.video_recorder import VideoRecorder, attach_even_crop_caps_probe
+
+        with tempfile.TemporaryDirectory(prefix="sadeem_chroma_test_") as tmpdir:
+            def _make_pattern(path, sw, sh, box_x, box_y):
+                img = Image.new("RGB", (sw, sh), (18, 18, 22))
+                px = img.load()
+                for y in range(box_y, box_y + 80):
+                    for x in range(box_x, box_x + 120):
+                        px[x, y] = (235, 30, 30)
+                img.save(path)
+
+            def _assert_decoded_clean(label, src_png, sw, sh, cx, cy, cw, ch, pipe_str, out_video, use_caps_probe=False):
+                test_str = re.sub(
+                    r"pipewiresrc[^!]+",
+                    (
+                        f'filesrc location="{src_png}" ! pngdec ! imagefreeze num-buffers=5 ! '
+                        f"videoconvert ! video/x-raw,width={sw},height={sh},framerate=30/1 "
+                    ),
+                    pipe_str,
+                    count=1,
+                )
+                p = Gst.parse_launch(test_str)
+                if use_caps_probe:
+                    self.assertTrue(attach_even_crop_caps_probe(p, "crop", cx, cy, cw, ch))
+                p.set_state(Gst.State.PLAYING)
+                msg = p.get_bus().timed_pop_filtered(8 * Gst.SECOND, Gst.MessageType.EOS | Gst.MessageType.ERROR)
+                p.set_state(Gst.State.NULL)
+                self.assertIsNotNone(msg, f"{label}: pipeline timed out")
+                self.assertEqual(msg.type, Gst.MessageType.EOS, f"{label}: pipeline error")
+
+                dec_png = out_video + ".png"
+                subprocess.run(
+                    ["ffmpeg", "-y", "-loglevel", "error", "-i", out_video, "-vframes", "1", dec_png],
+                    check=True,
+                )
+                im = Image.open(dec_png).convert("RGB")
+                w, h = im.size
+                exp_w, exp_h = cw & ~1, ch & ~1
+                self.assertEqual((w % 2, h % 2), (0, 0), f"{label}: output dimensions must be even, got {(w, h)}")
+                self.assertEqual((w, h), (exp_w, exp_h), f"{label}: unexpected cropped size {(w, h)}")
+
+                dec_px = im.load()
+                top_green_excess = max(
+                    dec_px[x, y][1] - max(dec_px[x, y][0], dec_px[x, y][2])
+                    for y in range(min(30, h))
+                    for x in range(w)
+                )
+                self.assertLess(
+                    top_green_excess,
+                    25,
+                    f"{label}: bright green top bar detected (green excess={top_green_excess})",
+                )
+
+                red_xs = [x for y in range(h) for x in range(w) if dec_px[x, y][0] > 150 and dec_px[x, y][1] < 80]
+                red_ys = [y for y in range(h) for x in range(w) if dec_px[x, y][0] > 150 and dec_px[x, y][1] < 80]
+                lum_xs = [x for y in range(h) for x in range(w) if (dec_px[x, y][0] + dec_px[x, y][1] + dec_px[x, y][2]) / 3 > 45]
+                lum_ys = [y for y in range(h) for x in range(w) if (dec_px[x, y][0] + dec_px[x, y][1] + dec_px[x, y][2]) / 3 > 45]
+
+                self.assertGreater(len(red_ys), 100, f"{label}: red box missing from decoded frame")
+                self.assertGreater(len(lum_ys), 100, f"{label}: luminance box missing from decoded frame")
+                diff_x = abs((sum(red_xs) / len(red_xs)) - (sum(lum_xs) / len(lum_xs)))
+                diff_y = abs((sum(red_ys) / len(red_ys)) - (sum(lum_ys) / len(lum_ys)))
+                self.assertLessEqual(diff_x, 2.0, f"{label}: horizontal chroma shift {diff_x:.2f}px > 2px")
+                self.assertLessEqual(diff_y, 2.0, f"{label}: vertical chroma shift {diff_y:.2f}px > 2px")
+
+                probe = subprocess.check_output(
+                    ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=r_frame_rate", "-of", "csv=p=0", out_video],
+                    text=True,
+                ).strip()
+                num, den = [int(v) for v in probe.split("/")]
+                self.assertLessEqual(num / max(1, den), 65.0, f"{label}: bogus r_frame_rate {probe}")
+
+            src_768 = os.path.join(tmpdir, "src_768.png")
+            _make_pattern(src_768, 1366, 768, 300, 180)
+            vr_out = os.path.join(tmpdir, "vr_sel.mp4")
+            vr = VideoRecorder(
+                mode="selection",
+                crop_box=(113, 55, 501, 403),
+                screen_size=(1366, 768),
+                framerate=30,
+                output_path=vr_out,
+            )
+            _assert_decoded_clean("VideoRecorder_501x403", src_768, 1366, 768, 113, 55, 501, 403, vr._build_pipeline_string(42, -1), vr_out, use_caps_probe=True)
+
+            rec_out_501 = os.path.join(tmpdir, "rec_501.mkv")
+            rec_501 = VideoRecorderApp(
+                argparse.Namespace(
+                    mode="selection", crop="113,55,501,403", monitor="0", resolution="native",
+                    fps="30", codec="h264", audio="none", mic="", cursor=True,
+                )
+            )
+            rec_501.tmp_mkv = rec_out_501
+            _assert_decoded_clean("RecorderApp_501x403", src_768, 1366, 768, 113, 55, 501, 403, rec_501.build_pipeline_str(42, 3, level=2), rec_out_501, use_caps_probe=True)
+
+            # Non-multiple-of-16 height tests (866x536 in 1366x768 & 866x836 in 1920x1080)
+            rec_out_536 = os.path.join(tmpdir, "rec_866x536.mkv")
+            rec_536 = VideoRecorderApp(
+                argparse.Namespace(
+                    mode="selection", crop="113,55,866,536", monitor="0", resolution="native",
+                    fps="60", codec="h264", audio="none", mic="", cursor=True,
+                )
+            )
+            rec_536.tmp_mkv = rec_out_536
+            _assert_decoded_clean("RecorderApp_866x536", src_768, 1366, 768, 113, 55, 866, 536, rec_536.build_pipeline_str(42, 3, level=2), rec_out_536, use_caps_probe=True)
+
+            src_1080 = os.path.join(tmpdir, "src_1080.png")
+            _make_pattern(src_1080, 1920, 1080, 420, 360)
+            rec_out_836 = os.path.join(tmpdir, "rec_866x836.mkv")
+            rec_836 = VideoRecorderApp(
+                argparse.Namespace(
+                    mode="selection", crop="120,110,866,836", monitor="0", resolution="native",
+                    fps="60", codec="h264", audio="none", mic="", cursor=True,
+                )
+            )
+            rec_836.tmp_mkv = rec_out_836
+            _assert_decoded_clean("RecorderApp_866x836", src_1080, 1920, 1080, 120, 110, 866, 836, rec_836.build_pipeline_str(42, 3, level=2), rec_out_836, use_caps_probe=True)
+
+            # Verify VA pipeline fixates pixel-aspect-ratio=1/1 before videocrop/vapostproc
+            # and omits pixel-aspect-ratio from VAMemory caps (preventing gst_va_vpp_fixate_size overflow),
+            # including 720p scaled selection mode with real vah264enc.
+            pipe_sel_720 = argparse.Namespace(
+                mode="selection", crop="100,100,501,403", monitor="0", resolution="720p",
+                fps="60", codec="h264", audio="none", mic="", cursor=True,
+            )
+            rec_720 = VideoRecorderApp(pipe_sel_720)
+            rec_720.tmp_mkv = os.path.join(tmpdir, "rec_sel_720.mkv")
+            pipe_720_str = rec_720.build_pipeline_str(42, 3, level=2)
+            self.assertIn("video/x-raw,format=BGRx,pixel-aspect-ratio=1/1 ! videocrop", pipe_720_str)
+            self.assertNotIn("memory:VAMemory),format=NV12,colorimetry=bt709,pixel-aspect-ratio=1/1", pipe_720_str)
+
+            test_720_str = re.sub(
+                r"pipewiresrc[^!]+",
+                f'filesrc location="{src_1080}" ! pngdec ! imagefreeze num-buffers=5 ! videoconvert ! video/x-raw,width=1920,height=1080,framerate=30/1 ',
+                pipe_720_str,
+                count=1,
+            )
+            p720 = Gst.parse_launch(test_720_str)
+            self.assertTrue(attach_even_crop_caps_probe(p720, "crop", 100, 100, 501, 403))
+            p720.set_state(Gst.State.PLAYING)
+            msg720 = p720.get_bus().timed_pop_filtered(8 * Gst.SECOND, Gst.MessageType.EOS | Gst.MessageType.ERROR)
+            p720.set_state(Gst.State.NULL)
+            self.assertIsNotNone(msg720)
+            self.assertEqual(msg720.type, Gst.MessageType.EOS)
+            dec_720 = rec_720.tmp_mkv + ".png"
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", rec_720.tmp_mkv, "-vframes", "1", dec_720], check=True)
+            im720 = Image.open(dec_720).convert("RGB")
+            self.assertEqual(im720.size, (1280, 720))
+            px720 = im720.load()
+            g720 = max(px720[x, y][1] - max(px720[x, y][0], px720[x, y][2]) for y in range(30) for x in range(1280))
+            self.assertLess(g720, 25)
+
+    def test_hidpi_fractional_scaling_crop_margins_and_probe(self):
+        """Verifies HiDPI 150% and 200% scaling math and Gst CAPS pad probe inside videocrop."""
+        from capture.video_recorder import attach_even_crop_caps_probe, compute_even_crop_margins
+
+        # 150% scaling: logical 1280x720 -> physical 1920x1080
+        l150, t150, r150, b150, w150, h150 = compute_even_crop_margins(
+            101, 51, 401, 301, 1920, 1080, logical_w=1280, logical_h=720
+        )
+        self.assertEqual((l150, t150, w150, h150), (152, 76, 602, 452))
+        self.assertEqual((l150 + w150 + r150, t150 + h150 + b150), (1920, 1080))
+
+        # 200% scaling: logical 960x540 -> physical 1920x1080
+        l200, t200, r200, b200, w200, h200 = compute_even_crop_margins(
+            101, 51, 401, 301, 1920, 1080, logical_w=960, logical_h=540
+        )
+        self.assertEqual((l200, t200, w200, h200), (202, 102, 802, 602))
+        self.assertEqual((l200 + w200 + r200, t200 + h200 + b200), (1920, 1080))
+
+        # Live CAPS event probe test at 150% scaling
+        pipe = Gst.parse_launch(
+            "videotestsrc num-buffers=1 ! video/x-raw,format=BGRx,width=1920,height=1080 ! "
+            "videocrop name=crop ! fakesink"
+        )
+        self.assertTrue(attach_even_crop_caps_probe(pipe, "crop", 101, 51, 401, 301, logical_w=1280, logical_h=720))
+        pipe.set_state(Gst.State.PLAYING)
+        msg = pipe.get_bus().timed_pop_filtered(4 * Gst.SECOND, Gst.MessageType.EOS | Gst.MessageType.ERROR)
+        crop = pipe.get_by_name("crop")
+        self.assertEqual((crop.get_property("left"), crop.get_property("top"), crop.get_property("right"), crop.get_property("bottom")), (l150, t150, r150, b150))
+        pipe.set_state(Gst.State.NULL)
+        self.assertIsNotNone(msg)
+        self.assertEqual(msg.type, Gst.MessageType.EOS)
+
+    def test_recorder_do_stop_timeout_encoder_dispatch_and_i18n_fixes(self):
+        """Verifies _do_stop GLib call, probed encoder dispatch (nv/x264), i18n filename, and UI fixes."""
+        import py_compile
+        from unittest.mock import patch
+
+        rec_path = os.path.join(CAPTURE_DIR, "recorder.py")
+        vr_path = os.path.join(CAPTURE_DIR, "capture/video_recorder.py")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            py_compile.compile(rec_path, cfile=os.path.join(tmpdir, "rec.pyc"), doraise=True)
+            py_compile.compile(vr_path, cfile=os.path.join(tmpdir, "vr.pyc"), doraise=True)
+
+        with open(rec_path, "r", encoding="utf-8") as f:
+            rec_code = f.read()
+        self.assertIn("GLib.timeout_add_seconds(4, self._force_quit)", rec_code)
+        self.assertNotIn("GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 4", rec_code)
+        self.assertIn('i18n.t("filename_video_prefix")', rec_code)
+        self.assertNotIn('"تسجيل_سديم"', rec_code)
+        self.assertIn("videorate drop-only=true max-rate=", rec_code)
+        self.assertIn("audio/x-raw,rate=48000,channels=2", rec_code)
+
+        # Verify probed non-VA encoders are honored instead of hardcoding vah264enc
+        args = argparse.Namespace(
+            mode="selection", crop="10,10,400,300", monitor="0", resolution="native",
+            fps="30", codec="h264", audio="system", mic="", cursor=True,
+        )
+        app = VideoRecorderApp(args)
+        app.tmp_mkv = "/tmp/test_dispatch.mkv"
+
+        with patch("capture.media_probe.probe_h264_encoder", return_value={
+            "codec": "h264", "name": "nvh264enc", "pipeline_str": "nvh264enc preset=low-latency-hq",
+            "parser": "h264parse", "is_hardware": True,
+        }):
+            pipe_nv = app.build_pipeline_str(42, 3, level=2)
+            self.assertIn("nvh264enc preset=low-latency-hq", pipe_nv)
+            self.assertNotIn("vah264enc", pipe_nv)
+            self.assertIn("format=NV12", pipe_nv)
+
+        with patch("capture.media_probe.probe_h264_encoder", return_value={
+            "codec": "h264", "name": "x264enc", "pipeline_str": "x264enc speed-preset=veryfast tune=zerolatency",
+            "parser": "h264parse", "is_hardware": False,
+        }):
+            pipe_x264 = app.build_pipeline_str(42, 3, level=2)
+            self.assertIn("x264enc speed-preset=veryfast tune=zerolatency", pipe_x264)
+            self.assertNotIn("vah264enc", pipe_x264)
+            self.assertIn("format=I420,colorimetry=bt709", pipe_x264)
+
+        # Verify _do_stop calls timeout_add_seconds(4, ...) and returns SOURCE_REMOVE
+        class FakePipeline:
+            def send_event(self, _ev):
+                return True
+
+        app.pipeline = FakePipeline()
+        app.is_running = True
+        with patch.object(recorder.GLib, "timeout_add_seconds", return_value=99) as mock_to:
+            ret = app._do_stop()
+            mock_to.assert_called_once_with(4, app._force_quit)
+            self.assertEqual(ret, recorder.GLib.SOURCE_REMOVE)
+
+        # Verify Level 1 DMABuf negotiation error triggers automatic fallback to Level 2 before frames arrive
+        scr_args = argparse.Namespace(
+            mode="screen", crop="", monitor="0", resolution="native",
+            fps="60", codec="h264", audio="none", mic="", cursor=True,
+        )
+        scr_app = VideoRecorderApp(scr_args)
+        scr_app.current_level = 1
+        scr_app._got_video_frame = False
+        scr_app._fallback_triggered = False
+
+        class FakeLoop:
+            def __init__(self):
+                self.quit_called = False
+            def is_running(self):
+                return True
+            def quit(self):
+                self.quit_called = True
+
+        class FakeErr:
+            def matches(self, *_a):
+                return True
+            def __str__(self):
+                return "not-negotiated"
+
+        class FakeMsg:
+            type = recorder.Gst.MessageType.ERROR
+            def parse_error(self):
+                return FakeErr(), "gst_va_vpp_fixate_size integer overflow"
+
+        scr_app.loop = FakeLoop()
+        with patch.object(recorder.GLib, "idle_add") as mock_idle:
+            scr_app._on_bus_message(None, FakeMsg())
+            mock_idle.assert_called_once_with(scr_app._switch_to_level2_idle)
+            self.assertFalse(scr_app.loop.quit_called)
+
+        # After frames arrive, ERROR quits loop normally
+        scr_app._got_video_frame = True
+        scr_app._on_bus_message(None, FakeMsg())
+        self.assertTrue(scr_app.loop.quit_called)
+
+        # Also check video_recorder.py fixates PAR=1/1 before videocrop/vapostproc
+        with open(vr_path, "r", encoding="utf-8") as f:
+            vr_code = f.read()
+        self.assertIn("video/x-raw,format=BGRx,pixel-aspect-ratio=1/1", vr_code)
+        self.assertNotIn("video/x-raw(memory:VAMemory),format=NV12,colorimetry=bt709{size_props},pixel-aspect-ratio=1/1", vr_code)
+
+        # Verify captureUI.js & extension.js cleanups
+        with open(os.path.join(EXT_DIR, "captureUI.js"), "r", encoding="utf-8") as f:
+            ui_code = f.read()
+        self.assertIn("Shell.Screenshot.composite_to_stream(", ui_code)
+        self.assertIn("Shell.Screenshot.composite_to_stream_finish(res)", ui_code)
+        self.assertIn("--monitor-size", ui_code)
+        self.assertIn("this._settingsMenuOpen = false;", ui_code)
+        self.assertIn("global.get_current_time()", ui_code)
+        self.assertNotIn("create_app_launch_context(0, -1)", ui_code)
+
+        with open(os.path.join(EXT_DIR, "extension.js"), "r", encoding="utf-8") as f:
+            ext_code = f.read()
+        self.assertIn("BoxPointer.PopupAnimation.NONE", ext_code)
+        self.assertNotIn("{animate: false}", ext_code)
 
 
 class TestMkvRecordingAndFFmpegRemux(unittest.TestCase):
@@ -593,7 +903,8 @@ class TestGjsAndJsLogic(unittest.TestCase):
         self.assertNotIn("_openInGallery", ui_code)
         self.assertIn("this._notifyCaptureComplete(targetPath, 'photo')", ui_code)
         self.assertIn("this._notifyCaptureComplete(path, 'video')", ui_code)
-        self.assertEqual(ui_code.count("this._notifyCaptureComplete("), 4)
+        self.assertGreaterEqual(ui_code.count("this._notifyCaptureComplete("), 3)
+        self.assertGreaterEqual(ui_code.count("this._finishPhotoSuccess(targetPath, stream)"), 4)
 
 
 class TestSystemIntegration(unittest.TestCase):

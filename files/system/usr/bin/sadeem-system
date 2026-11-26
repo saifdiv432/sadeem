@@ -244,7 +244,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Choose Package...",
         "box_dialog_title": "Select Software Package",
         "box_filter_pkgs": "Software Packages (*.rpm, *.deb)",
-        "box_filter_all": "All Files (*)"
+        "box_filter_all": "All Files (*)",
+        "tab_menu": "Sadeem Menu",
+        "menu_banner_title": "Sadeem Menu Settings",
+        "menu_banner_desc": "Customize menu dimensions, transparency, smart groups, Super key shortcut, and layout.",
+        "menu_schema_missing_title": "Sadeem Menu Schema Not Installed",
+        "menu_schema_missing_desc": "The GSettings schema 'org.sadeem.menu' is not currently available in this environment.",
+        "menu_grp_appearance": "Appearance",
+        "menu_width_title": "Menu Width (px)",
+        "menu_width_desc": "Free pixel width of the popup menu (440 to 1800 px)",
+        "menu_height_title": "Menu Height (px)",
+        "menu_height_desc": "Free pixel height of the popup menu (380 to 1020 px)",
+        "menu_icon_size_title": "Tile Icon Size",
+        "menu_icon_size_desc": "Choose tile icon and cell sizing across the board",
+        "menu_icon_sizes": ["Very Small", "Small", "Medium", "Large", "Very Large"],
+        "menu_opacity_title": "Background Opacity",
+        "menu_opacity_desc": "Adjust menu surface transparency without dimming icons or labels",
+        "menu_grp_content": "Content & Sections",
+        "menu_sidebar_title": "All Apps Sidebar",
+        "menu_sidebar_desc": "Show the collapsible alphabetical All Apps sidebar with jump grid",
+        "menu_auto_cat_title": "Automatic Smart Groups",
+        "menu_auto_cat_desc": "Automatically populate built-in groups (Sadeem, Office, Games, Social)",
+        "menu_smart_sadeem": "Sadeem Apps",
+        "menu_smart_office": "Office",
+        "menu_smart_games": "Games",
+        "menu_smart_social": "Social",
+        "menu_most_used_title": "Show Most Used Apps",
+        "menu_most_used_desc": "Display frequently launched apps in the bottom strip",
+        "menu_recent_title": "Show Recently Installed Apps",
+        "menu_recent_desc": "Display newly installed applications in the bottom strip",
+        "menu_section_count_title": "Displayed Apps Count",
+        "menu_section_count_desc": "Number of apps shown in this section (1 to 4)",
+        "menu_grp_system": "System & Shortcuts",
+        "menu_power_title": "Power Buttons in Footer",
+        "menu_power_desc": "Display Lock, Restart, and Power Off buttons in the menu footer",
+        "menu_super_title": "Open Menu with Super Key",
+        "menu_super_desc": "Open Sadeem Menu when pressing the Super key instead of Overview",
+        "menu_grp_reset": "Reset",
+        "menu_reset_appearance_title": "Reset Dimensions & Appearance",
+        "menu_reset_appearance_desc": "Restore width, height, icon size, and opacity to schema defaults",
+        "menu_reset_appearance_btn": "Reset Appearance",
+        "menu_reset_appearance_dlg_title": "Reset Dimensions & Appearance?",
+        "menu_reset_appearance_dlg_body": "Menu width, height, icon size, and background opacity will be restored to their default values.",
+        "menu_reset_appearance_toast": "Menu dimensions and appearance reset to defaults",
+        "menu_reset_layout_title": "Reset Apps & Groups Layout",
+        "menu_reset_layout_desc": "Clear all custom pins, positions, sizes, and user-created groups",
+        "menu_reset_layout_btn": "Reset Layout",
+        "menu_reset_layout_dlg_title": "Reset Apps & Groups Layout?",
+        "menu_reset_layout_dlg_body": "All custom app placements, folder sizes, and custom groups will be cleared and restored to the default layout.",
+        "menu_reset_layout_toast": "Apps and groups layout reset to defaults",
+        "menu_reset_confirm_btn": "Reset"
     },
     "ar": {
         "drv_system_busy_title": "تجهيز النظام قيد التنفيذ",
@@ -461,7 +510,56 @@ TRANSLATIONS = {
         "btn_choose_package": "اختيار حزمة...",
         "box_dialog_title": "اختر ملف الحزمة البرمجية",
         "box_filter_pkgs": "حزم البرامج (*.rpm, *.deb)",
-        "box_filter_all": "كافة الملفات (*)"
+        "box_filter_all": "كافة الملفات (*)",
+        "tab_menu": "قائمة سديم",
+        "menu_banner_title": "إعدادات قائمة سديم",
+        "menu_banner_desc": "تخصيص أبعاد القائمة وشفافية الخلفية والمجموعات الذكية واختصار Super وتخطيط التطبيقات.",
+        "menu_schema_missing_title": "مخطط قائمة سديم غير مثبت",
+        "menu_schema_missing_desc": "مخطط الإعدادات 'org.sadeem.menu' غير متاح حالياً في هذه البيئة.",
+        "menu_grp_appearance": "المظهر",
+        "menu_width_title": "عرض القائمة (بكسل)",
+        "menu_width_desc": "العرض الحر لنافذة القائمة بالبكسل (من 440 إلى 1800 بكسل)",
+        "menu_height_title": "ارتفاع القائمة (بكسل)",
+        "menu_height_desc": "الارتفاع الحر لنافذة القائمة بالبكسل (من 380 إلى 1020 بكسل)",
+        "menu_icon_size_title": "حجم الأيقونات",
+        "menu_icon_size_desc": "مستوى حجم البلاطات والأيقونات داخل لوحة التطبيقات",
+        "menu_icon_sizes": ["صغير جداً", "صغير", "متوسط", "كبير", "كبير جداً"],
+        "menu_opacity_title": "شفافية الخلفية",
+        "menu_opacity_desc": "تعديل شفافية سطح القائمة دون التأثير على وضوح الأيقونات أو النصوص",
+        "menu_grp_content": "المحتوى والأقسام",
+        "menu_sidebar_title": "عمود «كل التطبيقات» الجانبي",
+        "menu_sidebar_desc": "إظهار العمود الأبجدي الجانبي القابل للطي مع شبكة القفز",
+        "menu_auto_cat_title": "المجموعات الذكية التلقائية",
+        "menu_auto_cat_desc": "تعبئة المجموعات المدمجة تلقائياً (تطبيقات سديم، الأوفيس، الألعاب، التواصل)",
+        "menu_smart_sadeem": "تطبيقات سديم",
+        "menu_smart_office": "الأوفيس",
+        "menu_smart_games": "الألعاب",
+        "menu_smart_social": "التواصل",
+        "menu_most_used_title": "إظهار «الأكثر استخداماً»",
+        "menu_most_used_desc": "عرض التطبيقات الأكثر تشغيلاً في الشريط السفلي",
+        "menu_recent_title": "إظهار «الأحدث تثبيتاً»",
+        "menu_recent_desc": "عرض التطبيقات المثبتة حديثاً في الشريط السفلي",
+        "menu_section_count_title": "عدد التطبيقات المعروضة",
+        "menu_section_count_desc": "عدد التطبيقات الظاهرة في هذا القسم (من 1 إلى 4)",
+        "menu_grp_system": "النظام والاختصارات",
+        "menu_power_title": "أزرار الطاقة في التذييل",
+        "menu_power_desc": "إظهار أزرار القفل وإعادة التشغيل وإيقاف التشغيل في التذييل",
+        "menu_super_title": "فتح القائمة بمفتاح Super",
+        "menu_super_desc": "يفتح قائمة سديم بمفتاح Super بدلاً من النظرة العامة",
+        "menu_grp_reset": "إعادة الضبط",
+        "menu_reset_appearance_title": "إعادة ضبط الأبعاد والمظهر",
+        "menu_reset_appearance_desc": "استعادة العرض والارتفاع وحجم الأيقونات والشفافية للقيم الافتراضية",
+        "menu_reset_appearance_btn": "إعادة ضبط المظهر",
+        "menu_reset_appearance_dlg_title": "إعادة ضبط الأبعاد والمظهر؟",
+        "menu_reset_appearance_dlg_body": "سيتم استعادة عرض القائمة وارتفاعها وحجم الأيقونات وشفافية الخلفية إلى قيمها الافتراضية.",
+        "menu_reset_appearance_toast": "تمت استعادة الأبعاد والمظهر إلى القيم الافتراضية",
+        "menu_reset_layout_title": "إعادة ضبط تخطيط التطبيقات والمجموعات",
+        "menu_reset_layout_desc": "حذف جميع المواضع والأحجام المخصصة والمجموعات المنشأة يدوياً",
+        "menu_reset_layout_btn": "إعادة ضبط التخطيط",
+        "menu_reset_layout_dlg_title": "إعادة ضبط تخطيط التطبيقات والمجموعات؟",
+        "menu_reset_layout_dlg_body": "سيتم مسح جميع التخصيصات والمجموعات المخصصة واستعادة التخطيط الافتراضي للقائمة.",
+        "menu_reset_layout_toast": "تمت استعادة تخطيط التطبيقات والمجموعات للوضع الافتراضي",
+        "menu_reset_confirm_btn": "إعادة الضبط"
     },
     "fr": {
         "cat_audio": "Audio",
@@ -678,7 +776,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Choisir un paquet...",
         "box_dialog_title": "Sélectionner un paquet logiciel",
         "box_filter_pkgs": "Paquets logiciels (*.rpm, *.deb)",
-        "box_filter_all": "Tous les fichiers (*)"
+        "box_filter_all": "Tous les fichiers (*)",
+        "tab_menu": "Menu Sadeem",
+        "menu_banner_title": "Paramètres du menu Sadeem",
+        "menu_banner_desc": "Personnalisez les dimensions, la transparence, les groupes intelligents, la touche Super et la disposition.",
+        "menu_schema_missing_title": "Schéma du menu Sadeem introuvable",
+        "menu_schema_missing_desc": "Le schéma GSettings « org.sadeem.menu » n'est pas disponible dans cet environnement.",
+        "menu_grp_appearance": "Apparence",
+        "menu_width_title": "Largeur du menu (px)",
+        "menu_width_desc": "Largeur libre du menu contextuel (440 à 1800 px)",
+        "menu_height_title": "Hauteur du menu (px)",
+        "menu_height_desc": "Hauteur libre du menu contextuel (380 à 1020 px)",
+        "menu_icon_size_title": "Taille des icônes",
+        "menu_icon_size_desc": "Choisir la taille des tuiles et icônes sur le tableau",
+        "menu_icon_sizes": ["Très petite", "Petite", "Moyenne", "Grande", "Très grande"],
+        "menu_opacity_title": "Opacité de l'arrière-plan",
+        "menu_opacity_desc": "Ajuster la transparence du fond sans atténuer les icônes ou les textes",
+        "menu_grp_content": "Contenu et sections",
+        "menu_sidebar_title": "Barre latérale « Toutes les applications »",
+        "menu_sidebar_desc": "Afficher la barre latérale alphabétique pliable avec grille d'accès",
+        "menu_auto_cat_title": "Groupes intelligents automatiques",
+        "menu_auto_cat_desc": "Remplir automatiquement les groupes intégrés (Sadeem, Bureautique, Jeux, Social)",
+        "menu_smart_sadeem": "Applications Sadeem",
+        "menu_smart_office": "Bureautique",
+        "menu_smart_games": "Jeux",
+        "menu_smart_social": "Social",
+        "menu_most_used_title": "Afficher « Les plus utilisées »",
+        "menu_most_used_desc": "Afficher les applications les plus lancées dans la barre inférieure",
+        "menu_recent_title": "Afficher « Récemment installées »",
+        "menu_recent_desc": "Afficher les applications nouvellement installées dans la barre inférieure",
+        "menu_section_count_title": "Nombre d'applications affichées",
+        "menu_section_count_desc": "Nombre d'applications dans cette section (1 à 4)",
+        "menu_grp_system": "Système et raccourcis",
+        "menu_power_title": "Boutons d'alimentation en bas",
+        "menu_power_desc": "Afficher Verrouiller, Redémarrer et Éteindre dans le pied du menu",
+        "menu_super_title": "Ouvrir avec la touche Super",
+        "menu_super_desc": "Ouvre le menu Sadeem avec la touche Super au lieu de la vue d'ensemble",
+        "menu_grp_reset": "Réinitialisation",
+        "menu_reset_appearance_title": "Réinitialiser dimensions et apparence",
+        "menu_reset_appearance_desc": "Rétablir la largeur, la hauteur, la taille des icônes et l'opacité par défaut",
+        "menu_reset_appearance_btn": "Réinitialiser l'apparence",
+        "menu_reset_appearance_dlg_title": "Réinitialiser dimensions et apparence ?",
+        "menu_reset_appearance_dlg_body": "La largeur, la hauteur, la taille des icônes et l'opacité retrouveront leurs valeurs par défaut.",
+        "menu_reset_appearance_toast": "Dimensions et apparence réinitialisées",
+        "menu_reset_layout_title": "Réinitialiser la disposition des applications",
+        "menu_reset_layout_desc": "Effacer tous les épinglages, positions, tailles et groupes personnalisés",
+        "menu_reset_layout_btn": "Réinitialiser la disposition",
+        "menu_reset_layout_dlg_title": "Réinitialiser la disposition des applications ?",
+        "menu_reset_layout_dlg_body": "Toutes les positions personnalisées et groupes créés seront effacés.",
+        "menu_reset_layout_toast": "Disposition du menu réinitialisée",
+        "menu_reset_confirm_btn": "Réinitialiser"
     },
     "es": {
         "cat_audio": "Audio",
@@ -895,7 +1042,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Elegir paquete...",
         "box_dialog_title": "Seleccionar paquete de software",
         "box_filter_pkgs": "Paquetes de software (*.rpm, *.deb)",
-        "box_filter_all": "Todos los archivos (*)"
+        "box_filter_all": "Todos los archivos (*)",
+        "tab_menu": "Menú de Sadeem",
+        "menu_banner_title": "Configuración del menú de Sadeem",
+        "menu_banner_desc": "Personaliza dimensiones, opacidad del fondo, grupos inteligentes, tecla Super y disposición.",
+        "menu_schema_missing_title": "Esquema del menú no instalado",
+        "menu_schema_missing_desc": "El esquema GSettings 'org.sadeem.menu' no está disponible en este entorno.",
+        "menu_grp_appearance": "Apariencia",
+        "menu_width_title": "Ancho del menú (px)",
+        "menu_width_desc": "Ancho libre en píxeles de la ventana del menú (440 a 1800 px)",
+        "menu_height_title": "Alto del menú (px)",
+        "menu_height_desc": "Alto libre en píxeles de la ventana del menú (380 a 1020 px)",
+        "menu_icon_size_title": "Tamaño de los iconos",
+        "menu_icon_size_desc": "Elige el tamaño de las celdas e iconos en el tablero",
+        "menu_icon_sizes": ["Muy pequeño", "Pequeño", "Mediano", "Grande", "Muy grande"],
+        "menu_opacity_title": "Opacidad del fondo",
+        "menu_opacity_desc": "Ajusta la transparencia del fondo sin atenuar iconos ni textos",
+        "menu_grp_content": "Contenido y secciones",
+        "menu_sidebar_title": "Barra lateral «Todas las aplicaciones»",
+        "menu_sidebar_desc": "Mostrar la barra lateral alfabética plegable con cuadrícula de salto",
+        "menu_auto_cat_title": "Grupos inteligentes automáticos",
+        "menu_auto_cat_desc": "Rellenar automáticamente los grupos integrados (Sadeem, Oficina, Juegos, Social)",
+        "menu_smart_sadeem": "Aplicaciones de Sadeem",
+        "menu_smart_office": "Oficina",
+        "menu_smart_games": "Juegos",
+        "menu_smart_social": "Social",
+        "menu_most_used_title": "Mostrar «Más usadas»",
+        "menu_most_used_desc": "Mostrar aplicaciones frecuentes en la franja inferior",
+        "menu_recent_title": "Mostrar «Instaladas recientemente»",
+        "menu_recent_desc": "Mostrar aplicaciones recién instaladas en la franja inferior",
+        "menu_section_count_title": "Cantidad de aplicaciones mostradas",
+        "menu_section_count_desc": "Número de aplicaciones mostradas en esta sección (1 a 4)",
+        "menu_grp_system": "Sistema y atajos",
+        "menu_power_title": "Botones de energía en el pie",
+        "menu_power_desc": "Mostrar Bloquear, Reiniciar y Apagar en el pie del menú",
+        "menu_super_title": "Abrir menú con tecla Super",
+        "menu_super_desc": "Abre el menú de Sadeem con la tecla Super en lugar de la vista general",
+        "menu_grp_reset": "Restablecimiento",
+        "menu_reset_appearance_title": "Restablecer dimensiones y apariencia",
+        "menu_reset_appearance_desc": "Restaurar ancho, alto, tamaño de iconos y opacidad predeterminados",
+        "menu_reset_appearance_btn": "Restablecer apariencia",
+        "menu_reset_appearance_dlg_title": "¿Restablecer dimensiones y apariencia?",
+        "menu_reset_appearance_dlg_body": "El ancho, el alto, el tamaño de iconos y la opacidad volverán a sus valores predeterminados.",
+        "menu_reset_appearance_toast": "Dimensiones y apariencia restablecidas",
+        "menu_reset_layout_title": "Restablecer disposición de aplicaciones",
+        "menu_reset_layout_desc": "Borrar todas las posiciones, tamaños y grupos personalizados",
+        "menu_reset_layout_btn": "Restablecer disposición",
+        "menu_reset_layout_dlg_title": "¿Restablecer disposición de aplicaciones?",
+        "menu_reset_layout_dlg_body": "Se eliminarán todas las posiciones personalizadas y grupos creados manualmente.",
+        "menu_reset_layout_toast": "Disposición de aplicaciones restablecida",
+        "menu_reset_confirm_btn": "Restablecer"
     },
     "de": {
         "cat_audio": "Audio",
@@ -1112,7 +1308,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Paket wählen...",
         "box_dialog_title": "Softwarepaket auswählen",
         "box_filter_pkgs": "Softwarepakete (*.rpm, *.deb)",
-        "box_filter_all": "Alle Dateien (*)"
+        "box_filter_all": "Alle Dateien (*)",
+        "tab_menu": "Sadeem-Menü",
+        "menu_banner_title": "Sadeem-Menü-Einstellungen",
+        "menu_banner_desc": "Menügröße, Hintergrundtransparenz, intelligente Gruppen, Super-Taste und Layout anpassen.",
+        "menu_schema_missing_title": "Menü-Schema nicht installiert",
+        "menu_schema_missing_desc": "Das GSettings-Schema 'org.sadeem.menu' ist in dieser Umgebung nicht verfügbar.",
+        "menu_grp_appearance": "Darstellung",
+        "menu_width_title": "Menübreite (px)",
+        "menu_width_desc": "Freie Breite des Menüs in Pixeln (440 bis 1800 px)",
+        "menu_height_title": "Menühöhe (px)",
+        "menu_height_desc": "Freie Höhe des Menüs in Pixeln (380 bis 1020 px)",
+        "menu_icon_size_title": "Symbolgröße",
+        "menu_icon_size_desc": "Größe der Kacheln und Symbole auf der Tafel festlegen",
+        "menu_icon_sizes": ["Sehr klein", "Klein", "Mittel", "Groß", "Sehr groß"],
+        "menu_opacity_title": "Hintergrunddeckkraft",
+        "menu_opacity_desc": "Hintergrundtransparenz anpassen, ohne Symbole oder Texte abzudunkeln",
+        "menu_grp_content": "Inhalt & Bereiche",
+        "menu_sidebar_title": "Seitenleiste „Alle Apps“",
+        "menu_sidebar_desc": "Einklappbare alphabetische Seitenleiste mit Sprungraster anzeigen",
+        "menu_auto_cat_title": "Automatische intelligente Gruppen",
+        "menu_auto_cat_desc": "Integrierte Gruppen automatisch füllen (Sadeem, Büro, Spiele, Sozial)",
+        "menu_smart_sadeem": "Sadeem-Apps",
+        "menu_smart_office": "Büro",
+        "menu_smart_games": "Spiele",
+        "menu_smart_social": "Sozial",
+        "menu_most_used_title": "„Meistgenutzt“ anzeigen",
+        "menu_most_used_desc": "Häufig gestartete Apps in der unteren Leiste anzeigen",
+        "menu_recent_title": "„Kürzlich installiert“ anzeigen",
+        "menu_recent_desc": "Neu installierte Apps in der unteren Leiste anzeigen",
+        "menu_section_count_title": "Anzahl angezeigter Apps",
+        "menu_section_count_desc": "Anzahl der Apps in diesem Bereich (1 bis 4)",
+        "menu_grp_system": "System & Tastenkürzel",
+        "menu_power_title": "Ein/Aus-Schaltflächen in der Fußzeile",
+        "menu_power_desc": "Sperren, Neustart und Ausschalten in der Fußzeile anzeigen",
+        "menu_super_title": "Menü mit Super-Taste öffnen",
+        "menu_super_desc": "Öffnet das Sadeem-Menü mit der Super-Taste statt der Übersicht",
+        "menu_grp_reset": "Zurücksetzen",
+        "menu_reset_appearance_title": "Größe & Darstellung zurücksetzen",
+        "menu_reset_appearance_desc": "Breite, Höhe, Symbolgröße und Deckkraft auf Standardwerte zurücksetzen",
+        "menu_reset_appearance_btn": "Darstellung zurücksetzen",
+        "menu_reset_appearance_dlg_title": "Größe & Darstellung zurücksetzen?",
+        "menu_reset_appearance_dlg_body": "Menübreite, -höhe, Symbolgröße und Deckkraft werden auf Standardwerte zurückgesetzt.",
+        "menu_reset_appearance_toast": "Abmessungen und Darstellung zurückgesetzt",
+        "menu_reset_layout_title": "App- und Gruppenlayout zurücksetzen",
+        "menu_reset_layout_desc": "Alle benutzerdefinierten Positionen, Größen und Gruppen löschen",
+        "menu_reset_layout_btn": "Layout zurücksetzen",
+        "menu_reset_layout_dlg_title": "App- und Gruppenlayout zurücksetzen?",
+        "menu_reset_layout_dlg_body": "Alle eigenen Anordnungen, Ordnergrößen und Gruppen werden gelöscht.",
+        "menu_reset_layout_toast": "App- und Gruppenlayout zurückgesetzt",
+        "menu_reset_confirm_btn": "Zurücksetzen"
     },
     "tr": {
         "cat_audio": "Ses",
@@ -1329,7 +1574,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Paket Seç...",
         "box_dialog_title": "Yazılım Paketi Seçin",
         "box_filter_pkgs": "Yazılım Paketleri (*.rpm, *.deb)",
-        "box_filter_all": "Tüm Dosyalar (*)"
+        "box_filter_all": "Tüm Dosyalar (*)",
+        "tab_menu": "Sadeem Menüsü",
+        "menu_banner_title": "Sadeem Menüsü Ayarları",
+        "menu_banner_desc": "Menü boyutlarını, arka plan saydamlığını, akıllı grupları, Super tuşunu ve düzeni özelleştirin.",
+        "menu_schema_missing_title": "Menü Şeması Yüklü Değil",
+        "menu_schema_missing_desc": "'org.sadeem.menu' GSettings şeması şu anda bu ortamda kullanılabilir değil.",
+        "menu_grp_appearance": "Görünüm",
+        "menu_width_title": "Menü Genişliği (px)",
+        "menu_width_desc": "Menü penceresinin serbest piksel genişliği (440 - 1800 px)",
+        "menu_height_title": "Menü Yüksekliği (px)",
+        "menu_height_desc": "Menü penceresinin serbest piksel yüksekliği (380 - 1020 px)",
+        "menu_icon_size_title": "Simge Boyutu",
+        "menu_icon_size_desc": "Pano üzerindeki kutucuk ve simge boyut düzeyini seçin",
+        "menu_icon_sizes": ["Çok Küçük", "Küçük", "Orta", "Büyük", "Çok Büyük"],
+        "menu_opacity_title": "Arka Plan Opaklığı",
+        "menu_opacity_desc": "Simgeleri ve yazıları soldurmadan menü yüzeyi saydamlığını ayarlayın",
+        "menu_grp_content": "İçerik ve Bölümler",
+        "menu_sidebar_title": "“Tüm Uygulamalar” Kenar Çubuğu",
+        "menu_sidebar_desc": "Atlama ızgaralı katlanabilir alfabetik kenar çubuğunu göster",
+        "menu_auto_cat_title": "Otomatik Akıllı Gruplar",
+        "menu_auto_cat_desc": "Yerleşik grupları otomatik doldur (Sadeem, Ofis, Oyunlar, Sosyal)",
+        "menu_smart_sadeem": "Sadeem Uygulamaları",
+        "menu_smart_office": "Ofis",
+        "menu_smart_games": "Oyunlar",
+        "menu_smart_social": "Sosyal",
+        "menu_most_used_title": "“En Çok Kullanılanlar”ı Göster",
+        "menu_most_used_desc": "Sık başlatılan uygulamaları alt şeritte göster",
+        "menu_recent_title": "“Son Kurulanlar”ı Göster",
+        "menu_recent_desc": "Yeni kurulan uygulamaları alt şeritte göster",
+        "menu_section_count_title": "Gösterilen Uygulama Sayısı",
+        "menu_section_count_desc": "Bu bölümde gösterilen uygulama sayısı (1 - 4)",
+        "menu_grp_system": "Sistem ve Kısayollar",
+        "menu_power_title": "Alt Bilgide Güç Düğmeleri",
+        "menu_power_desc": "Menü alt bilgisinde Kilitle, Yeniden Başlat ve Kapat düğmelerini göster",
+        "menu_super_title": "Menüyü Super Tuşu ile Aç",
+        "menu_super_desc": "Genel bakış yerine Super tuşuna basıldığında Sadeem Menüsü'nü açar",
+        "menu_grp_reset": "Sıfırlama",
+        "menu_reset_appearance_title": "Boyutları ve Görünümü Sıfırla",
+        "menu_reset_appearance_desc": "Genişlik, yükseklik, simge boyutu ve opaklığı varsayılanlara döndür",
+        "menu_reset_appearance_btn": "Görünümü Sıfırla",
+        "menu_reset_appearance_dlg_title": "Boyutlar ve Görünüm Sıfırlansın mı?",
+        "menu_reset_appearance_dlg_body": "Menü genişliği, yüksekliği, simge boyutu ve opaklığı varsayılan değerlere döndürülecek.",
+        "menu_reset_appearance_toast": "Boyutlar ve görünüm varsayılanlara sıfırlandı",
+        "menu_reset_layout_title": "Uygulama ve Grup Düzenini Sıfırla",
+        "menu_reset_layout_desc": "Tüm özel sabitlemeleri, konumları, boyutları ve özel grupları temizle",
+        "menu_reset_layout_btn": "Düzeni Sıfırla",
+        "menu_reset_layout_dlg_title": "Uygulama ve Grup Düzeni Sıfırlansın mı?",
+        "menu_reset_layout_dlg_body": "Tüm özel konumlar ve oluşturulan gruplar silinip varsayılan düzene dönülecek.",
+        "menu_reset_layout_toast": "Uygulama ve grup düzeni sıfırlandı",
+        "menu_reset_confirm_btn": "Sıfırla"
     },
     "ru": {
         "cat_audio": "Аудио",
@@ -1546,7 +1840,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Выбрать пакет...",
         "box_dialog_title": "Выберите пакет программы",
         "box_filter_pkgs": "Пакеты программ (*.rpm, *.deb)",
-        "box_filter_all": "Все файлы (*)"
+        "box_filter_all": "Все файлы (*)",
+        "tab_menu": "Меню Sadeem",
+        "menu_banner_title": "Настройки меню Sadeem",
+        "menu_banner_desc": "Настройте размеры меню, прозрачность фона, умные группы, клавишу Super и макет.",
+        "menu_schema_missing_title": "Схема меню не установлена",
+        "menu_schema_missing_desc": "Схема GSettings «org.sadeem.menu» сейчас недоступна в этой среде.",
+        "menu_grp_appearance": "Внешний вид",
+        "menu_width_title": "Ширина меню (пикс.)",
+        "menu_width_desc": "Свободная ширина окна меню в пикселях (от 440 до 1800)",
+        "menu_height_title": "Высота меню (пикс.)",
+        "menu_height_desc": "Свободная высота окна меню в пикселях (от 380 до 1020)",
+        "menu_icon_size_title": "Размер значков",
+        "menu_icon_size_desc": "Выберите масштаб плиток и значков на панели",
+        "menu_icon_sizes": ["Очень мелкий", "Мелкий", "Средний", "Крупный", "Очень крупный"],
+        "menu_opacity_title": "Непрозрачность фона",
+        "menu_opacity_desc": "Регулирует прозрачность фона без затемнения значков и текста",
+        "menu_grp_content": "Содержимое и разделы",
+        "menu_sidebar_title": "Боковая панель «Все приложения»",
+        "menu_sidebar_desc": "Показывать сворачиваемую алфавитную панель с сеткой быстрого перехода",
+        "menu_auto_cat_title": "Автоматические умные группы",
+        "menu_auto_cat_desc": "Автоматически заполнять встроенные группы (Sadeem, Офис, Игры, Общение)",
+        "menu_smart_sadeem": "Приложения Sadeem",
+        "menu_smart_office": "Офис",
+        "menu_smart_games": "Игры",
+        "menu_smart_social": "Общение",
+        "menu_most_used_title": "Показывать «Часто используемые»",
+        "menu_most_used_desc": "Отображать популярные приложения на нижней ленте",
+        "menu_recent_title": "Показывать «Недавно установленные»",
+        "menu_recent_desc": "Отображать новые приложения на нижней ленте",
+        "menu_section_count_title": "Количество отображаемых приложений",
+        "menu_section_count_desc": "Число приложений в этом разделе (от 1 до 4)",
+        "menu_grp_system": "Система и клавиши",
+        "menu_power_title": "Кнопки питания внизу меню",
+        "menu_power_desc": "Показывать кнопки блокировки, перезагрузки и выключения внизу меню",
+        "menu_super_title": "Открывать меню клавишей Super",
+        "menu_super_desc": "Открывает меню Sadeem нажатием Super вместо обзора",
+        "menu_grp_reset": "Сброс настроек",
+        "menu_reset_appearance_title": "Сбросить размеры и внешний вид",
+        "menu_reset_appearance_desc": "Вернуть ширину, высоту, размер значков и непрозрачность по умолчанию",
+        "menu_reset_appearance_btn": "Сбросить вид",
+        "menu_reset_appearance_dlg_title": "Сбросить размеры и внешний вид?",
+        "menu_reset_appearance_dlg_body": "Ширина, высота, размер значков и непрозрачность фона вернутся к значениям по умолчанию.",
+        "menu_reset_appearance_toast": "Размеры и внешний вид сброшены",
+        "menu_reset_layout_title": "Сбросить макет приложений и групп",
+        "menu_reset_layout_desc": "Удалить все закрепления, позиции, размеры папок и пользовательские группы",
+        "menu_reset_layout_btn": "Сбросить макет",
+        "menu_reset_layout_dlg_title": "Сбросить макет приложений и групп?",
+        "menu_reset_layout_dlg_body": "Все пользовательские настройки расположения и группы будут удалены.",
+        "menu_reset_layout_toast": "Макет приложений и групп сброшен",
+        "menu_reset_confirm_btn": "Сбросить"
     },
     "pt": {
         "cat_audio": "Áudio",
@@ -1763,7 +2106,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Escolher Pacote...",
         "box_dialog_title": "Selecionar Pacote de Software",
         "box_filter_pkgs": "Pacotes de Software (*.rpm, *.deb)",
-        "box_filter_all": "Todos os Ficheiros (*)"
+        "box_filter_all": "Todos os Ficheiros (*)",
+        "tab_menu": "Menu Sadeem",
+        "menu_banner_title": "Definições do Menu Sadeem",
+        "menu_banner_desc": "Personalize dimensões, transparência de fundo, grupos inteligentes, tecla Super e esquema.",
+        "menu_schema_missing_title": "Esquema do Menu não instalado",
+        "menu_schema_missing_desc": "O esquema GSettings 'org.sadeem.menu' não está disponível neste ambiente.",
+        "menu_grp_appearance": "Aparência",
+        "menu_width_title": "Largura do menu (px)",
+        "menu_width_desc": "Largura livre em píxeis do menu (440 a 1800 px)",
+        "menu_height_title": "Altura do menu (px)",
+        "menu_height_desc": "Altura livre em píxeis do menu (380 a 1020 px)",
+        "menu_icon_size_title": "Tamanho dos ícones",
+        "menu_icon_size_desc": "Escolha o tamanho das células e ícones no painel",
+        "menu_icon_sizes": ["Muito pequeno", "Pequeno", "Médio", "Grande", "Muito grande"],
+        "menu_opacity_title": "Opacidade do fundo",
+        "menu_opacity_desc": "Ajustar a transparência do fundo sem escurecer ícones ou textos",
+        "menu_grp_content": "Conteúdo e secções",
+        "menu_sidebar_title": "Barra lateral «Todas as aplicações»",
+        "menu_sidebar_desc": "Mostrar barra lateral alfabética recolhível com grelha de salto",
+        "menu_auto_cat_title": "Grupos inteligentes automáticos",
+        "menu_auto_cat_desc": "Preencher automaticamente grupos integrados (Sadeem, Escritório, Jogos, Social)",
+        "menu_smart_sadeem": "Aplicações Sadeem",
+        "menu_smart_office": "Escritório",
+        "menu_smart_games": "Jogos",
+        "menu_smart_social": "Social",
+        "menu_most_used_title": "Mostrar «Mais utilizadas»",
+        "menu_most_used_desc": "Apresentar aplicações frequentes na faixa inferior",
+        "menu_recent_title": "Mostrar «Instaladas recentemente»",
+        "menu_recent_desc": "Apresentar aplicações recém-instaladas na faixa inferior",
+        "menu_section_count_title": "Número de aplicações mostradas",
+        "menu_section_count_desc": "Quantidade de aplicações nesta secção (1 a 4)",
+        "menu_grp_system": "Sistema e atalhos",
+        "menu_power_title": "Botões de energia no rodapé",
+        "menu_power_desc": "Mostrar Bloquear, Reiniciar e Desligar no rodapé do menu",
+        "menu_super_title": "Abrir menu com tecla Super",
+        "menu_super_desc": "Abre o Menu Sadeem com a tecla Super em vez da vista geral",
+        "menu_grp_reset": "Reposição",
+        "menu_reset_appearance_title": "Repor dimensões e aparência",
+        "menu_reset_appearance_desc": "Restaurar largura, altura, tamanho de ícones e opacidade predefinidos",
+        "menu_reset_appearance_btn": "Repor aparência",
+        "menu_reset_appearance_dlg_title": "Repor dimensões e aparência?",
+        "menu_reset_appearance_dlg_body": "A largura, altura, tamanho de ícones e opacidade voltarão aos valores predefinidos.",
+        "menu_reset_appearance_toast": "Dimensões e aparência repostas",
+        "menu_reset_layout_title": "Repor disposição de aplicações e grupos",
+        "menu_reset_layout_desc": "Limpar todas as posições, tamanhos e grupos personalizados",
+        "menu_reset_layout_btn": "Repor disposição",
+        "menu_reset_layout_dlg_title": "Repor disposição de aplicações e grupos?",
+        "menu_reset_layout_dlg_body": "Todas as posições personalizadas e grupos criados serão apagados.",
+        "menu_reset_layout_toast": "Disposição de aplicações e grupos reposta",
+        "menu_reset_confirm_btn": "Repor"
     },
     "it": {
         "cat_audio": "Audio",
@@ -1980,7 +2372,56 @@ TRANSLATIONS = {
         "btn_choose_package": "Scegli pacchetto...",
         "box_dialog_title": "Seleziona pacchetto software",
         "box_filter_pkgs": "Pacchetti software (*.rpm, *.deb)",
-        "box_filter_all": "Tutti i file (*)"
+        "box_filter_all": "Tutti i file (*)",
+        "tab_menu": "Menu Sadeem",
+        "menu_banner_title": "Impostazioni del menu Sadeem",
+        "menu_banner_desc": "Personalizza dimensioni, opacità dello sfondo, gruppi intelligenti, tasto Super e layout.",
+        "menu_schema_missing_title": "Schema del menu non installato",
+        "menu_schema_missing_desc": "Lo schema GSettings 'org.sadeem.menu' non è disponibile in questo ambiente.",
+        "menu_grp_appearance": "Aspetto",
+        "menu_width_title": "Larghezza menu (px)",
+        "menu_width_desc": "Larghezza libera in pixel del menu (440 - 1800 px)",
+        "menu_height_title": "Altezza menu (px)",
+        "menu_height_desc": "Altezza libera in pixel del menu (380 - 1020 px)",
+        "menu_icon_size_title": "Dimensione icone",
+        "menu_icon_size_desc": "Scegli la dimensione di riquadri e icone nella bacheca",
+        "menu_icon_sizes": ["Molto piccolo", "Piccolo", "Medio", "Grande", "Molto grande"],
+        "menu_opacity_title": "Opacità dello sfondo",
+        "menu_opacity_desc": "Regola la trasparenza dello sfondo senza attenuare icone o testi",
+        "menu_grp_content": "Contenuto e sezioni",
+        "menu_sidebar_title": "Barra laterale «Tutte le app»",
+        "menu_sidebar_desc": "Mostra la barra laterale alfabetica richiudibile con griglia di salto",
+        "menu_auto_cat_title": "Gruppi intelligenti automatici",
+        "menu_auto_cat_desc": "Popola automaticamente i gruppi integrati (Sadeem, Ufficio, Giochi, Social)",
+        "menu_smart_sadeem": "App Sadeem",
+        "menu_smart_office": "Ufficio",
+        "menu_smart_games": "Giochi",
+        "menu_smart_social": "Social",
+        "menu_most_used_title": "Mostra «Più usate»",
+        "menu_most_used_desc": "Visualizza le app avviate più spesso nella barra inferiore",
+        "menu_recent_title": "Mostra «Installate di recente»",
+        "menu_recent_desc": "Visualizza le app appena installate nella barra inferiore",
+        "menu_section_count_title": "Numero di app mostrate",
+        "menu_section_count_desc": "Numero di app visualizzate in questa sezione (1 - 4)",
+        "menu_grp_system": "Sistema e scorciatoie",
+        "menu_power_title": "Pulsanti di alimentazione in basso",
+        "menu_power_desc": "Mostra Blocca, Riavvia e Spegni nella barra inferiore del menu",
+        "menu_super_title": "Apri menu con tasto Super",
+        "menu_super_desc": "Apre il menu Sadeem alla pressione del tasto Super anziché la panoramica",
+        "menu_grp_reset": "Ripristino",
+        "menu_reset_appearance_title": "Ripristina dimensioni e aspetto",
+        "menu_reset_appearance_desc": "Ripristina larghezza, altezza, dimensione icone e opacità predefinite",
+        "menu_reset_appearance_btn": "Ripristina aspetto",
+        "menu_reset_appearance_dlg_title": "Ripristinare dimensioni e aspetto?",
+        "menu_reset_appearance_dlg_body": "Larghezza, altezza, dimensione icone e opacità torneranno ai valori predefiniti.",
+        "menu_reset_appearance_toast": "Dimensioni e aspetto ripristinati",
+        "menu_reset_layout_title": "Ripristina layout di app e gruppi",
+        "menu_reset_layout_desc": "Cancella tutte le posizioni, dimensioni e gruppi personalizzati",
+        "menu_reset_layout_btn": "Ripristina layout",
+        "menu_reset_layout_dlg_title": "Ripristinare layout di app e gruppi?",
+        "menu_reset_layout_dlg_body": "Tutte le disposizioni personalizzate e i gruppi creati saranno eliminati.",
+        "menu_reset_layout_toast": "Layout di app e gruppi ripristinato",
+        "menu_reset_confirm_btn": "Ripristina"
     },
     "zh": {
         "cat_audio": "音频",
@@ -2197,7 +2638,56 @@ TRANSLATIONS = {
         "btn_choose_package": "选择软件包...",
         "box_dialog_title": "选择软件包",
         "box_filter_pkgs": "软件包 (*.rpm, *.deb)",
-        "box_filter_all": "所有文件 (*)"
+        "box_filter_all": "所有文件 (*)",
+        "tab_menu": "Sadeem 菜单",
+        "menu_banner_title": "Sadeem 菜单设置",
+        "menu_banner_desc": "自定义菜单尺寸、背景透明度、智能分组、Super 键快捷键及布局。",
+        "menu_schema_missing_title": "未安装菜单配置架构",
+        "menu_schema_missing_desc": "当前环境中未提供 GSettings 架构 'org.sadeem.menu'。",
+        "menu_grp_appearance": "外观",
+        "menu_width_title": "菜单宽度（像素）",
+        "menu_width_desc": "菜单弹出窗口的自由像素宽度（440 至 1800 像素）",
+        "menu_height_title": "菜单高度（像素）",
+        "menu_height_desc": "菜单弹出窗口的自由像素高度（380 至 1020 像素）",
+        "menu_icon_size_title": "图标大小",
+        "menu_icon_size_desc": "选择面板上的磁贴与图标大小等级",
+        "menu_icon_sizes": ["极小", "小", "中", "大", "极大"],
+        "menu_opacity_title": "背景不透明度",
+        "menu_opacity_desc": "调整菜单背景透明度而不使图标和文字变暗",
+        "menu_grp_content": "内容与分区",
+        "menu_sidebar_title": "“所有应用”侧边栏",
+        "menu_sidebar_desc": "显示可折叠的字母顺序侧边栏及跳转网格",
+        "menu_auto_cat_title": "自动智能分组",
+        "menu_auto_cat_desc": "自动填充内置分组（Sadeem、办公、游戏、社交）",
+        "menu_smart_sadeem": "Sadeem 应用",
+        "menu_smart_office": "办公",
+        "menu_smart_games": "游戏",
+        "menu_smart_social": "社交",
+        "menu_most_used_title": "显示“最常使用”",
+        "menu_most_used_desc": "在底部栏显示最常启动的应用",
+        "menu_recent_title": "显示“最近安装”",
+        "menu_recent_desc": "在底部栏显示最近安装的应用",
+        "menu_section_count_title": "显示的应用数量",
+        "menu_section_count_desc": "此分区中展示的应用数量（1 至 4）",
+        "menu_grp_system": "系统与快捷键",
+        "menu_power_title": "底部电源按钮",
+        "menu_power_desc": "在菜单页脚显示锁定、重启和关机按钮",
+        "menu_super_title": "使用 Super 键打开菜单",
+        "menu_super_desc": "按下 Super 键时打开 Sadeem 菜单而非系统概览",
+        "menu_grp_reset": "重置",
+        "menu_reset_appearance_title": "重置尺寸与外观",
+        "menu_reset_appearance_desc": "将宽度、高度、图标大小和不透明度恢复为默认值",
+        "menu_reset_appearance_btn": "重置外观",
+        "menu_reset_appearance_dlg_title": "重置尺寸与外观？",
+        "menu_reset_appearance_dlg_body": "菜单宽度、高度、图标大小和背景不透明度将恢复为默认值。",
+        "menu_reset_appearance_toast": "已将尺寸与外观恢复为默认值",
+        "menu_reset_layout_title": "重置应用与分组布局",
+        "menu_reset_layout_desc": "清除所有自定义固定项、位置、大小和自建分组",
+        "menu_reset_layout_btn": "重置布局",
+        "menu_reset_layout_dlg_title": "重置应用与分组布局？",
+        "menu_reset_layout_dlg_body": "所有自定义位置和自建分组将被清除并恢复默认布局。",
+        "menu_reset_layout_toast": "已恢复默认应用与分组布局",
+        "menu_reset_confirm_btn": "重置"
     }
 }
 PRESET_HEXES = [
@@ -2210,6 +2700,55 @@ PRESET_HEXES = [
     "#c01c28",
     "#5e5c64",
 ]
+
+SADEEM_MENU_SCHEMA_ID = "org.sadeem.menu"
+SADEEM_MENU_BOUND_KEYS = (
+    "menu-width",
+    "menu-height",
+    "icon-size-level",
+    "menu-opacity",
+    "show-all-apps-sidebar",
+    "auto-categorize",
+    "disabled-smart-groups",
+    "show-most-used",
+    "most-used-count",
+    "show-recently-installed",
+    "recently-installed-count",
+    "show-power-buttons",
+    "bind-super-key",
+    "layout-config",
+)
+SADEEM_SYSTEM_VALID_TABS = ("updates", "colors", "menu", "drivers", "containers")
+
+
+def parse_sadeem_system_cli_args(args):
+    """Parse CLI arguments supporting --page=menu / --page menu / --tab=... / --autostart."""
+    tab = "updates"
+    autostart = False
+    argv = list(args or [])
+    for i, arg in enumerate(argv[1:], start=1):
+        if arg.startswith("--page=") or arg.startswith("--tab="):
+            val = arg.split("=", 1)[1].strip().lower()
+            if val in SADEEM_SYSTEM_VALID_TABS:
+                tab = val
+        elif arg in ("--page", "--tab") and i + 1 < len(argv):
+            val = argv[i + 1].strip().lower()
+            if val in SADEEM_SYSTEM_VALID_TABS:
+                tab = val
+        elif arg == "--autostart":
+            autostart = True
+    return tab, autostart
+
+
+def open_sadeem_menu_settings():
+    """Open Gio.Settings for org.sadeem.menu safely without aborting if schema is absent."""
+    try:
+        source = Gio.SettingsSchemaSource.get_default()
+        if source is None or source.lookup(SADEEM_MENU_SCHEMA_ID, True) is None:
+            return None
+        return Gio.Settings.new(SADEEM_MENU_SCHEMA_ID)
+    except Exception:
+        return None
 
 REMOTE_DB_URL = "https://raw.githubusercontent.com/saifdiv432/saifdora-Silverblue-45/main/data/nvidia-gpu-ids.json"
 LOCAL_DB_PATHS = [
@@ -3972,7 +4511,7 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.t = TranslationProxy()
 
         self.set_title(t("app_title"))
-        self.set_default_size(760, 700)
+        self.set_default_size(940, 720)
 
         # State tracking
         self.is_updating = False
@@ -3981,14 +4520,30 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.reboot_ready = False
         self.reboot_required = False
         self._color_updating = False
+        self._nav_syncing = False
+        self._nav_rows = {}
+        self._nav_titles = {}
+        self._menu_settings = None
+        self._menu_signal_ids = []
         self._upd_pulse_timer = None
         self._upd_checking_timer = None
         self._upd_staging_timer = None
         self._upd_current_frac = 0.0
 
+        self.connect("destroy", self._on_window_destroy)
         self.setup_ui(initial_tab)
         self.check_box_availability()
         self.check_initial_reboot_status()
+
+    def _on_window_destroy(self, *_args):
+        if self._menu_settings and self._menu_signal_ids:
+            for sig_id in self._menu_signal_ids:
+                try:
+                    self._menu_settings.disconnect(sig_id)
+                except Exception:
+                    pass
+        self._menu_signal_ids = []
+        self._menu_settings = None
 
     def check_initial_reboot_status(self):
         def _check():
@@ -4152,81 +4707,121 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
     def setup_ui(self, initial_tab):
         self.setup_color_css()
         self.toast_overlay = Adw.ToastOverlay()
-        self.toolbar_view = Adw.ToolbarView()
-        self.toast_overlay.set_child(self.toolbar_view)
+        self.split_view = Adw.NavigationSplitView(
+            min_sidebar_width=220,
+            max_sidebar_width=280,
+            sidebar_width_fraction=0.28,
+        )
+        self.toast_overlay.set_child(self.split_view)
         self.set_content(self.toast_overlay)
 
-        # HeaderBar with ViewSwitcherTitle
+        # Responsive Breakpoint: collapse sidebar cleanly in narrow windows (max-width: 680sp)
+        bp = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 680sp"))
+        bp.add_setter(self.split_view, "collapsed", True)
+        self.add_breakpoint(bp)
+
+        # Sidebar NavigationPage (GNOME 51 Settings Style)
+        self.sidebar_page = Adw.NavigationPage(title=t("app_title"), tag="sidebar")
+        sidebar_toolbar = Adw.ToolbarView()
+        sidebar_header = Adw.HeaderBar()
+        sidebar_toolbar.add_top_bar(sidebar_header)
+
+        sidebar_scroll = Gtk.ScrolledWindow()
+        sidebar_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        sidebar_scroll.set_vexpand(True)
+
+        self.sidebar_list = Gtk.ListBox()
+        self.sidebar_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.sidebar_list.add_css_class("navigation-sidebar")
+        sidebar_scroll.set_child(self.sidebar_list)
+        sidebar_toolbar.set_content(sidebar_scroll)
+        self.sidebar_page.set_child(sidebar_toolbar)
+
+        # Content NavigationPage
+        self.content_page = Adw.NavigationPage(title=t("app_title"), tag="content")
+        self.toolbar_view = Adw.ToolbarView()
         self.header_bar = Adw.HeaderBar()
-        self.switcher_title = Adw.ViewSwitcherTitle()
-        self.switcher_title.set_title(t("app_title"))
 
         self.btn_header_cleanup = Gtk.Button()
         self.btn_header_cleanup.set_icon_name(safe_icon(["edit-clear-symbolic", "user-trash-symbolic"]))
         self.btn_header_cleanup.set_tooltip_text(t("btn_cleanup_cache"))
         self.btn_header_cleanup.connect("clicked", self.on_cleanup_cache_clicked)
-        self.header_bar.pack_start(self.btn_header_cleanup)
-
-        # ViewStack
-        self.view_stack = Adw.ViewStack()
-        if hasattr(self.switcher_title, 'set_view_stack'):
-            self.switcher_title.set_view_stack(self.view_stack)
-        else:
-            self.switcher_title.set_stack(self.view_stack)
-
-        self.header_bar.set_title_widget(self.switcher_title)
+        self.header_bar.pack_end(self.btn_header_cleanup)
         self.toolbar_view.add_top_bar(self.header_bar)
 
-        # Bottom ViewSwitcherBar for narrow window adaptive view
-        self.switcher_bar = Adw.ViewSwitcherBar()
-        if hasattr(self.switcher_bar, 'set_view_stack'):
-            self.switcher_bar.set_view_stack(self.view_stack)
-        else:
-            self.switcher_bar.set_stack(self.view_stack)
+        self.content_stack = Gtk.Stack()
+        self.content_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.content_stack.set_transition_duration(150)
+        self.toolbar_view.set_content(self.content_stack)
+        self.content_page.set_child(self.toolbar_view)
 
-        self.toolbar_view.add_bottom_bar(self.switcher_bar)
-        self.switcher_title.bind_property(
-            "title-visible",
-            self.switcher_bar,
-            "reveal",
-            GObject.BindingFlags.SYNC_CREATE
-        )
+        self.split_view.set_sidebar(self.sidebar_page)
+        self.split_view.set_content(self.content_page)
 
-        # Build Tab Pages
-        page_updates = self.build_updates_page()
-        page_colors = self.build_colors_page()
-        page_drivers = self.build_drivers_page()
-        page_containers = self.build_containers_page()
+        # Build & Register the 5 Pages
+        pages = [
+            ("updates", t("tab_updates"), safe_icon(["software-update-available-symbolic", "system-software-update-symbolic"]), self.build_updates_page()),
+            ("colors", t("tab_colors"), safe_icon(["preferences-desktop-appearance-symbolic"]), self.build_colors_page()),
+            ("menu", t("tab_menu"), safe_icon(["view-app-grid-symbolic", "start-here-symbolic"]), self.build_menu_page()),
+            ("drivers", t("tab_drivers"), safe_icon(["video-display-symbolic"]), self.build_drivers_page()),
+            ("containers", t("tab_containers"), safe_icon(["package-x-generic-symbolic"]), self.build_containers_page()),
+        ]
+        self._nav_rows = {}
+        self._nav_titles = {}
+        for tab_id, tab_title, icon_name, page_widget in pages:
+            self.content_stack.add_named(page_widget, tab_id)
+            row = Gtk.ListBoxRow()
+            row._tab_id = tab_id
+            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+            box.set_margin_top(10)
+            box.set_margin_bottom(10)
+            box.set_margin_start(6)
+            box.set_margin_end(6)
+            img = Gtk.Image.new_from_icon_name(icon_name)
+            img.set_pixel_size(16)
+            lbl = Gtk.Label(label=tab_title, xalign=0.0, hexpand=True)
+            lbl.set_ellipsize(Pango.EllipsizeMode.END)
+            box.append(img)
+            box.append(lbl)
+            row.set_child(box)
+            self.sidebar_list.append(row)
+            self._nav_rows[tab_id] = row
+            self._nav_titles[tab_id] = tab_title
 
-        self.view_stack.add_titled_with_icon(
-            page_updates, "updates", t("tab_updates"), safe_icon(["software-update-available-symbolic", "system-software-update-symbolic"])
-        )
-        self.view_stack.add_titled_with_icon(
-            page_colors, "colors", t("tab_colors"), safe_icon(["preferences-desktop-appearance-symbolic"])
-        )
-        self.view_stack.add_titled_with_icon(
-            page_drivers, "drivers", t("tab_drivers"), safe_icon(["video-display-symbolic"])
-        )
-        self.view_stack.add_titled_with_icon(
-            page_containers, "containers", t("tab_containers"), safe_icon(["package-x-generic-symbolic"])
-        )
+        def _on_row_selected(_lb, row):
+            if self._nav_syncing or row is None:
+                return
+            tab_id = getattr(row, "_tab_id", None)
+            if tab_id:
+                self.set_active_tab(tab_id)
 
-        self.toolbar_view.set_content(self.view_stack)
+        def _on_row_activated(_lb, row):
+            if row is None:
+                return
+            tab_id = getattr(row, "_tab_id", None)
+            if tab_id:
+                self.set_active_tab(tab_id)
 
-        self.view_stack.connect("notify::visible-child-name", lambda *args: (
-            hasattr(self, "btn_header_cleanup") and self.btn_header_cleanup.set_visible(
-                self.view_stack.get_visible_child_name() == "updates"
-            )
-        ))
+        self.sidebar_list.connect("row-selected", _on_row_selected)
+        self.sidebar_list.connect("row-activated", _on_row_activated)
 
         # Initial Tab Selection
         self.set_active_tab(initial_tab)
 
     def set_active_tab(self, tab_name):
-        if tab_name in ("updates", "colors", "drivers", "containers"):
-            self.view_stack.set_visible_child_name(tab_name)
-            if hasattr(self, "btn_header_cleanup"):
-                self.btn_header_cleanup.set_visible(tab_name == "updates")
+        if tab_name in SADEEM_SYSTEM_VALID_TABS:
+            self._nav_syncing = True
+            try:
+                self.content_stack.set_visible_child_name(tab_name)
+                self.content_page.set_title(self._nav_titles.get(tab_name, t("app_title")))
+                row = self._nav_rows.get(tab_name)
+                if row is not None and self.sidebar_list.get_selected_row() is not row:
+                    self.sidebar_list.select_row(row)
+                self.split_view.set_show_content(True)
+                if hasattr(self, "btn_header_cleanup"):
+                    self.btn_header_cleanup.set_visible(tab_name == "updates")
+            finally:
+                self._nav_syncing = False
             if tab_name == "updates":
                 self.check_initial_reboot_status()
 
@@ -6008,6 +6603,440 @@ stage {{
             subprocess.run(["gsettings", "set", "org.gnome.shell.extensions.user-theme", "name", "Sadeem-Custom"], check=False)
 
     # =========================================================================
+    # TAB MENU: SADEEM MENU SETTINGS (org.sadeem.menu)
+    # =========================================================================
+    def _connect_menu_setting(self, settings, key, callback):
+        sig_id = settings.connect(f"changed::{key}", callback)
+        self._menu_signal_ids.append(sig_id)
+        return sig_id
+
+    def _bind_menu_spin_row(self, settings, key, spin_row, min_val, max_val, syncing):
+        def _sync_from_settings(*_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = max(min_val, min(max_val, int(settings.get_int(key))))
+                if int(round(spin_row.get_value())) != val:
+                    spin_row.set_value(float(val))
+            finally:
+                syncing.discard(key)
+
+        def _on_widget_changed(row, *_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = max(min_val, min(max_val, int(round(row.get_value()))))
+                if settings.get_int(key) != val:
+                    settings.set_int(key, val)
+            finally:
+                syncing.discard(key)
+
+        _sync_from_settings()
+        spin_row.connect("notify::value", _on_widget_changed)
+        self._connect_menu_setting(settings, key, _sync_from_settings)
+
+    def _bind_menu_combo_row(self, settings, key, combo_row, count, syncing):
+        def _sync_from_settings(*_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = max(0, min(count - 1, int(settings.get_int(key))))
+                if int(combo_row.get_selected()) != val:
+                    combo_row.set_selected(val)
+            finally:
+                syncing.discard(key)
+
+        def _on_widget_changed(row, *_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = max(0, min(count - 1, int(row.get_selected())))
+                if settings.get_int(key) != val:
+                    settings.set_int(key, val)
+            finally:
+                syncing.discard(key)
+
+        _sync_from_settings()
+        combo_row.connect("notify::selected", _on_widget_changed)
+        self._connect_menu_setting(settings, key, _sync_from_settings)
+
+    def _bind_menu_switch_row(self, settings, key, switch_row, syncing):
+        def _sync_from_settings(*_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = bool(settings.get_boolean(key))
+                if bool(switch_row.get_active()) != val:
+                    switch_row.set_active(val)
+            finally:
+                syncing.discard(key)
+
+        def _on_widget_changed(row, *_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = bool(row.get_active())
+                if bool(settings.get_boolean(key)) != val:
+                    settings.set_boolean(key, val)
+            finally:
+                syncing.discard(key)
+
+        _sync_from_settings()
+        switch_row.connect("notify::active", _on_widget_changed)
+        self._connect_menu_setting(settings, key, _sync_from_settings)
+
+    def _bind_menu_scale_row(self, settings, key, scale, value_label, min_val, max_val, syncing):
+        def _sync_from_settings(*_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = max(min_val, min(max_val, int(settings.get_int(key))))
+                if int(round(scale.get_value())) != val:
+                    scale.set_value(float(val))
+                value_label.set_text(f"{val}%")
+            finally:
+                syncing.discard(key)
+
+        def _on_scale_changed(sc, *_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = max(min_val, min(max_val, int(round(sc.get_value()))))
+                value_label.set_text(f"{val}%")
+                if settings.get_int(key) != val:
+                    settings.set_int(key, val)
+            finally:
+                syncing.discard(key)
+
+        _sync_from_settings()
+        scale.connect("value-changed", _on_scale_changed)
+        self._connect_menu_setting(settings, key, _sync_from_settings)
+
+    def _bind_menu_expander_row(self, settings, key, expander_row, child_rows, syncing):
+        rows = list(child_rows) if isinstance(child_rows, (list, tuple)) else [child_rows]
+
+        def _sync_from_settings(*_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = bool(settings.get_boolean(key))
+                if bool(expander_row.get_enable_expansion()) != val:
+                    expander_row.set_enable_expansion(val)
+                expander_row.set_expanded(val)
+                for cr in rows:
+                    cr.set_sensitive(val)
+            finally:
+                syncing.discard(key)
+
+        def _on_enable_changed(row, *_args):
+            if key in syncing:
+                return
+            syncing.add(key)
+            try:
+                val = bool(row.get_enable_expansion())
+                row.set_expanded(val)
+                for cr in rows:
+                    cr.set_sensitive(val)
+                if bool(settings.get_boolean(key)) != val:
+                    settings.set_boolean(key, val)
+            finally:
+                syncing.discard(key)
+
+        _sync_from_settings()
+        expander_row.connect("notify::enable-expansion", _on_enable_changed)
+        self._connect_menu_setting(settings, key, _sync_from_settings)
+
+    def _bind_menu_disabled_smart_group_row(self, settings, group_id, switch_row, syncing):
+        sync_key = f"disabled-smart-groups:{group_id}"
+
+        def _sync_from_settings(*_args):
+            if sync_key in syncing:
+                return
+            syncing.add(sync_key)
+            try:
+                disabled = set(settings.get_strv("disabled-smart-groups") or [])
+                val = group_id not in disabled
+                if bool(switch_row.get_active()) != val:
+                    switch_row.set_active(val)
+            finally:
+                syncing.discard(sync_key)
+
+        def _on_widget_changed(row, *_args):
+            if sync_key in syncing:
+                return
+            syncing.add(sync_key)
+            try:
+                enabled = bool(row.get_active())
+                curr = list(settings.get_strv("disabled-smart-groups") or [])
+                if enabled:
+                    nxt = [gid for gid in curr if gid != group_id]
+                    try:
+                        raw_lay = settings.get_string("layout-config") or "{}"
+                        cfg = json.loads(raw_lay)
+                        if isinstance(cfg, dict) and isinstance(cfg.get("removed_groups"), list) and group_id in cfg["removed_groups"]:
+                            cfg["removed_groups"] = [g for g in cfg["removed_groups"] if g != group_id]
+                            settings.set_string("layout-config", json.dumps(cfg))
+                    except Exception:
+                        pass
+                else:
+                    nxt = curr if group_id in curr else (curr + [group_id])
+                if nxt != curr:
+                    settings.set_strv("disabled-smart-groups", nxt)
+            finally:
+                syncing.discard(sync_key)
+
+        _sync_from_settings()
+        switch_row.connect("notify::active", _on_widget_changed)
+        self._connect_menu_setting(settings, "disabled-smart-groups", _sync_from_settings)
+
+    def _confirm_menu_reset(self, heading, body, destructive, on_confirm):
+        def _on_response(_dlg, response):
+            if response == "confirm":
+                on_confirm()
+
+        appearance = Adw.ResponseAppearance.DESTRUCTIVE if destructive else Adw.ResponseAppearance.SUGGESTED
+        if hasattr(Adw, "AlertDialog"):
+            dlg = Adw.AlertDialog.new(heading, body)
+            dlg.add_response("cancel", t("btn_cancel"))
+            dlg.add_response("confirm", t("menu_reset_confirm_btn"))
+            dlg.set_response_appearance("confirm", appearance)
+            dlg.set_default_response("cancel")
+            dlg.set_close_response("cancel")
+            dlg.connect("response", _on_response)
+            dlg.present(self)
+        else:
+            dlg = Adw.MessageDialog(transient_for=self, modal=True, heading=heading, body=body)
+            dlg.add_response("cancel", t("btn_cancel"))
+            dlg.add_response("confirm", t("menu_reset_confirm_btn"))
+            dlg.set_response_appearance("confirm", appearance)
+            dlg.set_default_response("cancel")
+            dlg.set_close_response("cancel")
+            dlg.connect("response", _on_response)
+            dlg.present()
+
+    def build_menu_page(self):
+        page = Adw.PreferencesPage()
+
+        header_group = Adw.PreferencesGroup()
+        header = self.build_page_header(
+            ["view-app-grid-symbolic", "start-here-symbolic"],
+            t("menu_banner_title"),
+            t("menu_banner_desc"),
+        )
+        header_group.add(header)
+        page.add(header_group)
+
+        settings = open_sadeem_menu_settings()
+        self._menu_settings = settings
+        if settings is None:
+            missing_group = Adw.PreferencesGroup()
+            missing_row = Adw.ActionRow(
+                title=t("menu_schema_missing_title"),
+                subtitle=t("menu_schema_missing_desc"),
+            )
+            missing_row.add_prefix(
+                Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic", "dialog-information-symbolic"]))
+            )
+            missing_group.add(missing_row)
+            page.add(missing_group)
+            return page
+
+        syncing = set()
+
+        # Group 1: Appearance
+        grp_appearance = Adw.PreferencesGroup(title=t("menu_grp_appearance"))
+        page.add(grp_appearance)
+
+        raw_sizes = t("menu_icon_sizes")
+        size_labels = [str(s) for s in raw_sizes[:5]] if isinstance(raw_sizes, list) and len(raw_sizes) >= 5 else ["Very Small", "Small", "Medium", "Large", "Very Large"]
+        icon_row = Adw.ComboRow(
+            title=t("menu_icon_size_title"),
+            subtitle=t("menu_icon_size_desc"),
+            model=Gtk.StringList.new(size_labels),
+        )
+        self._bind_menu_combo_row(settings, "icon-size-level", icon_row, 5, syncing)
+        grp_appearance.add(icon_row)
+
+        opacity_row = Adw.ActionRow(
+            title=t("menu_opacity_title"),
+            subtitle=t("menu_opacity_desc"),
+        )
+        opacity_row.set_activatable(False)
+        opacity_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        opacity_box.set_valign(Gtk.Align.CENTER)
+        opacity_adj = Gtk.Adjustment(value=96, lower=10, upper=100, step_increment=1, page_increment=5)
+        opacity_scale = Gtk.Scale(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            adjustment=opacity_adj,
+            draw_value=False,
+        )
+        opacity_scale.set_size_request(180, -1)
+        opacity_scale.set_valign(Gtk.Align.CENTER)
+        opacity_scale.set_digits(0)
+        opacity_lbl = Gtk.Label(label="96%")
+        opacity_lbl.set_width_chars(5)
+        opacity_lbl.set_xalign(1.0)
+        opacity_lbl.set_valign(Gtk.Align.CENTER)
+        opacity_lbl.add_css_class("numeric")
+        opacity_lbl.add_css_class("dim-label")
+        opacity_box.append(opacity_scale)
+        opacity_box.append(opacity_lbl)
+        opacity_row.add_suffix(opacity_box)
+        self._bind_menu_scale_row(settings, "menu-opacity", opacity_scale, opacity_lbl, 10, 100, syncing)
+        grp_appearance.add(opacity_row)
+
+        # Group 2: Content & Sections
+        grp_content = Adw.PreferencesGroup(title=t("menu_grp_content"))
+        page.add(grp_content)
+
+        sidebar_row = Adw.SwitchRow(
+            title=t("menu_sidebar_title"),
+            subtitle=t("menu_sidebar_desc"),
+        )
+        self._bind_menu_switch_row(settings, "show-all-apps-sidebar", sidebar_row, syncing)
+        grp_content.add(sidebar_row)
+
+        auto_cat_exp = Adw.ExpanderRow(
+            title=t("menu_auto_cat_title"),
+            subtitle=t("menu_auto_cat_desc"),
+            show_enable_switch=True,
+        )
+        smart_child_rows = []
+        for sid, tkey in (
+            ("sadeem", "menu_smart_sadeem"),
+            ("office", "menu_smart_office"),
+            ("games", "menu_smart_games"),
+            ("social", "menu_smart_social"),
+        ):
+            s_row = Adw.SwitchRow(title=t(tkey))
+            self._bind_menu_disabled_smart_group_row(settings, sid, s_row, syncing)
+            auto_cat_exp.add_row(s_row)
+            smart_child_rows.append(s_row)
+        self._bind_menu_expander_row(settings, "auto-categorize", auto_cat_exp, smart_child_rows, syncing)
+        grp_content.add(auto_cat_exp)
+
+        most_exp = Adw.ExpanderRow(
+            title=t("menu_most_used_title"),
+            subtitle=t("menu_most_used_desc"),
+            show_enable_switch=True,
+        )
+        most_count_adj = Gtk.Adjustment(value=3, lower=1, upper=4, step_increment=1, page_increment=1)
+        most_count_row = Adw.SpinRow(
+            title=t("menu_section_count_title"),
+            subtitle=t("menu_section_count_desc"),
+            adjustment=most_count_adj,
+            climb_rate=1.0,
+            digits=0,
+        )
+        self._bind_menu_spin_row(settings, "most-used-count", most_count_row, 1, 4, syncing)
+        most_exp.add_row(most_count_row)
+        self._bind_menu_expander_row(settings, "show-most-used", most_exp, most_count_row, syncing)
+        grp_content.add(most_exp)
+
+        recent_exp = Adw.ExpanderRow(
+            title=t("menu_recent_title"),
+            subtitle=t("menu_recent_desc"),
+            show_enable_switch=True,
+        )
+        recent_count_adj = Gtk.Adjustment(value=3, lower=1, upper=4, step_increment=1, page_increment=1)
+        recent_count_row = Adw.SpinRow(
+            title=t("menu_section_count_title"),
+            subtitle=t("menu_section_count_desc"),
+            adjustment=recent_count_adj,
+            climb_rate=1.0,
+            digits=0,
+        )
+        self._bind_menu_spin_row(settings, "recently-installed-count", recent_count_row, 1, 4, syncing)
+        recent_exp.add_row(recent_count_row)
+        self._bind_menu_expander_row(settings, "show-recently-installed", recent_exp, recent_count_row, syncing)
+        grp_content.add(recent_exp)
+
+        # Group 3: System & Shortcuts
+        grp_system = Adw.PreferencesGroup(title=t("menu_grp_system"))
+        page.add(grp_system)
+
+        power_row = Adw.SwitchRow(
+            title=t("menu_power_title"),
+            subtitle=t("menu_power_desc"),
+        )
+        self._bind_menu_switch_row(settings, "show-power-buttons", power_row, syncing)
+        grp_system.add(power_row)
+
+        super_row = Adw.SwitchRow(
+            title=t("menu_super_title"),
+            subtitle=t("menu_super_desc"),
+        )
+        self._bind_menu_switch_row(settings, "bind-super-key", super_row, syncing)
+        grp_system.add(super_row)
+
+        # Group 4: Reset
+        grp_reset = Adw.PreferencesGroup(title=t("menu_grp_reset"))
+        page.add(grp_reset)
+
+        reset_app_row = Adw.ActionRow(
+            title=t("menu_reset_appearance_title"),
+            subtitle=t("menu_reset_appearance_desc"),
+        )
+        btn_reset_app = Gtk.Button(label=t("menu_reset_appearance_btn"))
+        btn_reset_app.set_valign(Gtk.Align.CENTER)
+        btn_reset_app.add_css_class("pill")
+
+        def _do_reset_appearance():
+            for k in ("menu-width", "menu-height", "icon-size-level", "menu-opacity"):
+                settings.reset(k)
+            if hasattr(self, "toast_overlay"):
+                self.toast_overlay.add_toast(Adw.Toast.new(t("menu_reset_appearance_toast")))
+
+        btn_reset_app.connect(
+            "clicked",
+            lambda _b: self._confirm_menu_reset(
+                t("menu_reset_appearance_dlg_title"),
+                t("menu_reset_appearance_dlg_body"),
+                False,
+                _do_reset_appearance,
+            ),
+        )
+        reset_app_row.add_suffix(btn_reset_app)
+        grp_reset.add(reset_app_row)
+
+        reset_layout_row = Adw.ActionRow(
+            title=t("menu_reset_layout_title"),
+            subtitle=t("menu_reset_layout_desc"),
+        )
+        btn_reset_layout = Gtk.Button(label=t("menu_reset_layout_btn"))
+        btn_reset_layout.set_valign(Gtk.Align.CENTER)
+        btn_reset_layout.add_css_class("pill")
+        btn_reset_layout.add_css_class("destructive-action")
+
+        def _do_reset_layout():
+            settings.set_string("layout-config", "{}")
+            if hasattr(self, "toast_overlay"):
+                self.toast_overlay.add_toast(Adw.Toast.new(t("menu_reset_layout_toast")))
+
+        btn_reset_layout.connect(
+            "clicked",
+            lambda _b: self._confirm_menu_reset(
+                t("menu_reset_layout_dlg_title"),
+                t("menu_reset_layout_dlg_body"),
+                True,
+                _do_reset_layout,
+            ),
+        )
+        reset_layout_row.add_suffix(btn_reset_layout)
+        grp_reset.add(reset_layout_row)
+
+        return page
+
+    # =========================================================================
     # TAB 3: SADEEM DRIVER & HARDWARE MANAGER
     # =========================================================================
     def _create_drv_progress_widgets(self, parent_box):
@@ -7122,16 +8151,7 @@ class SadeemSystemApp(Adw.Application):
                 pass
 
         args = command_line.get_arguments()
-        tab = "updates"
-        autostart = False
-
-        for i, arg in enumerate(args[1:], start=1):
-            if arg.startswith("--tab="):
-                tab = arg.split("=")[1].strip().lower()
-            elif arg == "--tab" and i + 1 < len(args):
-                tab = args[i + 1].strip().lower()
-            elif arg == "--autostart":
-                autostart = True
+        tab, autostart = parse_sadeem_system_cli_args(args)
 
         if autostart:
             gpus = detect_nvidia_gpus()
