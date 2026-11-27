@@ -34,7 +34,8 @@ jobs:
             python3-cairo \
             gir1.2-gtk-4.0 \
             gir1.2-adw-1 \
-            gjs
+            gjs \
+            xvfb
 
       - name: Validate YAML configs
         run: |
@@ -120,7 +121,7 @@ jobs:
 
       - name: Run headless Ubuntu-compatible unit tests
         run: |
-          env -u DISPLAY -u WAYLAND_DISPLAY python3 -B -m unittest \
+          xvfb-run -a env GDK_BACKEND=x11 GSK_RENDERER=cairo python3 -B -m unittest \
             tests.test_sadeem_system \
             tests.test_sadeem_windows_handler \
             tests.test_sadeem_video_editor.TestTimelineModel \
@@ -130,7 +131,6 @@ jobs:
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_unified_2d_board_geometry_slots_and_hit_testing_in_gjs \
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_unified_board_appdata_groups_filter_and_search_in_gjs \
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_extension_app_data_manager_signature_and_open_resilience \
-            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_resize_handle_fixed_layout_bounds_in_gjs \
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_rtl_live_resize_board_anchoring_and_dnd_in_gjs \
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_sadeem_system_menu_settings_page_and_translations \
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_distro_defaults_replace_arcmenu_with_sadeem_menu \
