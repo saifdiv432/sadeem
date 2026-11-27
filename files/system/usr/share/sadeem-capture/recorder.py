@@ -157,7 +157,8 @@ class VideoRecorderApp:
 
         # Setup destination directory
         videos_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_VIDEOS) or os.path.expanduser("~/Videos")
-        recordings_dir = os.path.join(videos_dir, "Recordings")
+        folder_name = i18n.t("folder_recordings") or "Recordings"
+        recordings_dir = os.path.join(videos_dir, folder_name)
         os.makedirs(recordings_dir, exist_ok=True)
 
         now_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

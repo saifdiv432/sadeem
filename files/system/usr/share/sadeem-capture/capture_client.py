@@ -320,7 +320,8 @@ def generate_screenshot_path() -> str:
     pics_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES)
     if not pics_dir:
         pics_dir = os.path.expanduser("~/Pictures")
-    screenshots_dir = os.path.join(pics_dir, "Screenshots")
+    folder_name = i18n.t("folder_screenshots") or "Screenshots"
+    screenshots_dir = os.path.join(pics_dir, folder_name)
     os.makedirs(screenshots_dir, exist_ok=True)
 
     now_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

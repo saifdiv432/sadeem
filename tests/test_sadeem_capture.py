@@ -41,6 +41,8 @@ Gst.init(None)
 
 import recorder
 from recorder import VideoRecorderApp, format_size
+import capture_client
+from capture import video_recorder
 import i18n
 
 
@@ -948,6 +950,53 @@ print("EMOJI_EXPANSION_CLAMP_GJS_OK");
             self.assertIn("tab_photo", i18n.STRINGS[lang])
             self.assertIn("tab_video", i18n.STRINGS[lang])
             self.assertIn("notif_recorded_body", i18n.STRINGS[lang])
+            self.assertTrue(i18n.STRINGS[lang].get("folder_screenshots"), f"Missing folder_screenshots in {lang}")
+            self.assertTrue(i18n.STRINGS[lang].get("folder_recordings"), f"Missing folder_recordings in {lang}")
+
+        self.assertEqual(i18n.STRINGS["ar"]["folder_screenshots"], "لقطات الشاشة")
+        self.assertEqual(i18n.STRINGS["ar"]["folder_recordings"], "تسجيلات الشاشة")
+        self.assertEqual(i18n.STRINGS["en"]["folder_screenshots"], "Screenshots")
+        self.assertEqual(i18n.STRINGS["en"]["folder_recordings"], "Recordings")
+
+        # Verify capture_client & video_recorder honor localized folder_screenshots / folder_recordings
+        import unittest.mock
+        orig_lang = i18n.LANG
+        try:
+            with tempfile.TemporaryDirectory() as tmp_media:
+                with unittest.mock.patch("gi.repository.GLib.get_user_special_dir", return_value=tmp_media):
+                    i18n.LANG = "ar"
+                    ar_shot = capture_client.generate_screenshot_path()
+                    ar_rec = video_recorder.generate_recording_path()
+                    self.assertIn(os.path.join(tmp_media, "لقطات الشاشة"), ar_shot)
+                    self.assertIn(os.path.join(tmp_media, "تسجيلات الشاشة"), ar_rec)
+
+                    i18n.LANG = "en"
+                    en_shot = capture_client.generate_screenshot_path()
+                    en_rec = video_recorder.generate_recording_path()
+                    self.assertIn(os.path.join(tmp_media, "Screenshots"), en_shot)
+                    self.assertIn(os.path.join(tmp_media, "Recordings"), en_rec)
+        finally:
+            i18n.LANG = orig_lang
+
+        # Verify recorder.py uses i18n.t("folder_recordings")
+        rec_py = os.path.join(CAPTURE_DIR, "recorder.py")
+        with open(rec_py, "r", encoding="utf-8") as fp:
+            self.assertIn('i18n.t("folder_recordings")', fp.read())
+
+        # Verify gallery media.is_screenshot_item detects all 10 localized folder names
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "sadeem_gallery_media_test",
+            os.path.join(REPO_ROOT, "files/system/usr/share/sadeem-gallery/media.py"),
+        )
+        g_media = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(g_media)
+        for lang in expected_langs:
+            folder = i18n.STRINGS[lang]["folder_screenshots"]
+            self.assertTrue(
+                g_media.is_screenshot_item(f"/home/user/Pictures/{folder}/img_01.png", "img_01.png"),
+                f"is_screenshot_item missed folder '{folder}' ({lang})",
+            )
 
         # Test parameter substitution in Python
         ar_notif = i18n.t("notif_recorded_body", size="25 MB", path="/home/user/video.mp4")
@@ -969,6 +1018,8 @@ print("EMOJI_EXPANSION_CLAMP_GJS_OK");
                 "notif_video_body",
                 "notif_action_edit",
                 "notif_action_show_folder",
+                "folder_screenshots",
+                "folder_recordings",
             ];
             for (const lang of I18n.SUPPORTED_LANGUAGES) {{
                 for (const key of requiredNotifKeys) {{
@@ -983,6 +1034,12 @@ print("EMOJI_EXPANSION_CLAMP_GJS_OK");
             }}
             if (I18n.STRINGS.en.notif_action_edit !== "Edit") {{
                 throw new Error("Unexpected English notif_action_edit label");
+            }}
+            if (I18n.STRINGS.ar.folder_screenshots !== "لقطات الشاشة" || I18n.STRINGS.ar.folder_recordings !== "تسجيلات الشاشة") {{
+                throw new Error("Unexpected Arabic localized capture folder names");
+            }}
+            if (I18n.STRINGS.en.folder_screenshots !== "Screenshots" || I18n.STRINGS.en.folder_recordings !== "Recordings") {{
+                throw new Error("Unexpected English localized capture folder names");
             }}
             print("GJS_I18N_VERIFIED");
             """)
@@ -1142,6 +1199,50 @@ print("EMOJI_EXPANSION_CLAMP_GJS_OK");
         self.assertIn("this._notifyCaptureComplete(path, 'video')", ui_code)
         self.assertGreaterEqual(ui_code.count("this._notifyCaptureComplete("), 3)
         self.assertGreaterEqual(ui_code.count("this._finishPhotoSuccess(targetPath, stream)"), 4)
+
+    def test_no_duplicate_gnome_screenshot_save(self):
+        """
+        Prevents regression of duplicate PNG saves (Screenshots/لقطة_شاشة_... + لقطات الشاشة/Screenshot From ...):
+        1) windowMenuHelper.js must destroy GNOME Shell's built-in Take Screenshot item instead of
+           attaching a second activate handler onto existingItem.
+        2) dconf defaults and gschema override must disable both screenshot and screenshot-window keybindings.
+        3) captureUI.js must save only under Screenshots and never invoke GNOME _storeScreenshot.
+        """
+        wm_path = os.path.join(EXT_DIR, "windowMenuHelper.js")
+        with open(wm_path, "r", encoding="utf-8") as fp:
+            wm_code = fp.read()
+
+        self.assertIn("resource:///org/gnome/shell/ui/popupMenu.js", wm_code)
+        self.assertIn("existingItem.destroy()", wm_code)
+        self.assertIn("new PopupMenu.PopupMenuItem(localizedLabel)", wm_code)
+        self.assertIn("menu.addMenuItem(newItem", wm_code)
+        self.assertNotIn("existingItem.connect(", wm_code)
+        self.assertNotIn("existingItem._sadeemCaptureHandler", wm_code)
+        for tok in ("screenshot", "شاشة", "لقطة", "capture", "bildschirmfoto", "снимок", "截"):
+            self.assertIn(tok, wm_code)
+
+        res = subprocess.run(["gjs", "-m", wm_path], capture_output=True, text=True, timeout=10)
+        out = (res.stderr + "\n" + res.stdout)
+        self.assertNotIn("SyntaxError", out)
+        self.assertNotIn("Failed to parse module", out)
+
+        ui_path = os.path.join(EXT_DIR, "captureUI.js")
+        with open(ui_path, "r", encoding="utf-8") as fp:
+            ui_code = fp.read()
+        self.assertNotIn("_storeScreenshot", ui_code)
+        self.assertNotIn("Screenshot From", ui_code)
+        self.assertIn("I18n.t('folder_screenshots')", ui_code)
+        self.assertEqual(ui_code.count("this._getScreenshotsDir()"), 3)
+
+        for cfg_rel in (
+            "files/system/etc/dconf/db/local.d/01-sadeem-defaults",
+            "files/system/usr/share/glib-2.0/schemas/zz-99-sadeem-wallpaper.gschema.override",
+        ):
+            with open(os.path.join(REPO_ROOT, cfg_rel), "r", encoding="utf-8") as fp:
+                cfg = fp.read()
+            self.assertIn("show-screenshot-ui=['Print']", cfg)
+            self.assertIn("screenshot=@as []", cfg)
+            self.assertIn("screenshot-window=@as []", cfg)
 
     def test_batch3_halo_cursor_capture_performance_and_lockclock_disposal(self):
         """

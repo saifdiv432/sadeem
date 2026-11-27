@@ -17,7 +17,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 if APP_DIR not in sys.path:
@@ -32,31 +32,48 @@ t = i18n.t
 APP_ID = "org.sadeem.Gallery"
 
 
-def launch_video_editor(video_path):
-    """Launches sadeem-video-editor for a given video file."""
-    editor_bin = shutil.which("sadeem-video-editor")
-    if not editor_bin:
-        repo_bin = os.path.normpath(os.path.join(APP_DIR, "..", "..", "..", "bin", "sadeem-video-editor"))
-        sys_bin = "/usr/bin/sadeem-video-editor"
-        for candidate in [repo_bin, sys_bin]:
-            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
-                editor_bin = candidate
-                break
-    if not editor_bin:
-        editor_bin = "sadeem-video-editor"
+def _find_exec_binary(name):
+    found = shutil.which(name)
+    if found:
+        return found
+    repo_bin = os.path.normpath(os.path.join(APP_DIR, "..", "..", "..", "bin", name))
+    sys_bin = os.path.join("/usr/bin", name)
+    for candidate in (repo_bin, sys_bin):
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    return None
+
+
+def launch_video_player(video_path):
+    """Launch dedicated video player (sadeem-video) or system default non-blockingly."""
+    player_bin = _find_exec_binary("sadeem-video")
+    if player_bin:
+        try:
+            subprocess.Popen([player_bin, video_path], start_new_session=True, close_fds=True)
+            return True
+        except Exception as e:
+            sys.stderr.write(f"Failed to launch sadeem-video: {e}\n")
 
     try:
-        res = subprocess.run(
-            ["systemd-run", "--user", "--scope", "--quiet", editor_bin, video_path],
-            check=False,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        if res.returncode == 0:
+        uri = GLib.filename_to_uri(os.path.abspath(video_path), None)
+        if Gio.AppInfo.launch_default_for_uri(uri, None):
             return True
     except Exception:
         pass
 
+    xdg_bin = shutil.which("xdg-open")
+    if xdg_bin:
+        try:
+            subprocess.Popen([xdg_bin, video_path], start_new_session=True, close_fds=True)
+            return True
+        except Exception as e:
+            sys.stderr.write(f"Failed to open video with xdg-open: {e}\n")
+    return False
+
+
+def launch_video_editor(video_path):
+    """Launches sadeem-video-editor non-blockingly for a given video file."""
+    editor_bin = _find_exec_binary("sadeem-video-editor") or "sadeem-video-editor"
     try:
         subprocess.Popen([editor_bin, video_path], start_new_session=True, close_fds=True)
         return True
@@ -105,152 +122,132 @@ RESOLUTION_FILTER_OPTIONS = [
     ("4k", "res_4k", "res_short_4k", ["starred-symbolic"]),
 ]
 
-# Legacy alias
-GALLERY_CATEGORIES = [
-    ("all", "cat_all", ["view-grid-symbolic"]),
-    ("camera", "cat_camera", ["camera-photo-symbolic"]),
-    ("screenshots", "cat_screenshots", ["applets-screenshooter-symbolic"]),
-    ("hd", "cat_hd", ["zoom-fit-best-symbolic"]),
-    ("portrait", "cat_portrait", ["object-flip-vertical-symbolic"]),
-    ("landscape", "cat_landscape", ["object-flip-horizontal-symbolic"]),
-    ("animated", "cat_animated", ["media-playback-start-symbolic"]),
-    ("raw", "cat_raw", ["camera-photo-symbolic"]),
-    ("vector", "cat_vector", ["applications-graphics-symbolic"]),
-]
-
 SADEEM_CSS = """
 .sadeem-canvas-bg {
-    background-color: #18181c;
+    background-color: @view_bg_color;
 }
 .sadeem-btn {
-    background-color: #2e2e35;
+    background-color: alpha(@window_fg_color, 0.08);
     background-image: none;
-    color: #f1f5f9;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: @window_fg_color;
+    border-radius: 8px;
+    border: 1px solid @borders;
     min-height: 30px;
     padding: 4px 10px;
     font-size: 12px;
     font-weight: 500;
 }
 .sadeem-btn:hover {
-    background-color: #393943;
+    background-color: alpha(@window_fg_color, 0.14);
 }
 .sadeem-btn:active {
-    background-color: #444450;
+    background-color: alpha(@window_fg_color, 0.20);
 }
 .sadeem-btn-compact {
-    background-color: #2e2e35;
+    background-color: alpha(@window_fg_color, 0.08);
     background-image: none;
-    color: #f1f5f9;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: @window_fg_color;
+    border-radius: 8px;
+    border: 1px solid @borders;
     min-height: 30px;
-    padding: 3px 8px;
+    padding: 3px 10px;
     font-size: 12px;
     font-weight: 500;
 }
 .sadeem-btn-compact:hover {
-    background-color: #393943;
+    background-color: alpha(@window_fg_color, 0.14);
 }
 .sadeem-btn-active {
-    background-color: #7a1c33;
+    background-color: @accent_bg_color;
     background-image: none;
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: @accent_fg_color;
+    border: 1px solid alpha(@accent_fg_color, 0.16);
 }
 .sadeem-btn-active:hover {
-    background-color: #8c223c;
+    background-color: alpha(@accent_bg_color, 0.88);
 }
 .sadeem-btn-active label, .sadeem-btn-active image {
-    color: #ffffff;
+    color: @accent_fg_color;
 }
 .sadeem-btn-danger {
-    background-color: #2e2e35;
+    background-color: alpha(@window_fg_color, 0.08);
     background-image: none;
-    color: #fca5a5;
-    border-radius: 6px;
-    border: 1px solid rgba(239, 68, 68, 0.28);
+    color: @error_color;
+    border-radius: 8px;
+    border: 1px solid alpha(@error_color, 0.35);
     min-height: 30px;
     padding: 4px 10px;
     font-size: 12px;
 }
 .sadeem-btn-danger:hover {
-    background-color: rgba(127, 29, 29, 0.65);
-    color: #fecaca;
-}
-.sadeem-header-btn {
-    border-radius: 6px;
-    min-height: 30px;
-    padding: 3px 10px;
-    font-size: 12px;
+    background-color: alpha(@error_color, 0.16);
 }
 .sadeem-sidebar-shell {
-    background-color: #222227;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: @window_bg_color;
+    border-left: 1px solid @borders;
+    border-right: 1px solid @borders;
 }
 .sadeem-drawer {
-    background-color: #222227;
+    background-color: @window_bg_color;
 }
 .sadeem-rail {
-    background-color: #1c1c21;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: @headerbar_bg_color;
+    border-left: 1px solid @borders;
+    border-right: 1px solid @borders;
 }
 .rail-btn {
     background-color: transparent;
     background-image: none;
-    color: #cbd5e1;
+    color: alpha(@window_fg_color, 0.78);
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: 8px;
     min-height: 50px;
     padding: 6px 4px;
     font-size: 11px;
     font-weight: 500;
 }
 .rail-btn:hover {
-    background-color: #2e2e35;
-    color: #f8fafc;
+    background-color: alpha(@window_fg_color, 0.08);
+    color: @window_fg_color;
 }
 .rail-btn-active {
-    background-color: #7a1c33;
+    background-color: @accent_bg_color;
     background-image: none;
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: @accent_fg_color;
+    border: 1px solid alpha(@accent_fg_color, 0.16);
 }
 .rail-btn-active:hover {
-    background-color: #8c223c;
+    background-color: alpha(@accent_bg_color, 0.88);
 }
 .rail-btn-active label, .rail-btn-active image {
-    color: #ffffff;
+    color: @accent_fg_color;
 }
 .sadeem-scale trough {
     min-height: 4px;
     border-radius: 3px;
-    background-color: rgba(255, 255, 255, 0.14);
+    background-color: alpha(@window_fg_color, 0.16);
 }
 .sadeem-scale highlight {
-    background-color: #7a1c33;
+    background-color: @accent_bg_color;
     border-radius: 3px;
 }
 .sadeem-scale slider {
     min-width: 14px;
     min-height: 14px;
     border-radius: 9999px;
-    background-color: #f1f5f9;
-    border: 2px solid #7a1c33;
+    background-color: @window_bg_color;
+    border: 2px solid @accent_bg_color;
 }
 .swatch-dot {
     min-width: 22px;
     min-height: 22px;
     padding: 0;
     border-radius: 9999px;
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    border: 2px solid @borders;
 }
 .swatch-dot-active {
-    border: 2px solid #ffffff;
-    box-shadow: 0 0 0 2px #7a1c33;
+    border: 2px solid @window_bg_color;
+    box-shadow: 0 0 0 2px @accent_bg_color;
 }
 .date-section-title {
     font-size: 15px;
@@ -259,105 +256,51 @@ SADEEM_CSS = """
     margin-bottom: 2px;
 }
 .date-count-lbl {
-    background-color: rgba(255, 255, 255, 0.07);
-    color: #cbd5e1;
-    border-radius: 6px;
-    padding: 2px 8px;
+    background-color: alpha(@window_fg_color, 0.08);
+    color: alpha(@window_fg_color, 0.78);
+    border-radius: 999px;
+    padding: 2px 10px;
     font-size: 11px;
     font-weight: 600;
 }
 .thumb-tile {
     padding: 0;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background-color: #222227;
+    border-radius: 10px;
+    border: 1px solid @borders;
+    background-color: @card_bg_color;
 }
 .thumb-tile:hover {
-    border-color: #7a1c33;
+    border-color: @accent_bg_color;
 }
-.thumb-badge-raw {
-    background-color: rgba(24, 24, 28, 0.86);
-    color: #f1f5f9;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 10px;
-    font-weight: 700;
-}
-.thumb-badge-anim {
-    background-color: rgba(24, 24, 28, 0.86);
-    color: #cbd5e1;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 4px;
-    padding: 1px 5px;
+.thumb-badge-raw, .thumb-badge-anim, .thumb-badge-video {
+    background-color: rgba(0, 0, 0, 0.74);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 6px;
+    padding: 2px 7px;
     font-size: 10px;
     font-weight: 700;
 }
 .thumb-badge-video {
-    background-color: rgba(15, 23, 42, 0.88);
-    color: #f8fafc;
-    border: 1px solid rgba(255, 255, 255, 0.20);
-    border-radius: 4px;
-    padding: 2px 6px;
     font-size: 11px;
     font-weight: 600;
 }
-.video-ctrl-bar {
-    background-color: rgba(24, 24, 28, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 24px;
-    padding: 4px 14px;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
-}
-.video-time-lbl {
-    font-size: 12px;
-    font-weight: 600;
-    color: #cbd5e1;
-}
-.video-btn-play {
-    background-color: #7a1c33;
-    color: #ffffff;
-    border-radius: 9999px;
-    min-width: 34px;
-    min-height: 34px;
-    padding: 0;
-    border: none;
-}
-.video-btn-play:hover {
-    background-color: #92223e;
-}
-.video-seek-scale trough {
-    min-height: 6px;
-    border-radius: 3px;
-    background-color: rgba(255, 255, 255, 0.18);
-}
-.video-seek-scale highlight {
-    background-color: #7a1c33;
-    border-radius: 3px;
-}
-.video-seek-scale slider {
-    min-width: 14px;
-    min-height: 14px;
-    border-radius: 9999px;
-    background-color: #f1f5f9;
-    border: 2px solid #7a1c33;
-}
 .viewer-bottom-bar {
-    background-color: #1e1e23;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 5px 12px;
+    background-color: @headerbar_bg_color;
+    border-top: 1px solid @borders;
+    padding: 6px 12px;
 }
 .zoom-group button {
-    background-color: #2e2e35;
+    background-color: alpha(@window_fg_color, 0.08);
     background-image: none;
-    color: #f1f5f9;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: @window_fg_color;
+    border: 1px solid @borders;
     min-height: 28px;
     padding: 2px 8px;
     font-size: 12px;
 }
 .zoom-group button:hover {
-    background-color: #393943;
+    background-color: alpha(@window_fg_color, 0.14);
 }
 .zoom-readout-btn {
     min-width: 52px;
@@ -370,48 +313,36 @@ SADEEM_CSS = """
     font-size: 12px;
 }
 .editor-drawer {
-    background-color: #222227;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: @window_bg_color;
+    border-left: 1px solid @borders;
+    border-right: 1px solid @borders;
 }
 .drawer-section-title {
     font-size: 11px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.55);
+    color: alpha(@window_fg_color, 0.60);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
 }
-.video-timeline-container {
-    background-color: #222227;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 8px 12px;
-}
-.video-progress-banner {
-    background-color: rgba(122, 28, 51, 0.25);
-    border-radius: 8px;
-    border: 1px solid rgba(122, 28, 51, 0.5);
-    padding: 6px 12px;
-}
 .drawer-subtle-label {
     font-size: 11px;
-    color: #94a3b8;
+    color: alpha(@window_fg_color, 0.65);
     font-weight: 600;
 }
 .info-key-lbl {
     font-size: 11px;
-    color: #94a3b8;
+    color: alpha(@window_fg_color, 0.65);
 }
 .info-val-lbl {
     font-size: 12px;
-    color: #f1f5f9;
+    color: @window_fg_color;
 }
 .loading-chip {
-    background-color: rgba(34, 34, 39, 0.92);
-    color: #f1f5f9;
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.76);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
     padding: 6px 12px;
     font-size: 12px;
 }
@@ -442,7 +373,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.filter_format = "all"
         self.filter_dimensions = "all"
         self.filter_resolution = "all"
-        self.active_filter = "all"
+        self.search_query = ""
         self.thumb_pool = concurrent.futures.ThreadPoolExecutor(max_workers=4)
         self._scan_generation = 0
 
@@ -454,11 +385,8 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.current_exif = {}
         self.slideshow_timer = None
         self._load_generation = 0
-
-        # Video state
-        self.video_player_widget = None
-        self.video_editor_view = None
-        self.is_current_video = False
+        self._is_fullscreen = False
+        self._pending_enter_edit = False
 
         # Editor state
         self.edit_mode = False
@@ -474,33 +402,13 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._syncing_resize_spins = False
         self._syncing_adj_widgets = False
 
-        self._install_css()
         self._build_ui()
         self._setup_shortcuts()
         self.connect("close-request", self._on_close_request)
 
-    def _install_css(self):
-        swatch_rules = []
-        for idx, (hx, _name) in enumerate(MARKUP_COLORS):
-            swatch_rules.append(f".swatch-color-{idx} {{ background-color: {hx}; background-image: none; }}")
-        full_css = SADEEM_CSS + "\n" + "\n".join(swatch_rules)
-
-        prov = Gtk.CssProvider()
-        prov.load_from_string(full_css)
-        display = Gdk.Display.get_default()
-        if display:
-            Gtk.StyleContext.add_provider_for_display(
-                display, prov, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-            )
-            local_icons = os.path.abspath(os.path.join(APP_DIR, "..", "icons"))
-            if os.path.isdir(local_icons):
-                Gtk.IconTheme.get_for_display(display).add_search_path(local_icons)
-
     def _on_close_request(self, *_args):
         self._stop_slideshow()
         self.canvas.stop_animation()
-        if self.video_player_widget:
-            self.video_player_widget.stop()
         self.thumb_pool.shutdown(wait=False, cancel_futures=True)
         return False
 
@@ -560,28 +468,26 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.add_controller(key_ctrl)
 
     def _on_key_pressed(self, _ctrl, keyval, _keycode, state):
+        ctrl_down = bool(state & Gdk.ModifierType.CONTROL_MASK)
         cur_child = self.root_stack.get_visible_child_name()
+        if cur_child == "gallery":
+            if ctrl_down and keyval in (Gdk.KEY_f, Gdk.KEY_F):
+                self.search_bar.set_search_mode(True)
+                self.search_entry.grab_focus()
+                return True
+            if keyval == Gdk.KEY_Escape and self.search_bar.get_search_mode():
+                self.search_entry.set_text("")
+                self.search_bar.set_search_mode(False)
+                return True
+            return False
+
         if cur_child != "viewer":
             return False
 
-        if self.is_current_video and self.video_player_widget:
-            if keyval == Gdk.KEY_space:
-                self.video_player_widget.toggle_play()
-                return True
-            elif keyval == Gdk.KEY_Left:
-                self.video_player_widget.seek_relative(-5.0)
-                return True
-            elif keyval == Gdk.KEY_Right:
-                self.video_player_widget.seek_relative(5.0)
-                return True
-            elif keyval in (Gdk.KEY_m, Gdk.KEY_M):
-                self.video_player_widget.toggle_mute()
-                return True
-            elif keyval == Gdk.KEY_Escape:
-                self.open_gallery_mode()
-                return True
+        if keyval == Gdk.KEY_F11:
+            self._toggle_fullscreen()
+            return True
 
-        ctrl_down = bool(state & Gdk.ModifierType.CONTROL_MASK)
         if ctrl_down:
             if keyval in (Gdk.KEY_c, Gdk.KEY_C):
                 self._copy_current_to_clipboard()
@@ -606,6 +512,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 return True
 
         if not self.edit_mode:
+            if keyval in (Gdk.KEY_Delete, Gdk.KEY_KP_Delete):
+                self._confirm_trash_current()
+                return True
             if keyval == Gdk.KEY_Right:
                 self._navigate_viewer(-1 if i18n.LANG == "ar" else 1)
                 return True
@@ -616,7 +525,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 self._toggle_slideshow()
                 return True
             if keyval == Gdk.KEY_Escape:
-                if self.slideshow_timer is not None:
+                if self._is_fullscreen:
+                    self._toggle_fullscreen()
+                elif self.slideshow_timer is not None:
                     self._stop_slideshow()
                 else:
                     self.open_gallery_mode()
@@ -673,62 +584,52 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         title_box.append(lbl_t)
         hb.set_title_widget(title_box)
 
-        # 3 compact orthogonal filter dropdowns + reset button
-        filters_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-
-        # 1. Format dropdown
-        self.btn_fmt_menu, self.lbl_fmt_title, self.pop_fmt, self.fmt_item_btns = self._create_filter_menu(
-            FORMAT_FILTER_OPTIONS,
-            prefix_key="filter_fmt_prefix",
-            on_select=self._on_format_filter_selected,
+        # Start side: Unified Filter MenuButton + Search ToggleButton
+        self.btn_filter_menu = Gtk.MenuButton()
+        self.btn_filter_menu.set_icon_name(safe_icon(["funnel-symbolic", "view-sort-descending-symbolic", "view-more-symbolic"]))
+        self.btn_filter_menu.set_tooltip_text(t("btn_filter"))
+        self.filter_popover, self.fmt_item_btns, self.dim_item_btns, self.res_item_btns, self.btn_pop_reset_filters = (
+            self._build_unified_filter_popover()
         )
-        filters_box.append(self.btn_fmt_menu)
+        self.btn_filter_menu.set_popover(self.filter_popover)
+        hb.pack_start(self.btn_filter_menu)
 
-        # 2. Dimensions dropdown
-        self.btn_dim_menu, self.lbl_dim_title, self.pop_dim, self.dim_item_btns = self._create_filter_menu(
-            DIMENSION_FILTER_OPTIONS,
-            prefix_key="filter_dim_prefix",
-            on_select=self._on_dimension_filter_selected,
-        )
-        filters_box.append(self.btn_dim_menu)
+        self.btn_search_toggle = Gtk.ToggleButton()
+        self.btn_search_toggle.set_icon_name(safe_icon(["edit-find-symbolic", "system-search-symbolic"]))
+        self.btn_search_toggle.set_tooltip_text(t("btn_search"))
+        hb.pack_start(self.btn_search_toggle)
 
-        # 3. Resolution dropdown
-        self.btn_res_menu, self.lbl_res_title, self.pop_res, self.res_item_btns = self._create_filter_menu(
-            RESOLUTION_FILTER_OPTIONS,
-            prefix_key="filter_res_prefix",
-            on_select=self._on_resolution_filter_selected,
-        )
-        filters_box.append(self.btn_res_menu)
-
-        # 4. Clear/Reset filter button
-        self.btn_clear_filters = Gtk.Button()
-        self.btn_clear_filters.set_icon_name(safe_icon(["edit-clear-symbolic", "user-trash-symbolic"]))
-        self.btn_clear_filters.set_tooltip_text(t("filter_clear_tooltip"))
-        self.btn_clear_filters.add_css_class("sadeem-header-btn")
-        self.btn_clear_filters.set_visible(False)
-        self.btn_clear_filters.connect("clicked", lambda _b: self._reset_all_filters())
-        filters_box.append(self.btn_clear_filters)
-
-        hb.pack_start(filters_box)
-
-        # End buttons: Direct Choose Folder + Refresh
-        btn_folder = Gtk.Button()
-        fb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        fb.append(Gtk.Image.new_from_icon_name(safe_icon(["folder-open-symbolic", "folder-symbolic"])))
-        fb.append(Gtk.Label(label=t("btn_choose_folder")))
-        btn_folder.set_child(fb)
-        btn_folder.add_css_class("sadeem-btn-compact")
-        btn_folder.connect("clicked", lambda _b: self._choose_folder_directly())
-        hb.pack_end(btn_folder)
+        # End side: Manage Folders + Refresh (standard Libadwaita header icon buttons)
+        btn_folders = Gtk.Button()
+        btn_folders.set_icon_name(safe_icon(["folder-open-symbolic", "folder-symbolic"]))
+        btn_folders.set_tooltip_text(t("btn_folders"))
+        btn_folders.connect("clicked", lambda _b: self._open_folders_dialog())
+        hb.pack_end(btn_folders)
 
         btn_ref = Gtk.Button()
         btn_ref.set_icon_name(safe_icon(["view-refresh-symbolic"]))
         btn_ref.set_tooltip_text(t("btn_refresh"))
-        btn_ref.add_css_class("sadeem-header-btn")
         btn_ref.connect("clicked", lambda _b: self.refresh_gallery())
         hb.pack_end(btn_ref)
 
         tv.add_top_bar(hb)
+
+        # Collapsible SearchBar beneath HeaderBar
+        self.search_bar = Gtk.SearchBar()
+        self.search_entry = Gtk.SearchEntry()
+        self.search_entry.set_placeholder_text(t("search_placeholder"))
+        self.search_entry.set_size_request(320, -1)
+        self.search_bar.set_child(self.search_entry)
+        self.search_bar.connect_entry(self.search_entry)
+        self.search_bar.set_show_close_button(True)
+        self.btn_search_toggle.bind_property(
+            "active",
+            self.search_bar,
+            "search-mode-enabled",
+            GObject.BindingFlags.BIDIRECTIONAL,
+        )
+        self.search_entry.connect("search-changed", self._on_search_changed)
+        tv.add_top_bar(self.search_bar)
 
         self.gallery_stack = Gtk.Stack()
         self.gallery_stack.set_vexpand(True)
@@ -762,12 +663,13 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         e_d.set_wrap(True)
         e_d.set_justify(Gtk.Justification.CENTER)
         empty_box.append(e_d)
-        e_btn = Gtk.Button(label=t("btn_choose_folder"))
-        e_btn.add_css_class("sadeem-btn")
-        e_btn.connect("clicked", lambda _b: self._choose_folder_directly())
+        e_btn = Gtk.Button(label=t("btn_folders"))
+        e_btn.add_css_class("suggested-action")
+        e_btn.add_css_class("pill")
+        e_btn.connect("clicked", lambda _b: self._open_folders_dialog())
         empty_box.append(e_btn)
         self.btn_empty_reset = Gtk.Button(label=t("filter_clear_tooltip"))
-        self.btn_empty_reset.add_css_class("sadeem-btn")
+        self.btn_empty_reset.add_css_class("pill")
         self.btn_empty_reset.set_visible(False)
         self.btn_empty_reset.connect("clicked", lambda _b: self._reset_all_filters())
         empty_box.append(self.btn_empty_reset)
@@ -775,6 +677,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
 
         # Timeline scroll area
         scroll = Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scroll.set_vexpand(True)
         scroll.set_hexpand(True)
         self.timeline_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
@@ -791,64 +694,78 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def open_gallery_mode(self):
         self._stop_slideshow()
         self.canvas.stop_animation()
-        if self.video_player_widget:
-            self.video_player_widget.stop()
         self._set_edit_mode(False)
+        if getattr(self, "_is_fullscreen", False):
+            self.unfullscreen()
+            self._is_fullscreen = False
         self.root_stack.set_visible_child_name("gallery")
         if not self.all_gallery_items:
             self.refresh_gallery()
 
-    def _create_filter_menu(self, options, prefix_key, on_select):
-        btn = Gtk.MenuButton()
-        btn.add_css_class("sadeem-btn-compact")
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        lbl = Gtk.Label(label=f"{t(prefix_key)}: {t('fmt_short_all')}")
-        lbl.set_halign(Gtk.Align.CENTER)
-        box.append(lbl)
-
-        arr = Gtk.Image.new_from_icon_name(safe_icon(["pan-down-symbolic"]))
-        arr.set_pixel_size(12)
-        box.append(arr)
-        btn.set_child(box)
-
+    def _build_unified_filter_popover(self):
         popover = Gtk.Popover()
-        pop_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        pop_box.set_margin_top(6)
-        pop_box.set_margin_bottom(6)
-        pop_box.set_margin_start(6)
-        pop_box.set_margin_end(6)
-        pop_box.set_size_request(220, -1)
-        popover.set_child(pop_box)
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll.set_propagate_natural_height(True)
+        scroll.set_max_content_height(460)
+        scroll.set_size_request(280, -1)
 
-        item_btns = {}
-        for fid, fkey, _fshort, ficons in options:
-            cb = Gtk.Button()
-            cb.add_css_class("flat")
-            cb.add_css_class("save-menu-btn")
+        pop_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        pop_box.set_margin_top(10)
+        pop_box.set_margin_bottom(10)
+        pop_box.set_margin_start(10)
+        pop_box.set_margin_end(10)
+        scroll.set_child(pop_box)
+        popover.set_child(scroll)
 
-            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            ico = Gtk.Image.new_from_icon_name(safe_icon(ficons))
-            ico.set_pixel_size(15)
-            row.append(ico)
+        def _add_section(title_key, options, on_select):
+            hdr = Gtk.Label(label=t(title_key))
+            hdr.add_css_class("drawer-section-title")
+            hdr.set_halign(Gtk.Align.START)
+            pop_box.append(hdr)
 
-            item_lbl = Gtk.Label(label=t(fkey))
-            item_lbl.set_halign(Gtk.Align.START)
-            item_lbl.set_hexpand(True)
-            row.append(item_lbl)
+            flow = Gtk.FlowBox()
+            flow.set_selection_mode(Gtk.SelectionMode.NONE)
+            flow.set_homogeneous(False)
+            flow.set_column_spacing(4)
+            flow.set_row_spacing(4)
+            flow.set_min_children_per_line(2)
+            flow.set_max_children_per_line(3)
+            pop_box.append(flow)
 
-            cb.set_child(row)
+            btns = {}
+            for fid, fkey, fshort, _icons in options:
+                cb = Gtk.Button(label=t(fshort if fshort else fkey))
+                cb.set_tooltip_text(t(fkey))
+                cb.add_css_class("flat")
+                cb.add_css_class("save-menu-btn")
+                cb.connect("clicked", lambda _b, val=fid: on_select(val))
+                flow.append(cb)
+                btns[fid] = cb
+            return btns
 
-            def _pick(_b, val=fid, pop=popover):
-                pop.popdown()
-                on_select(val)
+        fmt_btns = _add_section("filter_fmt_prefix", FORMAT_FILTER_OPTIONS, self._on_format_filter_selected)
+        pop_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        dim_btns = _add_section("filter_dim_prefix", DIMENSION_FILTER_OPTIONS, self._on_dimension_filter_selected)
+        pop_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        res_btns = _add_section("filter_res_prefix", RESOLUTION_FILTER_OPTIONS, self._on_resolution_filter_selected)
+        pop_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
-            cb.connect("clicked", _pick)
-            pop_box.append(cb)
-            item_btns[fid] = cb
+        btn_reset = Gtk.Button(label=t("filter_clear_tooltip"))
+        btn_reset.add_css_class("flat")
+        btn_reset.set_sensitive(False)
 
-        btn.set_popover(popover)
-        return btn, lbl, popover, item_btns
+        def _do_reset(_b):
+            popover.popdown()
+            self._reset_all_filters()
+
+        btn_reset.connect("clicked", _do_reset)
+        pop_box.append(btn_reset)
+        return popover, fmt_btns, dim_btns, res_btns, btn_reset
+
+    def _on_search_changed(self, entry):
+        self.search_query = entry.get_text().strip().lower()
+        self._render_gallery_timeline()
 
     def _on_format_filter_selected(self, fmt_id):
         self.filter_format = fmt_id
@@ -869,81 +786,39 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.filter_format = "all"
         self.filter_dimensions = "all"
         self.filter_resolution = "all"
+        if hasattr(self, "search_entry") and self.search_entry.get_text():
+            self.search_entry.set_text("")
+        self.search_query = ""
         self._update_filter_styles()
         self._render_gallery_timeline()
 
     def _update_filter_styles(self):
-        # 1. Format label and styles
-        fmt_short_key = "fmt_short_all"
-        for fid, _fkey, fshort, _icons in FORMAT_FILTER_OPTIONS:
-            if fid == self.filter_format:
-                fmt_short_key = fshort
-                break
-        self.lbl_fmt_title.set_text(f"{t('filter_fmt_prefix')}: {t(fmt_short_key)}")
-        for fid, btn in self.fmt_item_btns.items():
-            if fid == self.filter_format:
-                btn.remove_css_class("flat")
-                btn.add_css_class("sadeem-btn-active")
-            else:
-                btn.remove_css_class("sadeem-btn-active")
-                btn.add_css_class("flat")
-        if self.filter_format != "all":
-            self.btn_fmt_menu.add_css_class("sadeem-btn-active")
-        else:
-            self.btn_fmt_menu.remove_css_class("sadeem-btn-active")
+        def _apply_group(btns, active_id):
+            for fid, btn in btns.items():
+                if fid == active_id:
+                    btn.remove_css_class("flat")
+                    btn.add_css_class("sadeem-btn-active")
+                else:
+                    btn.remove_css_class("sadeem-btn-active")
+                    btn.add_css_class("flat")
 
-        # 2. Dimensions label and styles
-        dim_short_key = "dim_short_all"
-        for did, _dkey, dshort, _icons in DIMENSION_FILTER_OPTIONS:
-            if did == self.filter_dimensions:
-                dim_short_key = dshort
-                break
-        self.lbl_dim_title.set_text(f"{t('filter_dim_prefix')}: {t(dim_short_key)}")
-        for did, btn in self.dim_item_btns.items():
-            if did == self.filter_dimensions:
-                btn.remove_css_class("flat")
-                btn.add_css_class("sadeem-btn-active")
-            else:
-                btn.remove_css_class("sadeem-btn-active")
-                btn.add_css_class("flat")
-        if self.filter_dimensions != "all":
-            self.btn_dim_menu.add_css_class("sadeem-btn-active")
-        else:
-            self.btn_dim_menu.remove_css_class("sadeem-btn-active")
+        _apply_group(self.fmt_item_btns, self.filter_format)
+        _apply_group(self.dim_item_btns, self.filter_dimensions)
+        _apply_group(self.res_item_btns, self.filter_resolution)
 
-        # 3. Resolution label and styles
-        res_short_key = "res_short_all"
-        for rid, _rkey, rshort, _icons in RESOLUTION_FILTER_OPTIONS:
-            if rid == self.filter_resolution:
-                res_short_key = rshort
-                break
-        self.lbl_res_title.set_text(f"{t('filter_res_prefix')}: {t(res_short_key)}")
-        for rid, btn in self.res_item_btns.items():
-            if rid == self.filter_resolution:
-                btn.remove_css_class("flat")
-                btn.add_css_class("sadeem-btn-active")
-            else:
-                btn.remove_css_class("sadeem-btn-active")
-                btn.add_css_class("flat")
-        if self.filter_resolution != "all":
-            self.btn_res_menu.add_css_class("sadeem-btn-active")
-        else:
-            self.btn_res_menu.remove_css_class("sadeem-btn-active")
-
-        # 4. Clear/Reset filter button visibility
         has_active_filter = (
             self.filter_format != "all"
             or self.filter_dimensions != "all"
             or self.filter_resolution != "all"
         )
-        self.btn_clear_filters.set_visible(has_active_filter)
+        if has_active_filter:
+            self.btn_filter_menu.add_css_class("accent")
+        else:
+            self.btn_filter_menu.remove_css_class("accent")
+        if hasattr(self, "btn_pop_reset_filters"):
+            self.btn_pop_reset_filters.set_sensitive(has_active_filter)
         if hasattr(self, "btn_empty_reset"):
-            self.btn_empty_reset.set_visible(has_active_filter)
-
-    def _set_gallery_filter(self, fid):
-        self.filter_format = fid
-        self._update_filter_styles()
-        self._render_gallery_timeline()
+            self.btn_empty_reset.set_visible(has_active_filter or bool(self.search_query))
 
     def refresh_gallery(self):
         self._scan_generation += 1
@@ -972,6 +847,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         return False
 
     def _get_filtered_items(self):
+        q = getattr(self, "search_query", "")
         return [
             it for it in self.all_gallery_items
             if media.matches_filters(
@@ -979,12 +855,13 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 self.filter_format,
                 self.filter_dimensions,
                 self.filter_resolution
-            )
+            ) and (not q or q in it.get("name", "").lower())
         ]
 
     def _render_gallery_timeline(self):
         self._clear_box(self.timeline_box)
         self.gallery_spinner.set_spinning(False)
+        self._update_filter_styles()
         filtered = self._get_filtered_items()
         if not filtered:
             self.gallery_stack.set_visible_child_name("empty")
@@ -1003,7 +880,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             lbl.set_halign(Gtk.Align.START)
             hdr_row.append(lbl)
 
-            cnt = Gtk.Label(label=t("gallery_count", count=len(group_items)))
+            cnt = Gtk.Label(label=i18n.format_item_count(len(group_items)))
             cnt.add_css_class("date-count-lbl")
             cnt.set_valign(Gtk.Align.CENTER)
             hdr_row.append(cnt)
@@ -1012,10 +889,11 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             flow = Gtk.FlowBox()
             flow.set_selection_mode(Gtk.SelectionMode.NONE)
             flow.set_homogeneous(True)
-            flow.set_column_spacing(8)
-            flow.set_row_spacing(8)
+            flow.set_halign(Gtk.Align.START)
+            flow.set_column_spacing(10)
+            flow.set_row_spacing(10)
             flow.set_min_children_per_line(2)
-            flow.set_max_children_per_line(8)
+            flow.set_max_children_per_line(12)
             sec.append(flow)
 
             for item in group_items:
@@ -1026,19 +904,27 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.gallery_stack.set_visible_child_name("timeline")
 
     def _build_thumb_tile(self, item, context_list):
+        TILE_SIZE = 184
+
         btn = Gtk.Button()
         btn.add_css_class("thumb-tile")
-        btn.set_size_request(180, 180)
+        btn.set_size_request(TILE_SIZE, TILE_SIZE)
+        btn.set_hexpand(False)
+        btn.set_vexpand(False)
+        btn.set_halign(Gtk.Align.CENTER)
+        btn.set_valign(Gtk.Align.CENTER)
         btn.set_overflow(Gtk.Overflow.HIDDEN)
         btn.set_tooltip_text(item["name"])
 
         ov = Gtk.Overlay()
-        ov.set_size_request(180, 180)
+        ov.set_size_request(TILE_SIZE, TILE_SIZE)
+        ov.set_hexpand(False)
+        ov.set_vexpand(False)
         ov.set_overflow(Gtk.Overflow.HIDDEN)
         btn.set_child(ov)
 
         pic = Gtk.Picture()
-        pic.set_size_request(180, 180)
+        pic.set_size_request(TILE_SIZE, TILE_SIZE)
         pic.set_content_fit(Gtk.ContentFit.COVER)
         pic.set_can_shrink(True)
         ov.set_child(pic)
@@ -1051,7 +937,7 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             v_box.set_margin_bottom(6)
             v_box.set_margin_end(6)
             ico = Gtk.Image.new_from_icon_name(safe_icon(["media-playback-start-symbolic"]))
-            ico.set_pixel_size(10)
+            ico.set_pixel_size(11)
             v_box.append(ico)
             v_lbl = Gtk.Label(label=item.get("duration_str", "00:00"))
             v_box.append(v_lbl)
@@ -1093,28 +979,127 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         except Exception:
             pass
 
-    def _choose_folder_directly(self):
-        """Open native folder chooser directly and add/scan the selected folder."""
-        fd = Gtk.FileDialog()
-        fd.set_title(t("btn_choose_folder"))
+    def _open_folders_dialog(self):
+        """Manage scanned gallery folders using a clean Libadwaita dialog."""
+        toolbar = Adw.ToolbarView()
+        hbar = Adw.HeaderBar()
+        toolbar.add_top_bar(hbar)
 
-        def _picked(dialog, res):
-            try:
-                gfile = dialog.select_folder_finish(res)
-                if gfile:
-                    path = gfile.get_path()
-                    if path and os.path.isdir(path):
-                        extras = list(self.settings.get("extra_folders", []))
-                        ap = os.path.abspath(path)
-                        if ap not in [os.path.abspath(x) for x in extras] and ap != os.path.abspath(media.get_default_pictures_dir()):
-                            extras.append(ap)
-                            self.settings["extra_folders"] = extras
-                            media.save_settings(self.settings)
+        btn_add = Gtk.Button()
+        ab_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        ab_box.append(Gtk.Image.new_from_icon_name(safe_icon(["folder-new-symbolic", "list-add-symbolic"])))
+        ab_box.append(Gtk.Label(label=t("folders_add")))
+        btn_add.set_child(ab_box)
+        btn_add.add_css_class("suggested-action")
+        hbar.pack_start(btn_add)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        scrolled.set_propagate_natural_height(False)
+
+        pref_page = Adw.PreferencesPage()
+        grp = Adw.PreferencesGroup()
+        grp.set_title(t("folders_title"))
+        grp.set_description(t("folders_desc"))
+        pref_page.add(grp)
+        scrolled.set_child(pref_page)
+        toolbar.set_content(scrolled)
+
+        if hasattr(Adw, "Dialog"):
+            dlg = Adw.Dialog()
+            dlg.set_title(t("folders_title"))
+            dlg.set_content_width(480)
+            dlg.set_content_height(380)
+            use_adw_dialog = True
+        else:
+            dlg = Adw.Window(
+                transient_for=self,
+                modal=True,
+                title=t("folders_title"),
+                default_width=480,
+                default_height=380,
+            )
+            use_adw_dialog = False
+
+        folder_rows = []
+        primary_dir = os.path.abspath(media.get_default_pictures_dir())
+
+        def _populate():
+            for r in folder_rows:
+                try:
+                    grp.remove(r)
+                except Exception:
+                    pass
+            folder_rows.clear()
+
+            dirs = media.get_scan_directories(self.settings)
+            for d in dirs:
+                ad = os.path.abspath(d)
+                row = Adw.ActionRow()
+                row.set_use_markup(False)
+                row.set_title(os.path.basename(ad) or ad)
+                row.set_subtitle(ad)
+                row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(["folder-symbolic"])))
+                if ad == primary_dir:
+                    lbl_p = Gtk.Label(label=t("folders_primary"))
+                    lbl_p.add_css_class("dim-label")
+                    lbl_p.set_valign(Gtk.Align.CENTER)
+                    row.add_suffix(lbl_p)
+                else:
+                    btn_rm = Gtk.Button()
+                    btn_rm.set_icon_name(safe_icon(["user-trash-symbolic", "list-remove-symbolic"]))
+                    btn_rm.set_tooltip_text(t("folders_remove_tip"))
+                    btn_rm.add_css_class("flat")
+                    btn_rm.set_valign(Gtk.Align.CENTER)
+
+                    def _rm(_b, target=ad):
+                        extras = [
+                            x for x in self.settings.get("extra_folders", [])
+                            if os.path.abspath(x) != target
+                        ]
+                        self.settings["extra_folders"] = extras
+                        media.save_settings(self.settings)
+                        _populate()
                         self.refresh_gallery()
-            except GLib.Error:
-                pass
 
-        fd.select_folder(self, None, _picked)
+                    btn_rm.connect("clicked", _rm)
+                    row.add_suffix(btn_rm)
+
+                grp.add(row)
+                folder_rows.append(row)
+
+        def _add_folder(_b):
+            fd = Gtk.FileDialog()
+            fd.set_title(t("folders_add"))
+
+            def _picked(dialog, res):
+                try:
+                    gfile = dialog.select_folder_finish(res)
+                    if gfile:
+                        path = gfile.get_path()
+                        if path and os.path.isdir(path):
+                            extras = list(self.settings.get("extra_folders", []))
+                            ap = os.path.abspath(path)
+                            if ap not in [os.path.abspath(x) for x in extras] and ap != primary_dir:
+                                extras.append(ap)
+                                self.settings["extra_folders"] = extras
+                                media.save_settings(self.settings)
+                                _populate()
+                                self.refresh_gallery()
+                except GLib.Error:
+                    pass
+
+            fd.select_folder(self, None, _picked)
+
+        btn_add.connect("clicked", _add_folder)
+        _populate()
+
+        if use_adw_dialog:
+            dlg.set_child(toolbar)
+            dlg.present(self)
+        else:
+            dlg.set_content(toolbar)
+            dlg.present()
 
     # =========================================================================
     # MODE 2 & 3: FAST VIEWER + CALM 6-RAIL INTEGRATED EDITOR
@@ -1224,27 +1209,17 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.btn_save_menu.set_popover(self.save_popover)
         hb.pack_end(self.btn_save_menu)
 
-        # END SIDE: Viewer controls (neutral standard buttons, no pill/loud burgundy)
+        # END SIDE: Viewer primary controls + "More" menu
         self.viewer_end_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-        self.btn_slideshow = Gtk.Button()
-        self.btn_slideshow.set_icon_name(safe_icon(["media-playback-start-symbolic"]))
-        self.btn_slideshow.set_tooltip_text(t("btn_slideshow"))
-        self.btn_slideshow.add_css_class("sadeem-header-btn")
-        self.btn_slideshow.connect("clicked", lambda _b: self._toggle_slideshow())
-        self.viewer_end_box.append(self.btn_slideshow)
-
-        self.btn_wall = Gtk.Button()
-        self.btn_wall.set_icon_name(safe_icon(["preferences-desktop-wallpaper-symbolic", "video-display-symbolic"]))
-        self.btn_wall.set_tooltip_text(t("btn_wallpaper"))
-        self.btn_wall.add_css_class("sadeem-header-btn")
-        self.btn_wall.connect("clicked", lambda _b: self._set_as_wallpaper())
-        self.viewer_end_box.append(self.btn_wall)
+        self.btn_edit_toggle = Gtk.Button(label=t("btn_edit"))
+        self.btn_edit_toggle.add_css_class("sadeem-btn-compact")
+        self.btn_edit_toggle.connect("clicked", lambda _b: self._on_edit_toggle_clicked())
+        self.viewer_end_box.append(self.btn_edit_toggle)
 
         self.btn_exif = Gtk.MenuButton()
-        self.btn_exif.set_icon_name(safe_icon(["dialog-information-symbolic", "help-about-symbolic"]))
+        self.btn_exif.set_icon_name(safe_icon(["info-outline-symbolic", "dialog-information-symbolic"]))
         self.btn_exif.set_tooltip_text(t("btn_exif"))
-        self.btn_exif.add_css_class("sadeem-header-btn")
         self.exif_popover = Gtk.Popover()
         self.exif_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.exif_box.set_margin_top(10)
@@ -1256,15 +1231,62 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.btn_exif.set_popover(self.exif_popover)
         self.viewer_end_box.append(self.btn_exif)
 
-        self.btn_edit_toggle = Gtk.Button(label=t("btn_edit"))
-        self.btn_edit_toggle.add_css_class("sadeem-btn-compact")
-        self.btn_edit_toggle.connect("clicked", lambda _b: self._on_edit_toggle_clicked())
-        self.viewer_end_box.append(self.btn_edit_toggle)
+        self.btn_fullscreen = Gtk.Button()
+        self.btn_fullscreen.set_icon_name(safe_icon(["view-fullscreen-symbolic"]))
+        self.btn_fullscreen.set_tooltip_text(t("btn_fullscreen"))
+        self.btn_fullscreen.connect("clicked", lambda _b: self._toggle_fullscreen())
+        self.viewer_end_box.append(self.btn_fullscreen)
+
+        self.btn_more_menu = Gtk.MenuButton()
+        self.btn_more_menu.set_icon_name(safe_icon(["view-more-symbolic"]))
+        self.btn_more_menu.set_tooltip_text(t("btn_more"))
+        self.more_popover = Gtk.Popover()
+        mp_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        mp_box.set_margin_top(6)
+        mp_box.set_margin_bottom(6)
+        mp_box.set_margin_start(6)
+        mp_box.set_margin_end(6)
+        mp_box.set_size_request(220, -1)
+        self.more_popover.set_child(mp_box)
+
+        def _add_more_item(label_text, icon_names, cb, destructive=False):
+            mb = Gtk.Button()
+            mb.add_css_class("flat")
+            mb.add_css_class("save-menu-btn")
+            if destructive:
+                mb.add_css_class("destructive-action")
+            r = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            ico = Gtk.Image.new_from_icon_name(safe_icon(icon_names))
+            r.append(ico)
+            lbl = Gtk.Label(label=label_text)
+            lbl.set_halign(Gtk.Align.START)
+            r.append(lbl)
+            mb.set_child(r)
+
+            def _run(_b, func=cb):
+                self.more_popover.popdown()
+                func()
+
+            mb.connect("clicked", _run)
+            mp_box.append(mb)
+            return mb, ico, lbl
+
+        _add_more_item(t("btn_copy_clip"), ["edit-copy-symbolic"], self._copy_current_to_clipboard)
+        self.btn_slideshow_menu, self.ico_slideshow_menu, self.lbl_slideshow_menu = _add_more_item(
+            t("btn_slideshow"), ["media-playback-start-symbolic"], self._toggle_slideshow
+        )
+        _add_more_item(t("btn_wallpaper"), ["preferences-desktop-wallpaper-symbolic", "video-display-symbolic"], self._set_as_wallpaper)
+        _add_more_item(t("btn_show_files"), ["folder-open-symbolic", "folder-symbolic"], self._show_in_file_manager)
+        mp_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        _add_more_item(t("btn_move_trash"), ["user-trash-symbolic"], self._confirm_trash_current, destructive=True)
+
+        self.btn_more_menu.set_popover(self.more_popover)
+        self.viewer_end_box.append(self.btn_more_menu)
 
         hb.pack_end(self.viewer_end_box)
         tv.add_top_bar(hb)
 
-        # --- Main Workspace: 75-80% Canvas + Fixed Slim Sidebar (298px) ---
+        # --- Main Workspace: Full Canvas + Slim Sidebar (298px) ---
         main_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         main_row.set_vexpand(True)
         main_row.set_hexpand(True)
@@ -1276,23 +1298,12 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         canvas_overlay.add_css_class("sadeem-canvas-bg")
         main_row.append(canvas_overlay)
 
-        self.viewer_content_stack = Gtk.Stack()
-        self.viewer_content_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
-        self.viewer_content_stack.set_transition_duration(120)
-
         self.canvas = canvas_mod.ImageCanvas(
             on_zoom_changed=self._on_canvas_zoom_changed,
             on_stroke_finished=self._on_canvas_stroke_finished,
             on_text_click=self._on_canvas_text_click,
         )
-        self.viewer_content_stack.add_named(self.canvas, "image")
-
-        self.video_container_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.video_container_box.set_hexpand(True)
-        self.video_container_box.set_vexpand(True)
-        self.viewer_content_stack.add_named(self.video_container_box, "video")
-
-        canvas_overlay.set_child(self.viewer_content_stack)
+        canvas_overlay.set_child(self.canvas)
 
         self.viewer_spinner_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         self.viewer_spinner_box.set_halign(Gtk.Align.CENTER)
@@ -1727,7 +1738,17 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._load_viewer_index(idx)
 
     def open_viewer_from_gallery(self, item, gallery_list):
-        self.viewer_items = list(gallery_list)
+        if item.get("is_video") or media.is_video_file(item.get("path", "")):
+            launch_video_player(item["path"])
+            return
+
+        images_only = [
+            it for it in gallery_list
+            if not it.get("is_video") and not media.is_video_file(it.get("path", ""))
+        ]
+        if not images_only:
+            return
+        self.viewer_items = images_only
         idx = 0
         for i, it in enumerate(self.viewer_items):
             if it["path"] == item["path"]:
@@ -1744,28 +1765,8 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.viewer_index = (self.viewer_index + delta) % len(self.viewer_items)
         self._load_viewer_index(self.viewer_index)
 
-    def _ensure_video_player(self):
-        if self.video_player_widget is None:
-            import video_player
-            self.video_player_widget = video_player.VideoPlayerWidget(
-                on_edit_requested=lambda p: self._open_video_editor(p)
-            )
-            self.video_container_box.append(self.video_player_widget)
-        return self.video_player_widget
-
-    def _open_video_editor(self, video_path):
-        if self.video_player_widget:
-            self.video_player_widget.pause()
-        launch_video_editor(video_path)
-
-    def open_video_editor_directly(self, video_path):
-        self._open_video_editor(video_path)
-
     def _on_edit_toggle_clicked(self):
-        if self.is_current_video:
-            self._open_video_editor(self.current_path)
-        else:
-            self._set_edit_mode(True)
+        self._set_edit_mode(True)
 
     def _load_viewer_index(self, idx):
         if not self.viewer_items:
@@ -1777,46 +1778,26 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self.current_path = path
         self.current_is_raw = media.is_raw_file(path)
 
-        self.viewer_title.set_title(item["name"])
+        # Isolate filename left-to-right (LRI) so RTL UI never flips extensions or timestamps
+        self.viewer_title.set_title(f"\u2066{item['name']}\u2069")
         self.viewer_title.set_subtitle(
             t("viewer_counter", cur=idx + 1, total=len(self.viewer_items))
         )
         self.btn_prev_img.set_sensitive(len(self.viewer_items) > 1)
         self.btn_next_img.set_sensitive(len(self.viewer_items) > 1)
 
-        # Video mode branch
-        self.is_current_video = item.get("is_video", False) or media.is_video_file(path)
-        if self.is_current_video:
-            self.viewer_spinner_box.set_visible(False)
-            self.canvas.stop_animation()
-            self._set_edit_mode(False)
-            self._ensure_video_player()
-            self.viewer_content_stack.set_visible_child_name("video")
-            self.video_player_widget.load_video(path)
-            if hasattr(self, "viewer_bottom_bar"):
-                self.viewer_bottom_bar.set_visible(False)
-
-            self.btn_slideshow.set_visible(False)
-            self.btn_wall.set_visible(False)
-            self.btn_exif.set_visible(False)
-            self.btn_edit_toggle.set_visible(True)
-            self.btn_edit_toggle.set_label(t("video_edit_btn"))
-            return
-
-        # Photo mode branch
-        if self.video_player_widget:
-            self.video_player_widget.stop()
-        self.viewer_content_stack.set_visible_child_name("image")
         if hasattr(self, "viewer_bottom_bar"):
             self.viewer_bottom_bar.set_visible(True)
-        self.btn_slideshow.set_visible(True)
-        self.btn_wall.set_visible(True)
         self.btn_exif.set_visible(True)
+        self.btn_fullscreen.set_visible(True)
+        self.btn_more_menu.set_visible(True)
         self.btn_edit_toggle.set_visible(True)
         self.btn_edit_toggle.set_label(t("btn_edit"))
 
-        # Reset editor state for newly loaded image
+        # Reset editor state for newly loaded image (preserving _pending_enter_edit if queued)
         self._set_edit_mode(False)
+        self.base_image = None
+        self.preview_image = None
         self.history.clear()
         self.strokes = []
         self.adjustments = editor.default_adjustments()
@@ -1848,11 +1829,12 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             return False
         self.viewer_spinner_box.set_visible(False)
         if err or pil_img is None:
+            self._pending_enter_edit = False
             self._toast(t("viewer_load_err", err=err or "Unknown"))
             return False
 
         self.base_image = pil_img
-        self.preview_image = pil_img.copy()
+        self.preview_image = pil_img
         self.current_exif = exif or {}
         self.canvas.set_strokes(self.strokes)
         if anim_frames:
@@ -1863,6 +1845,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         self._sync_resize_spins()
         self._populate_exif_views(self.current_exif)
         self._update_bottom_meta()
+        if getattr(self, "_pending_enter_edit", False):
+            self._pending_enter_edit = False
+            self._set_edit_mode(True)
         return False
 
     def _update_bottom_meta(self):
@@ -1916,14 +1901,102 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
     def _on_canvas_zoom_changed(self, pct):
         self.btn_zoom_pct.set_label(f"{pct}%")
 
+    def _toggle_fullscreen(self):
+        self._is_fullscreen = not getattr(self, "_is_fullscreen", False)
+        if self._is_fullscreen:
+            self.fullscreen()
+            self.btn_fullscreen.set_icon_name(safe_icon(["view-restore-symbolic"]))
+            self.btn_fullscreen.set_tooltip_text(t("btn_exit_fullscreen"))
+        else:
+            self.unfullscreen()
+            self.btn_fullscreen.set_icon_name(safe_icon(["view-fullscreen-symbolic"]))
+            self.btn_fullscreen.set_tooltip_text(t("btn_fullscreen"))
+
+    def _show_in_file_manager(self):
+        if not self.current_path:
+            return
+        abs_path = os.path.abspath(self.current_path)
+        try:
+            uri = GLib.filename_to_uri(abs_path, None)
+            bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+            res = bus.call_sync(
+                "org.freedesktop.FileManager1",
+                "/org/freedesktop/FileManager1",
+                "org.freedesktop.FileManager1",
+                "ShowItems",
+                GLib.Variant("(ass)", ([uri], "")),
+                None,
+                Gio.DBusCallFlags.NONE,
+                3000,
+                None,
+            )
+            if res is not None:
+                return
+        except Exception:
+            pass
+
+        try:
+            parent_uri = GLib.filename_to_uri(os.path.dirname(abs_path), None)
+            Gio.AppInfo.launch_default_for_uri(parent_uri, None)
+        except Exception as exc:
+            self._toast(t("toast_files_err", err=str(exc)))
+
+    def _confirm_trash_current(self):
+        if not self.current_path or self.edit_mode:
+            return
+        target_path = self.current_path
+        fname = os.path.basename(target_path)
+        responses = [
+            ("cancel", t("btn_cancel"), Adw.ResponseAppearance.DEFAULT),
+            ("trash", t("trash_confirm_btn"), Adw.ResponseAppearance.DESTRUCTIVE),
+        ]
+
+        def _on_resp(rid):
+            if rid != "trash":
+                return
+            try:
+                gfile = Gio.File.new_for_path(target_path)
+                gfile.trash(None)
+            except Exception as exc:
+                self._toast(t("toast_trash_err", err=str(exc)))
+                return
+
+            self._toast(t("toast_trashed", name=fname))
+            target_real = os.path.realpath(target_path)
+            self.all_gallery_items = [
+                it for it in self.all_gallery_items
+                if os.path.realpath(it["path"]) != target_real
+            ]
+            old_idx = self.viewer_index
+            self.viewer_items = [
+                it for it in self.viewer_items
+                if os.path.realpath(it["path"]) != target_real
+            ]
+            if self.viewer_items:
+                next_idx = min(old_idx, len(self.viewer_items) - 1)
+                self._load_viewer_index(next_idx)
+            else:
+                self.current_path = None
+                self.base_image = None
+                self.open_gallery_mode()
+                self._render_gallery_timeline()
+
+        self._present_alert(
+            t("trash_confirm_title"),
+            t("trash_confirm_body", name=fname),
+            responses,
+            _on_resp,
+        )
+
     def _toggle_slideshow(self):
         if self.slideshow_timer is not None:
             self._stop_slideshow()
         else:
             if len(self.viewer_items) <= 1 or self.edit_mode:
                 return
-            self.btn_slideshow.set_icon_name(safe_icon(["media-playback-stop-symbolic"]))
-            self.btn_slideshow.set_tooltip_text(t("btn_slideshow_stop"))
+            if hasattr(self, "ico_slideshow_menu"):
+                self.ico_slideshow_menu.set_from_icon_name(safe_icon(["media-playback-stop-symbolic"]))
+                self.lbl_slideshow_menu.set_text(t("btn_slideshow_stop"))
 
             def _advance():
                 if self.root_stack.get_visible_child_name() != "viewer" or self.edit_mode:
@@ -1941,8 +2014,9 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             except Exception:
                 pass
             self.slideshow_timer = None
-        self.btn_slideshow.set_icon_name(safe_icon(["media-playback-start-symbolic"]))
-        self.btn_slideshow.set_tooltip_text(t("btn_slideshow"))
+        if hasattr(self, "ico_slideshow_menu"):
+            self.ico_slideshow_menu.set_from_icon_name(safe_icon(["media-playback-start-symbolic"]))
+            self.lbl_slideshow_menu.set_text(t("btn_slideshow"))
 
     def _set_as_wallpaper(self):
         if not self.current_path:
@@ -2350,29 +2424,14 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
         )
 
     def _copy_current_to_clipboard(self):
-        img = self._build_final_edited_image()
+        img = self._build_final_edited_image() if self.edit_mode else self.base_image
         if img is None:
             return
         try:
             editor.copy_pil_to_clipboard(img, Gdk.Display.get_default())
-            self._toast(t("toast_copied"))
+            self._toast(t("toast_copied" if self.edit_mode else "toast_copied_viewer"))
         except Exception as exc:
             self._toast(t("toast_copy_err", err=str(exc)))
-
-    def _copy_image_to_clipboard(self, file_path, pil_img=None):
-        if pil_img is not None:
-            try:
-                editor.copy_pil_to_clipboard(pil_img, Gdk.Display.get_default())
-            except Exception:
-                pass
-        if file_path and os.path.isfile(file_path):
-            try:
-                import shutil, subprocess
-                if shutil.which("wl-copy"):
-                    with open(file_path, "rb") as f:
-                        subprocess.run(["wl-copy", "--type", "image/png"], input=f.read(), check=False)
-            except Exception:
-                pass
 
     def _open_save_copy_dialog(self):
         final_img = self._build_final_edited_image()
@@ -2459,7 +2518,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
             dlg.close()
             try:
                 editor.save_pil_image(final_img, dest, fmt=fmt_name)
-                self._copy_image_to_clipboard(dest, final_img)
                 self._toast(t("toast_saved", name=os.path.basename(dest)))
                 self.all_gallery_items = []
             except Exception as exc:
@@ -2492,7 +2550,6 @@ class SadeemGalleryWindow(Adw.ApplicationWindow):
                 return
             try:
                 editor.save_pil_image(final_img, self.current_path)
-                self._copy_image_to_clipboard(self.current_path, final_img)
                 self.base_image = final_img
                 self.strokes = []
                 self.adjustments = editor.default_adjustments()
@@ -2577,8 +2634,11 @@ class SadeemGalleryApp(Adw.Application):
         is_edit = bool(edit_path)
 
         if target_path and os.path.isfile(target_path):
-            if is_edit and media.is_video_file(target_path):
-                launch_video_editor(target_path)
+            if media.is_video_file(target_path):
+                if is_edit:
+                    launch_video_editor(target_path)
+                else:
+                    launch_video_player(target_path)
                 return 0
 
             target_real = os.path.realpath(target_path)
@@ -2587,19 +2647,18 @@ class SadeemGalleryApp(Adw.Application):
                 if isinstance(win, SadeemGalleryWindow) and win.current_path:
                     if os.path.realpath(win.current_path) == target_real:
                         if is_edit:
-                            win._set_edit_mode(True)
+                            if win.base_image is not None:
+                                win._set_edit_mode(True)
+                            else:
+                                win._pending_enter_edit = True
                         win.present()
                         return 0
 
-            # Create new window for distinct file
+            # Create new window for distinct image file
             win = SadeemGalleryWindow(self)
-            if is_edit:
-                win.opened_in_edit_mode = True
-                win.open_file_directly(target_path)
-                win._set_edit_mode(True)
-            else:
-                win.opened_in_edit_mode = False
-                win.open_file_directly(target_path)
+            win.opened_in_edit_mode = is_edit
+            win._pending_enter_edit = is_edit
+            win.open_file_directly(target_path)
             win.present()
             return 0
 

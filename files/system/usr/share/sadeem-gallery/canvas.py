@@ -13,7 +13,8 @@ import cairo
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gdk, GLib, Gtk
+gi.require_version("Adw", "1")
+from gi.repository import Adw, Gdk, GLib, Gtk
 
 import editor
 
@@ -517,8 +518,16 @@ class ImageCanvas(Gtk.DrawingArea):
     # Cairo Drawing
     # -------------------------------------------------------------------------
     def _on_draw(self, _area, ctx, width, height):
-        # Calm dark Adwaita canvas backdrop (#18181c)
-        ctx.set_source_rgb(24 / 255.0, 24 / 255.0, 28 / 255.0)
+        # Adaptive canvas backdrop matching Libadwaita dark/light appearance
+        try:
+            is_dark = Adw.StyleManager.get_default().get_dark()
+        except Exception:
+            is_dark = True
+
+        if is_dark:
+            ctx.set_source_rgb(24 / 255.0, 24 / 255.0, 28 / 255.0)
+        else:
+            ctx.set_source_rgb(242 / 255.0, 242 / 255.0, 245 / 255.0)
         ctx.rectangle(0, 0, width, height)
         ctx.fill()
 
@@ -527,11 +536,14 @@ class ImageCanvas(Gtk.DrawingArea):
 
         ox, oy, dw, dh, scale = self._get_image_rect(width, height)
 
-        # Subtle checkerboard behind transparent PNGs
+        # Subtle neutral backdrop behind transparent PNGs
         ctx.save()
         ctx.rectangle(ox, oy, dw, dh)
         ctx.clip()
-        ctx.set_source_rgb(0.16, 0.17, 0.20)
+        if is_dark:
+            ctx.set_source_rgb(0.16, 0.17, 0.20)
+        else:
+            ctx.set_source_rgb(0.88, 0.89, 0.91)
         ctx.rectangle(ox, oy, dw, dh)
         ctx.fill()
 
@@ -551,8 +563,11 @@ class ImageCanvas(Gtk.DrawingArea):
             editor.draw_stroke_on_cairo(ctx, self.active_stroke, scale_factor=scale)
         ctx.restore()
 
-        # Crisp 1px silver frame around image
-        ctx.set_source_rgba(0.89, 0.91, 0.94, 0.20)
+        # Crisp 1px adaptive frame around image
+        if is_dark:
+            ctx.set_source_rgba(0.89, 0.91, 0.94, 0.20)
+        else:
+            ctx.set_source_rgba(0.10, 0.12, 0.15, 0.16)
         ctx.set_line_width(1.0)
         ctx.rectangle(ox + 0.5, oy + 0.5, dw - 1.0, dh - 1.0)
         ctx.stroke()

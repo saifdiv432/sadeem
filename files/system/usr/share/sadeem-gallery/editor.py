@@ -405,8 +405,10 @@ class EditorHistory:
         self._redo.clear()
 
     def push(self, base_img, strokes, adjustments):
+        # Share the immutable base_img reference instead of duplicating full pixel buffers
+        # on draw/adjustment steps; destructive ops assign a new PIL.Image instance.
         snap = (
-            base_img.copy() if base_img is not None else None,
+            base_img,
             copy.deepcopy(strokes),
             copy.deepcopy(adjustments),
         )
@@ -425,7 +427,7 @@ class EditorHistory:
         if not self._undo:
             return None
         self._redo.append((
-            cur_img.copy() if cur_img is not None else None,
+            cur_img,
             copy.deepcopy(cur_strokes),
             copy.deepcopy(cur_adj),
         ))
@@ -435,7 +437,7 @@ class EditorHistory:
         if not self._redo:
             return None
         self._undo.append((
-            cur_img.copy() if cur_img is not None else None,
+            cur_img,
             copy.deepcopy(cur_strokes),
             copy.deepcopy(cur_adj),
         ))

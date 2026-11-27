@@ -45,6 +45,8 @@ STRINGS = {
         "window_hint": "انقر على النافذة لالتقاطها فوراً",
         "toast_copied": "تم حفظ اللقطة ونسخها إلى الحافظة",
         "filename_prefix": "لقطة_شاشة",
+        "folder_screenshots": "لقطات الشاشة",
+        "folder_recordings": "تسجيلات الشاشة",
         # Video recording strings
         "setting_resolution": "الدقة:",
         "setting_framerate": "معدل الإطارات:",
@@ -88,6 +90,8 @@ STRINGS = {
         "window_hint": "Click any window to capture immediately",
         "toast_copied": "Screenshot saved and copied to clipboard",
         "filename_prefix": "Screenshot",
+        "folder_screenshots": "Screenshots",
+        "folder_recordings": "Recordings",
         # Video recording strings
         "setting_resolution": "Resolution:",
         "setting_framerate": "Framerate:",
@@ -131,6 +135,8 @@ STRINGS = {
         "window_hint": "Cliquez sur une fenêtre pour la capturer",
         "toast_copied": "Capture enregistrée et copiée dans le presse-papiers",
         "filename_prefix": "Capture_d_ecran",
+        "folder_screenshots": "Captures d'écran",
+        "folder_recordings": "Enregistrements d'écran",
         # Video recording strings
         "setting_resolution": "Résolution :",
         "setting_framerate": "Images/sec :",
@@ -174,6 +180,8 @@ STRINGS = {
         "window_hint": "Haz clic en una ventana para capturarla",
         "toast_copied": "Captura guardada y copiada al portapapeles",
         "filename_prefix": "Captura_de_pantalla",
+        "folder_screenshots": "Capturas de pantalla",
+        "folder_recordings": "Grabaciones de pantalla",
         # Video recording strings
         "setting_resolution": "Resolución:",
         "setting_framerate": "Tasa de cuadros:",
@@ -217,6 +225,8 @@ STRINGS = {
         "window_hint": "Auf ein Fenster klicken, um es aufzunehmen",
         "toast_copied": "Bildschirmfoto gespeichert und in die Zwischenablage kopiert",
         "filename_prefix": "Bildschirmfoto",
+        "folder_screenshots": "Bildschirmfotos",
+        "folder_recordings": "Bildschirmaufnahmen",
         # Video recording strings
         "setting_resolution": "Auflösung:",
         "setting_framerate": "Bildrate:",
@@ -260,6 +270,8 @@ STRINGS = {
         "window_hint": "Hemen yakalamak için herhangi bir pencereye tıklayın",
         "toast_copied": "Ekran görüntüsü kaydedildi ve panoya kopyalandı",
         "filename_prefix": "Ekran_Goruntusu",
+        "folder_screenshots": "Ekran Görüntüleri",
+        "folder_recordings": "Ekran Kayıtları",
         # Video recording strings
         "setting_resolution": "Çözünürlük:",
         "setting_framerate": "Kare hızı:",
@@ -303,6 +315,8 @@ STRINGS = {
         "window_hint": "Нажмите на окно для быстрого снимка",
         "toast_copied": "Снимок экрана сохранен и скопирован в буфер",
         "filename_prefix": "Snimok_ekrana",
+        "folder_screenshots": "Снимки экрана",
+        "folder_recordings": "Записи экрана",
         # Video recording strings
         "setting_resolution": "Разрешение:",
         "setting_framerate": "Частота кадров:",
@@ -346,6 +360,8 @@ STRINGS = {
         "window_hint": "Clique em qualquer janela para capturar",
         "toast_copied": "Captura guardada e copiada para a área de transferência",
         "filename_prefix": "Captura_de_ecra",
+        "folder_screenshots": "Capturas de ecrã",
+        "folder_recordings": "Gravações de ecrã",
         # Video recording strings
         "setting_resolution": "Resolução:",
         "setting_framerate": "Taxa de quadros:",
@@ -389,6 +405,8 @@ STRINGS = {
         "window_hint": "Fai clic su una finestra per catturarla subito",
         "toast_copied": "Schermata salvata e copiata negli appunti",
         "filename_prefix": "Schermata",
+        "folder_screenshots": "Schermate",
+        "folder_recordings": "Registrazioni schermo",
         # Video recording strings
         "setting_resolution": "Risoluzione:",
         "setting_framerate": "Frequenza fotogrammi:",
@@ -432,6 +450,8 @@ STRINGS = {
         "window_hint": "点击任意窗口立即截取",
         "toast_copied": "截图已保存并复制到剪贴板",
         "filename_prefix": "Jietu",
+        "folder_screenshots": "屏幕截图",
+        "folder_recordings": "屏幕录制",
         # Video recording strings
         "setting_resolution": "分辨率:",
         "setting_framerate": "帧率:",

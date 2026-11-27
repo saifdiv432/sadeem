@@ -1247,6 +1247,14 @@ class CaptureUI extends St.Widget {
         }
     }
 
+    _getScreenshotsDir() {
+        const picturesDir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) || `${GLib.get_home_dir()}/Pictures`;
+        const folderName = I18n.t('folder_screenshots') || 'Screenshots';
+        const screenshotsDir = `${picturesDir}/${folderName}`;
+        GLib.mkdir_with_parents(screenshotsDir, 0o755);
+        return screenshotsDir;
+    }
+
     _uniquePngPath(screenshotsDir, prefix, timeStr) {
         let candidate = `${screenshotsDir}/${prefix}_${timeStr}.png`;
         let suffix = 1;
@@ -1367,9 +1375,7 @@ class CaptureUI extends St.Widget {
         }
 
         // Target path (collision-safe for bursts in the same second)
-        const picturesDir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) || `${GLib.get_home_dir()}/Pictures`;
-        const screenshotsDir = `${picturesDir}/Screenshots`;
-        GLib.mkdir_with_parents(screenshotsDir, 0o755);
+        const screenshotsDir = this._getScreenshotsDir();
 
         const now = GLib.DateTime.new_now_local();
         const timeStr = now.format('%Y-%m-%d_%H-%M-%S');
@@ -1442,9 +1448,7 @@ class CaptureUI extends St.Widget {
 
         this._playShutterSound();
 
-        const picturesDir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) || `${GLib.get_home_dir()}/Pictures`;
-        const screenshotsDir = `${picturesDir}/Screenshots`;
-        GLib.mkdir_with_parents(screenshotsDir, 0o755);
+        const screenshotsDir = this._getScreenshotsDir();
 
         const dt = GLib.DateTime.new_now_local();
         const timeStr = dt.format('%Y-%m-%d_%H-%M-%S');
@@ -1483,9 +1487,7 @@ class CaptureUI extends St.Widget {
 
             targetWin.activate(global.get_current_time());
 
-            const picturesDir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) || `${GLib.get_home_dir()}/Pictures`;
-            const screenshotsDir = `${picturesDir}/Screenshots`;
-            GLib.mkdir_with_parents(screenshotsDir, 0o755);
+            const screenshotsDir = this._getScreenshotsDir();
 
             const dt = GLib.DateTime.new_now_local();
             const timeStr = dt.format('%Y-%m-%d_%H-%M-%S');

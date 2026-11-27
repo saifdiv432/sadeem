@@ -32,6 +32,7 @@ button-layout=':minimize,maximize,close'
 toggle-message-tray=['<Super>m']
 show-screenshot-ui=['Print']
 screenshot=@as []
+screenshot-window=@as []
 
 [org/gnome/settings-daemon/plugins/media-keys]
 custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom-sadeem-stop-record/']

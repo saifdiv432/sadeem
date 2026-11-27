@@ -25,7 +25,7 @@ SETTINGS_PATH = os.path.join(CONFIG_DIR, "settings.json")
 CACHE_DIR = os.path.expanduser("~/.cache/sadeem-gallery")
 THUMB_CACHE_DIR = os.path.join(CACHE_DIR, "thumbs")
 META_CACHE_FILE = os.path.join(CACHE_DIR, "meta.json")
-THUMB_SIZE = 220
+THUMB_SIZE = 320
 
 STANDARD_EXTS = {
     ".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp",
@@ -283,16 +283,52 @@ def _probe_fast_metadata(path, ext, st):
     return dt, w, h, animated, duration, duration_str
 
 
+SCREENSHOT_FOLDER_NAMES = {
+    "screenshots",
+    "screenshot",
+    "لقطات الشاشة",
+    "لقطات_الشاشة",
+    "captures d'écran",
+    "capturas de pantalla",
+    "bildschirmfotos",
+    "ekran görüntüleri",
+    "снимки экрана",
+    "capturas de ecrã",
+    "schermate",
+    "屏幕截图",
+}
+
+SCREENSHOT_FILE_PREFIXES = (
+    "screenshot",
+    "screen shot",
+    "screen_shot",
+    "لقطة شاشة",
+    "لقطة_شاشة",
+    "لقطة للشاشة",
+    "لقطة من",
+    "capture d'écran",
+    "capture_d_ecran",
+    "captura de pantalla",
+    "captura_de_pantalla",
+    "bildschirmfoto",
+    "ekran görüntüsü",
+    "ekran_goruntusu",
+    "снимок экрана",
+    "snimok_ekrana",
+    "captura de ecrã",
+    "captura_de_ecra",
+    "schermata",
+    "jietu",
+)
+
+
 def is_screenshot_item(path, name):
-    """Detect screenshots by folder name or filename prefix (Arabic & English)."""
+    """Detect screenshots by localized folder name or filename prefix across all 10 languages."""
     parts = [p.lower() for p in os.path.normpath(os.path.dirname(path)).split(os.sep)]
-    if any(p in ("screenshots", "screenshot", "لقطات الشاشة", "لقطات_الشاشة") for p in parts):
+    if any(p in SCREENSHOT_FOLDER_NAMES for p in parts):
         return True
     low = name.strip().lower()
-    for prefix in ("screenshot", "screen shot", "screen_shot", "لقطة شاشة", "لقطة_شاشة", "لقطة للشاشة", "لقطة من"):
-        if low.startswith(prefix):
-            return True
-    return False
+    return any(low.startswith(prefix) for prefix in SCREENSHOT_FILE_PREFIXES)
 
 
 def matches_format(item, fmt):
@@ -375,33 +411,6 @@ def matches_filters(item, fmt="all", dim="all", res="all"):
         matches_dimensions(item, dim) and
         matches_resolution(item, res)
     )
-
-
-def matches_category(item, category):
-    """Legacy helper for backward compatibility."""
-    if not category or category == "all":
-        return True
-    if category in ("camera", "screenshots", "hd", "portrait", "landscape", "animated", "raw", "vector"):
-        ext = item.get("ext", "")
-        w = int(item.get("width", 0) or 0)
-        h = int(item.get("height", 0) or 0)
-        if category == "camera":
-            return ext in (".jpg", ".jpeg", ".heic", ".heif", ".png")
-        if category == "screenshots":
-            return bool(item.get("is_screenshot", False))
-        if category == "hd":
-            return max(w, h) >= 1920
-        if category == "portrait":
-            return h > w > 0
-        if category == "landscape":
-            return w > h > 0
-        if category == "animated":
-            return bool(item.get("is_animated", False)) or ext == ".gif"
-        if category == "raw":
-            return bool(item.get("is_raw", False)) or ext in RAW_EXTS
-        if category == "vector":
-            return ext in (".svg", ".ico")
-    return matches_filters(item, fmt=category)
 
 
 def scan_directories(directories):
@@ -494,7 +503,7 @@ def scan_directories(directories):
 
 
 def list_sibling_images(file_path):
-    """List supported media in the same folder sorted newest-first, plus active index."""
+    """List supported images in the same folder sorted newest-first, plus active index."""
     folder = os.path.dirname(os.path.abspath(file_path))
     target_real = os.path.realpath(file_path)
     items = []
@@ -503,24 +512,13 @@ def list_sibling_images(file_path):
             if fname.startswith("."):
                 continue
             full = os.path.join(folder, fname)
-            if not os.path.isfile(full) or not is_supported_media(full):
+            if not os.path.isfile(full) or not is_supported_image(full):
                 continue
             try:
                 st = os.stat(full)
             except OSError:
                 continue
             ext = os.path.splitext(full)[1].lower()
-            is_vid = ext in VIDEO_EXTS
-            dur = 0.0
-            dur_str = "00:00"
-            if is_vid:
-                try:
-                    import video_utils
-                    vmeta = video_utils.get_video_metadata(full)
-                    dur = vmeta.get("duration", 0.0)
-                    dur_str = vmeta.get("duration_str", "00:00")
-                except Exception:
-                    pass
             items.append({
                 "path": full,
                 "name": fname,
@@ -530,9 +528,6 @@ def list_sibling_images(file_path):
                 "dt": datetime.datetime.fromtimestamp(st.st_mtime),
                 "is_raw": ext in RAW_EXTS,
                 "is_animated": ext == ".gif" or (ext == ".webp" and is_animated_file(full)),
-                "is_video": is_vid,
-                "duration": dur,
-                "duration_str": dur_str,
             })
     except OSError:
         pass
@@ -545,20 +540,9 @@ def list_sibling_images(file_path):
             idx = i
             found = True
             break
-    if not found and os.path.isfile(file_path):
+    if not found and os.path.isfile(file_path) and is_supported_image(file_path):
         st = os.stat(file_path)
         ext = os.path.splitext(file_path)[1].lower()
-        is_vid = ext in VIDEO_EXTS
-        dur = 0.0
-        dur_str = "00:00"
-        if is_vid:
-            try:
-                import video_utils
-                vmeta = video_utils.get_video_metadata(file_path)
-                dur = vmeta.get("duration", 0.0)
-                dur_str = vmeta.get("duration_str", "00:00")
-            except Exception:
-                pass
         items.insert(0, {
             "path": os.path.abspath(file_path),
             "name": os.path.basename(file_path),
@@ -568,9 +552,6 @@ def list_sibling_images(file_path):
             "dt": datetime.datetime.fromtimestamp(st.st_mtime),
             "is_raw": ext in RAW_EXTS,
             "is_animated": is_animated_file(file_path),
-            "is_video": is_vid,
-            "duration": dur,
-            "duration_str": dur_str,
         })
         idx = 0
     return items, idx
@@ -986,7 +967,7 @@ def extract_exif_info(path, pil_image=None):
 
 
 def set_desktop_wallpaper(path, pil_image=None):
-    """Set GNOME desktop wallpaper (light + dark). Converts RAW/HEIC automatically."""
+    """Set desktop wallpaper cleanly for GNOME (gsettings) or KDE (plasma-apply-wallpaperimage)."""
     target_path = os.path.abspath(path)
     ext = os.path.splitext(target_path)[1].lower()
     if ext not in (".jpg", ".jpeg", ".png", ".webp"):
@@ -996,14 +977,40 @@ def set_desktop_wallpaper(path, pil_image=None):
         img = pil_image if pil_image is not None else load_full_image(path)
         img.convert("RGB").save(target_path, format="JPEG", quality=94)
 
-    uri = GLib.filename_to_uri(target_path, None)
-    for key in ("picture-uri", "picture-uri-dark"):
-        res = subprocess.run(
-            ["gsettings", "set", "org.gnome.desktop.background", key, uri],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+    desktop_env = (os.environ.get("XDG_CURRENT_DESKTOP") or os.environ.get("DESKTOP_SESSION") or "").upper()
+    plasma_bin = shutil.which("plasma-apply-wallpaperimage")
+    if "KDE" in desktop_env and plasma_bin:
+        res = subprocess.run([plasma_bin, target_path], capture_output=True, text=True, check=False)
         if res.returncode != 0:
-            raise RuntimeError((res.stderr or "gsettings failed").strip())
-    return target_path
+            raise RuntimeError((res.stderr or res.stdout or "plasma-apply-wallpaperimage failed").strip())
+        return target_path
+
+    if shutil.which("gsettings"):
+        uri = GLib.filename_to_uri(target_path, None)
+        ok = True
+        last_err = ""
+        for key in ("picture-uri", "picture-uri-dark"):
+            res = subprocess.run(
+                ["gsettings", "set", "org.gnome.desktop.background", key, uri],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if res.returncode != 0:
+                ok = False
+                last_err = (res.stderr or "gsettings failed").strip()
+        if ok:
+            return target_path
+        if plasma_bin:
+            res_k = subprocess.run([plasma_bin, target_path], capture_output=True, text=True, check=False)
+            if res_k.returncode == 0:
+                return target_path
+        raise RuntimeError(last_err or "gsettings failed")
+
+    if plasma_bin:
+        res = subprocess.run([plasma_bin, target_path], capture_output=True, text=True, check=False)
+        if res.returncode != 0:
+            raise RuntimeError((res.stderr or res.stdout or "plasma-apply-wallpaperimage failed").strip())
+        return target_path
+
+    raise RuntimeError("No supported desktop wallpaper setter found")

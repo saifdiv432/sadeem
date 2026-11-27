@@ -1,5 +1,6 @@
 import GLib from 'gi://GLib';
 import { WindowMenu } from 'resource:///org/gnome/shell/ui/windowMenu.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 const SCREENSHOT_LABELS = {
     ar: 'التقاط لقطة شاشة',
@@ -13,6 +14,19 @@ const SCREENSHOT_LABELS = {
     it: 'Cattura schermata',
     zh: '截取屏幕',
 };
+
+const MATCH_TOKENS = [
+    'screenshot',
+    'شاشة',
+    'لقطة',
+    'capture',
+    'captura',
+    'bildschirmfoto',
+    'ekran',
+    'снимок',
+    'schermata',
+    '截',
+];
 
 function getSystemLanguage() {
     for (const key of ['LC_ALL', 'LC_MESSAGES', 'LANGUAGE', 'LANG']) {
@@ -65,17 +79,25 @@ export class WindowMenuHelper {
         const localizedLabel = SCREENSHOT_LABELS[lang] || SCREENSHOT_LABELS.ar;
         const winId = window.get_id ? window.get_id() : window.get_stable_sequence();
 
-        // Check if an existing screenshot menu item exists to replace/re-label
+        // Find GNOME Shell's built-in "Take Screenshot" menu item so we can replace it completely.
+        // Reusing it in-place leaves GNOME's original activate handler (Screenshot.captureScreenshot)
+        // connected, causing every click to save a duplicate "Screenshot From ..." file.
         let existingItem = null;
+        let existingIdx = -1;
         const children = menu._getMenuItems ? menu._getMenuItems() : (menu.box ? menu.box.get_children() : []);
 
-        for (const item of children) {
-            if (item && item.label && item.label.get_text) {
-                const txt = item.label.get_text().toLowerCase();
-                if (txt.includes('screenshot') || txt.includes('شاشة') || txt.includes('capture') || txt.includes('bildschirmfoto')) {
-                    existingItem = item;
-                    break;
-                }
+        for (let i = 0; i < children.length; i++) {
+            const item = children[i];
+            if (item?._isSadeemCaptureItem) {
+                existingItem = item;
+                existingIdx = i;
+                break;
+            }
+            const txt = item?.label?.get_text ? item.label.get_text().toLowerCase() : '';
+            if (txt && MATCH_TOKENS.some(tok => txt.includes(tok))) {
+                existingItem = item;
+                existingIdx = i;
+                break;
             }
         }
 
@@ -93,13 +115,21 @@ export class WindowMenuHelper {
         };
 
         if (existingItem) {
-            existingItem.label.set_text(localizedLabel);
-            if (existingItem._sadeemCaptureHandler) {
-                existingItem.disconnect(existingItem._sadeemCaptureHandler);
+            try {
+                existingItem.destroy();
+            } catch (_e) {}
+        }
+
+        const newItem = new PopupMenu.PopupMenuItem(localizedLabel);
+        newItem._isSadeemCaptureItem = true;
+        newItem.connect('activate', triggerCapture);
+        if (typeof menu.addMenuItem === 'function') {
+            if (existingIdx >= 0) {
+                menu.addMenuItem(newItem, existingIdx);
+            } else {
+                menu.addMenuItem(newItem);
             }
-            existingItem._sadeemCaptureHandler = existingItem.connect('activate', triggerCapture);
-        } else {
-            // Append Take Screenshot item
+        } else if (typeof menu.addAction === 'function') {
             menu.addAction(localizedLabel, triggerCapture);
         }
     }

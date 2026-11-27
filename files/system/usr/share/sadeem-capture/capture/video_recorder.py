@@ -16,6 +16,11 @@ gi.require_version("Gst", "1.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import GLib, Gst
 
+try:
+    import i18n as _capture_i18n
+except Exception:
+    _capture_i18n = None
+
 # Initialize GStreamer
 if not Gst.is_initialized():
     Gst.init(None)
@@ -164,15 +169,17 @@ def attach_even_crop_caps_probe(
 
 
 def generate_recording_path() -> str:
-    """Generates destination file path in ~/Videos/Screencasts."""
+    """Generates destination file path in ~/Videos/<localized Recordings folder>."""
     videos_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_VIDEOS)
     if not videos_dir:
         videos_dir = os.path.expanduser("~/Videos")
-    screencasts_dir = os.path.join(videos_dir, "Screencasts")
-    os.makedirs(screencasts_dir, exist_ok=True)
+    folder_name = (_capture_i18n.t("folder_recordings") if _capture_i18n else None) or "Recordings"
+    prefix = (_capture_i18n.t("filename_video_prefix") if _capture_i18n else None) or "Sadeem_Recording"
+    recordings_dir = os.path.join(videos_dir, folder_name)
+    os.makedirs(recordings_dir, exist_ok=True)
 
     now_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    return os.path.join(screencasts_dir, f"Sadeem_Recording_{now_str}.mp4")
+    return os.path.join(recordings_dir, f"{prefix}_{now_str}.mp4")
 
 
 class VideoRecorder:

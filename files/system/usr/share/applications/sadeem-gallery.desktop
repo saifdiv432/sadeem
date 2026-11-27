@@ -1,17 +1,17 @@
 [Desktop Entry]
 Name=Sadeem Gallery
 Name[ar]=معرض سديم
-GenericName=Photo & Video Gallery & Editor
-GenericName[ar]=معرض ومحرر الصور والفيديو
-Comment=Chronological photo and video gallery, fast media viewer, and built-in editor for Sadeem 45
-Comment[ar]=معرض زمني ومستعرض صور وفيديو وملفات RAW ومحرر وسائط شامل لنظام سديم 45
+GenericName=Media Gallery & Photo Editor
+GenericName[ar]=معرض وسائط ومحرر صور
+Comment=Chronological media gallery, fast image & RAW viewer, and built-in photo editor
+Comment[ar]=معرض وسائط زمني ومستعرض صور وملفات RAW ومحرر صور مدمج لنظام سديم
 Exec=/usr/bin/sadeem-gallery %F
 Icon=sadeem-gallery
 Terminal=false
 Type=Application
-Categories=Graphics;Photography;AudioVideo;Video;Viewer;2DGraphics;RasterGraphics;
-Keywords=photos;video;gallery;viewer;editor;raw;exif;crop;markup;pictures;معرض;صور;فيديو;تعديل;محرر;خام;سديم;
-MimeType=image/jpeg;image/png;image/webp;image/gif;image/heif;image/heic;image/avif;image/jxl;image/svg+xml;image/tiff;image/bmp;image/x-icon;image/x-dcraw;image/x-canon-cr2;image/x-canon-cr3;image/x-nikon-nef;image/x-sony-arw;image/x-adobe-dng;image/x-fuji-raf;image/x-olympus-orf;image/x-panasonic-rw2;video/mp4;video/webm;video/x-matroska;video/quicktime;video/x-msvideo;
+Categories=Graphics;Photography;Viewer;2DGraphics;RasterGraphics;
+Keywords=photos;gallery;viewer;editor;raw;exif;crop;markup;pictures;معرض;وسائط;صور;تعديل;محرر;خام;سديم;
+MimeType=image/jpeg;image/png;image/webp;image/gif;image/heif;image/heic;image/avif;image/jxl;image/svg+xml;image/tiff;image/bmp;image/x-icon;image/x-dcraw;image/x-canon-cr2;image/x-canon-cr3;image/x-nikon-nef;image/x-sony-arw;image/x-adobe-dng;image/x-fuji-raf;image/x-olympus-orf;image/x-panasonic-rw2;
 StartupNotify=true
 StartupWMClass=org.sadeem.Gallery
 X-Purism-FormFactor=Workstation;Mobile;
