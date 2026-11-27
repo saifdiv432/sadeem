@@ -347,19 +347,36 @@ class VideoPlayerWidget(Gtk.Overlay):
             except Exception:
                 pass
 
-        if self.media_file:
+        mf = self.media_file
+        self.media_stream = None
+        self.media_file = None
+
+        if mf:
             try:
-                self.media_file.pause()
+                mf.pause()
             except Exception:
                 pass
             for sid in self._sig_ids:
                 try:
-                    self.media_file.disconnect(sid)
+                    mf.disconnect(sid)
                 except Exception:
                     pass
             self._sig_ids.clear()
-            self.media_file = None
-            self.media_stream = None
+            # Drain pending GtkGstMediaFile async open GSources before closing/unrefing
+            # so gtk_gst_media_file_close does not unref an uninitialized pointer.
+            try:
+                ctx = GLib.MainContext.default()
+                for _ in range(16):
+                    if not ctx.pending():
+                        break
+                    ctx.iteration(False)
+            except Exception:
+                pass
+            try:
+                mf.clear()
+            except Exception:
+                pass
+            del mf
 
         self.current_path = None
         self.duration_sec = 0.0

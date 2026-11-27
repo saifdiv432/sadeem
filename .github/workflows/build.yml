@@ -16,8 +16,129 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validate:
+    name: Validate Repo & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install validation dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            libglib2.0-bin \
+            python3-yaml \
+            python3-gi \
+            python3-pil \
+            python3-cairo \
+            gir1.2-gtk-4.0 \
+            gir1.2-adw-1 \
+            gjs
+
+      - name: Validate YAML configs
+        run: |
+          python3 -B -c "
+          import glob, yaml
+          paths = sorted(glob.glob('recipes/*.yml') + glob.glob('.github/workflows/*.yml'))
+          assert paths, 'No YAML files found'
+          for p in paths:
+              with open(p, 'r', encoding='utf-8') as f:
+                  yaml.safe_load(f)
+              print('YAML OK:', p)
+          "
+
+      - name: Validate GSettings schemas
+        run: |
+          glib-compile-schemas --strict --dry-run files/system/usr/share/glib-2.0/schemas
+          for d in files/system/usr/share/gnome-shell/extensions/*/schemas; do
+            if [ -d "$d" ]; then
+              echo "Schema OK: $d"
+              glib-compile-schemas --strict --dry-run "$d"
+            fi
+          done
+
+      - name: Validate Python syntax
+        run: |
+          python3 -B -c "
+          import os, py_compile, tempfile
+          targets = []
+          for root_dir in ('files', 'tests'):
+              for r, _, fs in os.walk(root_dir):
+                  for f in sorted(fs):
+                      p = os.path.join(r, f)
+                      if f.endswith('.py'):
+                          targets.append(p)
+          for d in ('files/system/usr/bin', 'files/system/usr/libexec'):
+              if os.path.isdir(d):
+                  for f in sorted(os.listdir(d)):
+                      p = os.path.join(d, f)
+                      if os.path.isfile(p):
+                          with open(p, 'rb') as fp:
+                              if b'python' in fp.readline():
+                                  targets.append(p)
+          with tempfile.NamedTemporaryFile(suffix='.pyc') as tmp:
+              for p in targets:
+                  py_compile.compile(p, cfile=tmp.name, doraise=True)
+          print(f'Python syntax OK ({len(targets)} files)')
+          "
+
+      - name: Validate shell scripts syntax
+        run: |
+          set -e
+          count=0
+          for f in files/scripts/*.sh files/system/usr/bin/* files/system/usr/libexec/*; do
+            [ -f "$f" ] || continue
+            first_line=$(head -n 1 "$f")
+            case "$first_line" in
+              *bash*) bash -n "$f"; count=$((count + 1)) ;;
+              *sh*)   sh -n "$f";   count=$((count + 1)) ;;
+            esac
+          done
+          echo "Shell syntax OK ($count scripts)"
+
+      - name: Validate GNOME extension JS (ESM parse)
+        run: |
+          python3 -B -c "
+          import glob, subprocess
+          files = sorted(glob.glob('files/system/usr/share/gnome-shell/extensions/**/*.js', recursive=True))
+          assert files, 'No extension JS files found'
+          allowed = (
+              'resource:///org/gnome/shell/',
+              'resource:///org/gnome/Shell/',
+              'Typelib file for namespace',
+          )
+          for f in files:
+              r = subprocess.run(['gjs', '-m', f], capture_output=True, text=True, timeout=10)
+              err = (r.stderr + '\n' + r.stdout).strip()
+              if 'SyntaxError' in err or 'Failed to parse module' in err:
+                  raise SystemExit(f'JS syntax error in {f}:\n{err}')
+              if r.returncode != 0 and not any(tok in err for tok in allowed):
+                  raise SystemExit(f'Unexpected JS error in {f} (rc={r.returncode}):\n{err}')
+          print(f'GJS ESM syntax OK ({len(files)} files)')
+          "
+
+      - name: Run headless Ubuntu-compatible unit tests
+        run: |
+          env -u DISPLAY -u WAYLAND_DISPLAY python3 -B -m unittest \
+            tests.test_sadeem_system \
+            tests.test_sadeem_windows_handler \
+            tests.test_sadeem_video_editor.TestTimelineModel \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_metadata_json_and_extension_files \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_gsettings_schema_strict_compile_and_defaults \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_i18n_ten_languages_and_used_keys \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_unified_2d_board_geometry_slots_and_hit_testing_in_gjs \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_unified_board_appdata_groups_filter_and_search_in_gjs \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_extension_app_data_manager_signature_and_open_resilience \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_resize_handle_fixed_layout_bounds_in_gjs \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_rtl_live_resize_board_anchoring_and_dnd_in_gjs \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_sadeem_system_menu_settings_page_and_translations \
+            tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_distro_defaults_replace_arcmenu_with_sadeem_menu \
+            -v
+
   bluebuild:
     name: Build Custom Image
+    needs: validate
     runs-on: ubuntu-latest
     permissions:
       contents: read

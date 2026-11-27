@@ -16,12 +16,14 @@ import struct
 import glob
 import shlex
 import colorsys
+import shutil
 import subprocess
 import time
 import threading
 import re
 import json
 import urllib.request
+from datetime import datetime
 
 import gi
 gi.require_version('Gtk', '4.0')
@@ -293,7 +295,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "Reset Apps & Groups Layout?",
         "menu_reset_layout_dlg_body": "All custom app placements, folder sizes, and custom groups will be cleared and restored to the default layout.",
         "menu_reset_layout_toast": "Apps and groups layout reset to defaults",
-        "menu_reset_confirm_btn": "Reset"
+        "menu_reset_confirm_btn": "Reset",
+        "rollback_group_title": "System Rollback",
+        "rollback_group_desc": "Switch back to the previous OS deployment if an update caused issues.",
+        "rollback_current_title": "Current Booted Version",
+        "rollback_prev_title": "Previous Deployment Available",
+        "rollback_none_title": "No Previous Deployment",
+        "rollback_none_desc": "There is no previous deployment saved to roll back to right now.",
+        "rollback_btn": "Roll Back to Previous Version",
+        "rollback_working": "Preparing rollback to previous deployment...",
+        "rollback_confirm_title": "Roll Back System to Previous Version?",
+        "rollback_confirm_body": "The previous system version ({version}) will become active after you restart. Your personal files and user data will not be deleted.",
+        "rollback_confirm_action": "Roll Back",
+        "rollback_success_title": "Rollback Staged Successfully",
+        "rollback_success_body": "The previous system version has been staged. Restart your computer now to boot into it.",
+        "rollback_failed_title": "System Rollback Failed",
+        "rollback_failed_body": "Could not complete system rollback.",
+        "rollback_cancelled": "Rollback authorization was cancelled.",
+        "ext_shadow_group_title": "Conflicting Local Extensions Detected",
+        "ext_shadow_group_desc": "Local copies in ~/.local/share/gnome-shell/extensions are overriding built-in Sadeem extensions.",
+        "ext_shadow_row_title": "Shadowed System Extensions ({count})",
+        "ext_shadow_remove_btn": "Remove Conflicts",
+        "ext_shadow_dlg_title": "Remove Conflicting Local Extensions?",
+        "ext_shadow_dlg_body": "Only conflicting local copies matching system extensions will be deleted so Sadeem defaults work properly:\n{uuids}",
+        "ext_shadow_relogin_title": "Conflicting Extensions Removed",
+        "ext_shadow_relogin_body": "Local conflicting copies were removed cleanly. Please log out and log back in for the system extensions to take effect.",
+        "ext_shadow_error_title": "Failed to Remove Some Extensions",
+        "guide_btn_tooltip": "Quick Start & Shortcuts",
+        "guide_title": "Quick Start & Shortcuts",
+        "guide_grp_shortcuts": "Built-in Shortcuts",
+        "guide_grp_shortcuts_desc": "Essential keyboard shortcuts included in Sadeem OS",
+        "guide_sc_menu_title": "Open Sadeem Menu",
+        "guide_sc_menu_desc": "Search apps, pinned items, and custom app groups",
+        "guide_sc_clipboard_title": "Clipboard History",
+        "guide_sc_clipboard_desc": "Browse and paste recent copied text items",
+        "guide_sc_emoji_title": "Emoji Picker",
+        "guide_sc_emoji_desc": "Insert emojis quickly at the cursor position",
+        "guide_sc_capture_title": "Capture & Recording",
+        "guide_sc_capture_desc": "Take annotated screenshots or record screen video",
+        "guide_grp_quickstart": "Quick Setup",
+        "guide_qs_drivers_title": "Drivers & Hardware",
+        "guide_qs_drivers_desc": "Scan devices, NVIDIA drivers, and firmware updates",
+        "guide_qs_colors_title": "Appearance & Colors",
+        "guide_qs_colors_desc": "Customize desktop accent color and look",
+        "btn_ok": "OK"
     },
     "ar": {
         "drv_system_busy_title": "تجهيز النظام قيد التنفيذ",
@@ -559,7 +604,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "إعادة ضبط تخطيط التطبيقات والمجموعات؟",
         "menu_reset_layout_dlg_body": "سيتم مسح جميع التخصيصات والمجموعات المخصصة واستعادة التخطيط الافتراضي للقائمة.",
         "menu_reset_layout_toast": "تمت استعادة تخطيط التطبيقات والمجموعات للوضع الافتراضي",
-        "menu_reset_confirm_btn": "إعادة الضبط"
+        "menu_reset_confirm_btn": "إعادة الضبط",
+        "rollback_group_title": "العودة للإصدار السابق (Rollback)",
+        "rollback_group_desc": "التراجع إلى الإصدار التشغيلي السابق إذا سبّب التحديث الأخير مشكلة.",
+        "rollback_current_title": "الإصدار الحالي المُقلع عليه",
+        "rollback_prev_title": "الإصدار السابق المتاح للعودة",
+        "rollback_none_title": "لا يتوفر إصدار سابق",
+        "rollback_none_desc": "لا يوجد إصدار سابق محفوظ للعودة إليه حالياً.",
+        "rollback_btn": "العودة للإصدار السابق",
+        "rollback_working": "جاري تجهيز العودة للإصدار السابق...",
+        "rollback_confirm_title": "العودة بالنظام إلى الإصدار السابق؟",
+        "rollback_confirm_body": "سيُفعَّل الإصدار السابق ({version}) عند إعادة التشغيل القادمة. لن تُحذف ملفاتك الشخصية أو بياناتك.",
+        "rollback_confirm_action": "العودة للإصدار السابق",
+        "rollback_success_title": "تم تجهيز العودة للإصدار السابق",
+        "rollback_success_body": "تم إعداد النظام للعودة إلى الإصدار السابق. أعد تشغيل الجهاز الآن لتفعيل التراجع.",
+        "rollback_failed_title": "تعذر التراجع عن الإصدار",
+        "rollback_failed_body": "فشلت عملية العودة إلى الإصدار السابق.",
+        "rollback_cancelled": "تم إلغاء التفويض لعملية التراجع.",
+        "ext_shadow_group_title": "تم رصد إضافات محلية متعارضة",
+        "ext_shadow_group_desc": "توجد نسخ محلية في ~/.local/share/gnome-shell/extensions تحجب إضافات النظام المدمجة.",
+        "ext_shadow_row_title": "إضافات نظام محجوبة ({count})",
+        "ext_shadow_remove_btn": "إزالة النسخ المتعارضة",
+        "ext_shadow_dlg_title": "إزالة النسخ المحلية المتعارضة؟",
+        "ext_shadow_dlg_body": "ستُحذف فقط النسخ المحلية المطابقة لإضافات التوزيعة حتى تعمل إضافات النظام بشكل سليم:\n{uuids}",
+        "ext_shadow_relogin_title": "تمت إزالة النسخ المتعارضة",
+        "ext_shadow_relogin_body": "حُذفت النسخ المحلية المتعارضة بنجاح. يُرجى تسجيل الخروج ثم الدخول مجدداً لتفعيل نسخ النظام.",
+        "ext_shadow_error_title": "تعذر إزالة بعض الإضافات",
+        "guide_btn_tooltip": "دليل البداية والاختصارات",
+        "guide_title": "دليل البداية والاختصارات",
+        "guide_grp_shortcuts": "الاختصارات المدمجة",
+        "guide_grp_shortcuts_desc": "أهم اختصارات لوحة المفاتيح المدمجة في نظام سديم",
+        "guide_sc_menu_title": "فتح قائمة سديم",
+        "guide_sc_menu_desc": "البحث في التطبيقات والمثبتات والمجموعات",
+        "guide_sc_clipboard_title": "سجل الحافظة",
+        "guide_sc_clipboard_desc": "استعراض ولصق النصوص المنسوخة مؤخراً",
+        "guide_sc_emoji_title": "منتقي الإيموجي",
+        "guide_sc_emoji_desc": "إدراج الرموز التعبيرية بسرعة عند موضع المؤشر",
+        "guide_sc_capture_title": "أداة الالتقاط والتسجيل",
+        "guide_sc_capture_desc": "التقاط الشاشة مع التحرير أو تسجيل الفيديو",
+        "guide_grp_quickstart": "إعداد سريع",
+        "guide_qs_drivers_title": "التعريفات والعتاد",
+        "guide_qs_drivers_desc": "فحص العتاد وتثبيت تعريفات NVIDIA وتحديثات البرامج الثابتة",
+        "guide_qs_colors_title": "الألوان والمظهر",
+        "guide_qs_colors_desc": "تخصيص لون تمييز سطح المكتب والمظهر العام",
+        "btn_ok": "حسناً"
     },
     "fr": {
         "cat_audio": "Audio",
@@ -825,7 +913,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "Réinitialiser la disposition des applications ?",
         "menu_reset_layout_dlg_body": "Toutes les positions personnalisées et groupes créés seront effacés.",
         "menu_reset_layout_toast": "Disposition du menu réinitialisée",
-        "menu_reset_confirm_btn": "Réinitialiser"
+        "menu_reset_confirm_btn": "Réinitialiser",
+        "rollback_group_title": "Restauration du système (Rollback)",
+        "rollback_group_desc": "Revenir au déploiement précédent du système si une mise à jour pose problème.",
+        "rollback_current_title": "Version démarrée actuelle",
+        "rollback_prev_title": "Déploiement précédent disponible",
+        "rollback_none_title": "Aucun déploiement précédent",
+        "rollback_none_desc": "Aucun déploiement précédent n'est enregistré pour revenir en arrière.",
+        "rollback_btn": "Revenir à la version précédente",
+        "rollback_working": "Préparation du retour à la version précédente...",
+        "rollback_confirm_title": "Revenir à la version précédente ?",
+        "rollback_confirm_body": "La version précédente ({version}) sera activée après le redémarrage. Vos fichiers personnels ne seront pas supprimés.",
+        "rollback_confirm_action": "Restaurer",
+        "rollback_success_title": "Restauration prête",
+        "rollback_success_body": "La version précédente a été préparée. Redémarrez maintenant pour l'utiliser.",
+        "rollback_failed_title": "Échec de la restauration",
+        "rollback_failed_body": "Impossible de revenir à la version précédente.",
+        "rollback_cancelled": "Autorisation de restauration annulée.",
+        "ext_shadow_group_title": "Extensions locales en conflit détectées",
+        "ext_shadow_group_desc": "Des copies locales dans ~/.local/share/gnome-shell/extensions masquent les extensions système.",
+        "ext_shadow_row_title": "Extensions système masquées ({count})",
+        "ext_shadow_remove_btn": "Supprimer les conflits",
+        "ext_shadow_dlg_title": "Supprimer les extensions locales en conflit ?",
+        "ext_shadow_dlg_body": "Seules les copies locales correspondant aux extensions système seront supprimées :\n{uuids}",
+        "ext_shadow_relogin_title": "Conflits supprimés",
+        "ext_shadow_relogin_body": "Les copies locales ont été supprimées. Veuillez fermer puis rouvrir votre session pour activer les versions système.",
+        "ext_shadow_error_title": "Erreur lors de la suppression",
+        "guide_btn_tooltip": "Démarrage rapide & raccourcis",
+        "guide_title": "Démarrage rapide & raccourcis",
+        "guide_grp_shortcuts": "Raccourcis intégrés",
+        "guide_grp_shortcuts_desc": "Raccourcis clavier essentiels de Sadeem OS",
+        "guide_sc_menu_title": "Ouvrir le menu Sadeem",
+        "guide_sc_menu_desc": "Rechercher des applications, favoris et groupes",
+        "guide_sc_clipboard_title": "Historique du presse-papiers",
+        "guide_sc_clipboard_desc": "Parcourir et coller les éléments copiés",
+        "guide_sc_emoji_title": "Sélecteur d'émojis",
+        "guide_sc_emoji_desc": "Insérer rapidement des émojis au curseur",
+        "guide_sc_capture_title": "Capture & Enregistrement",
+        "guide_sc_capture_desc": "Capturer ou enregistrer l'écran avec annotations",
+        "guide_grp_quickstart": "Configuration rapide",
+        "guide_qs_drivers_title": "Pilotes & Matériel",
+        "guide_qs_drivers_desc": "Analyser les périphériques, NVIDIA et micrologiciels",
+        "guide_qs_colors_title": "Apparence & Couleurs",
+        "guide_qs_colors_desc": "Personnaliser la couleur d'accentuation et le thème",
+        "btn_ok": "OK"
     },
     "es": {
         "cat_audio": "Audio",
@@ -1091,7 +1222,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "¿Restablecer disposición de aplicaciones?",
         "menu_reset_layout_dlg_body": "Se eliminarán todas las posiciones personalizadas y grupos creados manualmente.",
         "menu_reset_layout_toast": "Disposición de aplicaciones restablecida",
-        "menu_reset_confirm_btn": "Restablecer"
+        "menu_reset_confirm_btn": "Restablecer",
+        "rollback_group_title": "Reversión del sistema (Rollback)",
+        "rollback_group_desc": "Volver al despliegue anterior del sistema si una actualización causó problemas.",
+        "rollback_current_title": "Versión iniciada actual",
+        "rollback_prev_title": "Despliegue anterior disponible",
+        "rollback_none_title": "Sin despliegue anterior",
+        "rollback_none_desc": "No hay ninguna versión anterior guardada para revertir en este momento.",
+        "rollback_btn": "Volver a la versión anterior",
+        "rollback_working": "Preparando la reversión al despliegue anterior...",
+        "rollback_confirm_title": "¿Revertir el sistema a la versión anterior?",
+        "rollback_confirm_body": "La versión anterior ({version}) se activará al reiniciar. Tus archivos personales no se eliminarán.",
+        "rollback_confirm_action": "Revertir",
+        "rollback_success_title": "Reversión preparada",
+        "rollback_success_body": "La versión anterior está lista. Reinicia ahora para iniciar con ella.",
+        "rollback_failed_title": "Error al revertir",
+        "rollback_failed_body": "No se pudo completar la reversión del sistema.",
+        "rollback_cancelled": "Se canceló la autorización para revertir.",
+        "ext_shadow_group_title": "Extensiones locales en conflicto detectadas",
+        "ext_shadow_group_desc": "Copias locales en ~/.local/share/gnome-shell/extensions ocultan extensiones del sistema.",
+        "ext_shadow_row_title": "Extensiones del sistema ocultadas ({count})",
+        "ext_shadow_remove_btn": "Eliminar conflictos",
+        "ext_shadow_dlg_title": "¿Eliminar extensiones locales en conflicto?",
+        "ext_shadow_dlg_body": "Solo se eliminarán las copias locales que coincidan con extensiones del sistema:\n{uuids}",
+        "ext_shadow_relogin_title": "Conflictos eliminados",
+        "ext_shadow_relogin_body": "Las copias locales en conflicto se eliminaron. Cierra sesión e inicia de nuevo para activar las versiones del sistema.",
+        "ext_shadow_error_title": "No se pudieron eliminar algunas extensiones",
+        "guide_btn_tooltip": "Guía rápida y atajos",
+        "guide_title": "Guía rápida y atajos",
+        "guide_grp_shortcuts": "Atajos integrados",
+        "guide_grp_shortcuts_desc": "Atajos de teclado esenciales incluidos en Sadeem OS",
+        "guide_sc_menu_title": "Abrir menú Sadeem",
+        "guide_sc_menu_desc": "Buscar aplicaciones, fijadas y grupos",
+        "guide_sc_clipboard_title": "Historial del portapapeles",
+        "guide_sc_clipboard_desc": "Ver y pegar elementos copiados recientemente",
+        "guide_sc_emoji_title": "Selector de emojis",
+        "guide_sc_emoji_desc": "Insertar emojis rápidamente junto al cursor",
+        "guide_sc_capture_title": "Captura y grabación",
+        "guide_sc_capture_desc": "Capturar pantalla o grabar vídeo con anotaciones",
+        "guide_grp_quickstart": "Configuración rápida",
+        "guide_qs_drivers_title": "Controladores y hardware",
+        "guide_qs_drivers_desc": "Analizar dispositivos, NVIDIA y firmware",
+        "guide_qs_colors_title": "Apariencia y colores",
+        "guide_qs_colors_desc": "Personalizar el color de acento y el estilo",
+        "btn_ok": "Aceptar"
     },
     "de": {
         "cat_audio": "Audio",
@@ -1357,7 +1531,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "App- und Gruppenlayout zurücksetzen?",
         "menu_reset_layout_dlg_body": "Alle eigenen Anordnungen, Ordnergrößen und Gruppen werden gelöscht.",
         "menu_reset_layout_toast": "App- und Gruppenlayout zurückgesetzt",
-        "menu_reset_confirm_btn": "Zurücksetzen"
+        "menu_reset_confirm_btn": "Zurücksetzen",
+        "rollback_group_title": "System-Rollback",
+        "rollback_group_desc": "Zur vorherigen Systembereitstellung zurückkehren, falls ein Update Probleme verursacht.",
+        "rollback_current_title": "Aktuell gestartete Version",
+        "rollback_prev_title": "Vorherige Bereitstellung verfügbar",
+        "rollback_none_title": "Keine vorherige Bereitstellung",
+        "rollback_none_desc": "Derzeit ist keine vorherige Version für ein Rollback gespeichert.",
+        "rollback_btn": "Zur vorherigen Version zurückkehren",
+        "rollback_working": "Rollback auf vorherige Version wird vorbereitet...",
+        "rollback_confirm_title": "System auf vorherige Version zurücksetzen?",
+        "rollback_confirm_body": "Die vorherige Version ({version}) wird nach dem Neustart aktiv. Persönliche Dateien bleiben erhalten.",
+        "rollback_confirm_action": "Zurücksetzen",
+        "rollback_success_title": "Rollback vorbereitet",
+        "rollback_success_body": "Die vorherige Systemversion ist bereit. Jetzt neu starten, um sie zu laden.",
+        "rollback_failed_title": "Rollback fehlgeschlagen",
+        "rollback_failed_body": "Das System-Rollback konnte nicht abgeschlossen werden.",
+        "rollback_cancelled": "Autorisierung für Rollback abgebrochen.",
+        "ext_shadow_group_title": "Konflikte bei lokalen Erweiterungen erkannt",
+        "ext_shadow_group_desc": "Lokale Kopien in ~/.local/share/gnome-shell/extensions überschreiben Systemerweiterungen.",
+        "ext_shadow_row_title": "Überschriebene Systemerweiterungen ({count})",
+        "ext_shadow_remove_btn": "Konflikte entfernen",
+        "ext_shadow_dlg_title": "Konfliktbehaftete lokale Erweiterungen entfernen?",
+        "ext_shadow_dlg_body": "Es werden nur lokale Kopien entfernt, die Systemerweiterungen überdecken:\n{uuids}",
+        "ext_shadow_relogin_title": "Konflikte entfernt",
+        "ext_shadow_relogin_body": "Lokale Konflikte wurden entfernt. Bitte abmelden und erneut anmelden, um die Systemversionen zu aktivieren.",
+        "ext_shadow_error_title": "Einige Erweiterungen konnten nicht entfernt werden",
+        "guide_btn_tooltip": "Schnellstart & Tastenkürzel",
+        "guide_title": "Schnellstart & Tastenkürzel",
+        "guide_grp_shortcuts": "Integrierte Tastenkürzel",
+        "guide_grp_shortcuts_desc": "Wichtige Tastenkürzel in Sadeem OS",
+        "guide_sc_menu_title": "Sadeem-Menü öffnen",
+        "guide_sc_menu_desc": "Apps, angeheftete Elemente und Gruppen durchsuchen",
+        "guide_sc_clipboard_title": "Zwischenablageverlauf",
+        "guide_sc_clipboard_desc": "Zuletzt kopierte Einträge ansehen und einfügen",
+        "guide_sc_emoji_title": "Emoji-Auswahl",
+        "guide_sc_emoji_desc": "Emojis schnell an der Cursor-Position einfügen",
+        "guide_sc_capture_title": "Aufnahme & Bildschirmfoto",
+        "guide_sc_capture_desc": "Bildschirmfotos aufnehmen oder Videos aufzeichnen",
+        "guide_grp_quickstart": "Schnelleinrichtung",
+        "guide_qs_drivers_title": "Treiber & Hardware",
+        "guide_qs_drivers_desc": "Geräte, NVIDIA-Treiber und Firmware prüfen",
+        "guide_qs_colors_title": "Erscheinungsbild & Farben",
+        "guide_qs_colors_desc": "Akzentfarbe und Desktop-Design anpassen",
+        "btn_ok": "OK"
     },
     "tr": {
         "cat_audio": "Ses",
@@ -1623,7 +1840,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "Uygulama ve Grup Düzeni Sıfırlansın mı?",
         "menu_reset_layout_dlg_body": "Tüm özel konumlar ve oluşturulan gruplar silinip varsayılan düzene dönülecek.",
         "menu_reset_layout_toast": "Uygulama ve grup düzeni sıfırlandı",
-        "menu_reset_confirm_btn": "Sıfırla"
+        "menu_reset_confirm_btn": "Sıfırla",
+        "rollback_group_title": "Sistem Geri Alma (Rollback)",
+        "rollback_group_desc": "Bir güncelleme sorun çıkardıysa önceki sistem dağıtımına geri dönün.",
+        "rollback_current_title": "Geçerli Başlatılan Sürüm",
+        "rollback_prev_title": "Kullanılabilir Önceki Sürüm",
+        "rollback_none_title": "Önceki Sürüm Yok",
+        "rollback_none_desc": "Şu anda geri dönülebilecek kayıtlı bir önceki sürüm bulunmuyor.",
+        "rollback_btn": "Önceki Sürüme Geri Dön",
+        "rollback_working": "Önceki sürüme geri dönüş hazırlanıyor...",
+        "rollback_confirm_title": "Sistem Önceki Sürüme Geri Alınsın mı?",
+        "rollback_confirm_body": "Yeniden başlattıktan sonra önceki sistem sürümü ({version}) etkinleşecektir. Kişisel dosyalarınız silinmez.",
+        "rollback_confirm_action": "Geri Al",
+        "rollback_success_title": "Geri Alma Hazırlandı",
+        "rollback_success_body": "Önceki sistem sürümü hazır. Geçiş yapmak için bilgisayarınızı şimdi yeniden başlatın.",
+        "rollback_failed_title": "Sistem Geri Alma Başarısız",
+        "rollback_failed_body": "Önceki sürüme geri dönülemedi.",
+        "rollback_cancelled": "Geri alma yetkilendirmesi iptal edildi.",
+        "ext_shadow_group_title": "Çakışan Yerel Uzantılar Algılandı",
+        "ext_shadow_group_desc": "~/.local/share/gnome-shell/extensions içindeki yerel kopyalar sistem uzantılarını gölgeliyor.",
+        "ext_shadow_row_title": "Gölgelenen Sistem Uzantıları ({count})",
+        "ext_shadow_remove_btn": "Çakışmaları Kaldır",
+        "ext_shadow_dlg_title": "Çakışan Yerel Uzantılar Kaldırılsın mı?",
+        "ext_shadow_dlg_body": "Yalnızca sistem uzantılarıyla çakışan yerel kopyalar silinecektir:\n{uuids}",
+        "ext_shadow_relogin_title": "Çakışmalar Kaldırıldı",
+        "ext_shadow_relogin_body": "Yerel çakışan kopyalar silindi. Sistem uzantılarının etkinleşmesi için lütfen oturumu kapatıp yeniden açın.",
+        "ext_shadow_error_title": "Bazı Uzantılar Kaldırılamadı",
+        "guide_btn_tooltip": "Hızlı Başlangıç ve Kısayollar",
+        "guide_title": "Hızlı Başlangıç ve Kısayollar",
+        "guide_grp_shortcuts": "Yerleşik Kısayollar",
+        "guide_grp_shortcuts_desc": "Sadeem OS ile birlikte gelen temel klavye kısayolları",
+        "guide_sc_menu_title": "Sadeem Menüsünü Aç",
+        "guide_sc_menu_desc": "Uygulamaları, sabitlenenleri ve grupları arayın",
+        "guide_sc_clipboard_title": "Pano Geçmişi",
+        "guide_sc_clipboard_desc": "Son kopyalanan metin öğelerine göz atın ve yapıştırın",
+        "guide_sc_emoji_title": "Emoji Seçici",
+        "guide_sc_emoji_desc": "İmleç konumuna hızlıca emoji ekleyin",
+        "guide_sc_capture_title": "Ekran Yakalama ve Kayıt",
+        "guide_sc_capture_desc": "Açıklamalı ekran görüntüsü alın veya ekran videosu kaydedin",
+        "guide_grp_quickstart": "Hızlı Kurulum",
+        "guide_qs_drivers_title": "Sürücüler ve Donanım",
+        "guide_qs_drivers_desc": "Cihazları, NVIDIA sürücülerini ve donanım yazılımını tarayın",
+        "guide_qs_colors_title": "Görünüm ve Renkler",
+        "guide_qs_colors_desc": "Masaüstü vurgu rengini ve görünümü özelleştirin",
+        "btn_ok": "Tamam"
     },
     "ru": {
         "cat_audio": "Аудио",
@@ -1889,7 +2149,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "Сбросить макет приложений и групп?",
         "menu_reset_layout_dlg_body": "Все пользовательские настройки расположения и группы будут удалены.",
         "menu_reset_layout_toast": "Макет приложений и групп сброшен",
-        "menu_reset_confirm_btn": "Сбросить"
+        "menu_reset_confirm_btn": "Сбросить",
+        "rollback_group_title": "Откат системы (Rollback)",
+        "rollback_group_desc": "Вернуться к предыдущему развёртыванию ОС, если обновление вызвало сбои.",
+        "rollback_current_title": "Текущая загруженная версия",
+        "rollback_prev_title": "Доступная предыдущая версия",
+        "rollback_none_title": "Нет предыдущей версии",
+        "rollback_none_desc": "Сейчас нет сохранённого предыдущего развёртывания для отката.",
+        "rollback_btn": "Откатить к предыдущей версии",
+        "rollback_working": "Подготовка отката к предыдущей версии...",
+        "rollback_confirm_title": "Откатить систему к предыдущей версии?",
+        "rollback_confirm_body": "Предыдущая версия ({version}) станет активной после перезагрузки. Личные файлы не будут удалены.",
+        "rollback_confirm_action": "Откатить",
+        "rollback_success_title": "Откат подготовлен",
+        "rollback_success_body": "Предыдущая версия системы готова. Перезагрузите компьютер сейчас для загрузки в неё.",
+        "rollback_failed_title": "Ошибка отката системы",
+        "rollback_failed_body": "Не удалось выполнить откат системы.",
+        "rollback_cancelled": "Авторизация отката отменена.",
+        "ext_shadow_group_title": "Обнаружены конфликтующие локальные расширения",
+        "ext_shadow_group_desc": "Локальные копии в ~/.local/share/gnome-shell/extensions перекрывают системные расширения.",
+        "ext_shadow_row_title": "Перекрытые системные расширения ({count})",
+        "ext_shadow_remove_btn": "Удалить конфликты",
+        "ext_shadow_dlg_title": "Удалить конфликтующие локальные расширения?",
+        "ext_shadow_dlg_body": "Будут удалены только локальные копии, совпадающие с системными расширениями:\n{uuids}",
+        "ext_shadow_relogin_title": "Конфликты устранены",
+        "ext_shadow_relogin_body": "Конфликтующие локальные копии удалены. Выйдите из системы и войдите снова для активации системных версий.",
+        "ext_shadow_error_title": "Не удалось удалить некоторые расширения",
+        "guide_btn_tooltip": "Быстрый старт и горячие клавиши",
+        "guide_title": "Быстрый старт и горячие клавиши",
+        "guide_grp_shortcuts": "Встроенные сочетания клавиш",
+        "guide_grp_shortcuts_desc": "Основные сочетания клавиш в Sadeem OS",
+        "guide_sc_menu_title": "Открыть меню Sadeem",
+        "guide_sc_menu_desc": "Поиск приложений, закреплённых значков и групп",
+        "guide_sc_clipboard_title": "История буфера обмена",
+        "guide_sc_clipboard_desc": "Просмотр и вставка недавно скопированного текста",
+        "guide_sc_emoji_title": "Выбор эмодзи",
+        "guide_sc_emoji_desc": "Быстрая вставка эмодзи в позиции курсора",
+        "guide_sc_capture_title": "Снимок и запись экрана",
+        "guide_sc_capture_desc": "Сделать скриншот с пометками или записать видео",
+        "guide_grp_quickstart": "Быстрая настройка",
+        "guide_qs_drivers_title": "Драйверы и оборудование",
+        "guide_qs_drivers_desc": "Поиск устройств, драйверов NVIDIA и обновлений прошивки",
+        "guide_qs_colors_title": "Оформление и цвета",
+        "guide_qs_colors_desc": "Настройка цвета акцента и внешнего вида рабочего стола",
+        "btn_ok": "ОК"
     },
     "pt": {
         "cat_audio": "Áudio",
@@ -2155,7 +2458,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "Repor disposição de aplicações e grupos?",
         "menu_reset_layout_dlg_body": "Todas as posições personalizadas e grupos criados serão apagados.",
         "menu_reset_layout_toast": "Disposição de aplicações e grupos reposta",
-        "menu_reset_confirm_btn": "Repor"
+        "menu_reset_confirm_btn": "Repor",
+        "rollback_group_title": "Reversão do sistema (Rollback)",
+        "rollback_group_desc": "Voltar à implementação anterior do sistema caso uma atualização cause problemas.",
+        "rollback_current_title": "Versão atual iniciada",
+        "rollback_prev_title": "Implementação anterior disponível",
+        "rollback_none_title": "Sem versão anterior",
+        "rollback_none_desc": "Não há nenhuma versão anterior guardada para reverter neste momento.",
+        "rollback_btn": "Reverter para a versão anterior",
+        "rollback_working": "A preparar reversão para a versão anterior...",
+        "rollback_confirm_title": "Reverter o sistema para a versão anterior?",
+        "rollback_confirm_body": "A versão anterior ({version}) será ativada após reiniciar. Os seus ficheiros pessoais não serão apagados.",
+        "rollback_confirm_action": "Reverter",
+        "rollback_success_title": "Reversão preparada",
+        "rollback_success_body": "A versão anterior do sistema está pronta. Reinicie o computador agora para a utilizar.",
+        "rollback_failed_title": "Falha na reversão",
+        "rollback_failed_body": "Não foi possível concluir a reversão do sistema.",
+        "rollback_cancelled": "A autorização para reversão foi cancelada.",
+        "ext_shadow_group_title": "Extensões locais em conflito detetadas",
+        "ext_shadow_group_desc": "Cópias locais em ~/.local/share/gnome-shell/extensions estão a sobrepor-se às extensões do sistema.",
+        "ext_shadow_row_title": "Extensões do sistema ocultadas ({count})",
+        "ext_shadow_remove_btn": "Remover conflitos",
+        "ext_shadow_dlg_title": "Remover extensões locais em conflito?",
+        "ext_shadow_dlg_body": "Apenas serão removidas as cópias locais correspondentes às extensões do sistema:\n{uuids}",
+        "ext_shadow_relogin_title": "Conflitos removidos",
+        "ext_shadow_relogin_body": "As cópias locais em conflito foram removidas. Termine a sessão e inicie novamente para ativar as versões do sistema.",
+        "ext_shadow_error_title": "Falha ao remover algumas extensões",
+        "guide_btn_tooltip": "Início rápido e atalhos",
+        "guide_title": "Início rápido e atalhos",
+        "guide_grp_shortcuts": "Atalhos integrados",
+        "guide_grp_shortcuts_desc": "Atalhos de teclado essenciais incluídos no Sadeem OS",
+        "guide_sc_menu_title": "Abrir menu Sadeem",
+        "guide_sc_menu_desc": "Pesquisar aplicações, itens fixados e grupos",
+        "guide_sc_clipboard_title": "Histórico da área de transferência",
+        "guide_sc_clipboard_desc": "Explorar e colar itens copiados recentemente",
+        "guide_sc_emoji_title": "Seletor de emojis",
+        "guide_sc_emoji_desc": "Inserir emojis rapidamente na posição do cursor",
+        "guide_sc_capture_title": "Captura e gravação",
+        "guide_sc_capture_desc": "Tirar capturas de ecrã com anotações ou gravar vídeo",
+        "guide_grp_quickstart": "Configuração rápida",
+        "guide_qs_drivers_title": "Controladores e hardware",
+        "guide_qs_drivers_desc": "Analisar dispositivos, NVIDIA e atualizações de firmware",
+        "guide_qs_colors_title": "Aspeto e cores",
+        "guide_qs_colors_desc": "Personalizar a cor de destaque e o visual do ambiente",
+        "btn_ok": "OK"
     },
     "it": {
         "cat_audio": "Audio",
@@ -2421,7 +2767,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "Ripristinare layout di app e gruppi?",
         "menu_reset_layout_dlg_body": "Tutte le disposizioni personalizzate e i gruppi creati saranno eliminati.",
         "menu_reset_layout_toast": "Layout di app e gruppi ripristinato",
-        "menu_reset_confirm_btn": "Ripristina"
+        "menu_reset_confirm_btn": "Ripristina",
+        "rollback_group_title": "Ripristino di sistema (Rollback)",
+        "rollback_group_desc": "Torna alla distribuzione precedente del sistema se un aggiornamento causa problemi.",
+        "rollback_current_title": "Versione avviata attuale",
+        "rollback_prev_title": "Distribuzione precedente disponibile",
+        "rollback_none_title": "Nessuna versione precedente",
+        "rollback_none_desc": "Al momento non è salvata alcuna versione precedente per il ripristino.",
+        "rollback_btn": "Torna alla versione precedente",
+        "rollback_working": "Preparazione del ripristino alla versione precedente...",
+        "rollback_confirm_title": "Ripristinare il sistema alla versione precedente?",
+        "rollback_confirm_body": "La versione precedente ({version}) verrà attivata al riavvio. I file personali non saranno eliminati.",
+        "rollback_confirm_action": "Ripristina",
+        "rollback_success_title": "Ripristino pronto",
+        "rollback_success_body": "La versione precedente è stata preparata. Riavvia ora il computer per avviarla.",
+        "rollback_failed_title": "Ripristino non riuscito",
+        "rollback_failed_body": "Impossibile completare il ripristino del sistema.",
+        "rollback_cancelled": "Autorizzazione al ripristino annullata.",
+        "ext_shadow_group_title": "Estensioni locali in conflitto rilevate",
+        "ext_shadow_group_desc": "Copie locali in ~/.local/share/gnome-shell/extensions stanno oscurando le estensioni di sistema.",
+        "ext_shadow_row_title": "Estensioni di sistema oscurate ({count})",
+        "ext_shadow_remove_btn": "Rimuovi conflitti",
+        "ext_shadow_dlg_title": "Rimuovere le estensioni locali in conflitto?",
+        "ext_shadow_dlg_body": "Verranno eliminate solo le copie locali corrispondenti alle estensioni di sistema:\n{uuids}",
+        "ext_shadow_relogin_title": "Conflitti rimossi",
+        "ext_shadow_relogin_body": "Le copie locali in conflitto sono state rimosse. Disconnettiti e accedi di nuovo per attivare le versioni di sistema.",
+        "ext_shadow_error_title": "Impossibile rimuovere alcune estensioni",
+        "guide_btn_tooltip": "Guida rapida e scorciatoie",
+        "guide_title": "Guida rapida e scorciatoie",
+        "guide_grp_shortcuts": "Scorciatoie integrate",
+        "guide_grp_shortcuts_desc": "Scorciatoie da tastiera principali di Sadeem OS",
+        "guide_sc_menu_title": "Apri menu Sadeem",
+        "guide_sc_menu_desc": "Cerca app, preferiti e gruppi personalizzati",
+        "guide_sc_clipboard_title": "Cronologia appunti",
+        "guide_sc_clipboard_desc": "Sfoglia e incolla gli elementi copiati di recente",
+        "guide_sc_emoji_title": "Selettore emoji",
+        "guide_sc_emoji_desc": "Inserisci rapidamente emoji alla posizione del cursore",
+        "guide_sc_capture_title": "Cattura e registrazione",
+        "guide_sc_capture_desc": "Acquisisci schermate annotate o registra video",
+        "guide_grp_quickstart": "Configurazione rapida",
+        "guide_qs_drivers_title": "Driver e hardware",
+        "guide_qs_drivers_desc": "Scansiona dispositivi, driver NVIDIA e firmware",
+        "guide_qs_colors_title": "Aspetto e colori",
+        "guide_qs_colors_desc": "Personalizza il colore principale e lo stile desktop",
+        "btn_ok": "OK"
     },
     "zh": {
         "cat_audio": "音频",
@@ -2687,7 +3076,50 @@ TRANSLATIONS = {
         "menu_reset_layout_dlg_title": "重置应用与分组布局？",
         "menu_reset_layout_dlg_body": "所有自定义位置和自建分组将被清除并恢复默认布局。",
         "menu_reset_layout_toast": "已恢复默认应用与分组布局",
-        "menu_reset_confirm_btn": "重置"
+        "menu_reset_confirm_btn": "重置",
+        "rollback_group_title": "系统回滚 (Rollback)",
+        "rollback_group_desc": "如果更新引发问题，可切换回上一个系统部署版本。",
+        "rollback_current_title": "当前启动版本",
+        "rollback_prev_title": "可用的上一版本",
+        "rollback_none_title": "无可用上一版本",
+        "rollback_none_desc": "当前没有已保存的上一系统版本可供回滚。",
+        "rollback_btn": "回滚到上一版本",
+        "rollback_working": "正在准备回滚到上一版本...",
+        "rollback_confirm_title": "确定回滚系统到上一版本？",
+        "rollback_confirm_body": "重启后将启用上一系统版本（{version}）。您的个人文件和用户数据不会被删除。",
+        "rollback_confirm_action": "回滚",
+        "rollback_success_title": "回滚已就绪",
+        "rollback_success_body": "上一系统版本已准备完成，请立即重启电脑以切换。",
+        "rollback_failed_title": "系统回滚失败",
+        "rollback_failed_body": "无法完成系统回滚操作。",
+        "rollback_cancelled": "已取消回滚授权。",
+        "ext_shadow_group_title": "检测到冲突的本地扩展",
+        "ext_shadow_group_desc": "~/.local/share/gnome-shell/extensions 中的本地副本覆盖了系统内置扩展。",
+        "ext_shadow_row_title": "被遮蔽的系统扩展（{count}）",
+        "ext_shadow_remove_btn": "移除冲突",
+        "ext_shadow_dlg_title": "确定移除冲突的本地扩展？",
+        "ext_shadow_dlg_body": "仅删除与系统内置扩展冲突的本地副本，以确保系统默认值生效：\n{uuids}",
+        "ext_shadow_relogin_title": "已移除冲突扩展",
+        "ext_shadow_relogin_body": "冲突的本地副本已成功移除。请注销并重新登录以使系统扩展生效。",
+        "ext_shadow_error_title": "部分扩展移除失败",
+        "guide_btn_tooltip": "快速入门与快捷键",
+        "guide_title": "快速入门与快捷键",
+        "guide_grp_shortcuts": "内置快捷键",
+        "guide_grp_shortcuts_desc": "Sadeem OS 内置常用键盘快捷键",
+        "guide_sc_menu_title": "打开 Sadeem 菜单",
+        "guide_sc_menu_desc": "搜索应用、固定项与自定义分组",
+        "guide_sc_clipboard_title": "剪贴板历史",
+        "guide_sc_clipboard_desc": "浏览并粘贴最近复制的文本记录",
+        "guide_sc_emoji_title": "表情符号选择器",
+        "guide_sc_emoji_desc": "在光标位置快速插入表情符号",
+        "guide_sc_capture_title": "截图与录屏",
+        "guide_sc_capture_desc": "截取带标注屏幕画面或录制屏幕视频",
+        "guide_grp_quickstart": "快速设置",
+        "guide_qs_drivers_title": "驱动与硬件",
+        "guide_qs_drivers_desc": "检测硬件设备、NVIDIA 驱动与固件更新",
+        "guide_qs_colors_title": "外观与颜色",
+        "guide_qs_colors_desc": "自定义桌面强调色与外观风格",
+        "btn_ok": "确定"
     }
 }
 PRESET_HEXES = [
@@ -3047,6 +3479,165 @@ def get_active_deployment_image_info():
     except Exception:
         pass
     return "", ""
+
+
+USER_EXTENSIONS_DIR = os.path.expanduser("~/.local/share/gnome-shell/extensions")
+SYSTEM_EXTENSIONS_DIR = "/usr/share/gnome-shell/extensions"
+
+
+def _format_ostree_timestamp(ts):
+    """Format an rpm-ostree deployment timestamp (epoch int or str) for display."""
+    if ts is None or ts == "":
+        return ""
+    try:
+        if isinstance(ts, (int, float)):
+            return datetime.fromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M")
+        return str(ts).strip()
+    except Exception:
+        return ""
+
+
+def parse_ostree_deployments(raw_json: str) -> dict:
+    """Parse `rpm-ostree status --json` safely, distinguishing booted, staged, and rollback."""
+    result = {"booted": None, "staged": None, "rollback": None}
+    if not isinstance(raw_json, str) or not raw_json.strip():
+        return result
+
+    try:
+        data = json.loads(raw_json)
+    except Exception:
+        return result
+
+    if not isinstance(data, dict):
+        return result
+
+    deployments = data.get("deployments")
+    if not isinstance(deployments, list):
+        return result
+
+    for dep in deployments:
+        if not isinstance(dep, dict):
+            continue
+        meta = dep.get("base-commit-meta")
+        meta_ver = meta.get("version") if isinstance(meta, dict) else None
+        version = str(dep.get("version") or meta_ver or "").strip()
+        origin = str(dep.get("origin") or dep.get("container-image-reference") or "").strip()
+        entry = {
+            "version": version,
+            "timestamp": dep.get("timestamp"),
+            "origin": origin,
+        }
+
+        is_booted = bool(dep.get("booted"))
+        is_staged = bool(dep.get("staged"))
+
+        if is_booted:
+            if result["booted"] is None:
+                result["booted"] = entry
+        elif is_staged:
+            # Staged updates wait for reboot and must never be treated as a rollback target.
+            if result["staged"] is None:
+                result["staged"] = entry
+        else:
+            if result["rollback"] is None:
+                result["rollback"] = entry
+
+    return result
+
+
+def find_shadowed_extensions(
+    user_ext_dir: str = USER_EXTENSIONS_DIR,
+    system_ext_dir: str = SYSTEM_EXTENSIONS_DIR,
+) -> list[str]:
+    """Return sorted extension UUIDs present in both user and system extension directories."""
+    if not user_ext_dir or not system_ext_dir:
+        return []
+    if not os.path.isdir(user_ext_dir) or not os.path.isdir(system_ext_dir):
+        return []
+
+    try:
+        sys_entries = {
+            name
+            for name in os.listdir(system_ext_dir)
+            if name and not name.startswith(".") and os.path.isdir(os.path.join(system_ext_dir, name))
+        }
+        user_entries = {
+            name
+            for name in os.listdir(user_ext_dir)
+            if name
+            and not name.startswith(".")
+            and (
+                os.path.isdir(os.path.join(user_ext_dir, name))
+                or os.path.islink(os.path.join(user_ext_dir, name))
+            )
+        }
+    except OSError:
+        return []
+
+    return sorted(sys_entries & user_entries)
+
+
+def remove_shadowed_extensions(
+    uuids: list[str],
+    user_ext_dir: str = USER_EXTENSIONS_DIR,
+    system_ext_dir: str = SYSTEM_EXTENSIONS_DIR,
+) -> tuple[list[str], list[str]]:
+    """Safely remove conflicting local user extensions that shadow system extensions."""
+    removed: list[str] = []
+    errors: list[str] = []
+
+    if not uuids:
+        return removed, errors
+
+    if not user_ext_dir or not system_ext_dir:
+        return removed, ["Invalid extension directory"]
+
+    real_user_dir = os.path.realpath(user_ext_dir)
+    real_sys_dir = os.path.realpath(system_ext_dir)
+    if not os.path.isdir(real_user_dir) or not os.path.isdir(real_sys_dir):
+        return removed, ["Extension directory does not exist"]
+
+    for raw_uuid in uuids:
+        if (
+            not isinstance(raw_uuid, str)
+            or not raw_uuid
+            or raw_uuid in (".", "..")
+            or "/" in raw_uuid
+            or "\\" in raw_uuid
+            or os.path.basename(raw_uuid) != raw_uuid
+        ):
+            errors.append(f"{raw_uuid}: invalid extension identifier")
+            continue
+
+        sys_candidate = os.path.join(real_sys_dir, raw_uuid)
+        if not (os.path.isdir(sys_candidate) or os.path.islink(sys_candidate)):
+            errors.append(f"{raw_uuid}: not found in system extensions")
+            continue
+
+        target = os.path.join(real_user_dir, raw_uuid)
+        parent_real = os.path.realpath(os.path.dirname(target))
+        if parent_real != real_user_dir:
+            errors.append(f"{raw_uuid}: path escapes user extensions directory")
+            continue
+
+        if not os.path.lexists(target):
+            errors.append(f"{raw_uuid}: not found in user extensions")
+            continue
+
+        try:
+            if os.path.islink(target):
+                os.unlink(target)
+            else:
+                real_target = os.path.realpath(target)
+                if not real_target.startswith(real_user_dir + os.sep):
+                    errors.append(f"{raw_uuid}: resolved path outside user extensions directory")
+                    continue
+                shutil.rmtree(target)
+            removed.append(raw_uuid)
+        except Exception as exc:
+            errors.append(f"{raw_uuid}: {exc}")
+
+    return removed, errors
 
 
 UPDATER_CONFIG_DIR = os.path.expanduser("~/.config/sadeem-updater")
@@ -4529,11 +5120,17 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self._upd_checking_timer = None
         self._upd_staging_timer = None
         self._upd_current_frac = 0.0
+        self._rollback_busy = False
+        self._rollback_info = None
+        self._shadowed_uuids = []
+        self._guide_dialog = None
 
         self.connect("destroy", self._on_window_destroy)
         self.setup_ui(initial_tab)
         self.check_box_availability()
         self.check_initial_reboot_status()
+        self.refresh_shadowed_extensions()
+        self.refresh_rollback_status()
 
     def _on_window_destroy(self, *_args):
         if self._menu_settings and self._menu_signal_ids:
@@ -4742,6 +5339,18 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.toolbar_view = Adw.ToolbarView()
         self.header_bar = Adw.HeaderBar()
 
+        self.btn_header_guide = Gtk.Button()
+        self.btn_header_guide.set_icon_name(
+            safe_icon([
+                "preferences-desktop-keyboard-shortcuts-symbolic",
+                "help-about-symbolic",
+                "dialog-information-symbolic",
+            ])
+        )
+        self.btn_header_guide.set_tooltip_text(t("guide_btn_tooltip"))
+        self.btn_header_guide.connect("clicked", self.on_open_guide_clicked)
+        self.header_bar.pack_end(self.btn_header_guide)
+
         self.btn_header_cleanup = Gtk.Button()
         self.btn_header_cleanup.set_icon_name(safe_icon(["edit-clear-symbolic", "user-trash-symbolic"]))
         self.btn_header_cleanup.set_tooltip_text(t("btn_cleanup_cache"))
@@ -4824,6 +5433,8 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                 self._nav_syncing = False
             if tab_name == "updates":
                 self.check_initial_reboot_status()
+                self.refresh_shadowed_extensions()
+                self.refresh_rollback_status()
 
     # =========================================================================
     # TAB 1: UPDATES
@@ -4852,6 +5463,14 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
             t("upd_banner_desc")
         )
         content.append(header)
+
+        # Conflicting Local Extensions Detector (hidden unless real conflicts exist)
+        self.shadowed_ext_group = Adw.PreferencesGroup()
+        self.shadowed_ext_group.set_title(t("ext_shadow_group_title"))
+        self.shadowed_ext_group.set_description(t("ext_shadow_group_desc"))
+        self.shadowed_ext_group.set_visible(False)
+        self.shadowed_ext_rows = []
+        content.append(self.shadowed_ext_group)
 
         # Target Switches Group
         pref_group = Adw.PreferencesGroup()
@@ -5033,6 +5652,37 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
         self.check_manual.connect("toggled", on_policy_toggled)
 
         content.append(self.policy_group)
+
+        # System Rollback Card
+        self.rollback_group = Adw.PreferencesGroup()
+        self.rollback_group.set_title(t("rollback_group_title"))
+        self.rollback_group.set_description(t("rollback_group_desc"))
+
+        self.rollback_current_row = Adw.ActionRow()
+        self.rollback_current_row.set_use_markup(False)
+        self.rollback_current_row.set_title(t("rollback_current_title"))
+        self.rollback_current_row.set_subtitle("...")
+        self.rollback_current_row.add_prefix(
+            Gtk.Image.new_from_icon_name(safe_icon(["computer-symbolic", "emblem-default-symbolic"]))
+        )
+        self.rollback_group.add(self.rollback_current_row)
+
+        self.rollback_target_row = Adw.ActionRow()
+        self.rollback_target_row.set_use_markup(False)
+        self.rollback_target_row.set_title(t("rollback_none_title"))
+        self.rollback_target_row.set_subtitle(t("rollback_none_desc"))
+        self.rollback_target_row.add_prefix(
+            Gtk.Image.new_from_icon_name(safe_icon(["document-revert-symbolic", "edit-undo-symbolic"]))
+        )
+        self.btn_rollback = Gtk.Button(label=t("rollback_btn"))
+        self.btn_rollback.add_css_class("destructive-action")
+        self.btn_rollback.set_valign(Gtk.Align.CENTER)
+        self.btn_rollback.set_sensitive(False)
+        self.btn_rollback.connect("clicked", self.on_rollback_clicked)
+        self.rollback_target_row.add_suffix(self.btn_rollback)
+        self.rollback_group.add(self.rollback_target_row)
+
+        content.append(self.rollback_group)
 
         return scrolled
 
@@ -6116,11 +6766,359 @@ class SadeemSystemWindow(Adw.ApplicationWindow):
                     self.btn_start_update.set_label(t("btn_check_again"))
                     self.btn_start_update.set_sensitive(True)
                     self.upd_status_label.set_text(t("status_error"))
+                self.refresh_rollback_status()
                 return False
             GLib.idle_add(_ui)
 
         threading.Thread(target=_check_finished, daemon=True).start()
         return False
+
+    def _present_alert(self, heading, body, confirm_id=None, confirm_label=None, appearance=None, on_confirm=None, close_label=None):
+        """Show an Adw.AlertDialog (with Adw.MessageDialog fallback) consistently."""
+        def _on_response(_dlg, response):
+            if confirm_id and response == confirm_id and on_confirm:
+                on_confirm()
+
+        cancel_lbl = close_label or t("btn_cancel")
+        if hasattr(Adw, "AlertDialog"):
+            dlg = Adw.AlertDialog.new(heading, body)
+            dlg.add_response("close", cancel_lbl)
+            if confirm_id and confirm_label:
+                dlg.add_response(confirm_id, confirm_label)
+                if appearance is not None:
+                    dlg.set_response_appearance(confirm_id, appearance)
+                dlg.set_default_response("close")
+            else:
+                dlg.set_default_response("close")
+            dlg.set_close_response("close")
+            dlg.connect("response", _on_response)
+            dlg.present(self)
+        else:
+            dlg = Adw.MessageDialog(transient_for=self, modal=True, heading=heading, body=body)
+            dlg.add_response("close", cancel_lbl)
+            if confirm_id and confirm_label:
+                dlg.add_response(confirm_id, confirm_label)
+                if appearance is not None:
+                    dlg.set_response_appearance(confirm_id, appearance)
+                dlg.set_default_response("close")
+            else:
+                dlg.set_default_response("close")
+            dlg.set_close_response("close")
+            dlg.connect("response", _on_response)
+            dlg.present()
+
+    def _apply_shadowed_extensions_ui(self, uuids):
+        if not hasattr(self, "shadowed_ext_group"):
+            return
+        self._shadowed_uuids = list(uuids or [])
+        for row in getattr(self, "shadowed_ext_rows", []):
+            try:
+                self.shadowed_ext_group.remove(row)
+            except Exception:
+                pass
+        self.shadowed_ext_rows = []
+
+        if not self._shadowed_uuids:
+            self.shadowed_ext_group.set_visible(False)
+            return
+
+        row = Adw.ActionRow()
+        row.set_use_markup(False)
+        row.set_title(t("ext_shadow_row_title", count=len(self._shadowed_uuids)))
+        row.set_subtitle(", ".join(self._shadowed_uuids))
+        warn_icon = Gtk.Image.new_from_icon_name(safe_icon(["dialog-warning-symbolic", "warning-symbolic"]))
+        warn_icon.add_css_class("warning")
+        row.add_prefix(warn_icon)
+
+        btn_remove = Gtk.Button(label=t("ext_shadow_remove_btn"))
+        btn_remove.add_css_class("destructive-action")
+        btn_remove.set_valign(Gtk.Align.CENTER)
+        btn_remove.connect("clicked", self.on_remove_shadowed_extensions_clicked)
+        row.add_suffix(btn_remove)
+
+        self.shadowed_ext_group.add(row)
+        self.shadowed_ext_rows.append(row)
+        self.shadowed_ext_group.set_visible(True)
+
+    def refresh_shadowed_extensions(self):
+        def _worker():
+            uuids = find_shadowed_extensions()
+            def _ui():
+                self._apply_shadowed_extensions_ui(uuids)
+                return False
+            GLib.idle_add(_ui)
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def on_remove_shadowed_extensions_clicked(self, *_args):
+        uuids = list(getattr(self, "_shadowed_uuids", []))
+        if not uuids:
+            return
+        body = t("ext_shadow_dlg_body", uuids="\n".join(f"• {u}" for u in uuids))
+
+        def _do_remove():
+            def _worker():
+                removed, errors = remove_shadowed_extensions(uuids)
+                remaining = find_shadowed_extensions()
+                def _ui():
+                    self._apply_shadowed_extensions_ui(remaining)
+                    if errors:
+                        self._present_alert(
+                            t("ext_shadow_error_title"),
+                            "\n".join(errors),
+                            close_label=t("btn_ok"),
+                        )
+                    elif removed:
+                        self.toast_overlay.add_toast(Adw.Toast.new(t("ext_shadow_relogin_title")))
+                        self._present_alert(
+                            t("ext_shadow_relogin_title"),
+                            t("ext_shadow_relogin_body"),
+                            close_label=t("btn_ok"),
+                        )
+                    return False
+                GLib.idle_add(_ui)
+            threading.Thread(target=_worker, daemon=True).start()
+
+        self._present_alert(
+            t("ext_shadow_dlg_title"),
+            body,
+            confirm_id="remove",
+            confirm_label=t("ext_shadow_remove_btn"),
+            appearance=Adw.ResponseAppearance.DESTRUCTIVE,
+            on_confirm=_do_remove,
+        )
+
+    def _apply_rollback_status_ui(self, parsed):
+        if not hasattr(self, "rollback_target_row"):
+            return
+        self._rollback_info = parsed
+        booted = (parsed or {}).get("booted")
+        rollback = (parsed or {}).get("rollback")
+
+        if booted:
+            ver = booted.get("version") or "-"
+            ts_str = _format_ostree_timestamp(booted.get("timestamp"))
+            self.rollback_current_row.set_subtitle(f"{ver} • {ts_str}" if ts_str else ver)
+        else:
+            self.rollback_current_row.set_subtitle("-")
+
+        if rollback:
+            ver = rollback.get("version") or "-"
+            ts_str = _format_ostree_timestamp(rollback.get("timestamp"))
+            self.rollback_target_row.set_title(t("rollback_prev_title"))
+            self.rollback_target_row.set_subtitle(f"{ver} • {ts_str}" if ts_str else ver)
+            can_click = not getattr(self, "_rollback_busy", False) and not getattr(self, "is_updating", False)
+            self.btn_rollback.set_sensitive(can_click)
+        else:
+            self.rollback_target_row.set_title(t("rollback_none_title"))
+            self.rollback_target_row.set_subtitle(t("rollback_none_desc"))
+            self.btn_rollback.set_sensitive(False)
+
+    def refresh_rollback_status(self):
+        def _worker():
+            parsed = {"booted": None, "staged": None, "rollback": None}
+            try:
+                res = subprocess.run(
+                    ["rpm-ostree", "status", "--json"],
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                    check=False,
+                )
+                if res.returncode == 0 and res.stdout.strip():
+                    parsed = parse_ostree_deployments(res.stdout)
+            except Exception:
+                pass
+
+            def _ui():
+                self._apply_rollback_status_ui(parsed)
+                return False
+            GLib.idle_add(_ui)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def on_rollback_clicked(self, *_args):
+        if getattr(self, "_rollback_busy", False) or getattr(self, "is_updating", False):
+            return
+        rollback = (getattr(self, "_rollback_info", None) or {}).get("rollback")
+        if not rollback:
+            return
+        version_label = rollback.get("version") or t("rollback_prev_title")
+        body = t("rollback_confirm_body", version=version_label)
+
+        def _do_rollback():
+            self._rollback_busy = True
+            self.btn_rollback.set_sensitive(False)
+            self.upd_status_label.set_text(t("rollback_working"))
+            self.append_upd_log("")
+            self.append_upd_log("=== " + t("rollback_group_title") + " ===")
+
+            def _worker():
+                rc = -1
+                out_text = ""
+                err_text = ""
+                try:
+                    res = subprocess.run(
+                        ["pkexec", "rpm-ostree", "rollback"],
+                        capture_output=True,
+                        text=True,
+                        timeout=180,
+                        check=False,
+                    )
+                    rc = res.returncode
+                    out_text = (res.stdout or "").strip()
+                    err_text = (res.stderr or "").strip()
+                except Exception as exc:
+                    err_text = str(exc)
+
+                def _done():
+                    self._rollback_busy = False
+                    if out_text:
+                        self.append_upd_log(out_text)
+                    if err_text:
+                        self.append_upd_log(err_text)
+                    self.refresh_rollback_status()
+
+                    if rc == 0:
+                        self.upd_status_label.set_text(t("rollback_success_title"))
+                        self.check_initial_reboot_status()
+                        self.toast_overlay.add_toast(Adw.Toast.new(t("rollback_success_title")))
+                        self._present_alert(
+                            t("rollback_success_title"),
+                            t("rollback_success_body"),
+                            confirm_id="reboot",
+                            confirm_label=t("btn_reboot_now"),
+                            appearance=Adw.ResponseAppearance.SUGGESTED,
+                            on_confirm=lambda: trigger_system_reboot(self),
+                        )
+                    elif rc in (126, 127):
+                        self.upd_status_label.set_text(t("rollback_cancelled"))
+                        self.toast_overlay.add_toast(Adw.Toast.new(t("rollback_cancelled")))
+                    else:
+                        self.upd_status_label.set_text(t("rollback_failed_title"))
+                        details = err_text or out_text or f"exit code {rc}"
+                        self._present_alert(
+                            t("rollback_failed_title"),
+                            f"{t('rollback_failed_body')}\n\n{details}",
+                            close_label=t("btn_ok"),
+                        )
+                    return False
+
+                GLib.idle_add(_done)
+
+            threading.Thread(target=_worker, daemon=True).start()
+
+        self._present_alert(
+            t("rollback_confirm_title"),
+            body,
+            confirm_id="rollback",
+            confirm_label=t("rollback_confirm_action"),
+            appearance=Adw.ResponseAppearance.DESTRUCTIVE,
+            on_confirm=_do_rollback,
+        )
+
+    def on_open_guide_clicked(self, *_args):
+        if not getattr(self, "_guide_css_loaded", False):
+            try:
+                css_provider = Gtk.CssProvider()
+                css_provider.load_from_data(
+                    b".sadeem-keycap {"
+                    b"  font-family: monospace;"
+                    b"  font-weight: 700;"
+                    b"  font-size: 12px;"
+                    b"  padding: 4px 10px;"
+                    b"  border-radius: 6px;"
+                    b"  border: 1px solid alpha(currentColor, 0.22);"
+                    b"  background-color: alpha(currentColor, 0.08);"
+                    b"}"
+                )
+                Gtk.StyleContext.add_provider_for_display(
+                    Gdk.Display.get_default(),
+                    css_provider,
+                    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+                )
+                self._guide_css_loaded = True
+            except Exception:
+                pass
+
+        toolbar = Adw.ToolbarView()
+        hbar = Adw.HeaderBar()
+        toolbar.add_top_bar(hbar)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        scrolled.set_propagate_natural_height(False)
+
+        page = Adw.PreferencesPage()
+
+        grp_shortcuts = Adw.PreferencesGroup()
+        grp_shortcuts.set_title(t("guide_grp_shortcuts"))
+        grp_shortcuts.set_description(t("guide_grp_shortcuts_desc"))
+
+        shortcuts = [
+            ("Super", "guide_sc_menu_title", "guide_sc_menu_desc", ["view-app-grid-symbolic", "start-here-symbolic"]),
+            ("Super + V", "guide_sc_clipboard_title", "guide_sc_clipboard_desc", ["edit-paste-symbolic", "edit-copy-symbolic"]),
+            ("Super + .", "guide_sc_emoji_title", "guide_sc_emoji_desc", ["face-smile-symbolic", "insert-text-symbolic"]),
+            ("PrtSc", "guide_sc_capture_title", "guide_sc_capture_desc", ["camera-photo-symbolic", "applets-screenshooter-symbolic"]),
+        ]
+        for combo, title_key, desc_key, icons in shortcuts:
+            row = Adw.ActionRow()
+            row.set_use_markup(False)
+            row.set_title(t(title_key))
+            row.set_subtitle(t(desc_key))
+            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(icons)))
+            key_lbl = Gtk.Label(label=combo)
+            key_lbl.set_direction(Gtk.TextDirection.LTR)
+            key_lbl.set_valign(Gtk.Align.CENTER)
+            key_lbl.add_css_class("sadeem-keycap")
+            row.add_suffix(key_lbl)
+            grp_shortcuts.add(row)
+
+        page.add(grp_shortcuts)
+
+        grp_quick = Adw.PreferencesGroup()
+        grp_quick.set_title(t("guide_grp_quickstart"))
+
+        if hasattr(Adw, "Dialog"):
+            dlg = Adw.Dialog()
+            dlg.set_title(t("guide_title"))
+            dlg.set_content_width(480)
+            dlg.set_content_height(520)
+            use_adw_dialog = True
+        else:
+            dlg = Adw.Window(transient_for=self, modal=True, title=t("guide_title"), default_width=480, default_height=520)
+            use_adw_dialog = False
+
+        def _jump_to(tab_id):
+            dlg.close()
+            self.set_active_tab(tab_id)
+
+        quick_items = [
+            ("drivers", "guide_qs_drivers_title", "guide_qs_drivers_desc", ["video-display-symbolic"]),
+            ("colors", "guide_qs_colors_title", "guide_qs_colors_desc", ["preferences-desktop-appearance-symbolic"]),
+        ]
+        for tab_id, title_key, desc_key, icons in quick_items:
+            row = Adw.ActionRow()
+            row.set_use_markup(False)
+            row.set_title(t(title_key))
+            row.set_subtitle(t(desc_key))
+            row.set_activatable(True)
+            row.add_prefix(Gtk.Image.new_from_icon_name(safe_icon(icons)))
+            row.add_suffix(Gtk.Image.new_from_icon_name(safe_icon(["go-next-symbolic"])))
+            row.connect("activated", lambda _r, target=tab_id: _jump_to(target))
+            grp_quick.add(row)
+
+        page.add(grp_quick)
+        scrolled.set_child(page)
+        toolbar.set_content(scrolled)
+
+        if use_adw_dialog:
+            dlg.set_child(toolbar)
+            dlg.present(self)
+        else:
+            dlg.set_content(toolbar)
+            dlg.present()
+
+        self._guide_dialog = dlg
     # =========================================================================
     # TAB 2: COLORS & THEME
     # =========================================================================

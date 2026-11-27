@@ -286,6 +286,7 @@ modules:
   - type: script
     snippets:
       - "glib-compile-schemas /usr/share/glib-2.0/schemas || true"
+      - 'for d in /usr/share/gnome-shell/extensions/*/schemas; do if [ -d "$d" ]; then glib-compile-schemas "$d"; fi; done'
       - "dconf update"
       - "update-desktop-database /usr/share/applications || true"
       - "chmod 644 /usr/share/sadeem/default-flatpaks.json 2>/dev/null || true"
