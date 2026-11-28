@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "/usr/share/sadeem-video/app.py" ]; then
+    exec /usr/bin/python3 /usr/share/sadeem-video/app.py "$@"
+elif [ -f "${SCRIPT_DIR}/../share/sadeem-video/app.py" ]; then
+    exec /usr/bin/python3 "${SCRIPT_DIR}/../share/sadeem-video/app.py" "$@"
+else
+    exec /usr/bin/python3 /usr/share/sadeem-video/app.py "$@"
+fi

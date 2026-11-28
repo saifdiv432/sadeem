@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=Sadeem Video
+Name[ar]=فيديو سديم
+GenericName=Video Player
+GenericName[ar]=مشغّل فيديو
+Comment=Fast OpenGL & libmpv video player for Sadeem OS
+Comment[ar]=مشغّل فيديو سريع وأنيق بعتاد OpenGL و libmpv لنظام سديم
+Exec=/usr/bin/sadeem-video %U
+Icon=sadeem-video
+Terminal=false
+Type=Application
+Categories=AudioVideo;Video;Player;
+Keywords=video;player;movie;cinema;mpv;subtitles;فيديو;مشغل;أفلام;سينما;ترجمة;سديم;
+MimeType=video/mp4;video/x-matroska;video/webm;video/quicktime;video/x-msvideo;video/x-flv;video/mpeg;video/ogg;video/mp2t;video/3gpp;
+StartupNotify=true
+StartupWMClass=org.sadeem.Video
+X-Purism-FormFactor=Workstation;Mobile;

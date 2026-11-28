@@ -124,6 +124,7 @@ jobs:
           xvfb-run -a env GDK_BACKEND=x11 GSK_RENDERER=cairo python3 -B -m unittest \
             tests.test_sadeem_system \
             tests.test_sadeem_windows_handler \
+            tests.test_sadeem_video \
             tests.test_sadeem_video_editor.TestTimelineModel \
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_metadata_json_and_extension_files \
             tests.test_sadeem_menu.TestSadeemMenuTileBoard.test_gsettings_schema_strict_compile_and_defaults \

@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <!-- Unified Sadeem squircle clip -->
+    <clipPath id="squircleClip">
+      <rect x="8" y="8" width="112" height="112" rx="26"/>
+    </clipPath>
+
+    <!-- Official Sadeem diagonal background gradient -->
+    <linearGradient id="sadeemBaseBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a1c33"/>
+      <stop offset="52%" stop-color="#442646"/>
+      <stop offset="100%" stop-color="#0f4c5c"/>
+    </linearGradient>
+
+    <!-- Deep space central shadow depth -->
+    <radialGradient id="spaceDepth" cx="50%" cy="50%" r="54%">
+      <stop offset="0%" stop-color="#0b0d14" stop-opacity="0.62"/>
+      <stop offset="58%" stop-color="#0b0d14" stop-opacity="0.36"/>
+      <stop offset="100%" stop-color="#0b0d14" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Metallic silver lens rings -->
+    <linearGradient id="silverRingOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.58"/>
+      <stop offset="50%" stop-color="#cbd5e1" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#94a3b8" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="silverRingInner" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e2e8f0" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0.16"/>
+    </linearGradient>
+
+    <!-- Specular lens glint gradients -->
+    <linearGradient id="glintTurq" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a8f5ee" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#38e8d6" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#38e8d6" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="glintBurgundy" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d6336c" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#e04f7b" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#9d2247" stop-opacity="0.2"/>
+    </linearGradient>
+
+    <!-- Nebula core radial glow -->
+    <radialGradient id="nebulaCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.72"/>
+      <stop offset="28%" stop-color="#e2e8f0" stop-opacity="0.38"/>
+      <stop offset="62%" stop-color="#9d2247" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#0b0d14" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Spiral nebula arm gradients -->
+    <linearGradient id="spiralTurq" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.78"/>
+      <stop offset="45%" stop-color="#4fd1c5" stop-opacity="0.58"/>
+      <stop offset="100%" stop-color="#0f4c5c" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="spiralBurgundy" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#f8fafc" stop-opacity="0.7"/>
+      <stop offset="48%" stop-color="#d6336c" stop-opacity="0.52"/>
+      <stop offset="100%" stop-color="#7a1c33" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="spiralSilver" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.65"/>
+      <stop offset="55%" stop-color="#cbd5e1" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#94a3b8" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Luminous horizontal gradient for hollow play triangle -->
+    <linearGradient id="playStrokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a8f5ee"/>
+      <stop offset="45%" stop-color="#ffffff"/>
+      <stop offset="76%" stop-color="#e04f7b"/>
+      <stop offset="100%" stop-color="#9c2246"/>
+    </linearGradient>
+
+    <!-- Controlled soft SVG glow filters -->
+    <filter id="arcGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="playGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Unified Sadeem Squircle Container (clipped cleanly) -->
+  <g clip-path="url(#squircleClip)">
+    <!-- Layer 0: Official Sadeem Gradient + Central Space Depth -->
+    <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#sadeemBaseBg)"/>
+    <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#spaceDepth)"/>
+
+    <!-- Layer 3A: Vector Nebula Core & Spiral Arms inside lens -->
+    <circle cx="64" cy="64" r="30" fill="url(#nebulaCore)"/>
+
+    <!-- Four flowing logarithmic-style Bezier spiral arms -->
+    <g fill="none" stroke-linecap="round">
+      <path d="M 64 64 C 65 53, 76 48, 84 55 C 91 62, 88 78, 76 85" stroke="url(#spiralTurq)" stroke-width="2.6" opacity="0.72"/>
+      <path d="M 64 64 C 75 65, 80 76, 73 84 C 66 91, 50 88, 43 76" stroke="url(#spiralBurgundy)" stroke-width="2.4" opacity="0.65"/>
+      <path d="M 64 64 C 63 75, 52 80, 44 73 C 37 66, 40 50, 52 43" stroke="url(#spiralTurq)" stroke-width="2.1" opacity="0.52"/>
+      <path d="M 64 64 C 53 63, 48 52, 55 44 C 62 37, 78 40, 85 52" stroke="url(#spiralSilver)" stroke-width="1.8" opacity="0.45"/>
+    </g>
+
+    <!-- Fine micro star dust strictly inside lens -->
+    <circle cx="47" cy="52" r="1.1" fill="#ffffff" opacity="0.85"/>
+    <circle cx="78" cy="46" r="0.9" fill="#99f6e4" opacity="0.85"/>
+    <circle cx="81" cy="79" r="1.2" fill="#ffffff" opacity="0.75"/>
+    <circle cx="49" cy="78" r="0.85" fill="#f8fafc" opacity="0.7"/>
+    <circle cx="67" cy="41" r="1.0" fill="#99f6e4" opacity="0.75"/>
+
+    <!-- Layer 1: Concentric Cinema Lens Rings -->
+    <circle cx="64" cy="64" r="40" fill="none" stroke="url(#silverRingOuter)" stroke-width="1.8"/>
+    <circle cx="64" cy="64" r="34" fill="none" stroke="url(#silverRingInner)" stroke-width="1.2"/>
+
+    <!-- Layer 2: Delicate Curved Film Strip Perforation Accent (-75 deg to +10 deg) -->
+    <g fill="none" stroke-linecap="round" opacity="0.35">
+      <path d="M 74.1 26.3 A 39 39 0 0 1 102.4 70.8" stroke="#e2e8f0" stroke-width="0.9"/>
+      <path d="M 73.6 28.3 A 37 37 0 0 1 100.4 70.4" stroke="#ffffff" stroke-width="2.2" stroke-dasharray="2.5 2.5"/>
+      <path d="M 73.1 30.2 A 35 35 0 0 1 98.5 70.1" stroke="#e2e8f0" stroke-width="0.9"/>
+    </g>
+
+    <!-- Layer 1B: Specular Lens Glint Arcs -->
+    <g fill="none" stroke-linecap="round" filter="url(#arcGlow)">
+      <!-- Top-right luminous turquoise glint -->
+      <path d="M 80.9 27.7 A 40 40 0 0 1 102.0 51.6" stroke="url(#glintTurq)" stroke-width="2.2"/>
+      <!-- Bottom-left turquoise counter-glint -->
+      <path d="M 47.1 100.3 A 40 40 0 0 1 26.0 76.4" stroke="url(#glintTurq)" stroke-width="1.9" opacity="0.85"/>
+      <!-- Bottom-right burgundy-rose glint -->
+      <path d="M 102.0 76.4 A 40 40 0 0 1 76.4 102.0" stroke="url(#glintBurgundy)" stroke-width="2.2"/>
+    </g>
+
+    <!-- Layer 4: Luminous Hollow Glass Play Triangle -->
+    <path
+      d="M 52 46.8 C 52 44.6 54.4 43.3 56.3 44.4 L 82.6 60.6 C 84.5 61.7 84.5 64.3 82.6 65.4 L 56.3 81.6 C 54.4 82.7 52 81.4 52 79.2 Z"
+      fill="#ffffff"
+      fill-opacity="0.06"
+      stroke="url(#playStrokeGrad)"
+      stroke-width="4.2"
+      stroke-linejoin="round"
+      filter="url(#playGlow)"
+    />
+  </g>
+
+  <!-- Crisp thin silver border matching sibling Sadeem icons -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="none" stroke="#e2e8f0" stroke-opacity="0.45" stroke-width="2"/>
+</svg>
