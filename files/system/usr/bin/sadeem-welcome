@@ -1172,7 +1172,6 @@ FALLBACK_DEFAULT_FLATPAKS = [
     {"app_id": "org.libreoffice.LibreOffice", "name": "LibreOffice", "name_ar": "حزمة ليبر أوفيس", "icon": "org.libreoffice.LibreOffice"},
     {"app_id": "com.mattjakeman.ExtensionManager", "name": "Extension Manager", "name_ar": "مدير الامتدادات", "icon": "com.mattjakeman.ExtensionManager"},
     {"app_id": "com.github.tchx84.Flatseal", "name": "Flatseal", "name_ar": "مدير الأذونات (فلات سيل)", "icon": "com.github.tchx84.Flatseal"},
-    {"app_id": "org.videolan.VLC", "name": "VLC Media Player", "name_ar": "مشغل الوسائط VLC", "icon": "org.videolan.VLC"},
     {"app_id": "page.tesk.Refine", "name": "Refine", "name_ar": "محرر واجهة جنوم (رفاين)", "icon": "page.tesk.Refine"},
     {"app_id": "com.usebottles.bottles", "name": "Bottles", "name_ar": "بوتلز (تشغيل برامج ويندوز)", "icon": "com.usebottles.bottles"},
     {"app_id": "net.davidotek.pupgui2", "name": "ProtonPlus", "name_ar": "بروتون بلس (إدارة توافق الألعاب)", "icon": "net.davidotek.pupgui2"},

@@ -22,7 +22,7 @@ if VIDEO_DIR in sys.path:
     sys.path.remove(VIDEO_DIR)
 sys.path.insert(0, VIDEO_DIR)
 
-for mod_name in ("app", "i18n", "mpv_engine", "playlist"):
+for mod_name in ("app", "i18n", "mpris", "mpv_engine", "playlist", "popovers", "thumbnails"):
     sys.modules.pop(mod_name, None)
 
 import gi
@@ -56,6 +56,10 @@ class _FakeMpvLib:
         self.terminated = False
         self.queued_events = []
         self._allocated = []
+        self.render_params = []
+        self.update_calls = 0
+        self.swap_calls = 0
+        self.update_return_flags = mpv_engine.MPV_RENDER_UPDATE_FRAME
 
     def mpv_create(self):
         return 0x123456
@@ -139,6 +143,25 @@ class _FakeMpvLib:
         else:
             ev = mpv_engine.MpvEvent(mpv_engine.MPV_EVENT_NONE, 0, 0, None)
         return ctypes.pointer(ev)
+
+    def mpv_render_context_update(self, _rctx):
+        self.update_calls += 1
+        return self.update_return_flags
+
+    def mpv_render_context_render(self, _rctx, params):
+        self.render_params.clear()
+        i = 0
+        while params[i].type != mpv_engine.MPV_RENDER_PARAM_INVALID:
+            ptype = int(params[i].type)
+            pval = None
+            if ptype in (mpv_engine.MPV_RENDER_PARAM_FLIP_Y, mpv_engine.MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME):
+                pval = ctypes.cast(params[i].data, ctypes.POINTER(ctypes.c_int)).contents.value
+            self.render_params.append((ptype, pval))
+            i += 1
+        return 0
+
+    def mpv_render_context_report_swap(self, _rctx):
+        self.swap_calls += 1
 
     def mpv_render_context_free(self, _rctx):
         pass
@@ -228,7 +251,7 @@ class TestSadeemVideo(unittest.TestCase):
         with open(os.path.join(VIDEO_DIR, "mpv_engine.py"), "r", encoding="utf-8") as fp:
             eng_src = fp.read()
         self.assertNotIn("utf8:cp1256", eng_src)
-        self.assertEqual(fake.options["volume-max"], "150")
+        self.assertEqual(fake.options["volume-max"], "200")
         self.assertEqual(fake.options["osd-level"], "0")
 
         eng.load_file("/tmp/demo.mp4", start_seconds=25.0)
@@ -247,10 +270,53 @@ class TestSadeemVideo(unittest.TestCase):
         eng.seek(10.0)
         self.assertIn((0, ["seek", "10.000", "relative"]), fake.async_commands)
 
-        eng.set_volume(200.0)
-        self.assertEqual(fake.props_double["volume"], 150.0)
+        eng.set_volume(250.0)
+        self.assertEqual(fake.props_double["volume"], 200.0)
+        eng.set_volume(175.0)
+        self.assertEqual(fake.props_double["volume"], 175.0)
         eng.set_volume(-10.0)
         self.assertEqual(fake.props_double["volume"], 0.0)
+
+        # Named audio filters (@night + @eq) + audio-delay
+        eng.set_night_mode(True)
+        self.assertIn((0, ["af", "add", "@night:lavfi=[dynaudnorm=f=150:g=15:p=0.9]"]), fake.async_commands)
+        eng.set_audio_eq_preset("cinema")
+        self.assertIn((0, ["af", "add", f"@eq:lavfi=[{mpv_engine.MpvEngine.AUDIO_EQ_PRESETS['cinema']}]"]), fake.async_commands)
+        eng.set_night_mode(False)
+        self.assertIn((0, ["af", "remove", "@night"]), fake.async_commands)
+        eng.set_audio_eq_preset("normal")
+        self.assertIn((0, ["af", "remove", "@eq"]), fake.async_commands)
+        eng.set_audio_delay(0.4)
+        self.assertEqual(fake.props_double["audio-delay"], 0.4)
+
+        # Secondary subtitle & appearance options
+        eng.set_secondary_subtitle_track(2)
+        self.assertEqual(fake.props_int["secondary-sid"], 2)
+        eng.set_secondary_subtitle_track(None)
+        self.assertEqual(fake.props_str["secondary-sid"], "no")
+        eng.set_sub_pos(85)
+        self.assertEqual(fake.props_int["sub-pos"], 85)
+        eng.set_sub_color("#FACC15")
+        self.assertEqual(fake.props_str["sub-color"], "#FACC15")
+        eng.set_sub_back_box(True)
+        self.assertEqual(fake.props_str["sub-border-style"], "opaque-box")
+        self.assertEqual(fake.props_str["sub-back-color"], "#80000000")
+        eng.set_sub_back_box(False)
+        self.assertEqual(fake.props_str["sub-border-style"], "outline-and-shadow")
+        eng.set_sub_font("Noto Sans Arabic")
+        self.assertEqual(fake.props_str["sub-font"], "Noto Sans Arabic")
+
+        # Frame stepping, zoom, panscan, chapters
+        eng.frame_step()
+        eng.frame_back_step()
+        self.assertIn(["frame-step"], fake.commands)
+        self.assertIn(["frame-back-step"], fake.commands)
+        eng.set_video_zoom(0.25)
+        self.assertEqual(fake.props_double["video-zoom"], 0.25)
+        eng.set_panscan(1.0)
+        self.assertEqual(fake.props_double["panscan"], 1.0)
+        eng.jump_to_chapter(2)
+        self.assertEqual(fake.props_int["chapter"], 2)
 
         eng.set_speed(2.0)
         self.assertEqual(fake.props_double["speed"], 2.0)
@@ -488,6 +554,432 @@ class TestSadeemVideo(unittest.TestCase):
         finally:
             win.shutdown()
             win.destroy()
+
+    def test_phase1_resume_modes_chapters_zoom_audio_and_fullscreen_safety(self):
+        # 1. Verify StateStore resume thresholds (>10s and < dur - 30s) & 3 modes
+        state_path = os.path.join(self.tmp_dir.name, "phase1_state.json")
+        store = playlist.StateStore(state_path=state_path)
+        vid = os.path.join(self.tmp_dir.name, "movie.mp4")
+        with open(vid, "wb") as fp:
+            fp.write(b"fake")
+
+        store.set_position(vid, 9.5, 200.0)
+        self.assertEqual(store.get_resume_position(vid), 0.0)
+        store.set_position(vid, 175.0, 200.0)
+        self.assertEqual(store.get_resume_position(vid), 0.0)
+        store.set_position(vid, 65.0, 200.0)
+        self.assertAlmostEqual(store.get_resume_position(vid), 65.0, places=2)
+
+        store.set_setting("resume_mode", "ask")
+        self.assertEqual(store.get_resume_action(vid), ("ask", 0.0, 65.0))
+        store.set_setting("resume_mode", "auto")
+        self.assertEqual(store.get_resume_action(vid), ("auto", 65.0, 0.0))
+        store.set_setting("resume_mode", "never")
+        self.assertEqual(store.get_resume_action(vid), ("never", 0.0, 0.0))
+
+        # 2. Verify app.py modular split (< 80 KB) and popovers.py + fullscreen geometry safety
+        self.assertTrue(os.path.isfile(os.path.join(VIDEO_DIR, "popovers.py")))
+        self.assertLess(os.path.getsize(os.path.join(VIDEO_DIR, "app.py")), 80 * 1024)
+        with open(os.path.join(VIDEO_DIR, "app.py"), "r", encoding="utf-8") as fp:
+            app_src = fp.read()
+        fs_section = app_src.split("def toggle_fullscreen", 1)[1].split("def toggle_mini_mode", 1)[0]
+        self.assertNotIn("set_default_size", fs_section)
+        self.assertNotIn("maximize(", fs_section)
+        self.assertNotIn("unmaximize(", fs_section)
+
+        # 3. Verify SadeemVideoWindow resume banner, skip_intro, mini_mode, chapter marks & tracks stack
+        fake = _FakeMpvLib()
+        eng = mpv_engine.MpvEngine(libmpv=fake)
+        store.set_setting("resume_mode", "ask")
+        app = video_app.SadeemVideoApp()
+        app.set_application_id("org.sadeem.Video.TestPhase1")
+        app.set_flags(Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
+        app.register(None)
+
+        win = video_app.SadeemVideoWindow(app=app, engine=eng, state_store=store)
+        try:
+            self.assertIsInstance(win.resume_revealer, Gtk.Revealer)
+            self.assertIsInstance(win.tracks_stack, Gtk.Stack)
+            self.assertEqual(win.vol_adj.get_upper(), 200.0)
+            for pname in ("main", "audio_eq", "secondary_sub", "sub_style"):
+                self.assertIsNotNone(win.tracks_stack.get_child_by_name(pname))
+            self.assertIsNotNone(win.settings_stack.get_child_by_name("resume"))
+            self.assertIsNotNone(win.settings_stack.get_child_by_name("chapters"))
+
+            # Start file -> 'ask' mode loads at 0.0 and reveals resume banner at 65s
+            win.open_paths([vid])
+            win._start_playback(vid)
+            self.assertTrue(win.resume_revealer.get_reveal_child())
+            self.assertIn((0, ["loadfile", vid, "replace"]), fake.async_commands)
+            win._on_resume_action_clicked(None)
+            self.assertFalse(win.resume_revealer.get_reveal_child())
+            self.assertIn((0, ["seek", "65.000", "absolute"]), fake.async_commands)
+
+            # Skip intro +85s
+            win.skip_intro(85.0)
+            self.assertIn((0, ["seek", "85.000", "relative"]), fake.async_commands)
+
+            # Chapter marks on seek_scale
+            win.seek_scale.clear_marks()
+            win.seek_scale.add_mark(42.0, Gtk.PositionType.TOP, None)
+
+            # Mini player toggle on/off
+            self.assertFalse(win._is_mini_mode)
+            win.toggle_mini_mode()
+            self.assertTrue(win._is_mini_mode)
+            self.assertFalse(win.edit_btn.get_visible())
+            win.toggle_mini_mode()
+            self.assertFalse(win._is_mini_mode)
+            self.assertTrue(win.edit_btn.get_visible())
+
+            # Sub appearance & Night mode UI switches
+            win.night_mode_switch.set_active(True)
+            self.assertTrue(store.get_setting("audio_night_mode"))
+            win.set_audio_eq_preset("voice")
+            self.assertEqual(store.get_setting("audio_eq_preset"), "voice")
+            win.set_sub_pos(82)
+            self.assertEqual(fake.props_int["sub-pos"], 82)
+            win.sub_back_box_switch.set_active(True)
+            self.assertEqual(fake.props_str["sub-border-style"], "opaque-box")
+            win.reset_video_view(reset_speed=True)
+            self.assertEqual(fake.props_double["video-zoom"], 0.0)
+            self.assertEqual(fake.props_double["panscan"], 0.0)
+        finally:
+            win.shutdown()
+            win.destroy()
+
+    def test_gl_sync_coalescing_and_tracks_popover_tabs_and_icons(self):
+        import popovers
+
+        self.assertEqual(mpv_engine.MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME, 12)
+        self.assertEqual(mpv_engine.MPV_RENDER_UPDATE_FRAME, 1)
+
+        fake = _FakeMpvLib()
+        eng = mpv_engine.MpvEngine(libmpv=fake)
+        store = playlist.StateStore(state_path=os.path.join(self.tmp_dir.name, "gl_tabs_state.json"))
+        app = video_app.SadeemVideoApp()
+        app.set_application_id("org.sadeem.Video.TestGlTabs")
+        app.set_flags(Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
+        app.register(None)
+
+        win = video_app.SadeemVideoWindow(app=app, engine=eng, state_store=store)
+        try:
+            # 1. Verify render_frame passes BLOCK_FOR_TARGET_TIME=0 and calls report_swap
+            self.assertEqual(eng.update_render_context(), 0)
+            eng._render_ctx = 0xCAFE
+            self.assertTrue(eng.render_frame(1280, 720, fbo_id=1))
+            self.assertIn((12, 0), fake.render_params)
+            self.assertEqual(fake.swap_calls, 1)
+            self.assertEqual(eng.update_render_context(), 1)
+
+            # 2. Verify _queue_gl_redraw coalescing & conditional queue_render
+            scheduled = []
+            render_calls = []
+            orig_idle_add = video_app.GLib.idle_add
+            orig_realized = win.gl_area.get_realized
+            orig_queue_render = win.gl_area.queue_render
+            try:
+                video_app.GLib.idle_add = lambda fn, *a: (scheduled.append(fn), 1)[1]
+                win.gl_area.get_realized = lambda: True
+                win.gl_area.queue_render = lambda: render_calls.append(1)
+
+                # Reset initial flag to test pure update-flag gating
+                win._gl_needs_initial_draw = False
+                fake.update_calls = 0
+                fake.update_return_flags = 0
+
+                for _ in range(5):
+                    win._queue_gl_redraw()
+                self.assertEqual(len(scheduled), 1)
+                self.assertTrue(win._gl_redraw_pending)
+
+                scheduled.pop(0)()
+                self.assertFalse(win._gl_redraw_pending)
+                self.assertEqual(fake.update_calls, 1)
+                self.assertEqual(len(render_calls), 0)
+
+                fake.update_return_flags = mpv_engine.MPV_RENDER_UPDATE_FRAME
+                win._queue_gl_redraw()
+                scheduled.pop(0)()
+                self.assertEqual(fake.update_calls, 2)
+                self.assertEqual(len(render_calls), 1)
+            finally:
+                video_app.GLib.idle_add = orig_idle_add
+                win.gl_area.get_realized = orig_realized
+                win.gl_area.queue_render = orig_queue_render
+                eng._render_ctx = None
+
+            # 3. Verify toggle_fullscreen relies directly on self.is_fullscreen()
+            fs_actions = []
+            orig_is_fs = win.is_fullscreen
+            orig_unfs = win.unfullscreen
+            orig_fs = win.fullscreen
+            try:
+                win._is_fullscreen = False
+                win.is_fullscreen = lambda: True
+                win.unfullscreen = lambda: fs_actions.append("unfs")
+                win.fullscreen = lambda: fs_actions.append("fs")
+                win.toggle_fullscreen()
+                self.assertEqual(fs_actions, ["unfs"])
+            finally:
+                win.is_fullscreen = orig_is_fs
+                win.unfullscreen = orig_unfs
+                win.fullscreen = orig_fs
+
+            # 4. Verify tracks_popover two-tab structure, 345px width & icon-only reset buttons
+            self.assertEqual(win.tracks_stack.get_size_request()[0], 345)
+            self.assertIsInstance(win.tracks_tab_audio_btn, Gtk.ToggleButton)
+            self.assertIsInstance(win.tracks_tab_sub_btn, Gtk.ToggleButton)
+            self.assertEqual(win.tracks_tab_stack.get_visible_child_name(), "audio_tab")
+
+            win.tracks_tab_sub_btn.set_active(True)
+            self.assertEqual(win.tracks_tab_stack.get_visible_child_name(), "sub_tab")
+            win.tracks_stack.set_visible_child_name("sub_style")
+            win.tracks_stack.set_visible_child_name("main")
+            self.assertEqual(win.tracks_tab_stack.get_visible_child_name(), "sub_tab")
+
+            # Collect all Gtk.Buttons inside audio_delay/sub_delay/sub_scale/sub_pos rows
+            def _walk_buttons(widget):
+                out = []
+                if isinstance(widget, Gtk.Button):
+                    out.append(widget)
+                child = widget.get_first_child()
+                while child is not None:
+                    out.extend(_walk_buttons(child))
+                    child = child.get_next_sibling()
+                return out
+
+            buttons = _walk_buttons(win.tracks_stack)
+            icon_names = [b.get_icon_name() for b in buttons if b.get_icon_name()]
+            self.assertGreaterEqual(icon_names.count("edit-undo-symbolic"), 4)
+            text_reset_btns = [b for b in buttons if b.get_label() == video_i18n.t("reset")]
+            self.assertEqual(text_reset_btns, [])
+
+            # 5. Verify _make_directional_arrow for RTL vs LTR
+            orig_dir = Gtk.Widget.get_default_direction()
+            try:
+                Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
+                arr_enter_rtl = popovers._make_directional_arrow(entering=True)
+                arr_back_rtl = popovers._make_directional_arrow(entering=False)
+                self.assertEqual(arr_enter_rtl.get_icon_name(), "go-previous-symbolic")
+                self.assertEqual(arr_back_rtl.get_icon_name(), "go-next-symbolic")
+                self.assertEqual(arr_enter_rtl.get_direction(), Gtk.TextDirection.LTR)
+                self.assertEqual(arr_back_rtl.get_direction(), Gtk.TextDirection.LTR)
+
+                Gtk.Widget.set_default_direction(Gtk.TextDirection.LTR)
+                arr_enter_ltr = popovers._make_directional_arrow(entering=True)
+                arr_back_ltr = popovers._make_directional_arrow(entering=False)
+                self.assertEqual(arr_enter_ltr.get_icon_name(), "go-next-symbolic")
+                self.assertEqual(arr_back_ltr.get_icon_name(), "go-previous-symbolic")
+            finally:
+                Gtk.Widget.set_default_direction(orig_dir)
+        finally:
+            win.shutdown()
+            win.destroy()
+
+    def test_phase2_thumbnails_mpris_recent_url_inhibit_shortcuts_and_vlc_removal(self):
+        import json
+        import mpris
+        import thumbnails
+
+        # 1. Thumbnails module: quantization, LRU eviction, network URL rejection, missing ffmpeg safety
+        self.assertEqual(thumbnails.compute_quantized_step(120.0), 2.0)
+        self.assertEqual(thumbnails.compute_quantized_step(900.0), 3.0)
+        self.assertEqual(thumbnails.compute_quantized_step(2400.0), 4.0)
+        self.assertEqual(thumbnails.compute_quantized_step(5400.0), 5.0)
+        self.assertEqual(thumbnails.quantize_timestamp(11.3, 120.0), 12.0)
+        self.assertLessEqual(thumbnails.quantize_timestamp(119.9, 120.0), 119.5)
+
+        self.assertTrue(thumbnails.is_network_url("https://example.com/live.m3u8"))
+        self.assertTrue(thumbnails.is_network_url("rtsp://cam.local/stream"))
+        self.assertFalse(thumbnails.is_network_url("/tmp/movie.mp4"))
+        self.assertFalse(thumbnails.is_network_url("file:///tmp/movie.mp4"))
+
+        vid = os.path.join(self.tmp_dir.name, "sample_thumb.mp4")
+        with open(vid, "wb") as fp:
+            fp.write(b"fakevideo")
+
+        ext_no_ff = thumbnails.ThumbnailExtractor(ffmpeg_bin="")
+        self.assertFalse(ext_no_ff.is_available)
+        self.assertFalse(ext_no_ff.request_thumbnail(vid, 10.0, 100.0, lambda *_: None))
+
+        ext = thumbnails.ThumbnailExtractor(ffmpeg_bin="/bin/true", cache_size=2, debounce_ms=10)
+        self.assertTrue(ext.is_available)
+        self.assertFalse(ext.can_extract_for("https://example.com/a.mp4"))
+        self.assertFalse(ext.request_thumbnail("https://example.com/a.mp4", 5.0, 100.0, lambda *_: None))
+        ext._put_cached((vid, 2.0), b"PNG1")
+        ext._put_cached((vid, 4.0), b"PNG2")
+        ext._put_cached((vid, 6.0), b"PNG3")
+        self.assertIsNone(ext.get_cached(vid, 2.0, 100.0))
+        self.assertEqual(ext.get_cached(vid, 4.0, 100.0), b"PNG2")
+        self.assertEqual(ext.get_cached(vid, 6.0, 100.0), b"PNG3")
+        ext.shutdown()
+
+        # 2. StateStore recent_files ordering, cap=8, existing_only filtering & clear
+        state_path = os.path.join(self.tmp_dir.name, "phase2_state.json")
+        store = playlist.StateStore(state_path=state_path)
+        created_vids = []
+        for idx in range(10):
+            p = os.path.join(self.tmp_dir.name, f"v{idx}.mp4")
+            with open(p, "wb") as fp:
+                fp.write(b"v")
+            created_vids.append(p)
+            store.set_position(p, 20.0 + idx, 100.0)
+            # Ensure strictly increasing timestamp ordering
+            store.data["recent_files"][0]["last_watched"] = 1000.0 + idx
+        store.record_recent("https://example.com/stream.m3u8", 0.0, 0.0)
+        store.data["recent_files"][0]["last_watched"] = 2000.0
+        store.save()
+
+        reloaded = playlist.StateStore(state_path=state_path)
+        self.assertEqual(len(reloaded.get_recent_files(existing_only=False)), 8)
+        self.assertEqual(reloaded.get_recent_files(existing_only=False)[0]["path"], "https://example.com/stream.m3u8")
+        os.remove(created_vids[-1])
+        filtered = reloaded.get_recent_files(existing_only=True)
+        self.assertNotIn(created_vids[-1], [it["path"] for it in filtered])
+        reloaded.clear_recent_files()
+        self.assertEqual(reloaded.get_recent_files(existing_only=False), [])
+
+        # 3. MPRIS2 helper conversions & Metadata formatting
+        self.assertEqual(mpris.seconds_to_us(12.5), 12_500_000)
+        self.assertAlmostEqual(mpris.us_to_seconds(-5_000_000), -5.0, places=3)
+        self.assertEqual(mpris.playback_status_str(False, False), "Stopped")
+        self.assertEqual(mpris.playback_status_str(True, True), "Playing")
+        self.assertEqual(mpris.playback_status_str(True, False), "Paused")
+        meta = mpris.build_metadata_variants(0, "movie.mp4", created_vids[0], 95.0)
+        self.assertEqual(meta["mpris:length"].get_int64(), 95_000_000)
+        self.assertEqual(meta["xesam:title"].get_string(), "movie.mp4")
+
+        # 4. Window Phase 2: recent UI, open_url, inhibit/uninhibit, pause_on_minimize, shortcuts & media info
+        fake = _FakeMpvLib()
+        eng = mpv_engine.MpvEngine(libmpv=fake)
+        store.record_recent(created_vids[0], 30.0, 120.0)
+        app = video_app.SadeemVideoApp()
+        app.set_application_id("org.sadeem.Video.TestPhase2")
+        app.set_flags(Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
+        app.register(None)
+
+        inhibit_log = []
+        app.inhibit = lambda win_, flags_, reason_: (inhibit_log.append(("in", int(flags_))), 77)[1]
+        app.uninhibit = lambda cookie: inhibit_log.append(("out", cookie))
+
+        win = video_app.SadeemVideoWindow(app=app, engine=eng, state_store=store)
+        try:
+            self.assertTrue(win.recent_section_box.get_visible())
+            self.assertIsInstance(win.open_url_welcome_btn, Gtk.Button)
+
+            # Open invalid vs valid network URL
+            self.assertFalse(win.open_url("not-a-valid-url"))
+            self.assertTrue(win.open_url("https://example.com/video.mp4"))
+            self.assertFalse(win.welcome_box.get_visible())
+            self.assertFalse(win.edit_btn.get_sensitive())
+            win._start_playback("https://example.com/video.mp4")
+            self.assertIn((0, ["loadfile", "https://example.com/video.mp4", "replace"]), fake.async_commands)
+
+            # Check inhibit/uninhibit transitions
+            self.assertTrue(win.is_playing)
+            self.assertIn(("in", int(Gtk.ApplicationInhibitFlags.IDLE)), inhibit_log)
+
+            # Pause on minimize
+            self.assertTrue(win._pause_on_minimize)
+            win._handle_window_minimized(True)
+            self.assertFalse(win.is_playing)
+            self.assertTrue(win._paused_by_minimize)
+            self.assertIn(("out", 77), inhibit_log)
+            win._handle_window_minimized(False)
+            self.assertFalse(win._paused_by_minimize)
+
+            # Play local file, test MPRIS properties, shortcuts dialog & media info page
+            win.play_path(created_vids[0])
+            win._start_playback(created_vids[0])
+            props = win.mpris_service.get_player_properties()
+            self.assertEqual(props["PlaybackStatus"].get_string(), "Playing")
+            self.assertEqual(props["Metadata"].unpack()["xesam:title"], os.path.basename(created_vids[0]))
+
+            sc_page = win.build_shortcuts_page()
+            self.assertIsInstance(sc_page, Adw.ToolbarView)
+            info_page = win.build_media_info_page()
+            self.assertIsInstance(info_page, Adw.ToolbarView)
+
+            # Verify MenuButton double-ring fix & stream URL hint/ytdl setting
+            self.assertFalse(win.tracks_btn.get_has_frame())
+            self.assertFalse(win.settings_btn.get_has_frame())
+            css = video_app.SADEEM_VIDEO_PLAYER_CSS
+            self.assertIn("menubutton.sadeem-hud-btn > button", css)
+            self.assertIn("menubutton.sadeem-hud-btn > button:checked", css)
+            self.assertIn("menubutton.sadeem-hud-btn,", css)
+            mb_rule = css.split("menubutton.sadeem-hud-btn,", 1)[1].split("}", 1)[0]
+            self.assertIn("padding: 0;", mb_rule)
+            self.assertIn("min-width: 0;", mb_rule)
+            self.assertIn("background-color: transparent;", mb_rule)
+            self.assertEqual(mpv_engine.MpvEngine.DEFAULT_OPTIONS.get("ytdl"), "no")
+            for lang in video_i18n.SUPPORTED_LANGUAGES:
+                self.assertIn("m3u8", video_i18n.STRINGS[lang]["open_url_hint"])
+                self.assertIn("rtsp", video_i18n.STRINGS[lang]["open_url_hint"])
+
+            win.stop_playback()
+            self.assertTrue(win.welcome_box.get_visible())
+            win._on_clear_recent_clicked()
+            self.assertFalse(win.recent_section_box.get_visible())
+        finally:
+            win.shutdown()
+            win.destroy()
+
+        # 5. Clean removal of VLC from sadeem-welcome, default-flatpaks, setup script, recipe & mimeapps
+        for rel in (
+            "files/system/usr/bin/sadeem-welcome",
+            "files/system/usr/bin/sadeem-flatpak-setup",
+            "files/system/usr/share/sadeem/default-flatpaks.json",
+            "recipes/recipe.yml",
+            "files/system/etc/xdg/mimeapps.list",
+            "files/system/usr/share/applications/mimeapps.list",
+        ):
+            with open(os.path.join(REPO_ROOT, rel), "r", encoding="utf-8") as fp:
+                txt = fp.read()
+            self.assertNotIn("vlc", txt.lower(), f"Found residual VLC reference in {rel}")
+            self.assertNotIn("videolan", txt.lower(), f"Found residual VideoLAN reference in {rel}")
+
+        with open(os.path.join(REPO_ROOT, "files/system/usr/share/sadeem/default-flatpaks.json"), "r", encoding="utf-8") as fp:
+            parsed_flatpaks = json.load(fp)
+        self.assertTrue(isinstance(parsed_flatpaks, list) and len(parsed_flatpaks) >= 8)
+
+    def test_wayland_rtl_outer_window_direction_isolation(self):
+        orig_dir = Gtk.Widget.get_default_direction()
+        try:
+            Gtk.Widget.set_default_direction(Gtk.TextDirection.RTL)
+            fake = _FakeMpvLib()
+            eng = mpv_engine.MpvEngine(libmpv=fake)
+            store = playlist.StateStore(state_path=os.path.join(self.tmp_dir.name, "rtl_iso_state.json"))
+            app = video_app.SadeemVideoApp()
+            app.set_application_id("org.sadeem.Video.TestRtlIso")
+            app.set_flags(Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
+            app.register(None)
+
+            win = video_app.SadeemVideoWindow(app=app, engine=eng, state_store=store)
+            try:
+                self.assertEqual(win.get_direction(), Gtk.TextDirection.LTR)
+                self.assertEqual(win._ui_direction, Gtk.TextDirection.RTL)
+                self.assertEqual(Gtk.Widget.get_default_direction(), Gtk.TextDirection.RTL)
+                self.assertEqual(win.toast_overlay.get_direction(), Gtk.TextDirection.RTL)
+                self.assertEqual(win.split_view.get_direction(), Gtk.TextDirection.RTL)
+                self.assertEqual(win.progress_row.get_direction(), Gtk.TextDirection.LTR)
+
+                for dlg in (
+                    win.show_media_info_dialog(),
+                    win.show_shortcuts_dialog(),
+                    win.prompt_open_url(),
+                ):
+                    self.assertIsNotNone(dlg)
+                    self.assertEqual(dlg.get_direction(), Gtk.TextDirection.RTL)
+                    if hasattr(dlg, "force_close"):
+                        dlg.force_close()
+                    elif hasattr(dlg, "close"):
+                        dlg.close()
+            finally:
+                win.shutdown()
+                win.destroy()
+        finally:
+            Gtk.Widget.set_default_direction(orig_dir)
 
 
 if __name__ == "__main__":

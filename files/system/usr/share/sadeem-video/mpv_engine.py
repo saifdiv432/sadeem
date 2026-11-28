@@ -65,6 +65,9 @@ MPV_RENDER_PARAM_API_TYPE = 1
 MPV_RENDER_PARAM_OPENGL_INIT_PARAMS = 2
 MPV_RENDER_PARAM_OPENGL_FBO = 3
 MPV_RENDER_PARAM_FLIP_Y = 4
+MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME = 12
+
+MPV_RENDER_UPDATE_FRAME = 1
 
 GL_FRAMEBUFFER_BINDING = 0x8CA6
 
@@ -286,6 +289,9 @@ def load_libmpv():
     ]
     lib.mpv_render_context_set_update_callback.restype = None
 
+    lib.mpv_render_context_update.argtypes = [ctypes.c_void_p]
+    lib.mpv_render_context_update.restype = ctypes.c_uint64
+
     lib.mpv_render_context_render.argtypes = [ctypes.c_void_p, ctypes.POINTER(MpvRenderParam)]
     lib.mpv_render_context_render.restype = ctypes.c_int
 
@@ -347,13 +353,20 @@ class MpvEngine:
         "sub-margin-y": "34",
         "sub-border-size": "2.5",
         "embeddedfonts": "yes",
-        "volume-max": "150",
+        "volume-max": "200",
         "osd-level": "0",
         "osc": "no",
         "input-default-bindings": "no",
         "input-vo-keyboard": "no",
         "screenshot-format": "png",
         "ytdl": "no",
+    }
+
+    AUDIO_EQ_PRESETS = {
+        "normal": None,
+        "voice": "equalizer=f=250:width_type=o:w=2:g=-3,equalizer=f=2800:width_type=o:w=2:g=5,equalizer=f=5000:width_type=o:w=1.5:g=3",
+        "cinema": "equalizer=f=80:width_type=o:w=1.5:g=4,equalizer=f=1000:width_type=o:w=2:g=-1,equalizer=f=8000:width_type=o:w=2:g=3",
+        "music": "equalizer=f=100:width_type=o:w=1.5:g=4,equalizer=f=1000:width_type=o:w=2:g=-2,equalizer=f=10000:width_type=o:w=2:g=4",
     }
 
     def __init__(self, libmpv=None, gl_resolver: Optional[GLProcResolver] = None) -> None:
@@ -494,6 +507,30 @@ class MpvEngine:
             self._render_ctx, self._render_update_cb, None
         )
 
+    def update_render_context(self) -> int:
+        """Poll libmpv render context update flags on the GTK main thread."""
+        if not self._render_ctx or not self._alive or not self._lib:
+            return 0
+        fn = getattr(self._lib, "mpv_render_context_update", None)
+        if fn is None:
+            return 0
+        try:
+            return int(fn(self._render_ctx))
+        except Exception:
+            return 0
+
+    def report_swap(self) -> None:
+        """Notify libmpv that the OpenGL framebuffer swap/draw completed."""
+        if not self._render_ctx or not self._alive or not self._lib:
+            return
+        fn = getattr(self._lib, "mpv_render_context_report_swap", None)
+        if fn is None:
+            return
+        try:
+            fn(self._render_ctx)
+        except Exception:
+            pass
+
     def render_frame(self, width: int, height: int, fbo_id: Optional[int] = None) -> bool:
         """Render the current video frame into the active OpenGL framebuffer."""
         if not self._render_ctx or not self._alive:
@@ -508,12 +545,16 @@ class MpvEngine:
 
         fbo = MpvOpenGLFBO(fbo_num, max(1, int(width)), max(1, int(height)), 0)
         flip_y = ctypes.c_int(1)
-        params = (MpvRenderParam * 3)(
+        block_target = ctypes.c_int(0)
+        params = (MpvRenderParam * 4)(
             MpvRenderParam(MPV_RENDER_PARAM_OPENGL_FBO, ctypes.cast(ctypes.byref(fbo), ctypes.c_void_p)),
             MpvRenderParam(MPV_RENDER_PARAM_FLIP_Y, ctypes.cast(ctypes.byref(flip_y), ctypes.c_void_p)),
+            MpvRenderParam(MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME, ctypes.cast(ctypes.byref(block_target), ctypes.c_void_p)),
             MpvRenderParam(MPV_RENDER_PARAM_INVALID, None),
         )
         rc = self._lib.mpv_render_context_render(self._render_ctx, params)
+        if rc >= 0:
+            self.report_swap()
         return rc >= 0
 
     def destroy_gl_render(self, gl_area=None) -> None:
@@ -732,11 +773,29 @@ class MpvEngine:
         return max(0.0, self.get_property_double("duration", 0.0))
 
     def set_volume(self, volume: float) -> int:
-        clamped = max(0.0, min(150.0, float(volume)))
+        clamped = max(0.0, min(200.0, float(volume)))
         return self.set_property_double("volume", clamped)
 
     def get_volume(self) -> float:
         return self.get_property_double("volume", 100.0)
+
+    def set_audio_delay(self, seconds: float) -> int:
+        return self.set_property_double("audio-delay", float(seconds))
+
+    def get_audio_delay(self) -> float:
+        return self.get_property_double("audio-delay", 0.0)
+
+    def set_night_mode(self, enabled: bool) -> int:
+        if enabled:
+            return self.command_async("af", "add", "@night:lavfi=[dynaudnorm=f=150:g=15:p=0.9]")
+        return self.command_async("af", "remove", "@night")
+
+    def set_audio_eq_preset(self, preset: str) -> int:
+        key = str(preset or "normal").lower()
+        graph = self.AUDIO_EQ_PRESETS.get(key)
+        if not graph:
+            return self.command_async("af", "remove", "@eq")
+        return self.command_async("af", "add", f"@eq:lavfi=[{graph}]")
 
     def set_mute(self, muted: bool) -> int:
         return self.set_property_bool("mute", bool(muted))
@@ -765,6 +824,31 @@ class MpvEngine:
         if track_id is None or track_id == 0:
             return self.set_property_string("sid", "no")
         return self.set_property_int("sid", int(track_id))
+
+    def set_secondary_subtitle_track(self, track_id: Optional[int]) -> int:
+        if track_id is None or track_id == 0:
+            return self.set_property_string("secondary-sid", "no")
+        return self.set_property_int("secondary-sid", int(track_id))
+
+    def get_secondary_subtitle_id(self) -> int:
+        return self.get_property_int("secondary-sid", 0)
+
+    def set_sub_pos(self, pos: int) -> int:
+        clamped = max(70, min(100, int(pos)))
+        return self.set_property_int("sub-pos", clamped)
+
+    def set_sub_color(self, color: str) -> int:
+        return self.set_property_string("sub-color", str(color or "#FFFFFF"))
+
+    def set_sub_back_box(self, enabled: bool) -> int:
+        style = "opaque-box" if enabled else "outline-and-shadow"
+        rc = self.set_property_string("sub-border-style", style)
+        if enabled:
+            self.set_property_string("sub-back-color", "#80000000")
+        return rc
+
+    def set_sub_font(self, font_name: str) -> int:
+        return self.set_property_string("sub-font", str(font_name or "sans-serif"))
 
     def add_subtitle(self, sub_path: str) -> int:
         return self.command_async("sub-add", sub_path, "select")
@@ -809,6 +893,20 @@ class MpvEngine:
     def set_rotation(self, degrees: int) -> int:
         deg = int(degrees) % 360
         return self.set_property_int("video-rotate", deg)
+
+    def set_video_zoom(self, zoom: float) -> int:
+        clamped = max(-0.5, min(2.0, round(float(zoom), 2)))
+        return self.set_property_double("video-zoom", clamped)
+
+    def set_panscan(self, panscan: float) -> int:
+        clamped = max(0.0, min(1.0, float(panscan)))
+        return self.set_property_double("panscan", clamped)
+
+    def get_current_chapter(self) -> int:
+        return self.get_property_int("chapter", -1)
+
+    def jump_to_chapter(self, index: int) -> int:
+        return self.set_property_int("chapter", int(index))
 
     def set_equalizer(
         self,
@@ -891,6 +989,15 @@ class MpvEngine:
             fps = float(video_track["demux-fps"])
 
         video_codec = self.get_property_string("video-codec") or (video_track.get("codec") if video_track else "") or ""
+        audio_track = next((a for a in tracks["audio"] if a.get("selected")), None)
+        if audio_track is None and tracks["audio"]:
+            audio_track = tracks["audio"][0]
+        audio_codec = self.get_property_string("audio-codec-name") or (audio_track.get("codec") if audio_track else "") or ""
+        audio_params = self.get_property_node("audio-params", {}) or {}
+        if not isinstance(audio_params, dict):
+            audio_params = {}
+        audio_channels = int(audio_params.get("channel-count") or 0)
+        audio_channels_layout = str(audio_params.get("channels") or "")
         hwdec_current = self.get_property_string("hwdec-current") or "no"
         duration = self.get_duration()
         return {
@@ -898,6 +1005,9 @@ class MpvEngine:
             "height": int(height),
             "fps": float(fps or 0.0),
             "video_codec": str(video_codec),
+            "audio_codec": str(audio_codec),
+            "audio_channels": audio_channels,
+            "audio_channels_layout": audio_channels_layout,
             "hwdec_current": str(hwdec_current),
             "duration": float(duration),
             "audio_tracks": tracks["audio"],

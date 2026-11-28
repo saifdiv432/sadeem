@@ -40,14 +40,6 @@
     "description_ar": "التحكم في أذونات وصلاحيات تطبيقات فلات باك"
   },
   {
-    "app_id": "org.videolan.VLC",
-    "name": "VLC Media Player",
-    "name_ar": "مشغل الوسائط VLC",
-    "icon": "org.videolan.VLC",
-    "description": "Play all video, audio files, and streaming protocols",
-    "description_ar": "مشغل الفيديو والصوتيات العالمي الشامل"
-  },
-  {
     "app_id": "page.tesk.Refine",
     "name": "Refine",
     "name_ar": "محرر واجهة جنوم (رفاين)",

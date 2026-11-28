@@ -46,7 +46,6 @@ if [ ${#APPS[@]} -eq 0 ]; then
     org.libreoffice.LibreOffice
     com.mattjakeman.ExtensionManager
     com.github.tchx84.Flatseal
-    org.videolan.VLC
     page.tesk.Refine
     com.usebottles.bottles
     net.davidotek.pupgui2
